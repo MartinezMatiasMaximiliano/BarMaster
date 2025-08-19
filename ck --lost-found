@@ -1,0 +1,96 @@
+[33m103ffb7[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m HEAD@{0}: revert: Revert "se puede cambiar la imagen de un producto"
+[33md29eb03[m HEAD@{1}: reset: moving to d29eb03e287f3bb38436620f716e76c1db1ca605
+[33md29eb03[m HEAD@{2}: reset: moving to d29eb03e287f3bb38436620f716e76c1db1ca605
+[33md29eb03[m HEAD@{3}: commit: se puede cambiar la imagen de un producto
+[33m131051d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{4}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mfedc4e3[m HEAD@{5}: commit: agregadas graficas a auditoria caja
+[33m4d941ac[m HEAD@{6}: commit: agregadas graficas a auditoria caja
+[33m4e207d2[m HEAD@{7}: commit: se puede agreger imagenes a los productos
+[33mac0f9c8[m HEAD@{8}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m7fdc686[m HEAD@{9}: commit: auditoria caja terminado
+[33mce8d4ee[m HEAD@{10}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33ma9570bb[m HEAD@{11}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m76ae114[m HEAD@{12}: commit: se puede filtrar por fecha en auditoria caja
+[33mf6610d1[m HEAD@{13}: commit: avanzando subir imagen a producto
+[33m3cd301a[m HEAD@{14}: commit: los pedidos tienen el precio del producto
+[33m2834496[m HEAD@{15}: commit: avanzando auditoria caja
+[33ma3b3c37[m HEAD@{16}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m0d71d12[m HEAD@{17}: commit: se manejan errores en los ABM
+[33m5ba2403[m HEAD@{18}: reset: moving to 5ba2403c550b501999d5d231671cd629af177950
+[33m5ba2403[m HEAD@{19}: reset: moving to 5ba2403c550b501999d5d231671cd629af177950
+[33m5ba2403[m HEAD@{20}: reset: moving to 5ba2403c550b501999d5d231671cd629af177950
+[33m7f22488[m HEAD@{21}: reset: moving to 7f22488a2090c42858ae16a9ec8fd082fca72fb4
+[33m7f22488[m HEAD@{22}: revert: Revert "Se manejan errores de registros duplicados"
+[33m5ba2403[m HEAD@{23}: commit: Se manejan errores de registros duplicados
+[33md9f3dbe[m HEAD@{24}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mdbc3d03[m HEAD@{25}: commit: abm mesas funciona
+[33m8a67449[m HEAD@{26}: commit: Modificacion de Mesas anda
+[33m6ff87b9[m HEAD@{27}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Merge made by the 'ort' strategy.
+[33m62f6606[m HEAD@{28}: commit: funciona ABM personas, ABM mozos cambiado a LISTADO mozos
+[33m84e924d[m HEAD@{29}: commit: fix para los abm
+[33ma445ae5[m HEAD@{30}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m78beca9[m HEAD@{31}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m936a814[m HEAD@{32}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mca25319[m HEAD@{33}: commit: avanzando ABM personas
+[33mfce6ac8[m HEAD@{34}: commit: se trae el rol
+[33ma87495c[m HEAD@{35}: commit: fix falta async y parámetros en funciones
+[33mef4b0a0[m HEAD@{36}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m1bb08ad[m HEAD@{37}: commit: botones activar/desactivar de ABM menu y categorias
+[33mb4b1a27[m HEAD@{38}: commit: uso funciones de las API. ABMs Menu y Categorias funcionan
+[33m77a932c[m HEAD@{39}: commit: algunas funciones ahora reciben un solo parametro así escalan
+[33mcf2bacd[m HEAD@{40}: commit: implementado y funciona ABM categorias
+[33m5c99614[m HEAD@{41}: commit: funciona el ABM completo de productos
+[33m579e63b[m HEAD@{42}: commit: se puede eliminar productos del menu
+[33m1ab7e8e[m HEAD@{43}: commit: se puede almacenar el token
+[33m75a1b37[m HEAD@{44}: commit: se puede editar los productos de la DB desde el ABM
+[33mf5c01cf[m HEAD@{45}: commit: se puede editar las categorias de un producto
+[33m9691961[m HEAD@{46}: commit: ser puede ver la cuenta de una mesa
+[33m5718ed7[m HEAD@{47}: commit: se puede abrir mesa pero no surge efecto si no se reinicia la pag
+[33mdcafc4b[m HEAD@{48}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mf507ead[m HEAD@{49}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m2b3264f[m HEAD@{50}: commit: ahora las notif se apilan bien. Se las puede eliminar.
+[33me1c53fd[m HEAD@{51}: commit: se trae la info de mesas...
+[33ma73fa3a[m HEAD@{52}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m7d121be[m HEAD@{53}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33md37af4b[m HEAD@{54}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mae63cf3[m HEAD@{55}: commit: los abm se muestran bien con la nueva db
+[33m14ee274[m HEAD@{56}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m96adc1e[m HEAD@{57}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m18d5ccc[m HEAD@{58}: commit: se cambia la URL de los fetch
+[33me1869bb[m HEAD@{59}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m5dd825d[m HEAD@{60}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Merge made by the 'ort' strategy.
+[33m85b0ce1[m HEAD@{61}: commit: los pedidos se filtran por horario al clickear Mesa
+[33m554c6ed[m HEAD@{62}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m48bbc09[m HEAD@{63}: commit: definida estructura de modal mesa
+[33mcc9bd6e[m HEAD@{64}: commit: notificaciones son dinámicas
+[33m892c353[m HEAD@{65}: commit: control de fechas para notificaciones
+[33m9cc78b5[m HEAD@{66}: commit: se envia el pedido
+[33m13b2b03[m HEAD@{67}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33ma1b135d[m HEAD@{68}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mbabf9fc[m HEAD@{69}: commit: los pedidos se muestran en cada mesa
+[33m596ea4d[m HEAD@{70}: commit: avanzando en mostrar los pedidos en modal de mesa
+[33m4f7eaca[m HEAD@{71}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Merge made by the 'ort' strategy.
+[33m1c29370[m HEAD@{72}: commit: fetch en lugar de axios por errores
+[33m439787d[m HEAD@{73}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mf25c811[m HEAD@{74}: commit: avanzando con notificaciones
+[33mba18875[m HEAD@{75}: commit: mejorando DTO
+[33mc4bee4d[m HEAD@{76}: commit (merge): merge
+[33m2c360fa[m HEAD@{77}: commit: avanzando con notifaciones del mozo
+[33m53aada9[m HEAD@{78}: commit: avanzando con notificaciones del mozo
+[33m37152e6[m HEAD@{79}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mbc4c22e[m HEAD@{80}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33maeff589[m HEAD@{81}: commit: modals eliminar y editar de ABMS
+[33md4f51fe[m HEAD@{82}: commit: se ven los elementos de los ABM en tablas
+[33md48f240[m HEAD@{83}: commit: empezando abm mozos
+[33mdecad56[m HEAD@{84}: commit: axios instalado, llamadas a la api con axios
+[33m4660d99[m HEAD@{85}: commit: nueva estructura
+[33m0617e5b[m HEAD@{86}: commit: nuevo modal al enviar pedido
+[33m80f44f8[m HEAD@{87}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mda4f79c[m HEAD@{88}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33ma10f704[m HEAD@{89}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mf4fb0c5[m HEAD@{90}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mfcb3ea9[m HEAD@{91}: commit: cambios minimos
+[33m10e662c[m HEAD@{92}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m6abdd1d[m HEAD@{93}: commit: cambios models
+[33m790cf58[m HEAD@{94}: commit (merge): merge
+[33m7d2a444[m HEAD@{9

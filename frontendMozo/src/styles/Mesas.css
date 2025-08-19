@@ -1,0 +1,10 @@
+.container-notificaciones {
+    position: fixed;
+    right: 0;
+    top: 2vh;
+}
+
+.boton-nav {
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.65);
+}

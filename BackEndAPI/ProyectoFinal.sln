@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35013.160
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BackEndAPI", "BackEndAPI.csproj", "{86651753-18A8-4408-A0EC-FC5BEC79429C}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "frontendCliente", "..\FrontEndCliente\frontendCliente.esproj", "{BFABBD8C-97C4-427F-871A-1CEC4545580F}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "frontendmozo", "..\frontendMozo\frontendmozo.esproj", "{C139C7B8-C11A-45BC-9E7C-E9F94D1F802F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{86651753-18A8-4408-A0EC-FC5BEC79429C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86651753-18A8-4408-A0EC-FC5BEC79429C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86651753-18A8-4408-A0EC-FC5BEC79429C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86651753-18A8-4408-A0EC-FC5BEC79429C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFABBD8C-97C4-427F-871A-1CEC4545580F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFABBD8C-97C4-427F-871A-1CEC4545580F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFABBD8C-97C4-427F-871A-1CEC4545580F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{BFABBD8C-97C4-427F-871A-1CEC4545580F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFABBD8C-97C4-427F-871A-1CEC4545580F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFABBD8C-97C4-427F-871A-1CEC4545580F}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{C139C7B8-C11A-45BC-9E7C-E9F94D1F802F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C139C7B8-C11A-45BC-9E7C-E9F94D1F802F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C139C7B8-C11A-45BC-9E7C-E9F94D1F802F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{C139C7B8-C11A-45BC-9E7C-E9F94D1F802F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C139C7B8-C11A-45BC-9E7C-E9F94D1F802F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C139C7B8-C11A-45BC-9E7C-E9F94D1F802F}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {64435954-1785-483C-9007-9A65820FCC5B}
+	EndGlobalSection
+EndGlobal

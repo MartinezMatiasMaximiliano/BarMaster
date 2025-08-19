@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@fortawesome/free-regular-svg-icons": "^6.6.0",
+    "@redux-devtools/extension": "^3.3.0",
+    "redux-devtools-extension": "^2.13.9"
+  }
+}

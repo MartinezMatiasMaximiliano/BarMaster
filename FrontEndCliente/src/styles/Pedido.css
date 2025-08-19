@@ -1,0 +1,28 @@
+.pedido-recuadro{
+    border: 3px solid black;
+    margin: 0px 30px;
+}
+
+.descripcion-pedido {
+    width: 40vw;
+}
+
+.indicaciones-pedido {
+    width: 60vw;
+}
+
+.llamarMozo {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: #d32f2f;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    z-index: 1000;
+}
