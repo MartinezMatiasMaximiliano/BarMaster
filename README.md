@@ -292,25 +292,9 @@ Prestar atencion a la base de datos usada y los puertos usados.
 
   * Martínez, Matías Maximiliáno - matumartinez9@hotmail.com
   
-  * Molina, Víctor Antonio - victormolinalvp@gmail.com
-  
   * Scida, Patricio - patricioscida@gmail.com
   
-* Docente Titular
 
-  * Valdecantos, Héctor Adrián - hvaldecantos@herrera.unt.edu.ar
 
-Proyecto Anual - Licenciatura en Informatica/Programadór Universitario/Ingenieria en Informatica
 
-Facultad de Ciencias Exactas y Tecnologia - Universidad Nacional de Tucumán
-
-Año de inicio: 2024
-
-Agradecimientos a:
-
-  * Saborido, Esteban 
-  
-  * Berretta Gali, Ana Sofia 
-  
-  * Abregú, Braian Marcelo
   
