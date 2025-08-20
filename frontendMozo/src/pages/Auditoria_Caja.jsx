@@ -19,16 +19,6 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 
 const AuditoriaCaja = (props) => {
-
-    const navigate = useNavigate(); // useNavigate se usa para redirigir a los usuarios a una nueva ruta cuando ocurre un evento.
-    const loginProvider = useContext(LoginContext);
-
-    useEffect(() => {
-        if (loginProvider.logeado == false) {
-            navigate('/')
-        }
-    }, [])
-
     pdfMake.vfs = pdfFonts.vfs; // Asigna las fuentes aquí
     DataTable.use(DT);
     DT.Buttons.jszip(jszip);

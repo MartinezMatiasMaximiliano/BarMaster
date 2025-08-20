@@ -10,15 +10,6 @@ const PasswordChangeForm = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    const navigate = useNavigate(); // useNavigate se usa para redirigir a los usuarios a una nueva ruta cuando ocurre un evento.
-    const loginProvider = useContext(LoginContext);
-
-    useEffect(() => {
-        if (loginProvider.logeado == false) {
-            navigate('/')
-        }
-    }, [])
-
     const handleSubmit = (e) => {
         e.preventDefault();
         setError('');

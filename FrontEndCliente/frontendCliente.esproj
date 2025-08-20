@@ -17,4 +17,7 @@
     <Folder Include="src\connections\" />
     <Folder Include="src\Helpers\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include=".vscode\launch.json" />
+  </ItemGroup>
 </Project>

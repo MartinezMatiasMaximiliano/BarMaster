@@ -27,6 +27,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { agregarItems as agregarItemsAPedidoActivo, crear as crearPedidosActivos, cambiarEstadoItems } from './redux/slices/pedidosActivosSlice'
 import { agregar as agregarNotificaciones } from './redux/slices/notificacionesSlice'
 import { agregar as agregarTicket } from './redux/slices/ticketSlice'
+import Control_Login from './components/Control_Login';
 
 export const LoginContext = createContext();
 
@@ -159,13 +160,13 @@ function App() {
                         <Col xs={6} md={8} className="mt-2">
                             <Routes>
                                 <Route path="/" element={<Index mesas={mesas} datos_mozos={datos_mozos_listado} />} />
-                                <Route path="/abm_categorias" element={<Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" />} />
-                                <Route path="/lista_mozos" element={<Listado_Mozos datos_mozos={datos_mozos_listado} titulo="Mozos" />} />
-                                <Route path="/abm_mesas" element={<Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={datos_mesas_abm} datos_select={datos_mozos_listado} titulo="Mesas" />} />
-                                <Route path="/abm_menu" element={<Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" />} />
-                                <Route path="/abm_personas" element={<Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" />} />
-                                <Route path="/auditoria_caja" element={<Auditoria_Caja datos_pedidos={datos_pedidos} titulo="Caja"></Auditoria_Caja>} />
-                                <Route path="/cambiar_clave" element={<Cambiar_Clave />} />
+                                <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
+                                <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
+                                <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={datos_mesas_abm} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
+                                <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
+                                <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
+                                <Route path="/auditoria_caja" element={<Control_Login><Auditoria_Caja datos_pedidos={datos_pedidos} titulo="Caja"></Auditoria_Caja></Control_Login>} />
+                                <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
                                 <Route path="/login" element={<Login />} />
                             </Routes>
                         </Col>
