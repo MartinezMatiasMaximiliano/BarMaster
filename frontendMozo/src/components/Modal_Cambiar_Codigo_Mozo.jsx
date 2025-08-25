@@ -5,7 +5,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { validarCampos } from "../Helpers/HelperFunctions";
 import { ModificarCodigoMozo } from "../API/APIPersonas";
 
-function Modal_Eliminar(props) {
+function Modal_Cambiar_Codigo_Mozo(props) {
 
     const datos = props.datos;
     console.log("DATOS: ", datos);
@@ -88,4 +88,4 @@ function Modal_Eliminar(props) {
     );
 }
 
-export default Modal_Eliminar;
+export default Modal_Cambiar_Codigo_Mozo;

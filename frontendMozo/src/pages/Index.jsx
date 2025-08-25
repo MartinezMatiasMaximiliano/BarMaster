@@ -2,8 +2,6 @@
 import { React, useContext, useState, useEffect } from 'react'
 import Mesa from "../components/Mesa";
 import { Container, Form } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { LoginContext } from '../App';
 import { modificar as modificarMozo } from '../redux/slices/mozoSlice';
 import { modificar as modificarCodigoMozo } from '../redux/slices/codigoMozoSlice';
 import { useSelector, useDispatch } from 'react-redux'

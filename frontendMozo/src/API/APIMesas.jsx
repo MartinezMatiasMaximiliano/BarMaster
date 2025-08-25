@@ -43,11 +43,9 @@ export async function CerrarMesa(Id) {
     }
 }
 
-export async function ModificarMesa(datos) { // Hace LO MISMO que CambiarMozoAsignado, sólo que recibe un solo parámetro
-                                             // el ID del mozo llega en datos.nombreMozo. 
-                                             // Esta mal el nombre pero bueno era un poco problema cambiarlo jeje
+export async function ModificarMesa(datos) {
     try {
-        const response = await axios.put(BASE_URL + datos.id, { MozoId: datos.nombreMozo});
+        const response = await axios.put(BASE_URL + datos.id, { MozoId: datos.idMozo});
         return response.data;
     } catch (error) {
         return error.response

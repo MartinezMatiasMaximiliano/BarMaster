@@ -1,8 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { TextField, Button, Box, Typography, Alert } from '@mui/material';
 import { ModificarPassword } from '../API/APIPersonas';
-import { useNavigate } from 'react-router-dom';
-import { LoginContext } from '../App';
 
 const PasswordChangeForm = () => {
     const [newPassword, setNewPassword] = useState('');

@@ -19,9 +19,9 @@ const MenuProps = {
     },
 };
 
-function getStyles(name, personName, theme) {
+function getStyles(name, value, theme) {
     return {
-        fontWeight: personName.includes(name)
+        fontWeight: value.includes(name)
             ? theme.typography.fontWeightMedium
             : theme.typography.fontWeightRegular,
     };
@@ -29,16 +29,15 @@ function getStyles(name, personName, theme) {
 
 export default function Select_Multiple(props) {
     const theme = useTheme();
-    const [categoriasActuales, setCategoriasActuales] = React.useState(props.categoriasActuales);
-    const categoriasActivos = props.categorias.filter(cat => cat.activo == true);
-    const categorias = categoriasActivos.map((categoria) => categoria.nombre); // Se convierte el objeto en un arreglo
+    const [categoriasActivas, setCategoriasActivas] = React.useState(props.categoriasActivas);
+    const categoriasTotales = props.categoriasTotales.map((categoria) => categoria.nombre); // Se convierte el objeto en un arreglo
 
     const handleChange = (event) => {
         props.handleChange(event, "categorias");
         const {
             target: { value },
         } = event;
-        setCategoriasActuales(
+        setCategoriasActivas(
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value,
         );
@@ -52,7 +51,7 @@ export default function Select_Multiple(props) {
                     labelId="demo-multiple-chip-label"
                     id="demo-multiple-chip"
                     multiple
-                    value={categoriasActuales}
+                    value={categoriasActivas}
                     onChange={handleChange}
                     input={<OutlinedInput id="select-multiple-chip" label={props.titulo} />}
                     renderValue={(selected) => (
@@ -64,11 +63,11 @@ export default function Select_Multiple(props) {
                     )}
                     MenuProps={MenuProps}
                 >
-                    {categorias.map((cat) => (
+                    {categoriasTotales.map((cat) => (
                         <MenuItem
                             key={cat}
                             value={cat}
-                            style={getStyles(cat, categoriasActuales, theme)}
+                            style={getStyles(cat, categoriasActivas, theme)}
                         >
                             {cat}
                         </MenuItem>

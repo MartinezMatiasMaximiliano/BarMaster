@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import LoginForm from '../components/LoginForm';
 import authService from '../connections/AuthService';
 import { useNavigate } from 'react-router-dom';
-import {LoginContext } from '../App';
+import { LoginContext } from '../App';
 
 const Login = () => {
     const navigate = useNavigate(); // useNavigate se usa para redirigir a los usuarios a una nueva ruta cuando ocurre un evento.

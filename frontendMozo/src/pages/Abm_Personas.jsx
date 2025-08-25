@@ -1,23 +1,79 @@
-import React, { useEffect, useContext } from 'react'
-import Tabla from "../components/Tabla";
-import { Container } from 'react-bootstrap'
-import { RegistrarPersona, BorrarPersona, DesactivarPersona, ActivarPersona, ModificarPersona } from "../API/APIPersonas";
-import { useNavigate } from 'react-router-dom';
-import { LoginContext } from '../App';
+import React from "react";
+import Tabla from "../components/Tabla/Tabla";
+import { Container } from "react-bootstrap";
+import Fila_Acciones from "../components/Tabla/Fila_Acciones";
+import Modal_Agregar from "../components/Modal_Agregar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
+import {
+    RegistrarPersona,
+    BorrarPersona,
+    DesactivarPersona,
+    ActivarPersona,
+    ModificarPersona
+} from "../API/APIPersonas";
 
+function Abm_Personas(props) {
 
-function Abm_Menu(props) {
-    var cols = ['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Rol', 'Acciones']
+    const api = {
+        crear: RegistrarPersona,
+        eliminar: BorrarPersona,
+        activar: ActivarPersona,
+        desactivar: DesactivarPersona,
+        modificar: ModificarPersona,
+    };
+
+    const configSelect = {
+        titulo: "Rol",
+        name: "rol",
+        datos: props.datos_select,
+    }
+
+    const columnas = [
+        { key: "nombre", label: "Nombre" },
+        { key: "apellido", label: "Apellido" },
+        { key: "dni", label: "DNI" },
+        { key: "direccion", label: "Dirección" },
+        { key: "telefono", label: "Teléfono" },
+        { key: "rolNombre", label: "Rol" },
+        {
+            key: "__acciones",
+            label: "Acciones",
+            align: "right",
+            render: (fila) => (
+                <Fila_Acciones
+                    fila={fila}
+                    api={api}
+                    recargar={props.recargarComponentes}
+                    deleteLabel="Producto"
+                    configSelect={configSelect}
+                    showToggle={() => true}
+                />
+            ),
+        },
+    ];
+
     return (
         <Container>
-            <Tabla recargarComponentes={props.recargarComponentes} columnas={cols} datos={props.datos_personas} titulo={props.titulo} titulo_select="Rol" name_select="rol" datos_select={props.datos_select}
-                agregar={RegistrarPersona}
-                eliminar={BorrarPersona}
-                desactivar={DesactivarPersona}
-                activar={ActivarPersona}
-                modificar={ModificarPersona}></Tabla>
+            <Tabla
+                titulo={props.titulo}
+                filas={props.datos_personas}
+                columnas={columnas}
+                renderAgregar={() => (
+                    <Modal_Agregar
+                        recargarComponentes={props.recargarComponentes}
+                        columnas={['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Rol']}
+                        titulo_select="Rol"
+                        name_select="rol"
+                        datos_select={props.datos_select}
+                        agregar={api.crear}
+                    >
+                        <FontAwesomeIcon icon={faSquarePlus} />
+                    </Modal_Agregar>
+                )}
+            />
         </Container>
     );
 }
 
-export default Abm_Menu;
+export default Abm_Personas;

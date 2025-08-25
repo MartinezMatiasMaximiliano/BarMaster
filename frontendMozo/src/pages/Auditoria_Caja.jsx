@@ -4,8 +4,6 @@ import Grafica_Curva from "../components/Grafica_Curva";
 import Grafica_Barras from "../components/Grafica_Barras";
 import Form from "react-bootstrap/Form";
 import Grid from '@mui/material/Unstable_Grid2';
-import { useNavigate } from 'react-router-dom';
-import { LoginContext } from '../App';
 //Datatable
 import DataTable from 'datatables.net-react';
 import DT from 'datatables.net-dt';

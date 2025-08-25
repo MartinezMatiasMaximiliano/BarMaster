@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react"
+import { React, useState } from "react"
 import { Button, Modal, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
@@ -6,65 +6,88 @@ import Multiple_Select from "../components/Select_Multiple";
 import Input_Imagen from "../components/Input_Imagen";
 import Select from "../components/Select";
 import { validarCampos } from "../Helpers/HelperFunctions";
-import { useNavigate, useLocation } from 'react-router-dom';
 
-function Modal_Agregar(props) {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const columnas = props.columnas;
-
+function Modal_Agregar({
+    columnas,
+    agregar,
+    recargarComponentes,
+    nombre,
+    categorias,
+    datos_select,
+    titulo_select,
+    name_select
+}) {
     const [show, setShow] = useState(false);
     const [values, setValues] = useState({});
-
-    // Manejo de errores
     const [errors, setErrors] = useState({});
 
     const handleClose = () => {
         setErrors({});
         setShow(false);
-    }
+    };
     const handleShow = () => setShow(true);
 
     const handleChange = (event, key) => {
         let valor;
-        switch (key) { 
-            case "rol":
-                valor = {
-                    id: event.target.value,
-                    nombre: ''
-                };
-                break;
-            case "imagen":
-                valor = event.target.files[0];
-                break;
-            default:
-                valor = event.target.value;
-                break;
+        if (key === "rol") {
+            valor = { id: event.target.value, nombre: '' };
+        } else if (key === "imagen") {
+            valor = event.target.files[0];
+        } else {
+            valor = event.target.value;
         }
 
-        // Actualizo el state
-        setValues((prevValues) => ({
-            ...prevValues,
-            [key]: valor,
-        }));
-
-        // Hago la validacion
+        setValues((prev) => ({ ...prev, [key]: valor }));
         validarCampos(key, valor, setErrors);
-    }
+    };
 
     const handleSave = async () => {
         if (Object.keys(errors).length === 0) {
-            await props.agregar(values);
-            // Cerrar el modal después de guardar
+            await agregar(values);
             handleClose();
-            await props.recargarComponentes();
+            await recargarComponentes();
         }
     };
 
-    const Keys_Subir_Foto = ["Imagen"];
-    const Keys_Select_Multiple = ["Categorias"];
-    const Keys_Select = ["Rol"];
-    const Keys_Ignoradas = ["Código", "Mozo"]; // Son los datos que quiero que se vean en la tabla, pero que no quiero que se puedan elegir al agregar (no se mostrarán en Modal_Agregar)
+    // Diccionario para definir el tipo de componente por campo
+    const fieldRenderers = {
+        Imagen: (col, index) => (
+            <Input_Imagen key={index} handleChange={handleChange} />
+        ),
+        Categorias: (col, index) => (
+            <Multiple_Select
+                key={index}
+                categorias={categorias}
+                titulo="Categorias"
+                categoriasActuales={[]}
+                handleChange={handleChange}
+            />
+        ),
+        Rol: (col, index) => (
+            <Select
+                key={index}
+                datos_select={datos_select}
+                datoActual=""
+                titulo={titulo_select}
+                name={name_select}
+                handleChange={handleChange}
+            />
+        ),
+    };
+
+    const ignoredFields = ["Código", "Mozo"];
+
+    // Render genérico para campos que no están en el diccionario
+    const defaultRenderer = (col, index) => (
+        <Form.Group className="mb-3" key={index} controlId={`campo-${index}`}>
+            <Form.Label>{col}</Form.Label>
+            <Form.Control
+                type="text"
+                placeholder={`Ingrese valor para ${col}`}
+                onChange={(e) => handleChange(e, col)}
+            />
+        </Form.Group>
+    );
 
     return (
         <>
@@ -74,60 +97,33 @@ function Modal_Agregar(props) {
 
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Agregar {props.nombre}</Modal.Title>
+                    <Modal.Title>Agregar {nombre}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div>
-                        {Object.keys(errors).length > 0 && (
-                            <div style={{ backgroundColor: '#ffe6e6', padding: '10px', marginBottom: '10px', border: '1px solid red' }}>
-                                <p><strong>Errores en el formulario:</strong></p>
-                                <ul>
-                                    {Object.keys(errors).map(key => (
-                                        <li key={key} style={{ color: 'red' }}>Campo <b>{key}</b>: {errors[key]}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
+                    {Object.keys(errors).length > 0 && (
+                        <div style={{
+                            backgroundColor: '#ffe6e6',
+                            padding: '10px',
+                            marginBottom: '10px',
+                            border: '1px solid red'
+                        }}>
+                            <p><strong>Errores en el formulario:</strong></p>
+                            <ul>
+                                {Object.entries(errors).map(([key, value]) => (
+                                    <li key={key} style={{ color: 'red' }}>
+                                        Campo <b>{key}</b>: {value}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     <Form>
-                        {columnas.map((col, index) => (
-                            Keys_Subir_Foto.includes(col) ? (
-                                <Input_Imagen key={index} handleChange={handleChange}></Input_Imagen>
-                            ) : 
-                            Keys_Select_Multiple.includes(col) ? (
-                                <Multiple_Select
-                                    key={index}
-                                    categorias={props.categorias}
-                                    titulo="Categorias"
-                                    categoriasActuales={[]}
-                                    handleChange={handleChange}
-                                />
-                            ) : Keys_Select.includes(col) ? (
-                                <Select
-                                    key={index}
-                                    datos_select={props.datos_select}
-                                    datoActual=""
-                                    titulo={props.titulo_select}
-                                    name={props.name_select}
-                                    handleChange={handleChange}
-                                />
-                            ) : Keys_Ignoradas.includes(col) ? (
-                                            <div key={index}></div>
-                            ) : (
-                                <Form.Group
-                                    className="mb-3"
-                                    key={index}
-                                    controlId={`categoria-${index}`}
-                                >
-                                    <Form.Label>{col}</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder={`Ingrese valor para ${col}`}
-                                        onChange={(e) => handleChange(e, col)}
-                                    />
-                                </Form.Group>
-                            )
-                        ))}
+                        {columnas.map((col, index) => {
+                            if (ignoredFields.includes(col)) return null;
+                            const renderer = fieldRenderers[col] || defaultRenderer;
+                            return renderer(col, index);
+                        })}
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>

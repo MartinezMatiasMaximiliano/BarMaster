@@ -1,14 +1,33 @@
-import React, { useEffect, useContext } from 'react'
-import Tabla from "../components/Tabla";
-import { Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom';
-import { LoginContext } from '../App';
+import React from "react";
+import Tabla from "../components/Tabla/Tabla";
+import { Container } from "react-bootstrap";
+import Modal_Cambiar_Codigo_Mozo from "../components/Modal_Cambiar_Codigo_Mozo";
 
 function Abm_Mozos(props) {
-    var cols = ['Código', 'Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Acciones']
+    const columnas = [
+        { key: "codigoDeServicio", label: "Código" },
+        { key: "nombre", label: "Nombre" },
+        { key: "apellido", label: "Apellido" },
+        { key: "dni", label: "DNI" },
+        { key: "direccion", label: "Dirección" },
+        { key: "telefono", label: "Teléfono" },
+        {
+            key: "__acciones",
+            label: "Acciones",
+            align: "right",
+            render: (fila) => (
+                <Modal_Cambiar_Codigo_Mozo datos={fila} ></Modal_Cambiar_Codigo_Mozo>
+            ),
+        },
+    ];
+
     return (
         <Container>
-            <Tabla columnas={cols} datos={props.datos_mozos} titulo={props.titulo}></Tabla>
+            <Tabla
+                titulo={props.titulo}
+                columnas={columnas}
+                filas={props.datos_mozos}
+            />
         </Container>
     );
 }
