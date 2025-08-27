@@ -7,16 +7,7 @@ import Input_Imagen from "../components/Input_Imagen";
 import Select from "../components/Select";
 import { validarCampos } from "../Helpers/HelperFunctions";
 
-function Modal_Agregar({
-    columnas,
-    agregar,
-    recargarComponentes,
-    nombre,
-    categorias,
-    datos_select,
-    titulo_select,
-    name_select
-}) {
+function Modal_Agregar(props) {
     const [show, setShow] = useState(false);
     const [values, setValues] = useState({});
     const [errors, setErrors] = useState({});
@@ -43,9 +34,9 @@ function Modal_Agregar({
 
     const handleSave = async () => {
         if (Object.keys(errors).length === 0) {
-            await agregar(values);
+            await props.agregar(values);
             handleClose();
-            await recargarComponentes();
+            await props.recargarComponentes();
         }
     };
 
@@ -57,19 +48,19 @@ function Modal_Agregar({
         Categorias: (col, index) => (
             <Multiple_Select
                 key={index}
-                categorias={categorias}
+                itemsTotales={props.categoriasTotales}
                 titulo="Categorias"
-                categoriasActuales={[]}
+                itemsActivos={[]}
                 handleChange={handleChange}
             />
         ),
         Rol: (col, index) => (
             <Select
                 key={index}
-                datos_select={datos_select}
+                datos_select={props.configSelect.datos}
                 datoActual=""
-                titulo={titulo_select}
-                name={name_select}
+                titulo={props.configSelect.titulo}
+                name={props.configSelect.name}
                 handleChange={handleChange}
             />
         ),
@@ -97,7 +88,7 @@ function Modal_Agregar({
 
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Agregar {nombre}</Modal.Title>
+                    <Modal.Title>Agregar {props.nombre}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {Object.keys(errors).length > 0 && (
@@ -119,7 +110,7 @@ function Modal_Agregar({
                     )}
 
                     <Form>
-                        {columnas.map((col, index) => {
+                        {props.columnas.map((col, index) => {
                             if (ignoredFields.includes(col)) return null;
                             const renderer = fieldRenderers[col] || defaultRenderer;
                             return renderer(col, index);

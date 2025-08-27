@@ -57,10 +57,7 @@ function Abm_Menu(props) {
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
                         columnas={["Imagen", "Nombre", "Precio", "Descripción", "Categorias"]}
-                        titulo_select={props.titulo_select}
-                        name_select={props.name_select}
-                        datos_select={props.datos_select}
-                        categorias={props.categorias}
+                        categoriasTotales={props.categorias}
                         agregar={api.crear}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />

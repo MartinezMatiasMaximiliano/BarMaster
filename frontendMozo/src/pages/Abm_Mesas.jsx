@@ -55,9 +55,6 @@ function Abm_Mesas(props) {
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
                         columnas={["Número de Mesa", "Código", "Mozo"]}
-                        titulo_select={props.titulo_select}
-                        name_select={props.name_select}
-                        datos_select={props.datos_select}
                         agregar={api.crear}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />

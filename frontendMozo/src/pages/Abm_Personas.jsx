@@ -63,9 +63,7 @@ function Abm_Personas(props) {
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
                         columnas={['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Rol']}
-                        titulo_select="Rol"
-                        name_select="rol"
-                        datos_select={props.datos_select}
+                        configSelect={configSelect}
                         agregar={api.crear}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />

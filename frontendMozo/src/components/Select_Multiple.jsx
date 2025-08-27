@@ -29,15 +29,15 @@ function getStyles(name, value, theme) {
 
 export default function Select_Multiple(props) {
     const theme = useTheme();
-    const [categoriasActivas, setCategoriasActivas] = React.useState(props.categoriasActivas);
-    const categoriasTotales = props.categoriasTotales.map((categoria) => categoria.nombre); // Se convierte el objeto en un arreglo
+    const [itemsActivos, setItemsActivos] = React.useState(props.itemsActivos);
+    const itemsTotales = props.itemsTotales.map((item) => item.nombre); // Se convierte el objeto en un arreglo
 
     const handleChange = (event) => {
-        props.handleChange(event, "categorias");
+        props.handleChange(event, "");
         const {
             target: { value },
         } = event;
-        setCategoriasActivas(
+        setItemsActivos(
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value,
         );
@@ -51,7 +51,7 @@ export default function Select_Multiple(props) {
                     labelId="demo-multiple-chip-label"
                     id="demo-multiple-chip"
                     multiple
-                    value={categoriasActivas}
+                    value={itemsActivos}
                     onChange={handleChange}
                     input={<OutlinedInput id="select-multiple-chip" label={props.titulo} />}
                     renderValue={(selected) => (
@@ -63,11 +63,11 @@ export default function Select_Multiple(props) {
                     )}
                     MenuProps={MenuProps}
                 >
-                    {categoriasTotales.map((cat) => (
+                    {itemsTotales.map((cat) => (
                         <MenuItem
                             key={cat}
                             value={cat}
-                            style={getStyles(cat, categoriasActivas, theme)}
+                            style={getStyles(cat, itemsActivos, theme)}
                         >
                             {cat}
                         </MenuItem>

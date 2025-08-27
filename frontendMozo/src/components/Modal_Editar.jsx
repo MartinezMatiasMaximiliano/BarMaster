@@ -32,9 +32,9 @@ function Modal_Editar(props) {
         categorias: (key) => (
             <Multiple_Select
                 key={key}
-                categoriasTotales={props.categoriasTotales}
+                itemsTotales={props.categoriasTotales}
                 titulo="Categorias"
-                categoriasActivas={props.categoriasActivas}
+                itemsActivos={props.categoriasActivas}
                 handleChange={handleChange}
             />
         ),
