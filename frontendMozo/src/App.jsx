@@ -4,7 +4,7 @@ import { Route, Routes, useLocation } from "react-router-dom"
 import { Container, Col, Row } from 'react-bootstrap'
 import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearCategorias, MappearPedidos } from './Helpers/HelperFunctions'
 import connection from './connections/HubConnMozo'
-import Navbar_Mozo from "./components/NavBar_Mozo";
+import Navbar from "./components/NavBar/NavBar";
 import Index from './pages/Index';
 import Listado_Mozos from './pages/Lista_Mozos';
 import Abm_Mesas from './pages/Abm_Mesas';
@@ -40,6 +40,7 @@ function App() {
     // State de login
 
     const [logeado, setLogeado] = useState(false);
+    const [rol, setRol] = useState(localStorage.getItem('rol') || '');
 
     // States que usan redux
     const pedidosActivos = useSelector((state) => state.pedidosActivos.value); 
@@ -151,11 +152,11 @@ function App() {
 
     return (
         <>
-            <LoginContext.Provider value={{ logeado, setLogeado }}>
+            <LoginContext.Provider value={{ logeado, setLogeado, rol, setRol }}>
                 <Container fluid>
                     <Row>
                         <Col xs={3} md={2}>
-                            <Navbar_Mozo></Navbar_Mozo>
+                            <Navbar></Navbar>
                         </Col>
                         <Col xs={6} md={8} className="mt-2">
                             <Routes>

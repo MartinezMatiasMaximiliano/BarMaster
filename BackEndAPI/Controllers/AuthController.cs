@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
@@ -101,7 +101,7 @@ namespace BackEndAPI.Controllers
                 return Unauthorized("Usuario o contrasena incorrecta");
             }
 
-            if (usuario.Rol.Id != 1)
+            if (usuario.Rol.Id != 1 && usuario.Rol.Id != 3) // Temporal, es solo para testear el nuevo usuario "Cajero" que tiene ID 3 en mi db local
             {
                 return Unauthorized("El usuario no es admin");
             }

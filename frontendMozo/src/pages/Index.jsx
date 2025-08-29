@@ -6,7 +6,7 @@ import { modificar as modificarMozo } from '../redux/slices/mozoSlice';
 import { modificar as modificarCodigoMozo } from '../redux/slices/codigoMozoSlice';
 import { useSelector, useDispatch } from 'react-redux'
 import { Chip } from "@mui/material";
-import Avatar from '@mui/material/Avatar';
+import { GetChipNombreCompleto } from '../Helpers/HelperFunctions';
 
 function Index(props) {
 
@@ -101,7 +101,7 @@ function Index(props) {
                         className="w-100"
                     />
                 </Form.Group>
-                {mozo?.nombre ? (<Chip avatar={<Avatar>{mozo.nombre[0].toUpperCase()}</Avatar>} label={mozo.nombre + ' ' + mozo.apellido} variant="outlined" color="success" />) : (<Chip label="Codigo incorrecto" variant="outlined" color="error" />)}
+                {mozo?.nombre ? GetChipNombreCompleto(mozo.nombre, mozo.apellido) : (<Chip label="Codigo incorrecto" variant="outlined" color="error" />)}
             </div>
 
         </Container>

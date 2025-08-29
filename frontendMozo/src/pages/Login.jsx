@@ -13,6 +13,7 @@ const Login = () => {
             const exito = await authService.login(Dni, password);
             if (exito) {
                 loginProvider.setLogeado(true);
+                loginProvider.setRol(localStorage.getItem("rol"))
                 navigate('/');
             } else {
                 alert('Credenciales incorrectas.');

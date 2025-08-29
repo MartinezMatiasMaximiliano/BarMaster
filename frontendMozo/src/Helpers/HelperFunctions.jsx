@@ -1,5 +1,22 @@
 /* eslint-disable react-refresh/only-export-components */
 import Toast_Notificacion from "../components/Toast_Notificacion";
+import { Chip } from "@mui/material";
+import Avatar from '@mui/material/Avatar';
+
+export function GetChipNombreCompleto(Nombre, Apellido) {
+    const nombres = Nombre || localStorage.getItem('nombres') || '';
+    const apellido = Apellido || localStorage.getItem('apellido') || '';
+
+    const ChipNombreCompleto =
+        <Chip
+            avatar={<Avatar>{nombres?.[0]?.toUpperCase() || ''}</Avatar>}
+            label={`${nombres} ${apellido}`}
+            variant="outlined"
+            color="success"
+        />;
+
+    return ChipNombreCompleto;
+}
 
 export function MappearPedidos(pedidos) {
     return pedidos.flatMap(pedido =>

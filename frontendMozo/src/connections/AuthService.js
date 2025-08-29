@@ -9,6 +9,7 @@ const AuthService = {
                 localStorage.setItem('nombres', response.data.nombres);
                 localStorage.setItem('apellido', response.data.apellido);
                 localStorage.setItem('id', response.data.id);
+                localStorage.setItem('rol', response.data.rol);
                 return true;
             }
             return false;
