@@ -4,8 +4,8 @@ import { faBurger } from '@fortawesome/free-solid-svg-icons';
 import { Button, Modal } from 'react-bootstrap';
 import { useState } from 'react';
 import Lista from "./Lista";
-import Modal_Generico from "./Modal_Generico";
-import Modal_Ver_Cuenta from "./Modal_Ver_Cuenta";
+import Modal_Generico from "./Modals/Modal_Generico";
+import Modal_Ver_Cuenta from "./Modals/Modal_Ver_Cuenta";
 import { AbrirMesa, CerrarMesa } from '../API/APIMesas';
 import { useSelector, useDispatch } from 'react-redux'
 import { cambiarEstadoItemsPorMesa, eliminarItems as eliminarItemsDePedido, agregarPedido } from '../redux/slices/pedidosActivosSlice'

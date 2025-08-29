@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { LoginContext } from "../../App";
 import { Nav, Row } from 'react-bootstrap';
 import Navbar from 'react-bootstrap/Navbar';
-import NavBar_Botones from '../Navbar/NavBar_Botones'
-import NavBar_Chip from '../Navbar/NavBar_Chip'
+import NavBar_Botones from './NavBar_Botones'
+import NavBar_Chip from './NavBar_Chip'
 function NavBar() {
 
     const loginProvider = useContext(LoginContext);

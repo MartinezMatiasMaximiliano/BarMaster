@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Modal_Generico from "../Modal_Generico";
+import Modal_Generico from "../Modals/Modal_Generico";
 import { Nav, Row } from 'react-bootstrap';
 
 const menuConfig = {

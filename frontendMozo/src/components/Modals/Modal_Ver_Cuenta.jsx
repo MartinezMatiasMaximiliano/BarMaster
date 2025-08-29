@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import connection from '../connections/HubConnMozo'
-import Lista_Items from './Lista_Items';
+import connection from '../../connections/HubConnMozo'
+import Lista_Items from '../Lista_Items';
 import Modal_Generico from './Modal_Generico';
 import { useSelector, useDispatch } from "react-redux";
-import { CambiarEstadoItems } from '../API/APIItems';
-import { GenerarTicketPDF } from '../API/APIPedidos';
-import { cambiarEstadoItems as CambiarEstadoItemsState } from '../redux/slices/pedidosActivosSlice';
-import { eliminar as eliminarTicket} from '../redux/slices/ticketSlice';
+import { CambiarEstadoItems } from '../../API/APIItems';
+import { GenerarTicketPDF } from '../../API/APIPedidos';
+import { cambiarEstadoItems as CambiarEstadoItemsState } from '../../redux/slices/pedidosActivosSlice';
+import { eliminar as eliminarTicket} from '../../redux/slices/ticketSlice';
 
 
 function Modal_Ver_cuenta(props) {

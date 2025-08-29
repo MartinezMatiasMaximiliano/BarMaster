@@ -1,6 +1,6 @@
 import React from "react";
-import Modal_Eliminar from "../Modal_Eliminar";
-import Modal_Editar from "../Modal_Editar";
+import Modal_Eliminar from "../Modals/Modal_Eliminar";
+import Modal_Editar from "../Modals/Modal_Editar";
 import Switch from "../Switch";
 
 export default function Fila_Acciones(props) {

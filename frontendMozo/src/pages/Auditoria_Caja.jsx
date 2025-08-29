@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react'
-import Grafica_Pizza from "../components/Grafica_Pizza";
-import Grafica_Curva from "../components/Grafica_Curva";
-import Grafica_Barras from "../components/Grafica_Barras";
+import React, { useState, useEffect } from 'react'
+import Grafica_Pizza from "../components/Graficas/Grafica_Pizza";
+import Grafica_Curva from "../components/Graficas/Grafica_Curva";
+import Grafica_Barras from "../components/Graficas/Grafica_Barras";
 import Form from "react-bootstrap/Form";
 import Grid from '@mui/material/Unstable_Grid2';
 //Datatable

@@ -1,7 +1,7 @@
 import Toast from 'react-bootstrap/Toast';
 import { useState, useEffect } from 'react'
 import { eliminar as eliminarNotificacion } from '../redux/slices/notificacionesSlice';
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 function Toast_Notificacion(props) {
 

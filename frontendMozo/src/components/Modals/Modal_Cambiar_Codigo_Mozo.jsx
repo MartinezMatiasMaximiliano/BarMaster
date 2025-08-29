@@ -1,15 +1,12 @@
 import { React, useState } from "react"
 import { Button, Modal, Form } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { validarCampos } from "../Helpers/HelperFunctions";
-import { ModificarCodigoMozo } from "../API/APIPersonas";
+import { validarCampos } from "../../Helpers/HelperFunctions";
+import { ModificarCodigoMozo } from "../../API/APIPersonas";
 
 function Modal_Cambiar_Codigo_Mozo(props) {
 
     const datos = props.datos;
-    console.log("DATOS: ", datos);
-    // Manejo de errores
+
     const [errors, setErrors] = useState({});   
 
     const [value, setValue] = useState(datos.codigoDeServicio);

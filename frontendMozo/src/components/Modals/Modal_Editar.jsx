@@ -2,10 +2,10 @@ import { React, useState, useEffect } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
-import Multiple_Select from "../components/Select_Multiple";
-import Select from "../components/Select";
-import Input_Imagen from "../components/Input_Imagen";
-import { validarCampos } from "../Helpers/HelperFunctions";
+import Multiple_Select from "../Select_Multiple";
+import Select from "../Select";
+import Input_Imagen from "../Input_Imagen";
+import { validarCampos } from "../../Helpers/HelperFunctions";
 
 function Modal_Editar(props) {
     const idFila = props.fila.id;

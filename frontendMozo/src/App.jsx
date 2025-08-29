@@ -2,7 +2,7 @@ import './styles/App.css'
 import React, { useState, useEffect, createContext } from 'react'
 import { Route, Routes, useLocation } from "react-router-dom"
 import { Container, Col, Row } from 'react-bootstrap'
-import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearCategorias, MappearPedidos } from './Helpers/HelperFunctions'
+import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos } from './Helpers/HelperFunctions'
 import connection from './connections/HubConnMozo'
 import Navbar from "./components/NavBar/NavBar";
 import Index from './pages/Index';

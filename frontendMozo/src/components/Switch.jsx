@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Switch_ from '@mui/material/Switch';
-import connection from '../connections/HubConnMozo.js'
 
 export default function Switch(props) {
     const [checked, setChecked] = React.useState(props.activo);

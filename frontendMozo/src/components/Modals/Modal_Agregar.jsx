@@ -2,10 +2,10 @@ import { React, useState } from "react"
 import { Button, Modal, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
-import Multiple_Select from "../components/Select_Multiple";
-import Input_Imagen from "../components/Input_Imagen";
-import Select from "../components/Select";
-import { validarCampos } from "../Helpers/HelperFunctions";
+import Multiple_Select from "../Select_Multiple";
+import Input_Imagen from "../Input_Imagen";
+import Select from "../Select";
+import { validarCampos } from "../../Helpers/HelperFunctions";
 
 function Modal_Agregar(props) {
     const [show, setShow] = useState(false);

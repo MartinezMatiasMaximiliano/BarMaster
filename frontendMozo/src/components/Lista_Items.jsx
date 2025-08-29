@@ -1,7 +1,7 @@
 import Alert from '@mui/material/Alert';
 import { Typography, Box } from "@mui/material";
 import { useSelector } from 'react-redux';
-import Modal_Generico from './Modal_Generico';
+import Modal_Generico from './Modals/Modal_Generico';
 
 function Lista_Items(props) {
 
