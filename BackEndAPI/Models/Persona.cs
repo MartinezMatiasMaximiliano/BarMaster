@@ -4,7 +4,7 @@ namespace BackEndAPI.Models
 {
     public class Persona
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Nombres { get; set; } = string.Empty;
         public string Apellido { get; set; } = string.Empty;
         public string? Dni { get; set; } = string.Empty;

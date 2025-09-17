@@ -12,5 +12,7 @@
         public ICollection<Menu> Menus { get; set; } = new List<Menu>();
         public ICollection<Mesa> Mesas { get; set; } = new List<Mesa>();
         public ICollection<Caja> Cajas { get; set; } = new List<Caja>();
+        public ICollection<Persona> Personas { get; set; } = new List<Persona>();
+
     }
 }

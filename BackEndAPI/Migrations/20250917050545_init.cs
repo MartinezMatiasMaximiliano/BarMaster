@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class estadoReserva : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -84,6 +84,27 @@ namespace BackEndAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Sucursales",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Direccion = table.Column<string>(type: "text", nullable: false),
+                    Telefono = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    IdEmpresa = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sucursales", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sucursales_Empresas_IdEmpresa",
+                        column: x => x.IdEmpresa,
+                        principalTable: "Empresas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Categorias_Productos",
                 columns: table => new
                 {
@@ -133,8 +154,7 @@ namespace BackEndAPI.Migrations
                 name: "Personas",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Nombres = table.Column<string>(type: "text", nullable: false),
                     Apellido = table.Column<string>(type: "text", nullable: false),
                     Dni = table.Column<string>(type: "text", nullable: true),
@@ -164,33 +184,6 @@ namespace BackEndAPI.Migrations
                         principalTable: "Rol",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Sucursales",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Direccion = table.Column<string>(type: "text", nullable: false),
-                    Telefono = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false),
-                    IdEmpresa = table.Column<Guid>(type: "uuid", nullable: false),
-                    PersonaId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Sucursales", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Sucursales_Empresas_IdEmpresa",
-                        column: x => x.IdEmpresa,
-                        principalTable: "Empresas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Sucursales_Personas_PersonaId",
-                        column: x => x.PersonaId,
-                        principalTable: "Personas",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -241,7 +234,7 @@ namespace BackEndAPI.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Nombre = table.Column<string>(type: "text", nullable: false),
                     CodigoParaPedir = table.Column<string>(type: "text", nullable: true),
-                    PersonaId = table.Column<int>(type: "integer", nullable: true),
+                    PersonaId = table.Column<Guid>(type: "uuid", nullable: true),
                     Capacidad = table.Column<int>(type: "integer", nullable: false),
                     IdSucursal = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -256,6 +249,30 @@ namespace BackEndAPI.Migrations
                     table.ForeignKey(
                         name: "FK_Mesas_Sucursales_IdSucursal",
                         column: x => x.IdSucursal,
+                        principalTable: "Sucursales",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PersonaSucursal",
+                columns: table => new
+                {
+                    PersonasId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SucursalesId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PersonaSucursal", x => new { x.PersonasId, x.SucursalesId });
+                    table.ForeignKey(
+                        name: "FK_PersonaSucursal_Personas_PersonasId",
+                        column: x => x.PersonasId,
+                        principalTable: "Personas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PersonaSucursal_Sucursales_SucursalesId",
+                        column: x => x.SucursalesId,
                         principalTable: "Sucursales",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -423,6 +440,11 @@ namespace BackEndAPI.Migrations
                 column: "RolId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PersonaSucursal_SucursalesId",
+                table: "PersonaSucursal",
+                column: "SucursalesId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductosPorVisita_IdVisita",
                 table: "ProductosPorVisita",
                 column: "IdVisita");
@@ -441,11 +463,6 @@ namespace BackEndAPI.Migrations
                 name: "IX_Sucursales_IdEmpresa",
                 table: "Sucursales",
                 column: "IdEmpresa");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Sucursales_PersonaId",
-                table: "Sucursales",
-                column: "PersonaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Visitas_IdCaja",
@@ -469,6 +486,9 @@ namespace BackEndAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Opciones");
+
+            migrationBuilder.DropTable(
+                name: "PersonaSucursal");
 
             migrationBuilder.DropTable(
                 name: "ProductosPorVisita");
@@ -498,16 +518,16 @@ namespace BackEndAPI.Migrations
                 name: "Mesas");
 
             migrationBuilder.DropTable(
-                name: "Sucursales");
-
-            migrationBuilder.DropTable(
                 name: "Personas");
 
             migrationBuilder.DropTable(
-                name: "Empresas");
+                name: "Sucursales");
 
             migrationBuilder.DropTable(
                 name: "Rol");
+
+            migrationBuilder.DropTable(
+                name: "Empresas");
         }
     }
 }

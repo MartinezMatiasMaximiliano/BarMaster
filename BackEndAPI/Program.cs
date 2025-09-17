@@ -62,7 +62,7 @@ builder.Services.AddScoped<PasswordService>();
 
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
-
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
 builder.Services.AddScoped<IEmpresasServices, EmpresasServices>();
 
