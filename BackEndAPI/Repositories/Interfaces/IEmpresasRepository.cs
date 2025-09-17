@@ -5,8 +5,9 @@ namespace BackEndAPI.Repositories.Interfaces
 {
     public interface IEmpresasRepository
     {
-        Task<Empresa> GetEmpresaByIdAsync(Guid id);
         Task<IEnumerable<Empresa>> GetAllEmpresasAsync();
+        Task<Empresa?> GetEmpresaByIdAsync(Guid id);
+        Task<Empresa?> GetEmpresaByNombreAsync(string nombre);
         Task AddEmpresaAsync(Empresa empresa);
         Task UpdateEmpresaAsync(Empresa empresa);
         Task DeleteEmpresaAsync(Guid id);

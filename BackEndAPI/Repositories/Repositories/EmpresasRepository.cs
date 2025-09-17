@@ -13,31 +13,35 @@ namespace BackEndAPI.Repositories.Repositories
         {
             _context = context;
         }
+        public async Task<IEnumerable<Empresa>> GetAllEmpresasAsync()
+        {
+            return await _context.Empresas.ToListAsync();
+        }
+        public async Task<Empresa?> GetEmpresaByIdAsync(Guid id)
+        {
+            return await _context.Empresas.FirstOrDefaultAsync(e => e.Id == id);
+        }
 
+        public async Task<Empresa?> GetEmpresaByNombreAsync(string nombre)
+        {
+            return await _context.Empresas.FirstOrDefaultAsync(e => e.Nombre.ToLower() == nombre.ToLower());
+        }
         public async Task AddEmpresaAsync(Empresa empresa)
         {
             await _context.Empresas.AddAsync(empresa);
             await _context.SaveChangesAsync();
         }
-
-        public Task DeleteEmpresaAsync(Guid id)
+        public async Task UpdateEmpresaAsync(Empresa empresa)
         {
-            throw new NotImplementedException();
+            _context.Empresas.Update(empresa);
+            await _context.SaveChangesAsync();
         }
-
-        public Task<IEnumerable<Empresa>> GetAllEmpresasAsync()
+        public async Task DeleteEmpresaAsync(Guid Id)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<Empresa> GetEmpresaByIdAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateEmpresaAsync(Empresa empresa)
-        {
-            throw new NotImplementedException();
+            var empresa = new Empresa { Id = Id };  
+            _context.Empresas.Attach(empresa);
+            _context.Empresas.Remove(empresa);
+            await _context.SaveChangesAsync();
         }
     }
 }

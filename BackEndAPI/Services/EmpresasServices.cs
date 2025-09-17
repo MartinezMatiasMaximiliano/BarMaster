@@ -13,48 +13,47 @@ namespace BackEndAPI.Services
         {
             _repository = repository;
         }
-        public async Task<CrearEmpresaResponseDTO> AddEmpresaAsync(CrearEmpresaDTO request)
+        public async Task<IEnumerable<Empresa>> GetAllEmpresasAsync()
         {
-
-            Empresa empresa = new (){
+            IEnumerable<Empresa> result = await _repository.GetAllEmpresasAsync();
+            return result;
+        }
+        public async Task<Empresa?> GetEmpresaByIdAsync(Guid id)
+        {
+            var result = await _repository.GetEmpresaByIdAsync(id);
+            return result;
+        }
+        
+        public async Task<Empresa?> GetEmpresaByNombreAsync(string nombre)
+        {
+            return await _repository.GetEmpresaByNombreAsync(nombre);
+            
+        }
+        public async Task<Empresa> AddEmpresaAsync(CrearEmpresaDTO request)
+        {
+            Empresa empresa = new()
+            {
                 Nombre = request.Nombre,
                 Telefono = request.Telefono,
                 Email = request.Email,
             };
             await _repository.AddEmpresaAsync(empresa);
-
-            CrearEmpresaResponseDTO response = new()
-            {
-                Id = empresa.Id,
-                Nombre = empresa.Nombre,
-                Telefono = empresa.Telefono,
-                Email = empresa.Email,
-                Activo = empresa.Activo,
-                FechaInscripcion = empresa.FechaInscripcion
-
-            };
-
-            return response;
+            return empresa;
         }
-
-        public Task DeleteEmpresaAsync(Guid id)
+        public Task<bool> UpdateEmpresaAsync(Guid id,ActualizarEmpresaDTO request)
         {
-            throw new NotImplementedException();
+                throw new KeyNotFoundException($"La empresa con ID {id} no fue encontrada.");
+            //var result = await _repository.GetEmpresaByIdAsync(id);
+            //if (result == null)
+            //{
+            //}
+
+            
         }
-
-        public Task<IEnumerable<Empresa>> GetAllEmpresasAsync()
+        public async Task DeleteEmpresaAsync(Guid id)
         {
-            throw new NotImplementedException();
-        }
+            await _repository.DeleteEmpresaAsync(id);
 
-        public Task<Empresa> GetEmpresaByIdAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateEmpresaAsync(Empresa empresa)
-        {
-            throw new NotImplementedException();
         }
     }
 }

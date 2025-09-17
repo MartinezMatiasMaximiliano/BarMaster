@@ -58,13 +58,16 @@ builder.Services.AddCors(options =>
 
 #region SERVICIOS
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
 
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
 builder.Services.AddScoped<IEmpresasServices, EmpresasServices>();
+builder.Services.AddScoped<IAuthServices, AuthServices>();
 
 
 QuestPDF.Settings.License = LicenseType.Community;
