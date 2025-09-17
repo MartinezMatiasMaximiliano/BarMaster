@@ -24,158 +24,158 @@ namespace BackEndAPI.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<PedidoDTO>>> Get()
-        {
-            var busqueda = await _context.Pedidos.Include(pedido => pedido.Items).Include(Pedido => Pedido.Mesa).ToListAsync();
+        //[HttpGet]
+        //public async Task<ActionResult<List<PedidoDTO>>> Get()
+        //{
+        //    var busqueda = await _context.Pedidos.Include(pedido => pedido.Items).Include(Pedido => Pedido.Mesa).ToListAsync();
 
-            var response = busqueda.Select(pedido => new PedidoDTO
-            {
-                Id = pedido.Id,
-                FechaRealizado = pedido.FechaRealizado,
-                IdMesa = pedido.Mesa.Id,
-                NumeroMesa = pedido.Mesa.NumeroMesa,
-                Activo = pedido.Activo,
-                Items = pedido.Items.Select(item => new ItemDTO
-                {
-                    Id = item.Id,
-                    Nombre = item.Nombre,
-                    Indicaciones = item.Indicaciones,
-                    Precio = item.Precio,
-                    Estado = item.Estado,
-                }).ToList(),
+        //    var response = busqueda.Select(pedido => new PedidoDTO
+        //    {
+        //        Id = pedido.Id,
+        //        FechaRealizado = pedido.FechaRealizado,
+        //        IdMesa = pedido.Mesa.Id,
+        //        NumeroMesa = pedido.Mesa.NumeroMesa,
+        //        Activo = pedido.Activo,
+        //        Items = pedido.Items.Select(item => new ItemDTO
+        //        {
+        //            Id = item.Id,
+        //            Nombre = item.Nombre,
+        //            Indicaciones = item.Indicaciones,
+        //            Precio = item.Precio,
+        //            Estado = item.Estado,
+        //        }).ToList(),
 
-            });
-            return Ok(response);
-        }
+        //    });
+        //    return Ok(response);
+        //}
 
-        [HttpGet("{Id}")]
-        public async Task<ActionResult<PedidoDTO>> Get(int Id)
-        {
-            var busqueda = await _context.Pedidos.Include(pedido => pedido.Items).Include(Pedido => Pedido.Mesa).FirstOrDefaultAsync(pedido => pedido.Id == Id);
+        //[HttpGet("{Id}")]
+        //public async Task<ActionResult<PedidoDTO>> Get(int Id)
+        //{
+        //    var busqueda = await _context.Pedidos.Include(pedido => pedido.Items).Include(Pedido => Pedido.Mesa).FirstOrDefaultAsync(pedido => pedido.Id == Id);
 
-            var response = new PedidoDTO
-            {
-                Id = busqueda.Id,
-                FechaRealizado = busqueda.FechaRealizado,
-                IdMesa = busqueda.Mesa.Id,
-                NumeroMesa = busqueda.Mesa.NumeroMesa,
-                Activo = busqueda.Activo,
-                Items = busqueda.Items.Select(item => new ItemDTO
-                {
-                    Id = item.Id,
-                    Nombre = item.Nombre,
-                    Indicaciones = item.Indicaciones,
-                    Precio = item.Precio,
-                    Estado = item.Estado,
-                }).ToList(),
-            };
-            return Ok(response);
-        }
+        //    var response = new PedidoDTO
+        //    {
+        //        Id = busqueda.Id,
+        //        FechaRealizado = busqueda.FechaRealizado,
+        //        IdMesa = busqueda.Mesa.Id,
+        //        NumeroMesa = busqueda.Mesa.NumeroMesa,
+        //        Activo = busqueda.Activo,
+        //        Items = busqueda.Items.Select(item => new ItemDTO
+        //        {
+        //            Id = item.Id,
+        //            Nombre = item.Nombre,
+        //            Indicaciones = item.Indicaciones,
+        //            Precio = item.Precio,
+        //            Estado = item.Estado,
+        //        }).ToList(),
+        //    };
+        //    return Ok(response);
+        //}
 
-        [HttpGet("/Ticket/{NumeroMesa}")]
-        public async Task<ActionResult<TicketDTO>> GetPorMesa(int NumeroMesa)
-        {
+        //[HttpGet("/Ticket/{NumeroMesa}")]
+        //public async Task<ActionResult<TicketDTO>> GetPorMesa(int NumeroMesa)
+        //{
 
-            var mesa = await _context.Mesas.FirstOrDefaultAsync(mesa => mesa.NumeroMesa == NumeroMesa);
+        //    var mesa = await _context.Mesas.FirstOrDefaultAsync(mesa => mesa.NumeroMesa == NumeroMesa);
 
-            if (mesa == null)
-            {
-                return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se encontró una mesa con NumeroMesa: {NumeroMesa}"));
-            }
+        //    if (mesa == null)
+        //    {
+        //        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se encontró una mesa con NumeroMesa: {NumeroMesa}"));
+        //    }
 
-            var pedido = await _context.Pedidos.Include(pedido => pedido.Items).FirstOrDefaultAsync(pedido => pedido.Mesa.Id == mesa.Id && pedido.Activo == true);
+        //    var pedido = await _context.Pedidos.Include(pedido => pedido.Items).FirstOrDefaultAsync(pedido => pedido.Mesa.Id == mesa.Id && pedido.Activo == true);
 
-            if (pedido == null)
-            {
-                return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se encontró un pedido activo para la mesa : {NumeroMesa}"));
-            }
-            decimal total = 0;
-            if (pedido.Items != null)
-            {
-                foreach (var item in pedido.Items)
-                {
-                    total += item.Precio;
-                }
-            }
+        //    if (pedido == null)
+        //    {
+        //        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se encontró un pedido activo para la mesa : {NumeroMesa}"));
+        //    }
+        //    decimal total = 0;
+        //    if (pedido.Items != null)
+        //    {
+        //        foreach (var item in pedido.Items)
+        //        {
+        //            total += item.Precio;
+        //        }
+        //    }
 
-            var ticket = new TicketDTO
-            {
-                IdPedido = pedido.Id,
-                total = total,
-                FechaInicio = pedido.FechaRealizado,
-                IdMesa = mesa.Id,
-                numeroMesa = mesa.NumeroMesa,
+        //    var ticket = new TicketDTO
+        //    {
+        //        IdPedido = pedido.Id,
+        //        total = total,
+        //        FechaInicio = pedido.FechaRealizado,
+        //        IdMesa = mesa.Id,
+        //        numeroMesa = mesa.NumeroMesa,
                 
-                items = pedido.Items.Select(item => new Ticket
-                {
-                    Id = item.Id,
-                    NombreProducto = item.Nombre,
-                    Indicaciones = item.Indicaciones,
-                    Precio = item.Precio,
-                    Estado = item.Estado
+        //        items = pedido.Items.Select(item => new Ticket
+        //        {
+        //            Id = item.Id,
+        //            NombreProducto = item.Nombre,
+        //            Indicaciones = item.Indicaciones,
+        //            Precio = item.Precio,
+        //            Estado = item.Estado
                     
-                }).ToList(),
-            };
+        //        }).ToList(),
+        //    };
 
 
-            return Ok(ticket);
-        }
+        //    return Ok(ticket);
+        //}
 
-        [HttpPut("/Pagar/{PedidoId}")]
-        public async Task<ActionResult> Put(int PedidoId)
-        {
-            var busqueda = await _context.Pedidos.Include(pedido => pedido.Items).FirstOrDefaultAsync(pedido => pedido.Id == PedidoId);
+        //[HttpPut("/Pagar/{PedidoId}")]
+        //public async Task<ActionResult> Put(int PedidoId)
+        //{
+        //    var busqueda = await _context.Pedidos.Include(pedido => pedido.Items).FirstOrDefaultAsync(pedido => pedido.Id == PedidoId);
 
-            if (busqueda.Items != null)
-            {
-                foreach (var pedido in busqueda.Items)
-                {
-                    pedido.Estado = Estado.Pagado;
-                    _context.Entry(pedido).State = EntityState.Modified;
-                }
-            }
+        //    if (busqueda.Items != null)
+        //    {
+        //        foreach (var pedido in busqueda.Items)
+        //        {
+        //            pedido.Estado = Estado.Pagado;
+        //            _context.Entry(pedido).State = EntityState.Modified;
+        //        }
+        //    }
 
-            busqueda.Activo = false;
-            await _context.SaveChangesAsync();
-            return Ok();
-        }
+        //    busqueda.Activo = false;
+        //    await _context.SaveChangesAsync();
+        //    return Ok();
+        //}
         
-        public class TicketPDFDTO
-        {
-            public int NumeroMesa { get; set; }
-            public List<int> ListaItems { get; set; }
-        }
+        //public class TicketPDFDTO
+        //{
+        //    public int NumeroMesa { get; set; }
+        //    public List<int> ListaItems { get; set; }
+        //}
 
-        [HttpPost("GenerarTicketPDF")]
-        public async Task<ActionResult> GenerarTicketPDF(TicketPDFDTO request)
-        {
-            try
-            {
-                if(request.ListaItems == null || request.ListaItems.Count == 0)
-                {
-                    return BadRequest(new ErrorDTO(400, "BAD REQUEST", $"No se recibieron items para generar el ticket."));
-                }
+        //[HttpPost("GenerarTicketPDF")]
+        //public async Task<ActionResult> GenerarTicketPDF(TicketPDFDTO request)
+        //{
+        //    try
+        //    {
+        //        if(request.ListaItems == null || request.ListaItems.Count == 0)
+        //        {
+        //            return BadRequest(new ErrorDTO(400, "BAD REQUEST", $"No se recibieron items para generar el ticket."));
+        //        }
 
-                List<Item> lista = new List<Item>();
-                foreach (var Id in request.ListaItems)
-                {
-                    var itemBuscado = await _context.Items.FindAsync(Id);
-                    if (itemBuscado != null)
-                    {
-                        lista.Add(itemBuscado);
-                    }
-                }
+        //        List<Item> lista = new List<Item>();
+        //        foreach (var Id in request.ListaItems)
+        //        {
+        //            var itemBuscado = await _context.Items.FindAsync(Id);
+        //            if (itemBuscado != null)
+        //            {
+        //                lista.Add(itemBuscado);
+        //            }
+        //        }
 
 
-                var pdfBytes = GeneradorPDF.GenerarTicket(lista[0].PedidoId, request.NumeroMesa, lista);
-                return File(pdfBytes,"application/pdf","nombre.pdf");
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, "Internal server error catch: Put Items - " + e.Message);
-            }
-        }
+        //        var pdfBytes = GeneradorPDF.GenerarTicket(lista[0].PedidoId, request.NumeroMesa, lista);
+        //        return File(pdfBytes,"application/pdf","nombre.pdf");
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return StatusCode(500, "Internal server error catch: Put Items - " + e.Message);
+        //    }
+        //}
 
         //TODO: deberia borrar los items que pertenecen a un pedido? en que situacion se borraria un pedido con items? 
         //[HttpDelete("{Id}")]
