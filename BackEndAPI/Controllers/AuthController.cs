@@ -3,6 +3,7 @@ using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
 using BackEndAPI.Services;
+using BackEndAPI.Services.Interfaces;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,17 +15,32 @@ using System.Text;
 
 namespace BackEndAPI.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]/Login/Sucursal")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly ApiDbContext _context;
-        private readonly UserService _userService;
-
-        public AuthController(ApiDbContext context, UserService userService)
+        
+        private readonly IAuthServices _authServices;
+        public AuthController(IAuthServices authServices)
         {
-            _context = context;
-            _userService = userService;
+            _authServices = authServices;
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> LoginSucursal([FromBody] string password)
+        {
+            var result = await _authServices.LoginSucursal(password);
+            
+            if (result == null)
+            {
+                return Unauthorized("contraseña incorrecta");
+            }
+
+            return Ok(result);
+
+
+
         }
 
         //// Endpoint para registrar usuarios

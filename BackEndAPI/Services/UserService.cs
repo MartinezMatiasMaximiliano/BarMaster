@@ -73,7 +73,7 @@ namespace BackEndAPI.Services
                 Dni = Dni,
                 Nombres = Nombres,
                 Apellido = Apellido,
-                Id = id,
+                //Id = id,
                 Rol = Rol,
                 expires = token.ValidTo.ToString(),
                 Expires_in = 3600 * hours_expire
