@@ -2,7 +2,7 @@
 {
     public class NotificacionMozoDTO
     {
-        public string Fecha { get; set; }
+        public string Fecha { get; set; } =null!;
         public int IdMesa { get; set; }
         public string? Mensaje { get; set; }
 
