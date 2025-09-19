@@ -2,8 +2,8 @@
 {
     public class Visita
     {
-        public Guid Id { get; set; }
-        public DateTime FechaHora { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public DateTime FechaHora { get; set; } = DateTime.UtcNow;
         public decimal Total { get; set; }
         public string Estado { get; set; } = null!;
 

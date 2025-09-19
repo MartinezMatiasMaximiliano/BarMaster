@@ -3,9 +3,11 @@
 
     public class Opcion
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Nombre { get; set; } = null!;
         public decimal PrecioExtra { get; set; }
+
+        // Foreign key
         public Guid IdProducto { get; set; }
 
         //navegacion

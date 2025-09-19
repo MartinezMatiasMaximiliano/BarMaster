@@ -5,7 +5,7 @@ namespace BackEndAPI.Models
 {
     public class Producto
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Nombre { get; set; } = null!;
         public string? Descripcion { get; set; }
         public decimal Precio { get; set; }
@@ -15,8 +15,8 @@ namespace BackEndAPI.Models
         public string PathImagen { get; set; } = string.Empty;
 
         //navegacion
-        public ICollection<MenuProducto> MenuProductos { get; set; } = new List<MenuProducto>();
-        public ICollection<CategoriaProducto> CategoriaProductos { get; set; } = new List<CategoriaProducto>();
+        public ICollection<Menu> Menus { get; set; } = new List<Menu>();
+        public ICollection<Categoria> Categorias { get; set; } = new List<Categoria>();
         public ICollection<Opcion> Opciones { get; set; } = new List<Opcion>();
 
     }

@@ -15,7 +15,7 @@ namespace BackEndAPI.Repositories.Repositories
         }
         public async Task<IEnumerable<Empresa>> GetAllEmpresasAsync()
         {
-            return await _context.Empresas.ToListAsync();
+            return await _context.Empresas.Include(e=>e.Sucursales).ToListAsync();
         }
         public async Task<Empresa?> GetEmpresaByIdAsync(Guid id)
         {

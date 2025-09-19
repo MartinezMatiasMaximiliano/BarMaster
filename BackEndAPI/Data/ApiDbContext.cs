@@ -13,20 +13,21 @@ namespace BackEndAPI.Data
         public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
         //public DbSet<TipoSubscription> TipoSubscriptions => Set<TipoSubscription>();
 
-        public DbSet<Persona> Personas => Set<Persona>();
         public DbSet<Empresa> Empresas => Set<Empresa>();
         public DbSet<Sucursal> Sucursales => Set<Sucursal>();
         public DbSet<Mesa> Mesas => Set<Mesa>();
+        public DbSet<Caja> Cajas => Set<Caja>();
+        public DbSet<Persona> Personas => Set<Persona>();
         public DbSet<Reserva> Reservas => Set<Reserva>();
         public DbSet<Visita> Visitas => Set<Visita>();
-        public DbSet<Caja> Cajas => Set<Caja>();
         public DbSet<Menu> Menus => Set<Menu>();
         public DbSet<Producto> Productos => Set<Producto>();
-        public DbSet<MenuProducto> Menus_Productos => Set<MenuProducto>();
         public DbSet<Categoria> Categorias => Set<Categoria>();
-        public DbSet<CategoriaProducto> Categorias_Productos => Set<CategoriaProducto>();
         public DbSet<Opcion> Opciones => Set<Opcion>();
         public DbSet<ProductosPorVisita> ProductosPorVisita => Set<ProductosPorVisita>();
+        public DbSet<Rol> Roles => Set<Rol>();
+        public DbSet<EstadoReserva> EstadoReservas => Set<EstadoReserva>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -75,25 +76,6 @@ namespace BackEndAPI.Data
                 .WithMany(s => s.Menus)
                 .HasForeignKey(m => m.IdSucursal);
 
-            modelBuilder.Entity<MenuProducto>()
-                .HasOne(mp => mp.Menu)
-                .WithMany(m => m.MenuProductos)
-                .HasForeignKey(mp => mp.IdMenu);
-
-            modelBuilder.Entity<MenuProducto>()
-                .HasOne(mp => mp.Producto)
-                .WithMany(p => p.MenuProductos)
-                .HasForeignKey(mp => mp.IdProducto);
-
-            modelBuilder.Entity<CategoriaProducto>()
-                .HasOne(cp => cp.Producto)
-                .WithMany(p => p.CategoriaProductos)
-                .HasForeignKey(cp => cp.IdProducto);
-
-            modelBuilder.Entity<CategoriaProducto>()
-                .HasOne(cp => cp.Categoria)
-                .WithMany(c => c.CategoriaProductos)
-                .HasForeignKey(cp => cp.IdCategoria);
 
             modelBuilder.Entity<Opcion>()
                 .HasOne(o => o.Producto)
