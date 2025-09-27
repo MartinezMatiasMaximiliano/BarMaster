@@ -9,12 +9,14 @@
         public bool Activo { get; set; } = false;
         public DateTime FechaInscripcion { get; set; } = DateTime.UtcNow;
 
+        //Foreign Keys
+        public Guid? IdPropietario { get; set; }
+
         //navegacion
-        public Persona? Dueno { get; set; }
+        public Persona? Propietario { get; set; }
         public ICollection<Sucursal> Sucursales { get; set; } = new List<Sucursal>();
         public ICollection<Persona> Personas { get; set; } = new List<Persona>();
-
-
+        public ICollection<Producto> Productos { get; set; } = new List<Producto>();
     }
 }
 //TODO: DECIDIR QUE TIPO DE MODELO USAMOS PARA LA SUBSCRIPCION

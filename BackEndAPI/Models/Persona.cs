@@ -23,7 +23,8 @@ namespace BackEndAPI.Models
 
         //navegacion
         public Rol Rol { get; set; } = null!;
-        public Empresa Empresa { get; set; } = null!;
+        public Empresa EmpresaEmpleado { get; set; } = null!;
+        public Empresa? EmpresaPropietario { get; set; } //Si la persona es propietario de una empresa
         public IEnumerable<Sucursal> Sucursales { get; set; } = new List<Sucursal>();
         public ICollection<Mesa>? Mesas { get; set; } = new List<Mesa>();
 

@@ -7,6 +7,7 @@
         public decimal Total { get; set; }
         public string Estado { get; set; } = null!;
 
+        //Foreign keys
         public Guid IdMesa { get; set; }
         public Guid IdCaja { get; set; }
 
@@ -14,5 +15,6 @@
         public Mesa Mesa { get; set; } = null!;
         public Caja Caja { get; set; } = null!;
         public ICollection<ProductosPorVisita> ProductosPorVisita { get; set; } = new List<ProductosPorVisita>();
+        public ICollection<Pagos> Pagos { get; set; } = new List<Pagos>();
     }
 }
