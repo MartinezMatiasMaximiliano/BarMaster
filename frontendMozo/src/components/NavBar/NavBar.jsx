@@ -31,6 +31,11 @@ function NavBar() {
                             Mesas
                         </Link>
                     </Row>
+                    <Row className="mb-2">
+                        <Link className="boton-nav" to="/index2">
+                            Index2
+                        </Link>
+                    </Row>
                     <NavBar_Botones
                         logeado={loginProvider.logeado}
                         rol={loginProvider.rol}

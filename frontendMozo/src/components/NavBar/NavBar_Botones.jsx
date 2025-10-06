@@ -11,6 +11,7 @@ const menuConfig = {
         { path: "/abm_personas", label: "Gestión de Personas" },
         { path: "/abm_mesas", label: "Gestión de Mesas" },
         { path: "/abm_categorias", label: "Gestión de Categorías" },
+        { path: "/distribucion_mesas", label: "Distribución de las Mesas" },
         { path: "/cambiar_clave", label: "Cambiar Contraseña" },
     ],
     Cajero: [
