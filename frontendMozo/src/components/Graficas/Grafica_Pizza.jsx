@@ -28,7 +28,6 @@ export default function Grafica_Pizza(props) {
 
     return (
         <>
-            <h4 className="text-center">{props.titulo}</h4>
             <div>
                 <PieChart
                     series={[

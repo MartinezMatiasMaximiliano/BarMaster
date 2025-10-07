@@ -12,7 +12,7 @@ import Abm_Mesas from './pages/Abm_Mesas';
 import Abm_Menu from './pages/Abm_Menu';
 import Abm_Categorias from './pages/Abm_Categorias'
 import Abm_Personas from './pages/Abm_Personas'
-import Auditoria_Caja from './pages/Auditoria_Caja'
+import Graficas from './pages/Graficas'
 import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
 import Login from './pages/Login';
@@ -169,7 +169,7 @@ function App() {
                                 <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={datos_mesas_abm} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                                 <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
                                 <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
-                                <Route path="/auditoria_caja" element={<Control_Login><Auditoria_Caja datos_pedidos={datos_pedidos} titulo="Caja"></Auditoria_Caja></Control_Login>} />
+                                <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
                                 <Route path="/distribucion_mesas" element={<Control_Login><Distribucion_mesas/></Control_Login>} />
                                 <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
                                 <Route path="/login" element={<Login />} />

@@ -1,24 +1,23 @@
-import * as React from 'react';
-import { LineChart } from '@mui/x-charts/LineChart';
+import React from "react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
-export default function Grafica_Curva(props) {
+const GraficaGananciasPorFecha = ({ data, calcularDatos }) => {
 
-    const datos_grafica = props.calcularDatos(props.data);
-
+    const dataGanancias = calcularDatos(data);
+    console.log("DATAGANANCIAS: ", dataGanancias)
     return (
-        <>
-            <h4>{props.titulo}</h4>
-            <LineChart
-                xAxis={[{ scaleType: "band", data: props.dataX }]}
-                series={[
-                    {
-                        data: datos_grafica,
-                    },
-                ]}
-                width={props.width}
-                height={300}
-            />
-        </>
+        <div style={{ width: "100%", height: 400 }}>
+            <ResponsiveContainer>
+                <LineChart data={dataGanancias} margin={{ top: 20, right: 30, left: 60, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey={dataGanancias.length > 0 ? Object.keys(dataGanancias[0])[0] : null} tick={{ fontSize: 12 }} />
+                    <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
+                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                    <Line type="monotone" dataKey={dataGanancias.length > 0 ? Object.keys(dataGanancias[0])[1] : null} stroke="#4CAF50" strokeWidth={2} dot={true} />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
     );
-}
+};
 
+export default GraficaGananciasPorFecha;

@@ -7,7 +7,6 @@ export default function Grafica_Barras(props) {
 
     return (
         <>
-            <h4>{props.titulo}</h4>
             <BarChart
                 xAxis={[{ scaleType: 'band', data: props.datosX }]}
                 series={[{ data: datos }]}

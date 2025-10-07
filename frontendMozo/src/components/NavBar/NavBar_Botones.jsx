@@ -5,7 +5,7 @@ import { Nav, Row } from 'react-bootstrap';
 
 const menuConfig = {
     Encargado: [
-        { path: "/auditoria_caja", label: "Detalles Caja" },
+        { path: "/graficas", label: "Graficas" },
         { path: "/abm_menu", label: "Gestión de Menu" },
         { path: "/lista_mozos", label: "Listado de Mozos" },
         { path: "/abm_personas", label: "Gestión de Personas" },
