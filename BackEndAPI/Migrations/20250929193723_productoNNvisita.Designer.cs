@@ -3,6 +3,7 @@ using System;
 using BackEndAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250929193723_productoNNvisita")]
+    partial class productoNNvisita
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -223,35 +226,18 @@ namespace BackEndAPI.Migrations
                     b.Property<Guid?>("IdMozo")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("IdPlano")
+                    b.Property<Guid>("IdSucursal")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("SucursalId")
-                        .HasColumnType("uuid");
-
-                    b.Property<float>("h")
-                        .HasColumnType("real");
-
-                    b.Property<float>("w")
-                        .HasColumnType("real");
-
-                    b.Property<float>("x")
-                        .HasColumnType("real");
-
-                    b.Property<float>("y")
-                        .HasColumnType("real");
-
                     b.HasKey("Id");
 
                     b.HasIndex("IdMozo");
 
-                    b.HasIndex("IdPlano");
-
-                    b.HasIndex("SucursalId");
+                    b.HasIndex("IdSucursal");
 
                     b.ToTable("Mesas");
                 });
@@ -367,29 +353,6 @@ namespace BackEndAPI.Migrations
                     b.HasIndex("SucursalId");
 
                     b.ToTable("Personas");
-                });
-
-            modelBuilder.Entity("BackEndAPI.Models.Plano", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IdSucursal")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("detalles")
-                        .HasColumnType("text");
-
-                    b.Property<string>("nombre")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdSucursal");
-
-                    b.ToTable("Planos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
@@ -626,9 +589,6 @@ namespace BackEndAPI.Migrations
                     b.Property<Guid>("IdMesa")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("IdMozo")
-                        .HasColumnType("uuid");
-
                     b.Property<decimal>("Total")
                         .HasColumnType("numeric");
 
@@ -637,8 +597,6 @@ namespace BackEndAPI.Migrations
                     b.HasIndex("IdCaja");
 
                     b.HasIndex("IdMesa");
-
-                    b.HasIndex("IdMozo");
 
                     b.ToTable("Visitas");
                 });
@@ -704,18 +662,15 @@ namespace BackEndAPI.Migrations
                         .HasForeignKey("IdMozo")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("BackEndAPI.Models.Plano", "Plano")
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
                         .WithMany("Mesas")
-                        .HasForeignKey("IdPlano")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("BackEndAPI.Models.Sucursal", null)
-                        .WithMany("Mesas")
-                        .HasForeignKey("SucursalId");
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Mozo");
 
-                    b.Navigation("Plano");
+                    b.Navigation("Sucursal");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Opcion", b =>
@@ -769,17 +724,6 @@ namespace BackEndAPI.Migrations
                     b.Navigation("EmpresaEmpleado");
 
                     b.Navigation("Rol");
-                });
-
-            modelBuilder.Entity("BackEndAPI.Models.Plano", b =>
-                {
-                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
-                        .WithMany("PlanosMesas")
-                        .HasForeignKey("IdSucursal")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Sucursal");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
@@ -869,16 +813,9 @@ namespace BackEndAPI.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
-                    b.HasOne("BackEndAPI.Models.Persona", "Mozo")
-                        .WithMany()
-                        .HasForeignKey("IdMozo")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("Caja");
 
                     b.Navigation("Mesa");
-
-                    b.Navigation("Mozo");
                 });
 
             modelBuilder.Entity("MenuProducto", b =>
@@ -926,11 +863,6 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Sucursales");
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Plano", b =>
-                {
-                    b.Navigation("Mesas");
-                });
-
             modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
                 {
                     b.Navigation("Categorias");
@@ -947,8 +879,6 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Mesas");
 
                     b.Navigation("Personas");
-
-                    b.Navigation("PlanosMesas");
 
                     b.Navigation("Reservas");
                 });

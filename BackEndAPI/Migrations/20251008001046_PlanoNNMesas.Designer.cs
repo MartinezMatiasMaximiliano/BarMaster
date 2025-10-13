@@ -3,6 +3,7 @@ using System;
 using BackEndAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251008001046_PlanoNNMesas")]
+    partial class PlanoNNMesas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -226,12 +229,12 @@ namespace BackEndAPI.Migrations
                     b.Property<Guid?>("IdPlano")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<Guid?>("SucursalId")
-                        .HasColumnType("uuid");
 
                     b.Property<float>("h")
                         .HasColumnType("real");
@@ -251,7 +254,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdPlano");
 
-                    b.HasIndex("SucursalId");
+                    b.HasIndex("IdSucursal");
 
                     b.ToTable("Mesas");
                 });
@@ -709,13 +712,17 @@ namespace BackEndAPI.Migrations
                         .HasForeignKey("IdPlano")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("BackEndAPI.Models.Sucursal", null)
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
                         .WithMany("Mesas")
-                        .HasForeignKey("SucursalId");
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Mozo");
 
                     b.Navigation("Plano");
+
+                    b.Navigation("Sucursal");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Opcion", b =>
