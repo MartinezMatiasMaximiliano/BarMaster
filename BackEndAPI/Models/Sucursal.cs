@@ -18,6 +18,8 @@
         public ICollection<Mesa> Mesas { get; set; } = new List<Mesa>();
         public ICollection<Caja> Cajas { get; set; } = new List<Caja>();
         public ICollection<Persona> Personas { get; set; } = new List<Persona>();
+        public ICollection<Plano> PlanosMesas { get; set; } = new List<Plano>();
+
 
     }
 }

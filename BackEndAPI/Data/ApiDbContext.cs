@@ -32,7 +32,7 @@ namespace BackEndAPI.Data
         public DbSet<Pagos> Pagos => Set<Pagos>();
         public DbSet<TipoPago> TipoPagos => Set<TipoPago>();
         public DbSet<Auditorias> Auditorias => Set<Auditorias>();
-
+        public DbSet<Plano> Planos => Set<Plano>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -96,6 +96,13 @@ namespace BackEndAPI.Data
                 .HasForeignKey(r => r.IdSucursal)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus reservas
 
+            // Relacion Sucursal 1:N PlanosMesas
+            modelBuilder.Entity<Sucursal>()
+                .HasMany(s => s.PlanosMesas)
+                .WithOne(r => r.Sucursal)
+                .HasForeignKey(r => r.IdSucursal)
+                .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus planos de mesas
+
             // Relacion Persona N:1 Rol
             modelBuilder.Entity<Persona>()
                 .HasOne(p => p.Rol)
@@ -131,13 +138,12 @@ namespace BackEndAPI.Data
                 .HasForeignKey(c => c.IdSucursal)
                 .OnDelete(DeleteBehavior.SetNull); // Si se borra una sucursal se pone a null en la caja
 
-            // Relacion Mesa N:1 Sucursal
+            // Relacion Mesa N:1 Mozo (Persona)
             modelBuilder.Entity<Mesa>()
-                .HasOne(m => m.Sucursal)
-                .WithMany(s => s.Mesas)
-                .HasForeignKey(m => m.IdSucursal)
-                .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus mesas
-
+                .HasOne(m => m.Mozo)
+                .WithMany(p => p.Mesas)
+                .HasForeignKey(m => m.IdMozo)
+                .OnDelete(DeleteBehavior.SetNull); // Si se borra un mozo, se pone a null en la mesa
 
             // Relacion Mesa N:1 Mozo (Persona)
             modelBuilder.Entity<Mesa>()
@@ -146,12 +152,19 @@ namespace BackEndAPI.Data
                 .HasForeignKey(m => m.IdMozo)
                 .OnDelete(DeleteBehavior.SetNull); // Si se borra un mozo, se pone a null en la mesa
 
+            modelBuilder.Entity<Plano>()
+                .HasMany(p => p.Mesas)
+                .WithOne(m => m.Plano)
+                .HasForeignKey(pm => pm.IdPlano)
+                .OnDelete(DeleteBehavior.SetNull); // Si se borra un plano, se pone a null en las mesas 
+
             // Relacion Menu N:1 Sucursal
             modelBuilder.Entity<Menu>()
                 .HasOne(m => m.Sucursal)
                 .WithMany(s => s.Menus)
                 .HasForeignKey(m => m.IdSucursal)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus menus
+
 
             // Relacion Opciones N:1 Producto
             modelBuilder.Entity<Opcion>()
@@ -165,6 +178,12 @@ namespace BackEndAPI.Data
                 .HasOne(pv => pv.Visita)
                 .WithMany(v => v.ProductosPorVisita)
                 .HasForeignKey(pv => pv.IdVisita);
+
+            // Relacion ProductosPorVisita N:1 Producto
+            modelBuilder.Entity<ProductosPorVisita>()
+                .HasOne(pv => pv.Producto)
+                .WithMany()
+                .HasForeignKey(pv => pv.IdProducto).OnDelete(DeleteBehavior.SetNull); // Si se borra un producto, se pone a null en productos por visita
 
             // Relacion Productos N:1 Empresa 
             modelBuilder.Entity<Producto>()
@@ -180,10 +199,18 @@ namespace BackEndAPI.Data
                 .HasForeignKey(p => p.IdTipoPago)
                 .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un tipo de pago si tiene pagos asociados
 
+            // Relacion Visita N:1 Mozo (Persona)
+            modelBuilder.Entity<Visita>()
+                .HasOne(v=> v.Mozo)
+                .WithMany()
+                .HasForeignKey(v => v.IdMozo)
+                .OnDelete(DeleteBehavior.SetNull); // Si se borra un mozo, se pone a null en la visita
+
             base.OnModelCreating(modelBuilder);
 
         }
 
+        // Sobrescribimos SaveChangesAsync para capturar los cambios y crear registros de auditoría
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             // Capturamos los cambios ANTES de guardar

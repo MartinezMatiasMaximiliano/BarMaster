@@ -11,8 +11,10 @@
 
         //Foreign keys
         public Guid IdVisita { get; set; }
+        public Guid? IdProducto { get; set; }
 
         //navegacion
         public Visita Visita { get; set; } = null!;
+        public Producto? Producto { get; set; } = null!; 
     }
 }
