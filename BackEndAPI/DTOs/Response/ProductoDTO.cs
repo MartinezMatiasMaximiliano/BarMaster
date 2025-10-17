@@ -8,6 +8,6 @@
         public decimal Precio { get; set; } = decimal.Zero;
         public bool Activo { get; set; } = true;
         public string ImagenUrl {  get; set; } = string.Empty ;
-        public string[] Categorias { get; set; } = new string[0];
+        public string[]? Categorias { get; set; } = new string[0];
     }
 }

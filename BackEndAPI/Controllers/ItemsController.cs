@@ -10,7 +10,7 @@ namespace BackEndAPI.Controllers
     public class ItemsDTO
     {
         public int Id { get; set; }
-        public string Indicaciones { get; set; }
+        public string? Indicaciones { get; set; }
     }
 
     [Route("[controller]")]

@@ -34,8 +34,8 @@ namespace BackEndAPI.Services
             Empresa empresa = new()
             {
                 Nombre = request.Nombre,
-                Telefono = request.Telefono,
-                Email = request.Email,
+                Telefonos = request.Telefonos,
+                Emails = request.Emails,
             };
             await _repository.AddEmpresaAsync(empresa);
             return empresa;

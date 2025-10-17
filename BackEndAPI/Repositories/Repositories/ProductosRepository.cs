@@ -19,7 +19,7 @@ namespace BackEndAPI.Repositories.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public Task DeleteProductoAsync(int id)
+        public async Task DeleteProductoAsync(Guid id)
         {
             throw new NotImplementedException();
         }
@@ -29,12 +29,12 @@ namespace BackEndAPI.Repositories.Repositories
             return await _context.Productos.ToListAsync();
         }
 
-        public Task<Producto> GetProductoByIdAsync(int id)
+        public Task<Producto> GetProductoByIdAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> ProductoExistsAsync(int id)
+        public Task<bool> ProductoExistsAsync(Guid id)
         {
             throw new NotImplementedException();
         }

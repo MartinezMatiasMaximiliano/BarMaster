@@ -23,20 +23,22 @@ namespace BackEndAPI.Controllers
             try
             {
                 IEnumerable<Empresa> result = await _empresasServices.GetAllEmpresasAsync();
+                if (result.Count() == 0)
+                {
+                    return NotFound($"No se encontraron empresas");
+                }
 
                 var response = result.Select(empresa => new EmpresaResponseDTO
                 {
                     Id = empresa.Id,
                     Nombre = empresa.Nombre,
-                    Telefono = empresa.Telefono,
-                    Email = empresa.Email,
+                    Telefonos = empresa.Telefonos,
+                    Emails = empresa.Emails,
                     Activo = empresa.Activo,
                     FechaInscripcion = empresa.FechaInscripcion
+
+
                 });
-                if (result == null)
-                {
-                    return NotFound($"No se encontraron empresas");
-                }
                 return Ok(response);
             }
             catch (Exception ex)
@@ -61,8 +63,8 @@ namespace BackEndAPI.Controllers
                 {
                     Id = result.Id,
                     Nombre = result.Nombre,
-                    Telefono = result.Telefono,
-                    Email = result.Email,
+                    Telefonos = result.Telefonos,
+                    Emails = result.Emails,
                     Activo = result.Activo,
                     FechaInscripcion = result.FechaInscripcion
                 };
@@ -90,8 +92,8 @@ namespace BackEndAPI.Controllers
                 {
                     Id = result.Id,
                     Nombre = result.Nombre,
-                    Telefono = result.Telefono,
-                    Email = result.Email,
+                    Telefonos = result.Telefonos,
+                    Emails = result.Emails,
                     Activo = result.Activo,
                     FechaInscripcion = result.FechaInscripcion
                 };

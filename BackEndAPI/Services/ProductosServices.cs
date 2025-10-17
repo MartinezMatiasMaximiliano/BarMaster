@@ -15,25 +15,25 @@ namespace BackEndAPI.Services
         {
             _productosRepository = productosRepository;
         }
-        public async Task<IEnumerable<ProductoDTO>> GetAllProductosAsync()
+        public async Task<IEnumerable<Producto>> GetAllProductosAsync()
         {
             var productos = await _productosRepository.GetAllProductosAsync();
 
-            var listaProductos = productos.Select(producto => new ProductoDTO
+            var listaProductos = productos.Select(producto => new Producto
             {
                 Id = producto.Id,
                 Nombre = producto.Nombre,
                 Descripcion = producto.Descripcion,
                 Precio = producto.Precio,
                 Activo = producto.Activo,
-                ImagenUrl = producto.PathImagen,
-                Categorias = producto.CategoriaProductos.Where(categoria => categoria.Categoria.Activo != false).Select(categoria => categoria.Categoria.Nombre).ToArray()
+                PathImagen = producto.PathImagen,
+                
             }).ToList();
 
             return listaProductos;
         }
 
-        public Task AddProductoAsync(ProductoDTO producto)
+        public Task AddProductoAsync(Producto producto)
         {
             throw new NotImplementedException();
         }
@@ -43,7 +43,7 @@ namespace BackEndAPI.Services
             throw new NotImplementedException();
         }
 
-        public Task<ProductoDTO> GetProductoByIdAsync(int id)
+        public Task<Producto> GetProductoByIdAsync(int id)
         {
             throw new NotImplementedException();
         }
@@ -53,7 +53,7 @@ namespace BackEndAPI.Services
             throw new NotImplementedException();
         }
 
-        public Task UpdateProductoAsync(ProductoDTO producto)
+        public Task UpdateProductoAsync(Producto producto)
         {
             throw new NotImplementedException();
         }

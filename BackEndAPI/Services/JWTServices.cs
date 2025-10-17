@@ -26,11 +26,14 @@ namespace BackEndAPI.Services
             int hours_expire = 1;
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, request.Id.ToString()), //sub = subject
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) //jti = json token id
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
+                new Claim("IdEmpresa", request.IdEmpresa.ToString()),
+                new Claim("IdSucursal", request.Id.ToString())
+
+
             };
 
-            var key =_key; 
+            var key = _key;
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
