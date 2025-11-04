@@ -2,10 +2,10 @@ import { React, useState } from "react"
 import { Button, Modal, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
-import Multiple_Select from "../Select_Multiple";
-import Input_Imagen from "../Input_Imagen";
-import Select from "../Select";
-import { validarCampos } from "../../Helpers/HelperFunctions";
+import Multiple_Select from "../../Select_Multiple";
+import Input_Imagen from "../../Input_Imagen";
+import Select from "../../Select";
+import { validarCampos } from "../../../Helpers/HelperFunctions";
 
 function Modal_Agregar(props) {
     const [show, setShow] = useState(false);
@@ -20,7 +20,7 @@ function Modal_Agregar(props) {
 
     const handleChange = (event, key) => {
         let valor;
-        if (key === "rol") {
+        if (key === "rol" || key === "Envio") {
             valor = { id: event.target.value, nombre: '' };
         } else if (key === "imagen") {
             valor = event.target.files[0];
@@ -64,6 +64,7 @@ function Modal_Agregar(props) {
                 handleChange={handleChange}
             />
         ),
+        Envio: (col, index) => fieldRenderers.Rol(col, index),
     };
 
     const ignoredFields = ["Código", "Mozo"];

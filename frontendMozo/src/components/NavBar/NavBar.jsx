@@ -28,12 +28,12 @@ function NavBar() {
                 <Nav.Item className="mx-auto">
                     <Row className="mb-2">
                         <Link className="boton-nav" to="/">
-                            Mesas
+                            Mesas1
                         </Link>
                     </Row>
                     <Row className="mb-2">
                         <Link className="boton-nav" to="/index2">
-                            Index2
+                            Mesas2 (plano)
                         </Link>
                     </Row>
                     <NavBar_Botones

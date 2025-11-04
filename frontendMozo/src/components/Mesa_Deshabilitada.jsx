@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBurger } from '@fortawesome/free-solid-svg-icons';
 import { Button, Modal } from 'react-bootstrap';
 import { useState } from 'react';
-import Lista_Items from './Lista_Items';
+import Lista_Items from './Listas/Lista_Items';
 import Alert from '@mui/material/Alert';
 
 export default function Mesa_Deshabilitada(props) {

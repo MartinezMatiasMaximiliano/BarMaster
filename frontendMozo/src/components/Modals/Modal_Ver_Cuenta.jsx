@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import connection from '../../connections/HubConnMozo'
-import Lista_Items from '../Lista_Items';
+import Lista_Items from '../Listas/Lista_Items';
 import Modal_Generico from './Modal_Generico';
 import { useSelector, useDispatch } from "react-redux";
 import { CambiarEstadoItems } from '../../API/APIItems';

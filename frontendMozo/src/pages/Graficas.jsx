@@ -3,7 +3,7 @@ import Grafica_Pizza from "../components/Graficas/Grafica_Pizza";
 import Grafica_Curva from "../components/Graficas/Grafica_Curva";
 import Grafica_Barras from "../components/Graficas/Grafica_Barras";
 import Mapa_Calor from "../components/Graficas/Mapa_calor";
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid';
 import { TextField } from "@mui/material";
 import { calcularCrecimientoMensual, formatearFecha, calcularGananciasPorHora, mesas, calcularGananciasPorFecha, contarMesas, contarPedidosPorDia, contarProductos } from '../components/Graficas/Funciones'
 import Button from '@mui/material/Button';

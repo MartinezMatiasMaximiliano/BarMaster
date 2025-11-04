@@ -15,6 +15,7 @@ import Abm_Personas from './pages/Abm_Personas'
 import Graficas from './pages/Graficas'
 import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
+import Delivery_TakeAway from './pages/Delivery_TakeAway'
 import Login from './pages/Login';
 import { PostItems } from './API/APIPedidos';
 import { BuscarTodasLasMesas } from './API/APIMesas';
@@ -170,7 +171,8 @@ function App() {
                                 <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
                                 <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
                                 <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
-                                <Route path="/distribucion_mesas" element={<Control_Login><Distribucion_mesas/></Control_Login>} />
+                                <Route path="/distribucion_mesas" element={<Control_Login><Distribucion_mesas /></Control_Login>} />
+                                <Route path="/delivery_takeaway" element={<Control_Login><Delivery_TakeAway /></Control_Login>} />
                                 <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
                                 <Route path="/login" element={<Login />} />
                             </Routes>

@@ -5,17 +5,26 @@ import { Nav, Row } from 'react-bootstrap';
 
 const menuConfig = {
     Encargado: [
-        { path: "/graficas", label: "Graficas" },
         { path: "/abm_menu", label: "Gestión de Menu" },
+        { path: "/delivery_takeaway", label: "Delivery/Take Away" },
         { path: "/lista_mozos", label: "Listado de Mozos" },
-        { path: "/abm_personas", label: "Gestión de Personas" },
         { path: "/abm_mesas", label: "Gestión de Mesas" },
-        { path: "/abm_categorias", label: "Gestión de Categorías" },
         { path: "/distribucion_mesas", label: "Distribución de las Mesas" },
+        { path: "/caja", label: "Caja" },
+        { path: "/abm_categorias", label: "Gestión de Categorías" },
         { path: "/cambiar_clave", label: "Cambiar Contraseña" },
+        { path: "/graficas", label: "Graficas" },
+        { path: "/abm_personas", label: "Gestión de Personas" },
+        { path: "/mi_plan", label: "Mi Plan" },
     ],
     Cajero: [
         { path: "/abm_menu", label: "Gestión de Menu" },
+        { path: "/delivery_takeaway", label: "Delivery/Take Away" },
+        { path: "/lista_mozos", label: "Listado de Mozos" },
+        { path: "/abm_mesas", label: "Gestión de Mesas" },
+        { path: "/distribucion_mesas", label: "Distribución de las Mesas" },
+        { path: "/caja", label: "Caja" },
+        { path: "/abm_categorias", label: "Gestión de Categorías" },
         { path: "/cambiar_clave", label: "Cambiar Contraseña" },
     ],
 };

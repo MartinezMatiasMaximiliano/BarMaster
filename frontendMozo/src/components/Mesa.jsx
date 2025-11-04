@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBurger } from '@fortawesome/free-solid-svg-icons';
 import { Button, Modal } from 'react-bootstrap';
 import { useState } from 'react';
-import Lista from "./Lista";
+import Lista from "./Listas/Lista";
 import Modal_Generico from "./Modals/Modal_Generico";
 import Modal_Ver_Cuenta from "./Modals/Modal_Ver_Cuenta";
 import { AbrirMesa, CerrarMesa } from '../API/APIMesas';

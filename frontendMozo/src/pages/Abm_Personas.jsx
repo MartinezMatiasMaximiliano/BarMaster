@@ -2,7 +2,7 @@ import React from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
-import Modal_Agregar from "../components/Modals/Modal_Agregar";
+import Modal_Agregar from "../components/Modals/Agregar/Index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -30,7 +30,7 @@ function Abm_Personas(props) {
     }
 
     const columnas = [
-        { key: "nombre", label: "Nombre" },
+        { key: "nombre", label: "Nombre" }, 
         { key: "apellido", label: "Apellido" },
         { key: "dni", label: "DNI" },
         { key: "direccion", label: "Dirección" },
