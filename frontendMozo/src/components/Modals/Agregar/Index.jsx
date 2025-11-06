@@ -6,6 +6,7 @@ import Multiple_Select from "../../Select_Multiple";
 import Input_Imagen from "../../Input_Imagen";
 import Select from "../../Select";
 import { validarCampos } from "../../../Helpers/HelperFunctions";
+import Errores from "./Errores"
 
 function Modal_Agregar(props) {
     const [show, setShow] = useState(false);
@@ -92,24 +93,7 @@ function Modal_Agregar(props) {
                     <Modal.Title>Agregar {props.nombre}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {Object.keys(errors).length > 0 && (
-                        <div style={{
-                            backgroundColor: '#ffe6e6',
-                            padding: '10px',
-                            marginBottom: '10px',
-                            border: '1px solid red'
-                        }}>
-                            <p><strong>Errores en el formulario:</strong></p>
-                            <ul>
-                                {Object.entries(errors).map(([key, value]) => (
-                                    <li key={key} style={{ color: 'red' }}>
-                                        Campo <b>{key}</b>: {value}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
+                    <Errores errors={errors}></Errores>
                     <Form>
                         {props.columnas.map((col, index) => {
                             if (ignoredFields.includes(col)) return null;
