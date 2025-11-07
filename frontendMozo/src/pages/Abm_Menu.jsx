@@ -12,6 +12,7 @@ import {
     DesactivarProducto,
     ModificarProducto,
 } from "../API/APIProductos";
+import { Campos } from "../configs/abms/Producto"
 
 function Abm_Menu(props) {
     const api = {
@@ -59,6 +60,7 @@ function Abm_Menu(props) {
                         columnas={["Imagen", "Nombre", "Precio", "Descripción", "Categorias"]}
                         categoriasTotales={props.categorias}
                         agregar={api.crear}
+                        campos={Campos}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>

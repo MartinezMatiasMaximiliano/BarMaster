@@ -12,6 +12,7 @@ import {
     ActivarPersona,
     ModificarPersona
 } from "../API/APIPersonas";
+import { Campos } from "../configs/abms/Personas"
 
 function Abm_Personas(props) {
 
@@ -65,6 +66,7 @@ function Abm_Personas(props) {
                         columnas={['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Rol']}
                         configSelect={configSelect}
                         agregar={api.crear}
+                        campos={Campos}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>

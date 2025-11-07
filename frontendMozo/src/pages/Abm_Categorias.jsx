@@ -6,6 +6,7 @@ import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar/Index";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+import {Campos} from "../configs/abms/Categorias"
 
 function Abm_Categorias(props) {
     const api = {
@@ -53,6 +54,7 @@ function Abm_Categorias(props) {
                         datos_select={props.datos_select}
                         categorias={props.categorias}
                         agregar={api.crear}
+                        campos={Campos}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>

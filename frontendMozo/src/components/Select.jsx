@@ -25,8 +25,8 @@ export default function Select(props) {
                     onChange={handleChange}
                 >
                     {props.datos_select.map((dato, i) => (
-                        <MenuItem key={dato.id + '' + i + '' + props.index} value={dato.id}>
-                            {props.titulo === "Mozo" ? dato.nombre + ' ' + dato.apellido : dato.nombre}
+                        <MenuItem key={i} value={dato.id}>
+                            {dato.nombre}
                         </MenuItem>
                     ))}
                 </Select_>

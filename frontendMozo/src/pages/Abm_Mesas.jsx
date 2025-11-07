@@ -10,6 +10,7 @@ import {
     ModificarMesa,
     BorrarMesa,
 } from "../API/APIMesas";
+import {Campos} from "../configs/abms/Mesas"
 
 function Abm_Mesas(props) {
     const api = {
@@ -56,6 +57,7 @@ function Abm_Mesas(props) {
                         recargarComponentes={props.recargarComponentes}
                         columnas={["Número de Mesa", "Código", "Mozo"]}
                         agregar={api.crear}
+                        campos={Campos}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>
