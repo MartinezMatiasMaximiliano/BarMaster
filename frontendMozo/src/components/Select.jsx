@@ -10,21 +10,19 @@ export default function Select(props) {
 
     const handleChange = (event) => {
         setValue(event.target.value);
-        props.handleChange(event, props.name);
+        props.handleChange(event, props.campo.name);
     };
 
     return (
         <Box sx={{ minWidth: 120 }}>
             <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">{props.titulo}</InputLabel>
+                <InputLabel id="demo-simple-select-label">{props.campo.label}</InputLabel>
                 <Select_
-                    labelId={"demo-simple-select-label" + props.index}
-                    id={"demo-simple-select"+ props.index}
                     value={value}
-                    label={props.titulo}
+                    label={props.campo.label}
                     onChange={handleChange}
                 >
-                    {props.datos_select.map((dato, i) => (
+                    {props.campo.options.map((dato, i) => (
                         <MenuItem key={i} value={dato.id}>
                             {dato.nombre}
                         </MenuItem>

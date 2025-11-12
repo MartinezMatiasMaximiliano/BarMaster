@@ -38,7 +38,7 @@ function Modal_Agregar(props) {
                     <Errores errors={errors}></Errores>
                     <Form>
                         {props.campos.map((campo, index) => {   
-                            const renderer = renderizados[campo.type] || renderizados.default;
+                            const renderer = renderizados[campo.type] || renderizados.text;
                             return renderer(campo, index);
                         })}
                     </Form>

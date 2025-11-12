@@ -1,6 +1,9 @@
-import {BuscarTodasLasCategorias} from "../../API/APICategorias";
+import { BuscarTodasLasCategorias } from "../../API/APICategorias";
 
-const categorias = BuscarTodasLasCategorias().then(data => { const categoriasActivas = data.filter(categoria => categoria.activo === true); return categoriasActivas.map(categoria => categoria.nombre); });
+const data = await BuscarTodasLasCategorias();
+const categorias = data
+  .filter(c => c.activo === true)
+  .map(c => c.nombre);
 
 export const Campos = [
   { name: "imagen", label: "Imagen", type: "image" },

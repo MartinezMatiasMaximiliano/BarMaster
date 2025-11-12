@@ -2,7 +2,7 @@ import React from "react";
 import { Form, Button } from "react-bootstrap";
 function Input_Imagen(props) {
     const handleImageChange = (event) => {
-        props.handleChange(event, "imagen");
+        props.handleChange(event, "imagen", "image");
     };
 
     return (

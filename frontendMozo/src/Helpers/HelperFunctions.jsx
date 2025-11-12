@@ -132,6 +132,7 @@ const tipoColumnas = {
     int4: ['codigodeservicio'], 
     texto: ["dirección", "descripción"]
 };
+
 const camposObligatorios = ['nombre', 'descripcion', 'precio', 'rol', 'categorias', 'apellido', 'dni', 'numero de mesa']
 
 export function validarCampos(key, valor, setErrors) {

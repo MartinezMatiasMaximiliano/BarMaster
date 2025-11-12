@@ -1,5 +1,3 @@
-import { validarCampos } from "../../../Helpers/HelperFunctions";
-
 export default function Errores({errors}) {
     if (!errors || Object.keys(errors).length === 0) return null;
     return (

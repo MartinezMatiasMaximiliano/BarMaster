@@ -30,10 +30,11 @@ function getStyles(name, value, theme) {
 export default function Select_Multiple(props) {
     const theme = useTheme();
     const [itemsActivos, setItemsActivos] = React.useState(props.itemsActivos);
-    const itemsTotales = props.itemsTotales.map((item) => item.nombre); // Se convierte el objeto en un arreglo
+
+    const itemsTotales = props.campo.options;
 
     const handleChange = (event) => {
-        props.handleChange(event, "");
+        props.handleChange(event, "categorias", "select_multiple");
         const {
             target: { value },
         } = event;
@@ -46,14 +47,14 @@ export default function Select_Multiple(props) {
     return (
         <div>
             <FormControl sx={{ m: 1, width: 300 }}>
-                <InputLabel id="demo-multiple-chip-label">{props.titulo}</InputLabel>
+                <InputLabel id="demo-multiple-chip-label">{props.campo.label}</InputLabel>
                 <Select
                     labelId="demo-multiple-chip-label"
                     id="demo-multiple-chip"
                     multiple
                     value={itemsActivos}
                     onChange={handleChange}
-                    input={<OutlinedInput id="select-multiple-chip" label={props.titulo} />}
+                    input={<OutlinedInput id="select-multiple-chip" label={props.campo.label} />}
                     renderValue={(selected) => (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                             {selected.map((value) => (

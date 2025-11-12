@@ -25,14 +25,14 @@ export async function BuscarTodasLasPersonas() {
 export async function RegistrarPersona(datos) {
     try {
         const response = await axios.post(REGISTER_URL, {
-            nombres: datos.Nombre,
-            apellido: datos.Apellido,
-            dni: datos.DNI,
-            direccion: datos["Dirección"],
-            telefono: datos["Teléfono"],
+            nombres: datos.nombre,
+            apellido: datos.apellido,
+            dni: datos.dni,
+            direccion: datos.direccion,
+            telefono: datos.telefono,
             activo: true,
-            idRol: datos.rol.id,
-            contrasena: datos.Nombre + datos.dni
+            idRol: datos.rol,
+            contrasena: datos.dni
         });
         return response.data;
     } catch (error) {
@@ -44,14 +44,14 @@ export async function RegistrarPersona(datos) {
 export async function RegistrarMozo(datos) {
     try {
         const response = await axios.post(REGISTER_URL, {
-            nombres: datos.Nombre,
+            nombres: datos.nombre,
             apellido: datos.apellido,
             dni: datos.dni,
             direccion: datos.direccion,
             telefono: datos.telefono,
             activo: true,
             idRol: -2,
-            contrasena: datos.contrasena
+            contrasena: datos.dni
         });
         return response.data;
     } catch (error) {

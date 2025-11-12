@@ -32,9 +32,10 @@ export async function BuscarUnProducto(Id) {
 }
 
 export function CrearProducto(datos) {
+    console.log("DATOS EN API: ", datos)
     axios.post(
         BASE_URL,
-        new CrearProductoDTO(datos.Nombre, datos["Descripción"], datos.Precio, true, datos.categorias, datos.imagen), {
+        new CrearProductoDTO(datos.nombre, datos.descripcion, datos.precio, true, datos.categorias, datos.imagen), {
         headers: {
             "Content-Type": "multipart/form-data"
         }

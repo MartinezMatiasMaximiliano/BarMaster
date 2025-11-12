@@ -10,8 +10,7 @@ export const Renderizados = (props, handleChange) => ({
   select_multiple: (campo, index) => (
     <Multiple_Select
       key={index}
-      itemsTotales={campo.options}
-      titulo={campo.label}
+      campo={campo}
       itemsActivos={[]}
       handleChange={handleChange}
     />
@@ -19,10 +18,8 @@ export const Renderizados = (props, handleChange) => ({
   select: (campo, index) => (
     <Select
       key={index}
-      datos_select={campo.options}
       datoActual=""
-      titulo={campo.label}
-      name={campo.name}
+      campo={campo}
       handleChange={handleChange}
     />
   ),
@@ -33,7 +30,7 @@ export const Renderizados = (props, handleChange) => ({
       <Form.Control
         type="text"
         placeholder={`Ingrese valor para ${campo.label}`}
-        onChange={(e) => handleChange(e, col)}
+        onChange={(e) => handleChange(e, campo.name, campo.type)}
       />
     </Form.Group>
   ),
