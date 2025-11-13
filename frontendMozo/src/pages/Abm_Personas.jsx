@@ -12,7 +12,7 @@ import {
     ActivarPersona,
     ModificarPersona
 } from "../API/APIPersonas";
-import { Campos } from "../configs/abms/Personas"
+import { Campos } from "../configs/agregar/Personas"
 
 function Abm_Personas(props) {
 
@@ -49,6 +49,7 @@ function Abm_Personas(props) {
                     deleteLabel="Producto"
                     configSelect={configSelect}
                     showToggle={() => true}
+                    campos={Campos}
                 />
             ),
         },

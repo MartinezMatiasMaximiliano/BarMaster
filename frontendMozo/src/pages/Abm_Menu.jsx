@@ -12,7 +12,7 @@ import {
     DesactivarProducto,
     ModificarProducto,
 } from "../API/APIProductos";
-import { Campos } from "../configs/abms/Producto"
+import { Campos } from "../configs/agregar/Producto"
 
 function Abm_Menu(props) {
     const api = {
@@ -43,6 +43,7 @@ function Abm_Menu(props) {
                     categoriasTotales={props.categorias}
                     categoriasActivas={fila.categorias}
                     showToggle={() => true}
+                    campos={Campos}
                 />
             ),
         },

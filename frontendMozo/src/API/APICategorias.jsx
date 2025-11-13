@@ -13,7 +13,7 @@ export async function BuscarTodasLasCategorias() {
 
 export async function CrearCategoria(datos) {
     try {
-        const response = await axios.post(BASE_URL, { nombre: datos.Nombre, activo: true });
+        const response = await axios.post(BASE_URL, { nombre: datos.nombre, activo: true });
         return response.data;
     } catch (error) {
         alert(error.response.data.error.mensaje);

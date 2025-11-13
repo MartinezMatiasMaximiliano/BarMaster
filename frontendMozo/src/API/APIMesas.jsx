@@ -18,7 +18,7 @@ export async function BuscarTodasLasMesas() {
 
 export async function CrearMesa(datos) {
     try {
-        const response = await axios.post(BASE_URL, new CrearMesaDTO(datos["Número de Mesa"]));
+        const response = await axios.post(BASE_URL, new CrearMesaDTO(datos.numero));
         return response.data;
     } catch (error) {
         alert(error.response.data.error.mensaje)

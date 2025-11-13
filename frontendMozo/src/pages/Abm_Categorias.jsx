@@ -6,7 +6,7 @@ import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar/Index";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
-import {Campos} from "../configs/abms/Categorias"
+import { Campos } from "../configs/agregar/Categorias"
 
 function Abm_Categorias(props) {
     const api = {
@@ -34,6 +34,7 @@ function Abm_Categorias(props) {
                     recargar={props.recargarComponentes}
                     deleteLabel="Categorías"
                     showToggle={() => true} // en Categorías sí mostramos Switch
+                    campos={Campos}
                 />
             ),
         },
@@ -48,11 +49,6 @@ function Abm_Categorias(props) {
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
-                        columnas={["Nombre"]} // las que querés en el formulario de “Agregar”
-                        titulo_select={props.titulo_select}
-                        name_select={props.name_select}
-                        datos_select={props.datos_select}
-                        categorias={props.categorias}
                         agregar={api.crear}
                         campos={Campos}
                     >

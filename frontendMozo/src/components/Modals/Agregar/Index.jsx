@@ -8,7 +8,6 @@ import { Renderizados } from "./Renderizados";
 
 function Modal_Agregar(props) {
     const [show, setShow] = useState(false);
-    const [values, setValues] = useState({});
 
     const handleClose = () => {
         setErrors({});

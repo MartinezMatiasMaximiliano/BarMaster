@@ -10,7 +10,7 @@ import {
     ModificarMesa,
     BorrarMesa,
 } from "../API/APIMesas";
-import {Campos} from "../configs/abms/Mesas"
+import {Campos} from "../configs/agregar/Mesas"
 
 function Abm_Mesas(props) {
     const api = {
@@ -26,7 +26,7 @@ function Abm_Mesas(props) {
     }
 
     const columnas = [
-        { key: "numeroMesa", label: "Número de Mesa", align: "right" },
+        { key: "numero", label: "Número de Mesa", align: "right" },
         { key: "codigoParaPedir", label: "Código", align: "right" },
         { key: "nombreMozo", label: "Mozo", align: "right" },
         {
@@ -41,6 +41,7 @@ function Abm_Mesas(props) {
                     deleteLabel="Mesa"
                     configSelect={configSelect}
                     showToggle={() => false} // las mesas no se activan/desactivan
+                    campos={Campos}
                 />
             ),
         },

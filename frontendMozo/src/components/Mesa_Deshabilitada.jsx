@@ -32,7 +32,7 @@ export default function Mesa_Deshabilitada(props) {
         <>
             <Button className="boton-mesa mx-2" style={props.estilo} onClick={handleShow} variant={props.variant}>
                 <FontAwesomeIcon icon={faBurger} />
-                <p>Mesa {props.datos_mesa.numeroMesa}</p>
+                <p>Mesa {props.datos_mesa.numero}</p>
             </Button>
 
             <Modal show={show} onHide={handleClose}>

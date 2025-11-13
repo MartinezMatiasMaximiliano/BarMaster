@@ -101,11 +101,11 @@ export function MappearMenu(menu) {
 export function MappearMesas(mesas) {
     return (
         mesas.map(mesa => ({
-        id: mesa.id,
-        numeroMesa: mesa.numeroMesa, 
-        codigoParaPedir: mesa.codigoParaPedir,
-        nombreMozo: mesa.persona == null ? "Sin Mozo" : mesa.persona.nombres + ' ' + mesa.persona.apellido,
-        idMozo: mesa.persona == null ? '' : mesa.persona.id,
+            id: mesa.id,
+            numero: mesa.numeroMesa, 
+            codigoParaPedir: mesa.codigoParaPedir,
+            nombreMozo: mesa.persona == null ? "Sin Mozo" : mesa.persona.nombres + ' ' + mesa.persona.apellido,
+            idMozo: mesa.persona == null ? '' : mesa.persona.id,
         }))
     )
 }
@@ -122,18 +122,18 @@ const regex = {
     int: /^[0-9]*$/,
     image: /image/i,
     int4: /^[0-9]{4}$/, // int de 4 digitos
-    texto: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s°.,#-]*$/, // Permite letras, números, espacios y los caracteres ° . , # -
+    texto: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s°$.!¿?*[\],#-]*$/, // Permite letras, números, espacios y los caracteres  
 };
 
 const tipoColumnas = {
     string: ['nombre', 'apellido'],
-    int: ['precio', 'número de mesa', 'teléfono', 'dni'],
+    int: ['precio', 'numero', 'telefono', 'dni'],
     image: ['imagen'],
     int4: ['codigodeservicio'], 
-    texto: ["dirección", "descripción"]
+    texto: ["direccion", "descripcion"]
 };
 
-const camposObligatorios = ['nombre', 'descripcion', 'precio', 'rol', 'categorias', 'apellido', 'dni', 'numero de mesa']
+const camposObligatorios = ['nombre', 'descripcion', 'precio', 'rol', 'categorias', 'apellido', 'dni', 'numero']
 
 export function validarCampos(key, valor, setErrors) {
     if (camposObligatorios.includes(key.toLowerCase())) {

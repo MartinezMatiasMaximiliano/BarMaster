@@ -34,7 +34,7 @@ export default function Select_Multiple(props) {
     const itemsTotales = props.campo.options;
 
     const handleChange = (event) => {
-        props.handleChange(event, "categorias", "select_multiple");
+        props.handleChange(event, props.campo.name, "select_multiple");
         const {
             target: { value },
         } = event;

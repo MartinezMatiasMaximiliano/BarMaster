@@ -153,6 +153,8 @@ function App() {
     const Notificaciones = MappearNotificaciones(notificaciones)
     const datos_pedidos = MappearPedidos(pedidos)
 
+    console.log("MESAS: ", datos_mesas_abm);
+
     return (
         <>
             <LoginContext.Provider value={{ logeado, setLogeado, rol, setRol }}>

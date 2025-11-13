@@ -1,7 +1,8 @@
 import React from "react";
 import Modal_Eliminar from "../Modals/Modal_Eliminar";
-import Modal_Editar from "../Modals/Modal_Editar";
+import Modal_Editar from "../Modals/Editar/Modal_Editar";
 import Switch from "../Switch";
+import { Campos } from "../../configs/agregar/Categorias"
 
 export default function Fila_Acciones(props) {
     return (
@@ -19,9 +20,7 @@ export default function Fila_Acciones(props) {
                 recargarComponentes={props.recargar}
                 fila={props.fila}
                 modificar={props.api.modificar}
-                configSelect={props.configSelect}
-                categoriasActivas={props.categoriasActivas}
-                categoriasTotales={props.categoriasTotales}
+                campos={props.campos}
             />
 
             <Modal_Eliminar
