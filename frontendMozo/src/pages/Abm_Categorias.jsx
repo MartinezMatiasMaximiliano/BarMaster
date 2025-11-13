@@ -32,7 +32,7 @@ function Abm_Categorias(props) {
                     fila={fila}
                     api={api}
                     recargar={props.recargarComponentes}
-                    deleteLabel="Categorías"
+                    showEditar={true}
                     showToggle={() => true} // en Categorías sí mostramos Switch
                     campos={Campos}
                 />

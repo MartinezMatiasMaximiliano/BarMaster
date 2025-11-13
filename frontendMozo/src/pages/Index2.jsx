@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { React, useState, useEffect } from 'react'
-import Mesa from "../components/Mesa";
+import Mesa from "../components/Mesa/Mesa";
 import { Container, Form } from 'react-bootstrap';
 import { modificar as modificarMozo } from '../redux/slices/mozoSlice';
 import { modificar as modificarCodigoMozo } from '../redux/slices/codigoMozoSlice';

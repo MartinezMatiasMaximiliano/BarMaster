@@ -39,9 +39,7 @@ function Abm_Menu(props) {
                     fila={fila}
                     api={api}
                     recargar={props.recargarComponentes}
-                    deleteLabel="Producto"
-                    categoriasTotales={props.categorias}
-                    categoriasActivas={fila.categorias}
+                    showEditar={true}
                     showToggle={() => true}
                     campos={Campos}
                 />

@@ -38,7 +38,7 @@ function Modal_Editar(props) {
 
     return (
         <>
-            <Button variant="primary" onClick={handleShow}>
+            <Button variant="primary" onClick={handleShow} disabled={!props.disabled}>
                 <FontAwesomeIcon icon={faPencil} />
             </Button>
 

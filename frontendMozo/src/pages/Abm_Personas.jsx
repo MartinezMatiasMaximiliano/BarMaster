@@ -46,8 +46,7 @@ function Abm_Personas(props) {
                     fila={fila}
                     api={api}
                     recargar={props.recargarComponentes}
-                    deleteLabel="Producto"
-                    configSelect={configSelect}
+                    showEditar={true}
                     showToggle={() => true}
                     campos={Campos}
                 />

@@ -3,6 +3,7 @@ import { validarCampos } from "../../../Helpers/HelperFunctions";
 
 export default function Handlers({ agregar, recargarComponentes, handleClose }) {
   const [errors, setErrors] = useState({});
+  const [values, setValues] = useState({});
 
   const fieldHandlers = {
     select_multiple: (event) => event.target.value,
@@ -13,6 +14,7 @@ export default function Handlers({ agregar, recargarComponentes, handleClose }) 
   const handleChange = (event, key, type = "default") => {
     const handler = fieldHandlers[type] || fieldHandlers.default;
     const valor = handler(event);
+    setValues((prev) => ({ ...prev, [key]: valor }));
     validarCampos(key, valor, setErrors);
   };
 

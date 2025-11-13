@@ -5,6 +5,7 @@ import Switch from "../Switch";
 import { Campos } from "../../configs/agregar/Categorias"
 
 export default function Fila_Acciones(props) {
+    console.log("FILA EN FILA ACCIONES: ", props.fila)
     return (
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             {props.showToggle() && (
@@ -21,6 +22,7 @@ export default function Fila_Acciones(props) {
                 fila={props.fila}
                 modificar={props.api.modificar}
                 campos={props.campos}
+                disabled={props.showEditar}
             />
 
             <Modal_Eliminar

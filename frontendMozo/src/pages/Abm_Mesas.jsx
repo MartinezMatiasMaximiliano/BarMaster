@@ -10,7 +10,8 @@ import {
     ModificarMesa,
     BorrarMesa,
 } from "../API/APIMesas";
-import {Campos} from "../configs/agregar/Mesas"
+import { Campos as Campos_Agregar } from "../configs/agregar/Mesas"
+import { Campos as Campos_Editar} from "../configs/modificar/Mesas"
 
 function Abm_Mesas(props) {
     const api = {
@@ -18,12 +19,6 @@ function Abm_Mesas(props) {
         modificar: ModificarMesa,
         eliminar: BorrarMesa,
     };
-
-    const configSelect = {
-        titulo: "Mozo",
-        name: "idMozo",
-        datos: props.datos_select,
-    }
 
     const columnas = [
         { key: "numero", label: "Número de Mesa", align: "right" },
@@ -38,10 +33,9 @@ function Abm_Mesas(props) {
                     fila={fila}
                     api={api}
                     recargar={props.recargarComponentes}
-                    deleteLabel="Mesa"
-                    configSelect={configSelect}
+                    showEditar={fila.codigoParaPedir}
                     showToggle={() => false} // las mesas no se activan/desactivan
-                    campos={Campos}
+                    campos={Campos_Editar}
                 />
             ),
         },
@@ -58,7 +52,7 @@ function Abm_Mesas(props) {
                         recargarComponentes={props.recargarComponentes}
                         columnas={["Número de Mesa", "Código", "Mozo"]}
                         agregar={api.crear}
-                        campos={Campos}
+                        campos={Campos_Agregar}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>
