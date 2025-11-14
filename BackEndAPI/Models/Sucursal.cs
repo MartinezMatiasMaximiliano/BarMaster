@@ -1,11 +1,18 @@
-﻿namespace BackEndAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BackEndAPI.Models
 {
     public class Sucursal
     {
         public Guid Id { get; set; } = Guid.NewGuid();
+        public string Nombre { get; set; } = null!;
         public string Direccion { get; set; } = null!;
         public string Telefono { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        public string Username { get; set; } = null!;  
+        [Required]
+        public byte[] PasswordHash { get; set; }
+        [Required]
+        public byte[] PasswordSalt { get; set; }
         //Foreign Key
         public Guid? IdEncargado { get; set; }
         public Guid IdEmpresa { get; set; }

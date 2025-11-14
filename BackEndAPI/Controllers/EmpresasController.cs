@@ -18,11 +18,11 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllEmpresasAsync()
+        public async Task<IActionResult> GetAllEmpresas()
         {
             try
             {
-                IEnumerable<Empresa> result = await _empresasServices.GetAllEmpresasAsync();
+                IEnumerable<Empresa> result = await _empresasServices.GetAllEmpresas();
                 if (result.Count() == 0)
                 {
                     return NotFound($"No se encontraron empresas");
@@ -49,11 +49,11 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("GetById/{id}")]
-        public async Task<IActionResult> GetEmpresaByIdAsync(Guid id)
+        public async Task<IActionResult> GetEmpresaById(Guid id)
         {
             try
             {
-                Empresa? result = await _empresasServices.GetEmpresaByIdAsync(id);
+                Empresa? result = await _empresasServices.GetEmpresaById(id);
                 if (result == null)
                 {
                     return NotFound($"La empresa con ID {id} no fue encontrada.");
@@ -78,16 +78,18 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPost("Create")]
-        public async Task<IActionResult> AddEmpresaAsync([FromBody] CrearEmpresaDTO request)
+        [HttpPost()]
+        public async Task<IActionResult> AddEmpresa([FromBody] CrearEmpresaDTO request)
         {
             try
             {
-                Empresa result = await _empresasServices.AddEmpresaAsync(request);
+                Empresa result = await _empresasServices.AddEmpresa(request);
+
                 if (result == null)
                 {
                     return BadRequest("No se pudo crear la empresa.");
                 }
+
                 EmpresaResponseDTO response = new()
                 {
                     Id = result.Id,
@@ -99,20 +101,26 @@ namespace BackEndAPI.Controllers
                 };
                 return Ok(response);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                switch (ex.Message)
+                {
+                    case string msg when msg.Contains("Ya existe"):
+                        return BadRequest("Empresa ya existe");
+                    default:
+                        return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+                }
 
-                throw;
             }
 
         }
 
         [HttpDelete("Delete/{id}")]
-        public async Task<IActionResult> DeleteEmpresaAsync(Guid id)
+        public async Task<IActionResult> DeleteEmpresa(Guid id)
         {
             try
             {
-                await _empresasServices.DeleteEmpresaAsync(id);
+                await _empresasServices.DeleteEmpresa(id);
                 return Ok($"La empresa con ID {id} ha sido eliminada.");
             }
             catch (KeyNotFoundException ex)

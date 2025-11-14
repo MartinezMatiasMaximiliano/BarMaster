@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace BackEndAPI.Services
+namespace BackEndAPI.Services.Global
 {
     public class JWTServices
     {
@@ -20,8 +20,7 @@ namespace BackEndAPI.Services
             _config = config;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SigningKey"]));
         }
-
-        public JWTTokenSucursal CrearJWTSucursal(Sucursal request)
+        public JWTToken CrearJWTSucursal(Sucursal request)
         {
             int hours_expire = 1;
             var claims = new[]
@@ -29,8 +28,6 @@ namespace BackEndAPI.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
                 new Claim("IdEmpresa", request.IdEmpresa.ToString()),
                 new Claim("IdSucursal", request.Id.ToString())
-
-
             };
 
             var key = _key;
@@ -45,13 +42,10 @@ namespace BackEndAPI.Services
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return new JWTTokenSucursal
+            return new JWTToken
             {
                 Access_token = tokenString,
                 Token_type = "bearer",
-                Id = request.Id,
-                IdEmpresa = request.IdEmpresa,
-                Direccion = request.Direccion,
                 expires = token.ValidTo.ToString(),
                 Expires_in = 3600 * hours_expire
             };

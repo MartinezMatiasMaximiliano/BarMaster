@@ -5,11 +5,11 @@ namespace BackEndAPI.Services.Interfaces
 {
     public interface IEmpresasServices
     {
-        Task<IEnumerable<Empresa>> GetAllEmpresasAsync();
-        Task<Empresa?> GetEmpresaByIdAsync(Guid id);
-        Task<Empresa?> GetEmpresaByNombreAsync(string nombre);
-        Task<Empresa> AddEmpresaAsync(CrearEmpresaDTO empresa);
-        Task<bool> UpdateEmpresaAsync(Guid id,ActualizarEmpresaDTO empresa);
-        Task DeleteEmpresaAsync(Guid id);
+        Task<IEnumerable<Empresa>> GetAllEmpresas();
+        Task<Empresa?> GetEmpresaById(Guid id);
+        Task<Empresa?> GetEmpresaByNombre(string nombre);
+        Task<Empresa> AddEmpresa(CrearEmpresaDTO empresa);
+        Task<bool> UpdateEmpresa(Guid id,ActualizarEmpresaDTO empresa);
+        Task DeleteEmpresa(Guid id);
     }
 }

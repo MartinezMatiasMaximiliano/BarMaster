@@ -1,8 +1,9 @@
 using BackEndAPI.Data;
 using BackEndAPI.Hubs;
+using BackEndAPI.Repositories;
 using BackEndAPI.Repositories.Interfaces;
-using BackEndAPI.Repositories.Repositories;
 using BackEndAPI.Services;
+using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -61,13 +62,19 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
 
-builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
-builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
+builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
+
+builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 builder.Services.AddScoped<IEmpresasServices, EmpresasServices>();
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthServices, AuthServices>();
+
+builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
+builder.Services.AddScoped<ISucursalesServices, SucursalesServices>();
+
 
 
 QuestPDF.Settings.License = LicenseType.Community;

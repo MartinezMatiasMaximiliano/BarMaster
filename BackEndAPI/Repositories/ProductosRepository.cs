@@ -3,7 +3,7 @@ using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace BackEndAPI.Repositories.Repositories
+namespace BackEndAPI.Repositories
 {
     public class ProductosRepository : IProductosRepository
     {

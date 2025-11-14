@@ -5,6 +5,7 @@
         public string Nombre { get; set; } = null!; 
         public string[]? Telefonos { get; set; }
         public string[]? Emails { get; set; }
+        public Guid IdPropietario { get; set; }
     }
 
 

@@ -8,39 +8,45 @@ namespace BackEndAPI.Services
 {
     public class EmpresasServices : IEmpresasServices
     {
-        private readonly IEmpresasRepository _repository;
-        public EmpresasServices(IEmpresasRepository repository)
+        private readonly IEmpresasRepository _empresasRepository;
+        public EmpresasServices(IEmpresasRepository empresasRepository)
         {
-            _repository = repository;
+            _empresasRepository = empresasRepository;
         }
-        public async Task<IEnumerable<Empresa>> GetAllEmpresasAsync()
+        public async Task<IEnumerable<Empresa>> GetAllEmpresas()
         {
-            IEnumerable<Empresa> result = await _repository.GetAllEmpresasAsync();
+            IEnumerable<Empresa> result = await _empresasRepository.GetAllEmpresas();
             return result;
         }
-        public async Task<Empresa?> GetEmpresaByIdAsync(Guid id)
+        public async Task<Empresa?> GetEmpresaById(Guid id)
         {
-            var result = await _repository.GetEmpresaByIdAsync(id);
+            var result = await _empresasRepository.GetEmpresaById(id);
             return result;
         }
-        
-        public async Task<Empresa?> GetEmpresaByNombreAsync(string nombre)
+        public async Task<Empresa?> GetEmpresaByNombre(string nombre)
         {
-            return await _repository.GetEmpresaByNombreAsync(nombre);
+            return await _empresasRepository.GetEmpresaByNombre(nombre);
             
         }
-        public async Task<Empresa> AddEmpresaAsync(CrearEmpresaDTO request)
+        public async Task<Empresa> AddEmpresa(CrearEmpresaDTO request)
         {
+            var result = await _empresasRepository.GetEmpresaByNombre(request.Nombre);
+
+            if (result != null)
+            {
+                throw new Exception($"Ya existe una empresa con el nombre {request.Nombre}.");
+            }
+
             Empresa empresa = new()
             {
                 Nombre = request.Nombre,
                 Telefonos = request.Telefonos,
                 Emails = request.Emails,
             };
-            await _repository.AddEmpresaAsync(empresa);
+            await _empresasRepository.AddEmpresa(empresa);
             return empresa;
         }
-        public Task<bool> UpdateEmpresaAsync(Guid id,ActualizarEmpresaDTO request)
+        public Task<bool> UpdateEmpresa(Guid id,ActualizarEmpresaDTO request)
         {
                 throw new KeyNotFoundException($"La empresa con ID {id} no fue encontrada.");
             //var result = await _repository.GetEmpresaByIdAsync(id);
@@ -50,9 +56,9 @@ namespace BackEndAPI.Services
 
             
         }
-        public async Task DeleteEmpresaAsync(Guid id)
+        public async Task DeleteEmpresa(Guid id)
         {
-            await _repository.DeleteEmpresaAsync(id);
+            await _empresasRepository.DeleteEmpresa(id);
 
         }
     }

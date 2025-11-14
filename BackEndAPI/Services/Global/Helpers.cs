@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace BackEndAPI.Services
+namespace BackEndAPI.Services.Global
 {
     public static class Helpers
     {
@@ -15,7 +15,7 @@ namespace BackEndAPI.Services
                                         .Replace("+", "a")
                                         .Replace("/", "b")
                                         .Replace("=", "c");
-                return (base64String.ToUpper().Substring(0,5));
+                return base64String.ToUpper().Substring(0,5);
             }
         }
 

@@ -2,7 +2,7 @@ using BackEndAPI.Data;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
-using BackEndAPI.Services;
+using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
@@ -15,35 +15,43 @@ using System.Text;
 
 namespace BackEndAPI.Controllers
 {
-    [Route("[controller]/Login/Sucursal")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
 
         private readonly IAuthServices _authServices;
-        public AuthController(IAuthServices authServices)
+        private readonly PasswordService _passwordService;
+        public AuthController(IAuthServices authServices, PasswordService passwordService)
         {
             _authServices = authServices;
+            _passwordService = passwordService;
         }
 
-
-        [HttpPost]
-        public async Task<IActionResult> LoginSucursal([FromBody] string password)
+        [HttpPost("/Login/Sucursal")]
+        public async Task<IActionResult> LoginSucursal([FromBody] LoginDTO request)
         {
-            var result = await _authServices.LoginSucursal(password);
-
-            if (result == null)
+            try
             {
-                return Unauthorized("contraseña incorrecta");
+                var result = await _authServices.LoginSucursal(request.Username,request.Password);
+                return Ok(result);
             }
-
-            return Ok(result);
-
-
-
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Sucursal no encontrada":
+                        return BadRequest("Sucursal no encontrada");
+                    case "Contraseña incorrecta":
+                        return Unauthorized("Contraseña incorrecta");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }   
+            }
         }
     }
 }
+
 
 #region CODIGO ANTIGUO
 
@@ -131,5 +139,32 @@ namespace BackEndAPI.Controllers
 //    return Ok(token);
 //}
 
+//[HttpPost("/Register/Sucursal")]
+//public async Task<IActionResult> RegistrarSucursal([FromBody] CrearSucursalDTO CrearSucursalDTO)
+//{
+//    if (await _authServices.SucursalExiste(CrearSucursalDTO.Username))
+//    {
+//        return BadRequest("Usuario ya existe");
+//    }
+
+//    _passwordService.CrearPasswordHash(CrearSucursalDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+//    Sucursal nuevaSucursal = new Sucursal
+//    {
+//        Nombre = CrearSucursalDTO.Nombre,
+//        Username = CrearSucursalDTO.Username,
+//        PasswordHash = passwordHash,
+//        PasswordSalt = passwordSalt
+//    };
+
+//    await _authServices.RegistrarSucursal(nuevaSucursal);
+
+
+//    if (result == null)
+//    {
+//        return BadRequest("No se pudo registrar la sucursal");
+//    }
+//    return Created("created", result);
+//}
 
 #endregion
