@@ -18,7 +18,7 @@ export default function Lista_Detalles_Pedidos(props) {
                         </Avatar>
                     </ListItemAvatar>
                     <ListItemText
-                        primary={item.nombre}
+                        primary={item.nombre + " $" + item.precio}
                         secondary={item.indicaciones || "—"}
                     />
                 </ListItem>

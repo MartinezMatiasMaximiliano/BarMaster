@@ -3,7 +3,7 @@ import React, { useState, useEffect, createContext } from 'react'
 import { Route, Routes, useLocation } from "react-router-dom"
 import { Container, Col, Row } from 'react-bootstrap'
 import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos } from './Helpers/HelperFunctions'
-import connection from './connections/HubConnMozo'
+import useSignalR from './hooks/useSignalR'
 import Navbar from "./components/NavBar/NavBar";
 import Index from './pages/Index';
 import Index2 from './pages/Index2';
@@ -74,12 +74,12 @@ function App() {
         
     }, [location.search, location.pathname])
 
-    useEffect(() => {
-        connection.on("RegistrarProducto", (pedido, numeroMesa) => { AgregarItemsAPedido(pedido, numeroMesa) })
-        connection.on("RegistrarNotificacion", (notificacion) => { dispatch(agregarNotificaciones(notificacion)) })
-        connection.on("PagarMesa", (IdPedido) => { pagarTotal(IdPedido) })
-        connection.on("PagarMesaSeparado", (ArrayIdsItems) => { pagarSeparado(ArrayIdsItems)})
-    }, [])
+    const { sendRecargarTicket } = useSignalR({
+        onRegistrarProducto: (pedido, numeroMesa) => { AgregarItemsAPedido(pedido, numeroMesa) },
+        onRegistrarNotificacion: (notificacion) => { dispatch(agregarNotificaciones(notificacion)) },
+        onPagarMesa: (IdPedido) => { pagarTotal(IdPedido) },
+        onPagarMesaSeparado: (ArrayIdsItems) => { pagarSeparado(ArrayIdsItems) }
+    })
 
     useEffect(() => {
         if (pedidos.length > 0) {
@@ -140,7 +140,7 @@ function App() {
             const items = await PostItems(Pedido, numeroMesa);
             const nuevoItems = items.map(({ pedidoId, ...resto }) => resto);
             dispatch(agregarItemsAPedidoActivo({ items: nuevoItems, numeroMesa: numeroMesa }));
-            connection.send("RecargarTicket", numeroMesa);
+            sendRecargarTicket(numeroMesa);
         } catch (error) {
             console.log(error);
         }

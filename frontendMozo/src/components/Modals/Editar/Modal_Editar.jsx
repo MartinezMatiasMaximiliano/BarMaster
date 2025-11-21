@@ -36,6 +36,8 @@ function Modal_Editar(props) {
 
     const renderizados = Renderizados(props, handleChange);
 
+    console.log("EDITVALUES: ", editValues)
+
     return (
         <>
             <Button variant="primary" onClick={handleShow} disabled={!props.disabled}>

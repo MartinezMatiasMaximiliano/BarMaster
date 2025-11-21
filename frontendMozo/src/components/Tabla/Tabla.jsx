@@ -46,6 +46,7 @@ function defaultRender(row, col) {
 }
 
 export default function Tabla(props) {
+    console.log("FILA EN TABLA: ", props.filas)
     return (
         <>
             <h2 className="mt-2">{props.titulo}</h2>

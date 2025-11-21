@@ -18,8 +18,6 @@ function Abm_Categorias(props) {
     };
 
     const columnas = [
-        // Si tu dataset tiene imagen, podés agregar esta columna como type:'image'
-        // { key: 'imagen', label: '', type: 'image', align: 'right' },
 
         { key: "nombre", label: "Nombre", align: "right" },
 

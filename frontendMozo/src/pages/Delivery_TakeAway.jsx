@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -13,10 +13,10 @@ import {
     BorrarPersona,
     ModificarPersona
 } from "../API/APIPersonas";
+import { Campos } from "../configs/agregar/Delivery_Takeaway";
 
 function Delivery_TakeAway(props) {
-
-    const Deliveries = [
+    const [deliveries, setDeliveries] = useState([
         {
             "uuid": "a7e25e44-31b2-4d6a-b0e1-8d5a4b7fce14",
             "IdCaja": 2,
@@ -89,7 +89,17 @@ function Delivery_TakeAway(props) {
             "PrecioProductos": 950,
             "PrecioTotal": 1250
         }
-    ]
+    ]);
+
+    const toggleEntregado = (uuid) => {
+        setDeliveries((prev) =>
+            prev.map((delivery) =>
+                delivery.uuid === uuid
+                    ? { ...delivery, entregado: !delivery.entregado }
+                    : delivery
+            )
+        );
+    };
 
     const api = {
         crear: RegistrarPersona,
@@ -146,7 +156,10 @@ function Delivery_TakeAway(props) {
             label: "Entregado",
             align: "right",
             render: (fila) => (
-                <Checkbox checked={!!fila.entregado} />
+                <Checkbox
+                    checked={!!fila.entregado}
+                    onChange={() => toggleEntregado(fila.uuid)}
+                />
             ),
         }, 
         {
@@ -161,6 +174,8 @@ function Delivery_TakeAway(props) {
                     deleteLabel="Producto"
                     configSelect={configSelect}
                     showToggle={() => false}
+                    showEditar={true}
+                    campos={Campos}
                 />
             ),
         },
@@ -178,7 +193,7 @@ function Delivery_TakeAway(props) {
         <h2>Delivery</h2>
             <Tabla
                 titulo={props.titulo}
-                filas={Deliveries}
+                filas={deliveries}
                 columnas={columnas}
                 renderAgregar={() => (
                     <Modal_Agregar
@@ -186,6 +201,7 @@ function Delivery_TakeAway(props) {
                         columnas={['Cliente', 'Dirección', 'Telefono', 'Indicaciones', 'Envio', 'Productos']}
                         configSelect={configSelect}
                         agregar={api.crear}
+                        campos={Campos}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>
