@@ -1,7 +1,20 @@
-import { useState, useEffect } from 'react';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import connection from '../../connections/HubConnMozo'
+import { useState, useEffect, useMemo } from 'react';
+import {
+    Box,
+    Button,
+    Chip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Divider,
+    IconButton,
+    Stack,
+    Typography
+} from '@mui/material';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import CloseIcon from '@mui/icons-material/Close';
+import connection from '../../connections/HubConnMozo';
 import Lista_Items from '../Listas/Lista_Items';
 import Modal_Generico from './Modal_Generico';
 import { useSelector, useDispatch } from "react-redux";
@@ -13,22 +26,22 @@ import { eliminar as eliminarTicket} from '../../redux/slices/ticketSlice';
 
 function Modal_Ver_cuenta(props) {
 
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
 
     const pedidosActivos = useSelector((state) => state.pedidosActivos.value);
 
-    const [pedidosMesa, setPedidosMesa] = useState(pedidosActivos.filter(pedido => pedido.numeroMesa === props.datos_mesa.numeroMesa));
+    const [pedidosMesa, setPedidosMesa] = useState(
+        pedidosActivos.filter(pedido => pedido.numeroMesa === props.datos_mesa.numeroMesa)
+    );
 
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    console.log("PEDIDOSMESA: ", pedidosMesa);
-
     useEffect(() => {
         setPedidosMesa(pedidosActivos.filter(pedido => pedido.numeroMesa === props.datos_mesa.numeroMesa));
-    }, [pedidosActivos, props.datos_mesa.numeroMesa])
+    }, [pedidosActivos, props.datos_mesa.numeroMesa]);
 
     function PagarMesa(arregloIds) {
 
@@ -36,7 +49,7 @@ function Modal_Ver_cuenta(props) {
         CambiarEstadoItems(arregloIds, "Pagar");
 
         // Genero la factura
-        GenerarTicketPDF(props.datos_mesa.numeroMesa, arregloIds)
+        GenerarTicketPDF(props.datos_mesa.numeroMesa, arregloIds);
 
         // Se envia mensaje al cliente para actualizar su cuenta
         connection.send("RecargarTicket", props.datos_mesa.numeroMesa);
@@ -55,7 +68,25 @@ function Modal_Ver_cuenta(props) {
         props.cerrar_modal_mesa();
     };
 
-    const itemsAPagar = pedidosMesa[0].items.filter(item => item.estado !== 2).map(item => item.id);
+    const itemsAPagar = useMemo(
+        () => pedidosMesa[0]?.items?.filter(item => item.estado !== 2).map(item => item.id) ?? [],
+        [pedidosMesa]
+    );
+
+    const totalPedidos = useMemo(() => {
+        const items = pedidosMesa[0]?.items ?? [];
+        return items.reduce((acc, item) => acc + (item.precio || 0), 0);
+    }, [pedidosMesa]);
+
+    const currencyFormatter = useMemo(
+        () =>
+            new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                minimumFractionDigits: 2
+            }),
+        []
+    );
 
     return (
         <>
@@ -63,26 +94,124 @@ function Modal_Ver_cuenta(props) {
                 {props.textoBoton}
             </Button>
 
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>{props.titulo}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                        <Lista_Items pedidosMesa={pedidosMesa} titulo="Pedido total" subtitulo="Total" estado={false}></Lista_Items>
-                    <hr></hr>
-                    <div style={{ maxHeight: '28vh',overflowY: 'auto', marginBottom: '2em'}} >
-                        <Lista_Items pedidosMesa={pedidosMesa} titulo="Ticket" PagarMesa={PagarMesa} estado={1} facturar={true}></Lista_Items>
-                    </div>
-                        <hr></hr>
-                            <Lista_Items pedidosMesa={pedidosMesa} titulo="Pagado" subtitulo="Subtotal" estado={2}></Lista_Items>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Modal_Generico textoBoton="Facturar todo" titulo="Facturar todo" cuerpo="¿Confirmar la accion?" confirmar={true} func={PagarMesa} param={itemsAPagar} disabled={!itemsAPagar.length > 0}></Modal_Generico>
-                    <Button variant="secondary" onClick={handleClose}>
+            <Dialog
+                open={show}
+                onClose={handleClose}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
+                <DialogTitle sx={{ pb: 1 }}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <ReceiptLongIcon color="primary" />
+                            <Typography variant="h6">
+                                {props.titulo} · Mesa {props.datos_mesa.numeroMesa}
+                            </Typography>
+                        </Stack>
+                        <IconButton onClick={handleClose}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Stack>
+                </DialogTitle>
+                <DialogContent dividers sx={{ px: 4 }}>
+                    <Stack spacing={2}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                            {props.datos_mesa.codigoParaPedir && (
+                                <Chip
+                                    label={`Código: ${props.datos_mesa.codigoParaPedir}`}
+                                    color="warning"
+                                    variant="outlined"
+                                />
+                            )}
+                            <Chip label={`Items: ${pedidosMesa[0]?.items?.length ?? 0}`} variant="outlined" />
+                            <Chip
+                                label={`Total: ${currencyFormatter.format(totalPedidos)}`}
+                                color="primary"
+                            />
+                        </Stack>
+
+                        <Box
+                            sx={{
+                                borderRadius: 2,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                p: 2,
+                                bgcolor: 'background.default'
+                            }}
+                        >
+                            <Lista_Items
+                                pedidosMesa={pedidosMesa}
+                                titulo="Pedido total"
+                                subtitulo="Total"
+                                estado={false}
+                            />
+                        </Box>
+
+                        <Divider flexItem textAlign="left">
+                            <Typography variant="subtitle2" color="text.secondary">
+                                Tickets abiertos
+                            </Typography>
+                        </Divider>
+
+                        <Box
+                            sx={{
+                                borderRadius: 2,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                p: 2,
+                                maxHeight: { xs: 320, sm: 360 },
+                                overflowY: 'auto'
+                            }}
+                        >
+                            <Lista_Items
+                                pedidosMesa={pedidosMesa}
+                                titulo="Ticket"
+                                PagarMesa={PagarMesa}
+                                estado={1}
+                                facturar={true}
+                            />
+                        </Box>
+
+                        <Divider flexItem textAlign="left">
+                            <Typography variant="subtitle2" color="text.secondary">
+                                Pagos registrados
+                            </Typography>
+                        </Divider>
+
+                        <Box
+                            sx={{
+                                borderRadius: 2,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                p: 2
+                            }}
+                        >
+                            <Lista_Items
+                                pedidosMesa={pedidosMesa}
+                                titulo="Pagado"
+                                subtitulo="Subtotal"
+                                estado={2}
+                            />
+                        </Box>
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ px: 4, py: 3 }}>
+                    <Modal_Generico
+                        textoBoton="Facturar todo"
+                        titulo="Facturar todo"
+                        cuerpo="¿Confirmar la acción?"
+                        confirmar={true}
+                        func={PagarMesa}
+                        param={itemsAPagar}
+                        disabled={!(itemsAPagar.length > 0)}
+                        color="success"
+                    />
+                    <Button onClick={handleClose}>
                         Cerrar
                     </Button>
-                </Modal.Footer>
-            </Modal>
+                </DialogActions>
+            </Dialog>
         </>
     );
 }

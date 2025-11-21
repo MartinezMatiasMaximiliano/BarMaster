@@ -1,10 +1,12 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { LoginContext } from "../../App";
-import { Nav, Row } from 'react-bootstrap';
-import Navbar from 'react-bootstrap/Navbar';
+import { Box, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
+import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
 import NavBar_Botones from './NavBar_Botones'
 import NavBar_Chip from './NavBar_Chip'
+
 function NavBar() {
 
     const loginProvider = useContext(LoginContext);
@@ -15,37 +17,51 @@ function NavBar() {
         loginProvider.setRol("");
     }
 
+    const quickLinks = [
+        { path: "/", label: "Mesas 1", icon: TableRestaurantOutlinedIcon },
+        { path: "/index2", label: "Mesas 2 (plano)", icon: AppsOutlinedIcon }
+    ];
+
     return (
-        <Navbar bg="light" expand="md" className="d-flex flex-column vh-100 position-fixed">
-            <Navbar.Brand href="#home" className="me-0">
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                px: 2,
+                py: 3,
+                gap: 2
+            }}
+        >
+            <Box sx={{ textAlign: 'center' }}>
                 <img
                     src="/logo.png"
                     alt="Logo"
-                    style={{ height: '25vh', objectFit: 'contain' }}
+                    style={{ height: '20vh', objectFit: 'contain' }}
                 />
-            </Navbar.Brand>
-            <Nav className="flex-column w-100">
-                <Nav.Item className="mx-auto">
-                    <Row className="mb-2">
-                        <Link className="boton-nav" to="/">
-                            Mesas1
-                        </Link>
-                    </Row>
-                    <Row className="mb-2">
-                        <Link className="boton-nav" to="/index2">
-                            Mesas2 (plano)
-                        </Link>
-                    </Row>
-                    <NavBar_Botones
-                        logeado={loginProvider.logeado}
-                        rol={loginProvider.rol}
-                        cerrarSesion={cerrarSesion}
-                    ></NavBar_Botones>
-                </Nav.Item>
-            </Nav>
-            {/* Chip al fondo */}
-            <NavBar_Chip logeado={ loginProvider.logeado }></NavBar_Chip>
-        </Navbar>
+            </Box>
+            <List dense disablePadding>
+                {quickLinks.map(({ path, label, icon: Icon }) => (
+                    <ListItem disablePadding key={path}>
+                        <ListItemButton component={Link} to={path}>
+                            <ListItemIcon sx={{ minWidth: 32 }}>
+                                <Icon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText primary={label} />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
+            <Divider />
+            <NavBar_Botones
+                logeado={loginProvider.logeado}
+                rol={loginProvider.rol}
+                cerrarSesion={cerrarSesion}
+            />
+            <Box mt="auto">
+                <NavBar_Chip logeado={loginProvider.logeado} />
+            </Box>
+        </Box>
     );
 }
 

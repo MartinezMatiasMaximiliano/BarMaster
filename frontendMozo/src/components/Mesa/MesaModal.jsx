@@ -26,26 +26,26 @@ export const MesaModal = ({
             <Modal.Header closeButton>
                 <Modal.Title>Mesa {datos_mesa.numeroMesa}</Modal.Title>
                 {datos_mesa.codigoParaPedir && (
-                    <Alert 
-                        icon={false} 
-                        severity="warning" 
+                    <Alert
+                        icon={false}
+                        severity="warning"
                         sx={{ fontSize: '1.2rem', ml: ".7em" }}
                     >
                         {datos_mesa.codigoParaPedir}
                     </Alert>
                 )}
             </Modal.Header>
-            
+
             <Modal.Body>
                 <h3>{fechaFormateada} - Total ${totalPrecio}</h3>
                 <div>
-                    <Lista 
-                        items={pedidoMesa?.items || []} 
-                        handleCheckBox={handleChangeCheckBox} 
+                    <Lista
+                        items={pedidoMesa?.items || []}
+                        handleCheckBox={handleChangeCheckBox}
                         checkBoxSeleccionados={checkBoxSeleccionados}
                     />
                 </div>
-                
+
                 {datos_mesa.codigoParaPedir && (
                     <div>
                         <Modal_Ver_Cuenta
@@ -57,7 +57,7 @@ export const MesaModal = ({
                             func={handleClose}
                             cerrar_modal_mesa={handleClose}
                         />
-                        
+
                         <Modal_Generico
                             confirmar={true}
                             titulo="¿Seguro que desea cerrar la mesa?"
@@ -68,7 +68,7 @@ export const MesaModal = ({
                             cerrar_modal={handleClose}
                             disabled={false}
                         />
-                        
+
                         <Modal_Generico
                             confirmar={true}
                             titulo="Cancelar pedidos"
@@ -82,7 +82,7 @@ export const MesaModal = ({
                     </div>
                 )}
             </Modal.Body>
-            
+
             <Modal.Footer>
                 <Button variant="primary" onClick={handleClose}>
                     Cerrar

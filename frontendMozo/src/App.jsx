@@ -1,7 +1,7 @@
 import './styles/App.css'
 import React, { useState, useEffect, createContext } from 'react'
 import { Route, Routes, useLocation } from "react-router-dom"
-import { Container, Col, Row } from 'react-bootstrap'
+import { Box } from '@mui/material'
 import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos } from './Helpers/HelperFunctions'
 import useSignalR from './hooks/useSignalR'
 import Navbar from "./components/NavBar/NavBar";
@@ -16,6 +16,7 @@ import Graficas from './pages/Graficas'
 import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery_TakeAway from './pages/Delivery_TakeAway'
+import Caja from './pages/Caja'
 import Login from './pages/Login';
 import { PostItems } from './API/APIPedidos';
 import { BuscarTodasLasMesas } from './API/APIMesas';
@@ -156,36 +157,71 @@ function App() {
     console.log("MESAS: ", datos_mesas_abm);
 
     return (
-        <>
-            <LoginContext.Provider value={{ logeado, setLogeado, rol, setRol }}>
-                <Container fluid>
-                    <Row>
-                        <Col xs={3} md={2}>
-                            <Navbar></Navbar>
-                        </Col>
-                        <Col xs={6} md={8} className="mt-2">
-                            <Routes>
-                                <Route path="/" element={<Index mesas={mesas} datos_mozos={datos_mozos_listado} />} />
-                                <Route path="/Index2" element={<Index2 mesas={mesas} datos_mozos={datos_mozos_listado} />} />
-                                <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
-                                <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
-                                <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={datos_mesas_abm} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
-                                <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
-                                <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
-                                <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
-                                <Route path="/distribucion_mesas" element={<Control_Login><Distribucion_mesas /></Control_Login>} />
-                                <Route path="/delivery_takeaway" element={<Control_Login><Delivery_TakeAway /></Control_Login>} />
-                                <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
-                                <Route path="/login" element={<Login />} />
-                            </Routes>
-                        </Col>
-                        <Col xs={3} md={2} className="container-notificaciones">
-                            {Notificaciones.reverse()}
-                        </Col>
-                    </Row>
-                </Container>
-            </LoginContext.Provider>
-        </>
+        <LoginContext.Provider value={{ logeado, setLogeado, rol, setRol }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    minHeight: '100vh',
+                    bgcolor: 'background.default'
+                }}
+            >
+                <Box
+                    component="aside"
+                    sx={{
+                        width: { xs: 220, md: 260 },
+                        borderRight: 1,
+                        borderColor: 'divider',
+                        position: 'sticky',
+                        top: 0,
+                        alignSelf: 'flex-start',
+                        minHeight: '100vh',
+                        bgcolor: 'background.paper'
+                    }}
+                >
+                    <Navbar />
+                </Box>
+                <Box
+                    component="main"
+                    sx={{
+                        flexGrow: 1,
+                        px: { xs: 2, md: 4 },
+                        py: 2,
+                        overflowX: 'hidden'
+                    }}
+                >
+                    <Routes>
+                        <Route path="/" element={<Index mesas={mesas} datos_mozos={datos_mozos_listado} />} />
+                        <Route path="/Index2" element={<Index2 mesas={mesas} datos_mozos={datos_mozos_listado} />} />
+                        <Route path="/caja" element={<Caja />} />
+                        <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
+                        <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
+                        <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={datos_mesas_abm} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
+                        <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
+                        <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
+                        <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
+                        <Route path="/distribucion_mesas" element={<Control_Login><Distribucion_mesas /></Control_Login>} />
+                        <Route path="/delivery_takeaway" element={<Control_Login><Delivery_TakeAway /></Control_Login>} />
+                        <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
+                        <Route path="/login" element={<Login />} />
+                    </Routes>
+                </Box>
+                <Box
+                    component="aside"
+                    sx={{
+                        width: { xs: 0, md: 260 },
+                        borderLeft: { md: 1 },
+                        borderColor: 'divider',
+                        display: { xs: 'none', md: 'block' },
+                        bgcolor: 'background.paper',
+                        px: 2,
+                        py: 3
+                    }}
+                    className="container-notificaciones"
+                >
+                    {Notificaciones.reverse()}
+                </Box>
+            </Box>
+        </LoginContext.Provider>
     )
 }
 

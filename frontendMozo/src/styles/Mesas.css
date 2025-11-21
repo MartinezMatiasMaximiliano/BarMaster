@@ -1,6 +1,5 @@
 .container-notificaciones {
-    position: fixed;
-    right: 0;
+    position: sticky;
     top: 2vh;
 }
 
