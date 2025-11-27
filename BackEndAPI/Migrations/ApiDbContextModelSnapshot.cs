@@ -113,6 +113,70 @@ namespace BackEndAPI.Migrations
                     b.ToTable("Categorias");
                 });
 
+            modelBuilder.Entity("BackEndAPI.Models.Delivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Entregado")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IdCadete")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdCaja")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdPago")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdPersonaRegistro")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("IdTipoEnvio")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Indicaciones")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NombreCliente")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PersonaRegistroId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("PrecioTotal")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdCadete");
+
+                    b.HasIndex("IdCaja");
+
+                    b.HasIndex("IdPago")
+                        .IsUnique();
+
+                    b.HasIndex("IdTipoEnvio");
+
+                    b.HasIndex("PersonaRegistroId");
+
+                    b.ToTable("Deliveries");
+                });
+
             modelBuilder.Entity("BackEndAPI.Models.Empresa", b =>
                 {
                     b.Property<Guid>("Id")
@@ -131,17 +195,34 @@ namespace BackEndAPI.Migrations
                     b.Property<Guid?>("IdPropietario")
                         .HasColumnType("uuid");
 
+                    b.Property<short>("IdTipoSubscripcion")
+                        .HasColumnType("smallint");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
                     b.Property<string[]>("Telefonos")
                         .HasColumnType("text[]");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("IdPropietario")
                         .IsUnique();
+
+                    b.HasIndex("IdTipoSubscripcion");
 
                     b.ToTable("Empresas");
                 });
@@ -220,9 +301,6 @@ namespace BackEndAPI.Migrations
                     b.Property<string>("CodigoParaPedir")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("IdMozo")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("IdPlano")
                         .HasColumnType("uuid");
 
@@ -230,7 +308,7 @@ namespace BackEndAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("SucursalId")
+                    b.Property<Guid?>("PersonaId")
                         .HasColumnType("uuid");
 
                     b.Property<float>("h")
@@ -247,11 +325,9 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdMozo");
-
                     b.HasIndex("IdPlano");
 
-                    b.HasIndex("SucursalId");
+                    b.HasIndex("PersonaId");
 
                     b.ToTable("Mesas");
                 });
@@ -279,7 +355,7 @@ namespace BackEndAPI.Migrations
                     b.ToTable("Opciones");
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Pagos", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Pago", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -410,9 +486,6 @@ namespace BackEndAPI.Migrations
                     b.Property<string>("Descripcion")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("IdEmpresa")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("text");
@@ -425,8 +498,6 @@ namespace BackEndAPI.Migrations
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IdEmpresa");
 
                     b.ToTable("Productos");
                 });
@@ -485,9 +556,6 @@ namespace BackEndAPI.Migrations
                     b.Property<DateTime>("FechaHora")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("IdMesa")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("IdSucursal")
                         .HasColumnType("uuid");
 
@@ -498,8 +566,6 @@ namespace BackEndAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EstadoId");
-
-                    b.HasIndex("IdMesa");
 
                     b.HasIndex("IdSucursal");
 
@@ -578,6 +644,30 @@ namespace BackEndAPI.Migrations
                     b.HasIndex("IdEncargado");
 
                     b.ToTable("Sucursales");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.TipoEnvio", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Precio")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Vehiculo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TipoEnvios");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.TipoPago", b =>
@@ -670,6 +760,30 @@ namespace BackEndAPI.Migrations
                     b.ToTable("MenuProducto");
                 });
 
+            modelBuilder.Entity("TipoSubscripcion", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string[]>("Features")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Precio")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TipoSubscriptions");
+                });
+
             modelBuilder.Entity("BackEndAPI.Models.Caja", b =>
                 {
                     b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
@@ -688,6 +802,49 @@ namespace BackEndAPI.Migrations
                         .HasForeignKey("ProductoId");
                 });
 
+            modelBuilder.Entity("BackEndAPI.Models.Delivery", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Persona", "Cadete")
+                        .WithMany()
+                        .HasForeignKey("IdCadete")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Caja", "Caja")
+                        .WithMany()
+                        .HasForeignKey("IdCaja")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Pago", "Pago")
+                        .WithOne()
+                        .HasForeignKey("BackEndAPI.Models.Delivery", "IdPago")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.TipoEnvio", "TipoEnvio")
+                        .WithMany()
+                        .HasForeignKey("IdTipoEnvio")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Persona", "PersonaRegistro")
+                        .WithMany()
+                        .HasForeignKey("PersonaRegistroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cadete");
+
+                    b.Navigation("Caja");
+
+                    b.Navigation("Pago");
+
+                    b.Navigation("PersonaRegistro");
+
+                    b.Navigation("TipoEnvio");
+                });
+
             modelBuilder.Entity("BackEndAPI.Models.Empresa", b =>
                 {
                     b.HasOne("BackEndAPI.Models.Persona", "Propietario")
@@ -695,7 +852,15 @@ namespace BackEndAPI.Migrations
                         .HasForeignKey("BackEndAPI.Models.Empresa", "IdPropietario")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("TipoSubscripcion", "TipoSubscripcion")
+                        .WithMany()
+                        .HasForeignKey("IdTipoSubscripcion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Propietario");
+
+                    b.Navigation("TipoSubscripcion");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Menu", b =>
@@ -711,21 +876,14 @@ namespace BackEndAPI.Migrations
 
             modelBuilder.Entity("BackEndAPI.Models.Mesa", b =>
                 {
-                    b.HasOne("BackEndAPI.Models.Persona", "Mozo")
-                        .WithMany("Mesas")
-                        .HasForeignKey("IdMozo")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("BackEndAPI.Models.Plano", "Plano")
                         .WithMany("Mesas")
                         .HasForeignKey("IdPlano")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("BackEndAPI.Models.Sucursal", null)
+                    b.HasOne("BackEndAPI.Models.Persona", null)
                         .WithMany("Mesas")
-                        .HasForeignKey("SucursalId");
-
-                    b.Navigation("Mozo");
+                        .HasForeignKey("PersonaId");
 
                     b.Navigation("Plano");
                 });
@@ -741,7 +899,7 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Producto");
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Pagos", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Pago", b =>
                 {
                     b.HasOne("BackEndAPI.Models.TipoPago", "TipoPago")
                         .WithMany()
@@ -794,17 +952,6 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Sucursal");
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
-                {
-                    b.HasOne("BackEndAPI.Models.Empresa", "Empresa")
-                        .WithMany("Productos")
-                        .HasForeignKey("IdEmpresa")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Empresa");
-                });
-
             modelBuilder.Entity("BackEndAPI.Models.ProductosPorVisita", b =>
                 {
                     b.HasOne("BackEndAPI.Models.Producto", "Producto")
@@ -831,11 +978,6 @@ namespace BackEndAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BackEndAPI.Models.Mesa", "Mesa")
-                        .WithMany("Reservas")
-                        .HasForeignKey("IdMesa")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
                         .WithMany("Reservas")
                         .HasForeignKey("IdSucursal")
@@ -843,8 +985,6 @@ namespace BackEndAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Estado");
-
-                    b.Navigation("Mesa");
 
                     b.Navigation("Sucursal");
                 });
@@ -917,15 +1057,11 @@ namespace BackEndAPI.Migrations
                 {
                     b.Navigation("Personas");
 
-                    b.Navigation("Productos");
-
                     b.Navigation("Sucursales");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Mesa", b =>
                 {
-                    b.Navigation("Reservas");
-
                     b.Navigation("Visitas");
                 });
 
@@ -955,8 +1091,6 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Cajas");
 
                     b.Navigation("Menus");
-
-                    b.Navigation("Mesas");
 
                     b.Navigation("Personas");
 

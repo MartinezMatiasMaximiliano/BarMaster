@@ -15,11 +15,8 @@ namespace BackEndAPI.Models
         public bool Activo { get; set; } = true;
         public string PathImagen { get; set; } = string.Empty;
 
-        //Foreign Keys
-        public Guid IdEmpresa { get; set; }
 
         //navegacion
-        public Empresa Empresa { get; set; } = null!;
         public ICollection<Menu> Menus { get; set; } = new List<Menu>();
         public ICollection<Categoria> Categorias { get; set; } = new List<Categoria>();
         public ICollection<Opcion> Opciones { get; set; } = new List<Opcion>();

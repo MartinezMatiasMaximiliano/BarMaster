@@ -34,12 +34,11 @@ namespace BackEndAPI.Services
                 Direccion = nuevaSucursal.Direccion,
                 Telefono = nuevaSucursal.Telefono,
                 Username = nuevaSucursal.Username,
-                PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt,
                 IdEmpresa = nuevaSucursal.IdEmpresa,
                 IdEncargado = null
 
             };
+            sucursal.EstablecerContrasena(passwordHash, passwordSalt);
 
             var creadaSucursal = await _sucursalesRepository.CrearSucursal(sucursal);
             return creadaSucursal;

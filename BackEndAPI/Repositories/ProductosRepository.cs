@@ -15,8 +15,9 @@ namespace BackEndAPI.Repositories
 
         public async Task AddProductoAsync(Producto producto)
         {
-            await _context.Productos.AddAsync(producto);
-            await _context.SaveChangesAsync();
+            throw new NotImplementedException();
+            //await _context.Productos.AddAsync(producto);
+            //await _context.SaveChangesAsync();
         }
 
         public async Task DeleteProductoAsync(Guid id)
@@ -26,7 +27,8 @@ namespace BackEndAPI.Repositories
 
         public async Task<IEnumerable<Producto>> GetAllProductosAsync()
         {
-            return await _context.Productos.ToListAsync();
+            throw new NotImplementedException();
+            //return await _context.Productos.ToListAsync();
         }
 
         public Task<Producto> GetProductoByIdAsync(Guid id)

@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class _0 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,6 +46,24 @@ namespace BackEndAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Productos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Codigo = table.Column<string>(type: "text", nullable: true),
+                    Nombre = table.Column<string>(type: "text", nullable: false),
+                    Descripcion = table.Column<string>(type: "text", nullable: true),
+                    Precio = table.Column<decimal>(type: "numeric", nullable: false),
+                    Costo = table.Column<decimal>(type: "numeric", nullable: true),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false),
+                    PathImagen = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Productos", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -59,6 +77,21 @@ namespace BackEndAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TipoEnvios",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nombre = table.Column<string>(type: "text", nullable: false),
+                    Precio = table.Column<double>(type: "double precision", nullable: false),
+                    Vehiculo = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TipoEnvios", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TipoPagos",
                 columns: table => new
                 {
@@ -69,6 +102,60 @@ namespace BackEndAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TipoPagos", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TipoSubscriptions",
+                columns: table => new
+                {
+                    Id = table.Column<short>(type: "smallint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nombre = table.Column<string>(type: "text", nullable: false),
+                    Precio = table.Column<decimal>(type: "numeric", nullable: false),
+                    Features = table.Column<string[]>(type: "text[]", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TipoSubscriptions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Categorias",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Nombre = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false),
+                    ProductoId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categorias", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Categorias_Productos_ProductoId",
+                        column: x => x.ProductoId,
+                        principalTable: "Productos",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Opciones",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Nombre = table.Column<string>(type: "text", nullable: false),
+                    PrecioExtra = table.Column<decimal>(type: "numeric", nullable: false),
+                    IdProducto = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Opciones", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Opciones_Productos_IdProducto",
+                        column: x => x.IdProducto,
+                        principalTable: "Productos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -89,17 +176,39 @@ namespace BackEndAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Categorias",
+                name: "Deliveries",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Nombre = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
-                    Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    ProductoId = table.Column<Guid>(type: "uuid", nullable: true)
+                    FechaHora = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    NombreCliente = table.Column<string>(type: "text", nullable: false),
+                    Direccion = table.Column<string>(type: "text", nullable: false),
+                    Indicaciones = table.Column<string>(type: "text", nullable: true),
+                    Telefono = table.Column<string>(type: "text", nullable: false),
+                    PrecioTotal = table.Column<double>(type: "double precision", nullable: false),
+                    IdCaja = table.Column<Guid>(type: "uuid", nullable: false),
+                    IdPago = table.Column<Guid>(type: "uuid", nullable: false),
+                    IdPersonaRegistro = table.Column<Guid>(type: "uuid", nullable: false),
+                    IdCadete = table.Column<Guid>(type: "uuid", nullable: false),
+                    IdTipoEnvio = table.Column<int>(type: "integer", nullable: false),
+                    Entregado = table.Column<bool>(type: "boolean", nullable: false),
+                    PersonaRegistroId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Categorias", x => x.Id);
+                    table.PrimaryKey("PK_Deliveries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Deliveries_Cajas_IdCaja",
+                        column: x => x.IdCaja,
+                        principalTable: "Cajas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Deliveries_TipoEnvios_IdTipoEnvio",
+                        column: x => x.IdTipoEnvio,
+                        principalTable: "TipoEnvios",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -112,54 +221,19 @@ namespace BackEndAPI.Migrations
                     Emails = table.Column<string[]>(type: "text[]", nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
                     FechaInscripcion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Username = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: false),
+                    IdTipoSubscripcion = table.Column<short>(type: "smallint", nullable: false),
                     IdPropietario = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Empresas", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Productos",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Codigo = table.Column<string>(type: "text", nullable: true),
-                    Nombre = table.Column<string>(type: "text", nullable: false),
-                    Descripcion = table.Column<string>(type: "text", nullable: true),
-                    Precio = table.Column<decimal>(type: "numeric", nullable: false),
-                    Costo = table.Column<decimal>(type: "numeric", nullable: true),
-                    Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    PathImagen = table.Column<string>(type: "text", nullable: false),
-                    IdEmpresa = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Productos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Productos_Empresas_IdEmpresa",
-                        column: x => x.IdEmpresa,
-                        principalTable: "Empresas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Opciones",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Nombre = table.Column<string>(type: "text", nullable: false),
-                    PrecioExtra = table.Column<decimal>(type: "numeric", nullable: false),
-                    IdProducto = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Opciones", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Opciones_Productos_IdProducto",
-                        column: x => x.IdProducto,
-                        principalTable: "Productos",
+                        name: "FK_Empresas_TipoSubscriptions_IdTipoSubscripcion",
+                        column: x => x.IdTipoSubscripcion,
+                        principalTable: "TipoSubscriptions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -204,40 +278,16 @@ namespace BackEndAPI.Migrations
                     Nombre = table.Column<string>(type: "text", nullable: false),
                     CodigoParaPedir = table.Column<string>(type: "text", nullable: true),
                     Capacidad = table.Column<int>(type: "integer", nullable: false),
-                    IdMozo = table.Column<Guid>(type: "uuid", nullable: true),
-                    IdSucursal = table.Column<Guid>(type: "uuid", nullable: false)
+                    x = table.Column<float>(type: "real", nullable: false),
+                    y = table.Column<float>(type: "real", nullable: false),
+                    w = table.Column<float>(type: "real", nullable: false),
+                    h = table.Column<float>(type: "real", nullable: false),
+                    IdPlano = table.Column<Guid>(type: "uuid", nullable: true),
+                    PersonaId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Mesas", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Visitas",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    FechaHora = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Total = table.Column<decimal>(type: "numeric", nullable: false),
-                    Estado = table.Column<string>(type: "text", nullable: false),
-                    IdMesa = table.Column<Guid>(type: "uuid", nullable: false),
-                    IdCaja = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Visitas", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Visitas_Cajas_IdCaja",
-                        column: x => x.IdCaja,
-                        principalTable: "Cajas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Visitas_Mesas_IdMesa",
-                        column: x => x.IdMesa,
-                        principalTable: "Mesas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -260,36 +310,6 @@ namespace BackEndAPI.Migrations
                         principalTable: "TipoPagos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Pagos_Visitas_VisitaId",
-                        column: x => x.VisitaId,
-                        principalTable: "Visitas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProductosPorVisita",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    NombreProducto = table.Column<string>(type: "text", nullable: false),
-                    Detalles = table.Column<string>(type: "text", nullable: true),
-                    PrecioDelMomento = table.Column<double>(type: "double precision", nullable: false),
-                    Cantidad = table.Column<int>(type: "integer", nullable: false),
-                    PrecioTotal = table.Column<double>(type: "double precision", nullable: false),
-                    IdVisita = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductosPorVisita", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProductosPorVisita_Visitas_IdVisita",
-                        column: x => x.IdVisita,
-                        principalTable: "Visitas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -333,9 +353,12 @@ namespace BackEndAPI.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Nombre = table.Column<string>(type: "text", nullable: false),
                     Direccion = table.Column<string>(type: "text", nullable: false),
                     Telefono = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false),
+                    Username = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: false),
                     IdEncargado = table.Column<Guid>(type: "uuid", nullable: true),
                     IdEmpresa = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -357,6 +380,61 @@ namespace BackEndAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Visitas",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FechaHora = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Total = table.Column<decimal>(type: "numeric", nullable: false),
+                    Estado = table.Column<string>(type: "text", nullable: false),
+                    IdMesa = table.Column<Guid>(type: "uuid", nullable: false),
+                    IdCaja = table.Column<Guid>(type: "uuid", nullable: false),
+                    IdMozo = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Visitas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Visitas_Cajas_IdCaja",
+                        column: x => x.IdCaja,
+                        principalTable: "Cajas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Visitas_Mesas_IdMesa",
+                        column: x => x.IdMesa,
+                        principalTable: "Mesas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Visitas_Personas_IdMozo",
+                        column: x => x.IdMozo,
+                        principalTable: "Personas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Planos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    nombre = table.Column<string>(type: "text", nullable: false),
+                    detalles = table.Column<string>(type: "text", nullable: true),
+                    IdSucursal = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Planos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Planos_Sucursales_IdSucursal",
+                        column: x => x.IdSucursal,
+                        principalTable: "Sucursales",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Reservas",
                 columns: table => new
                 {
@@ -365,8 +443,7 @@ namespace BackEndAPI.Migrations
                     NombreReserva = table.Column<string>(type: "text", nullable: false),
                     CantidadDePersonas = table.Column<int>(type: "integer", nullable: true),
                     EstadoId = table.Column<int>(type: "integer", nullable: false),
-                    IdSucursal = table.Column<Guid>(type: "uuid", nullable: false),
-                    IdMesa = table.Column<Guid>(type: "uuid", nullable: true)
+                    IdSucursal = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -378,15 +455,40 @@ namespace BackEndAPI.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Reservas_Mesas_IdMesa",
-                        column: x => x.IdMesa,
-                        principalTable: "Mesas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
                         name: "FK_Reservas_Sucursales_IdSucursal",
                         column: x => x.IdSucursal,
                         principalTable: "Sucursales",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductosPorVisita",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    NombreProducto = table.Column<string>(type: "text", nullable: false),
+                    Detalles = table.Column<string>(type: "text", nullable: true),
+                    PrecioDelMomento = table.Column<double>(type: "double precision", nullable: false),
+                    Cantidad = table.Column<int>(type: "integer", nullable: false),
+                    PrecioTotal = table.Column<double>(type: "double precision", nullable: false),
+                    IdVisita = table.Column<Guid>(type: "uuid", nullable: false),
+                    IdProducto = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductosPorVisita", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductosPorVisita_Productos_IdProducto",
+                        column: x => x.IdProducto,
+                        principalTable: "Productos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_ProductosPorVisita_Visitas_IdVisita",
+                        column: x => x.IdVisita,
+                        principalTable: "Visitas",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -433,10 +535,41 @@ namespace BackEndAPI.Migrations
                 column: "ProductoId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_IdCadete",
+                table: "Deliveries",
+                column: "IdCadete");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_IdCaja",
+                table: "Deliveries",
+                column: "IdCaja");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_IdPago",
+                table: "Deliveries",
+                column: "IdPago",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_IdTipoEnvio",
+                table: "Deliveries",
+                column: "IdTipoEnvio");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_PersonaRegistroId",
+                table: "Deliveries",
+                column: "PersonaRegistroId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Empresas_IdPropietario",
                 table: "Empresas",
                 column: "IdPropietario",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Empresas_IdTipoSubscripcion",
+                table: "Empresas",
+                column: "IdTipoSubscripcion");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MenuProducto_ProductosId",
@@ -449,14 +582,14 @@ namespace BackEndAPI.Migrations
                 column: "IdSucursal");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Mesas_IdMozo",
+                name: "IX_Mesas_IdPlano",
                 table: "Mesas",
-                column: "IdMozo");
+                column: "IdPlano");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Mesas_IdSucursal",
+                name: "IX_Mesas_PersonaId",
                 table: "Mesas",
-                column: "IdSucursal");
+                column: "PersonaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Opciones_IdProducto",
@@ -489,9 +622,14 @@ namespace BackEndAPI.Migrations
                 column: "SucursalId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Productos_IdEmpresa",
-                table: "Productos",
-                column: "IdEmpresa");
+                name: "IX_Planos_IdSucursal",
+                table: "Planos",
+                column: "IdSucursal");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductosPorVisita_IdProducto",
+                table: "ProductosPorVisita",
+                column: "IdProducto");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductosPorVisita_IdVisita",
@@ -502,11 +640,6 @@ namespace BackEndAPI.Migrations
                 name: "IX_Reservas_EstadoId",
                 table: "Reservas",
                 column: "EstadoId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reservas_IdMesa",
-                table: "Reservas",
-                column: "IdMesa");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reservas_IdSucursal",
@@ -533,6 +666,11 @@ namespace BackEndAPI.Migrations
                 table: "Visitas",
                 column: "IdMesa");
 
+            migrationBuilder.CreateIndex(
+                name: "IX_Visitas_IdMozo",
+                table: "Visitas",
+                column: "IdMozo");
+
             migrationBuilder.AddForeignKey(
                 name: "FK_Cajas_Sucursales_IdSucursal",
                 table: "Cajas",
@@ -542,11 +680,28 @@ namespace BackEndAPI.Migrations
                 onDelete: ReferentialAction.SetNull);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Categorias_Productos_ProductoId",
-                table: "Categorias",
-                column: "ProductoId",
-                principalTable: "Productos",
-                principalColumn: "Id");
+                name: "FK_Deliveries_Pagos_IdPago",
+                table: "Deliveries",
+                column: "IdPago",
+                principalTable: "Pagos",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Deliveries_Personas_IdCadete",
+                table: "Deliveries",
+                column: "IdCadete",
+                principalTable: "Personas",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Deliveries_Personas_PersonaRegistroId",
+                table: "Deliveries",
+                column: "PersonaRegistroId",
+                principalTable: "Personas",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Empresas_Personas_IdPropietario",
@@ -573,18 +728,25 @@ namespace BackEndAPI.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Mesas_Personas_IdMozo",
+                name: "FK_Mesas_Personas_PersonaId",
                 table: "Mesas",
-                column: "IdMozo",
+                column: "PersonaId",
                 principalTable: "Personas",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Mesas_Planos_IdPlano",
+                table: "Mesas",
+                column: "IdPlano",
+                principalTable: "Planos",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.SetNull);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Mesas_Sucursales_IdSucursal",
-                table: "Mesas",
-                column: "IdSucursal",
-                principalTable: "Sucursales",
+                name: "FK_Pagos_Visitas_VisitaId",
+                table: "Pagos",
+                column: "VisitaId",
+                principalTable: "Visitas",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
@@ -614,13 +776,13 @@ namespace BackEndAPI.Migrations
                 name: "Categorias");
 
             migrationBuilder.DropTable(
+                name: "Deliveries");
+
+            migrationBuilder.DropTable(
                 name: "MenuProducto");
 
             migrationBuilder.DropTable(
                 name: "Opciones");
-
-            migrationBuilder.DropTable(
-                name: "Pagos");
 
             migrationBuilder.DropTable(
                 name: "ProductosPorVisita");
@@ -629,10 +791,19 @@ namespace BackEndAPI.Migrations
                 name: "Reservas");
 
             migrationBuilder.DropTable(
+                name: "Pagos");
+
+            migrationBuilder.DropTable(
+                name: "TipoEnvios");
+
+            migrationBuilder.DropTable(
                 name: "Menus");
 
             migrationBuilder.DropTable(
                 name: "Productos");
+
+            migrationBuilder.DropTable(
+                name: "EstadoReservas");
 
             migrationBuilder.DropTable(
                 name: "TipoPagos");
@@ -641,13 +812,13 @@ namespace BackEndAPI.Migrations
                 name: "Visitas");
 
             migrationBuilder.DropTable(
-                name: "EstadoReservas");
-
-            migrationBuilder.DropTable(
                 name: "Cajas");
 
             migrationBuilder.DropTable(
                 name: "Mesas");
+
+            migrationBuilder.DropTable(
+                name: "Planos");
 
             migrationBuilder.DropTable(
                 name: "Sucursales");
@@ -660,6 +831,9 @@ namespace BackEndAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Roles");
+
+            migrationBuilder.DropTable(
+                name: "TipoSubscriptions");
         }
     }
 }

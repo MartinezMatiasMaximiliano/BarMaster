@@ -17,13 +17,10 @@ namespace BackEndAPI.Models
 
         //Foreign Keys  
 
-        public Guid? IdMozo { get; set; } = null;  
         public Guid? IdPlano { get; set; }
 
         //navegacion
-        public Persona? Mozo { get; set; } = null;
         public Plano? Plano { get; set; } = null!;
-        public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
         public ICollection<Visita> Visitas { get; set; } = new List<Visita>();
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace BackEndAPI.Models
 {
-    public class Pagos
+    public class Pago
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public decimal Monto { get; set; }

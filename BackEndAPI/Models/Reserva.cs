@@ -10,10 +10,8 @@
 
         //Foreign Keys
         public Guid IdSucursal { get; set; }
-        public Guid? IdMesa { get; set; }
 
         //navegacion
-        public Mesa Mesa { get; set; } = null!;
         public Sucursal Sucursal { get; set; } = null!;
     }
 }

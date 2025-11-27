@@ -17,6 +17,6 @@
         public Caja Caja { get; set; } = null!;
         public Persona? Mozo { get; set; }
         public ICollection<ProductosPorVisita> ProductosPorVisita { get; set; } = new List<ProductosPorVisita>();
-        public ICollection<Pagos> Pagos { get; set; } = new List<Pagos>();
+        public ICollection<Pago> Pagos { get; set; } = new List<Pago>();
     }
 }
