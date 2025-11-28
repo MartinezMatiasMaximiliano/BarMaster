@@ -14,10 +14,9 @@ export default function Select(props) {
     };
 
     return (
-        <Box sx={{ minWidth: 120 }}>
-            <FormControl fullWidth className="mb-3">
-                <InputLabel id="demo-simple-select-label">{props.campo.label}</InputLabel>
-                <Select_
+        <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">{props.campo.label}</InputLabel>
+            <Select_
                     value={value}
                     label={props.campo.label}
                     onChange={handleChange}
@@ -28,8 +27,7 @@ export default function Select(props) {
                         </MenuItem>
                     ))}
                 </Select_>
-            </FormControl>
-        </Box>
+        </FormControl>
     );
 }
 

@@ -53,11 +53,11 @@ function Abm_Menu(props) {
                 titulo={props.titulo}
                 filas={props.datos_menu}
                 columnas={columnas}
+                onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
                         columnas={["Imagen", "Nombre", "Precio", "Descripción", "Categorias"]}
-                        categoriasTotales={props.categorias}
                         agregar={api.crear}
                         campos={Campos}
                     >

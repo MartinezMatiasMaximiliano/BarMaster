@@ -1,13 +1,5 @@
 import { BuscarTodosLosProductos } from "../../API/APIProductos";
 
-const data = await BuscarTodosLosProductos();
-const productos = (data ?? [])
-  .filter((producto) => producto.activo)
-  .map((producto) => ({
-    id: producto.id,
-    nombre: producto.nombre,
-  }));
-
 const tiposDeEnvio = [
   { id: 1, nombre: "Corto", precio: 500 },
   { id: 2, nombre: "Mediano", precio: 750 },
@@ -20,5 +12,18 @@ export const Campos = [
   { name: "Telefono", label: "Teléfono", type: "text" },
   { name: "Indicaciones", label: "Indicaciones", type: "text" },
   { name: "TipoEnvio", label: "Tipo de Envío", type: "select", options: tiposDeEnvio },
-  { name: "Productos", label: "Productos", type: "select", options: productos },
+  { name: "Productos", label: "Productos", type: "select", options: [] },
 ];
+
+// Carga asincrónica SIN await (no rompe el build)
+BuscarTodosLosProductos().then(data => {
+  const productos = (data ?? [])
+    .filter(producto => producto.activo)
+    .map(producto => ({
+      id: producto.id,
+      nombre: producto.nombre,
+    }));
+
+  // Actualizamos solo el campo de productos
+  Campos[5].options = productos;
+});

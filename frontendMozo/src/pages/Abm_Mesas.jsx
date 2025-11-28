@@ -47,6 +47,7 @@ function Abm_Mesas(props) {
                 titulo={props.titulo}
                 filas={props.datos_mesas}
                 columnas={columnas}
+                onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}

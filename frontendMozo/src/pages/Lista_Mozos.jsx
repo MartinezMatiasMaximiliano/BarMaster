@@ -24,6 +24,7 @@ function Abm_Mozos(props) {
     return (
         <Container>
             <Tabla
+                onRefresh={props.recargarComponentes}
                 titulo={props.titulo}
                 columnas={columnas}
                 filas={props.datos_mozos}

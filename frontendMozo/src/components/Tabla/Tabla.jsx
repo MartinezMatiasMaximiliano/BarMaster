@@ -1,44 +1,110 @@
-import React from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+import React, { useState } from "react";
+import {
+    Avatar,
+    Box,
+    Card,
+    CardContent,
+    CardHeader,
+    Divider,
+    IconButton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip,
+    Typography
+} from "@mui/material";
+import RefreshIcon from '@mui/icons-material/Refresh';
+import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported';
 import { styled } from "@mui/material/styles";
-import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import { tableCellClasses } from "@mui/material/TableCell";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.common.black,
-        color: theme.palette.common.white,
+        backgroundColor: theme.palette.grey[100],
+        color: theme.palette.text.primary,
+        fontWeight: 600,
+        fontSize: '0.875rem',
     },
     [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
+        fontSize: '0.875rem',
     },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    "&:nth-of-type(odd)": {
+    "&:nth-of-type(even)": {
         backgroundColor: theme.palette.action.hover,
+    },
+    "&:hover": {
+        backgroundColor: theme.palette.action.selected,
     },
     "&:last-child td, &:last-child th": {
         border: 0,
     },
 }));
 
+function ImageCell({ src }) {
+    const [error, setError] = useState(false);
+    const imageUrl = src ? `${import.meta.env.VITE_BASE_URL}${src}` : null;
+
+    if (!imageUrl) {
+        return (
+            <Avatar
+                variant="rounded"
+                sx={{
+                    width: 80,
+                    height: 80,
+                    bgcolor: 'grey.200',
+                }}
+            >
+                <ImageNotSupportedIcon color="disabled" />
+            </Avatar>
+        );
+    }
+
+    if (error) {
+        return (
+            <Avatar
+                variant="rounded"
+                sx={{
+                    width: 80,
+                    height: 80,
+                    bgcolor: 'grey.200',
+                }}
+            >
+                <ImageNotSupportedIcon color="disabled" />
+            </Avatar>
+        );
+    }
+
+    return (
+        <Box
+            component="img"
+            src={imageUrl}
+            onError={() => setError(true)}
+            alt="Producto"
+            sx={{
+                width: 80,
+                height: 80,
+                objectFit: 'cover',
+                borderRadius: 1,
+                boxShadow: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+            }}
+        />
+    );
+}
+
 function defaultRender(row, col) {
     const value = col.value ? col.value(row) : (col.key ? row[col.key] : undefined);
 
     // Soporte nativo para imágenes
     if (col.type === "image") {
-        if (!value) return null;
-        return (
-            <img
-                src={`${import.meta.env.VITE_BASE_URL}${value}`}
-                style={{ width: "100px", height: "80px", objectFit: "cover" }}
-            />
-        );
+        return <ImageCell src={value} />;
     }
 
     if (Array.isArray(value)) return value.join(", ");
@@ -48,22 +114,48 @@ function defaultRender(row, col) {
 export default function Tabla(props) {
     console.log("FILA EN TABLA: ", props.filas)
     return (
-        <>
-            <h2 className="mt-2">{props.titulo}</h2>
-
-            {typeof props.renderAgregar === "function" ? props.renderAgregar() : null}
-
-            <TableContainer component={Paper} className="mt-4">
-                <div
-                    style={{
+        <Card variant="outlined" sx={{ mt: 2 }}>
+            <CardHeader
+                title={
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%'
+                        }}
+                    >
+                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
+                            {typeof props.renderAgregar === "function" ? props.renderAgregar() : null}
+                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                            <Typography variant="h5" component="h2" fontWeight={600}>
+                                {props.titulo}
+                            </Typography>
+                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                            {typeof props.onRefresh === "function" && (
+                                <Tooltip title="Recargar">
+                                    <IconButton onClick={props.onRefresh} size="small">
+                                        <RefreshIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Box>
+                    </Box>
+                }
+                sx={{ pb: 1 }}
+            />
+            <Divider />
+            <CardContent sx={{ p: 0 }}>
+                <TableContainer
+                    sx={{
                         maxHeight: "70vh",
                         overflowY: "auto",
-                        border: "1px solid #ccc",
-                        borderRadius: "5px",
                     }}
                 >
-                    <Table sx={{ minWidth: 650 }} aria-label="data table">
-                        <TableHead style={{ position: "sticky", top: 0, zIndex: 2 }}>
+                    <Table size="small" stickyHeader>
+                        <TableHead>
                             <TableRow>
                                 {props.columnas.map((col, i) => (
                                     <StyledTableCell key={col.key ?? i} align={col.align || "left"}>
@@ -74,22 +166,32 @@ export default function Tabla(props) {
                         </TableHead>
 
                         <TableBody>
-                            {props.filas.map((fila, rIdx) => (
-                                <StyledTableRow key={fila.id ?? rIdx}>
-                                    {props.columnas.map((col, cIdx) => (
-                                        <StyledTableCell
-                                            key={`${col.key ?? cIdx}-${fila.id ?? rIdx}`}
-                                            align={col.align || "left"}
-                                        >
-                                            {col.render ? col.render(fila) : defaultRender(fila, col)}
-                                        </StyledTableCell>
-                                    ))}
-                                </StyledTableRow>
-                            ))}
+                            {props.filas.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={props.columnas.length} align="center" sx={{ py: 4 }}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            No hay registros para mostrar.
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                props.filas.map((fila, rIdx) => (
+                                    <StyledTableRow key={fila.id ?? rIdx} hover>
+                                        {props.columnas.map((col, cIdx) => (
+                                            <StyledTableCell
+                                                key={`${col.key ?? cIdx}-${fila.id ?? rIdx}`}
+                                                align={col.align || "left"}
+                                            >
+                                                {col.render ? col.render(fila) : defaultRender(fila, col)}
+                                            </StyledTableCell>
+                                        ))}
+                                    </StyledTableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
-                </div>
-            </TableContainer>
-        </>
+                </TableContainer>
+            </CardContent>
+        </Card>
     );
 }

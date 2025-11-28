@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Switch_ from '@mui/material/Switch';
+import { Switch as MUISwitch } from '@mui/material';
 
 export default function Switch(props) {
     const [checked, setChecked] = React.useState(props.activo);
@@ -11,10 +11,12 @@ export default function Switch(props) {
     };
 
     return (
-        <Switch_
+        <MUISwitch
             checked={checked}
             onChange={handleChange}
-            inputProps={{ 'aria-label': 'controlled' }}
+            inputProps={{ 'aria-label': 'Activar/Desactivar' }}
+            color="primary"
+            size="small"
         />
     );
 }

@@ -16,7 +16,8 @@ import Graficas from './pages/Graficas'
 import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery_TakeAway from './pages/Delivery_TakeAway'
-import Caja from './pages/Caja'
+import Caja from './pages/Caja/Caja'
+import Mi_Plan from './pages/Mi_Plan'
 import Login from './pages/Login';
 import { PostItems } from './API/APIPedidos';
 import { BuscarTodasLasMesas } from './API/APIMesas';
@@ -102,6 +103,15 @@ function App() {
 
     async function recargarCategorias() {
         await BuscarTodasLasCategorias().then(data => SetCategorias(data));
+    }
+
+    //TODO: Recargar Delivery/Take Away
+    async function recargarDeliveryTakeAway() {
+        //await BuscarTodosLosDeliveryTakeAway().then(data => SetDeliveryTakeAway(data));
+    }
+
+    async function recargarListadoMozos() {
+        await BuscarTodosLosMozos().then(data => SetMozos(data));
     }
 
     async function pagarTotal(IdPedido) {
@@ -192,16 +202,17 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Index mesas={mesas} datos_mozos={datos_mozos_listado} />} />
                         <Route path="/Index2" element={<Index2 mesas={mesas} datos_mozos={datos_mozos_listado} />} />
-                        <Route path="/caja" element={<Caja />} />
+                        <Route path="/caja" element={<Control_Login><Caja /></Control_Login>} />
                         <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
-                        <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
+                        <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
                         <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={datos_mesas_abm} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                         <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
                         <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
                         <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
                         <Route path="/distribucion_mesas" element={<Control_Login><Distribucion_mesas /></Control_Login>} />
-                        <Route path="/delivery_takeaway" element={<Control_Login><Delivery_TakeAway /></Control_Login>} />
+                        <Route path="/delivery_takeaway" element={<Control_Login><Delivery_TakeAway recargarComponentes={recargarDeliveryTakeAway} titulo="Delivery/Take Away" /></Control_Login>} />
                         <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
+                        <Route path="/mi_plan" element={<Control_Login><Mi_Plan /></Control_Login>} />
                         <Route path="/login" element={<Login />} />
                     </Routes>
                 </Box>

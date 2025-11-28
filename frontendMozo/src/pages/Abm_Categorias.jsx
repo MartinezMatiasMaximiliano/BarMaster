@@ -44,6 +44,7 @@ function Abm_Categorias(props) {
                 titulo={props.titulo}
                 filas={props.datos_categorias}
                 columnas={columnas}
+                onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}

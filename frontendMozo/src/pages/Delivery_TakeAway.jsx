@@ -190,11 +190,11 @@ function Delivery_TakeAway(props) {
 
     return (
         <Container>
-        <h2>Delivery</h2>
             <Tabla
                 titulo={props.titulo}
                 filas={deliveries}
                 columnas={columnas}
+                onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}

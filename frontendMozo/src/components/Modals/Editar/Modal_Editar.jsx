@@ -1,8 +1,16 @@
 import { React, useState, useEffect } from "react";
-import { Button, Modal, Form } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil } from "@fortawesome/free-solid-svg-icons";
-import { validarCampos } from "../../../Helpers/HelperFunctions";
+import {
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    IconButton,
+    Stack,
+    Box
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import CloseIcon from '@mui/icons-material/Close';
 import { Renderizados } from "./Renderizados";
 import Errores from "./Errores"
 import Handlers from "./Handlers";
@@ -14,16 +22,11 @@ function Modal_Editar(props) {
 
     const [editValues, setEditValues] = useState({ ...filaFiltrada });
 
-    const handleClose = () => {
-        setErrors({});
-        setShow(false);
-    };
-
     const handleShow = () => setShow(true);
 
     useEffect(() => {
         if (show) setEditValues({ ...filaFiltrada });
-    }, [show]);
+    }, [show, filaFiltrada]);
 
     const { errors, setErrors, handleChange, handleSave } = Handlers({
             id,
@@ -31,8 +34,13 @@ function Modal_Editar(props) {
             setEditValues,
             modificar: props.modificar,
             recargarComponentes: props.recargarComponentes,
-            handleClose,
+            handleClose: () => setShow(false),
         });
+
+    const handleClose = () => {
+        setErrors({});
+        setShow(false);
+    };
 
     const renderizados = Renderizados(props, handleChange);
 
@@ -40,35 +48,57 @@ function Modal_Editar(props) {
 
     return (
         <>
-            <Button variant="primary" onClick={handleShow} disabled={!props.disabled}>
-                <FontAwesomeIcon icon={faPencil} />
-            </Button>
+            <IconButton
+                color="primary"
+                onClick={handleShow}
+                disabled={!props.disabled}
+                size="small"
+            >
+                <EditIcon fontSize="small" />
+            </IconButton>
 
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        Editar
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Errores errors={errors}></Errores>
-                     <Form>
-                        {props.campos.map((campo, index) => {
-                            const value = editValues[campo.name];
-                            const renderer = renderizados[campo.type] || renderizados.text;
-                            return renderer(campo, value, index);
-                        })}
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
+            <Dialog 
+                open={show} 
+                onClose={handleClose}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <span>Editar</span>
+                        <IconButton
+                            aria-label="close"
+                            onClick={handleClose}
+                            size="small"
+                            sx={{
+                                color: (theme) => theme.palette.grey[500],
+                            }}
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </Stack>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Errores errors={errors} />
+                    <Box component="form" sx={{ mt: 1 }}>
+                        <Stack spacing={2}>
+                            {props.campos.map((campo, index) => {
+                                const value = editValues[campo.name];
+                                const renderer = renderizados[campo.type] || renderizados.text;
+                                return renderer(campo, value, index);
+                            })}
+                        </Stack>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, py: 2 }}>
+                    <Button onClick={handleClose} variant="outlined">
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleSave}>
+                    <Button onClick={handleSave} variant="contained" color="primary">
                         Editar
                     </Button>
-                </Modal.Footer>
-            </Modal>
+                </DialogActions>
+            </Dialog>
         </>
     );
 }

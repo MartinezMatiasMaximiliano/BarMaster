@@ -1,7 +1,7 @@
 import Input_Imagen from "../../Input_Imagen";
 import Multiple_Select from "../../Select_Multiple";
 import Select from "../../Select";
-import { Form } from "react-bootstrap";
+import { TextField } from "@mui/material";
 
 export const Renderizados = (props, handleChange) => ({
   image: (campo, index) => (
@@ -25,13 +25,13 @@ export const Renderizados = (props, handleChange) => ({
   ),
 
   text: (campo, index) => (
-    <Form.Group className="mb-3" key={index} controlId={`campo-${index}`}>
-      <Form.Label>{campo.label}</Form.Label>
-      <Form.Control
-        type="text"
-        placeholder={`Ingrese valor para ${campo.label}`}
-        onChange={(e) => handleChange(e, campo.name, campo.type)}
-      />
-    </Form.Group>
+    <TextField
+      key={index}
+      fullWidth
+      label={campo.label}
+      placeholder={`Ingrese valor para ${campo.label}`}
+      onChange={(e) => handleChange(e, campo.name, campo.type)}
+      variant="outlined"
+    />
   ),
 });

@@ -60,11 +60,11 @@ function Abm_Personas(props) {
                 titulo={props.titulo}
                 filas={props.datos_personas}
                 columnas={columnas}
+                onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
                         columnas={['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Rol']}
-                        configSelect={configSelect}
                         agregar={api.crear}
                         campos={Campos}
                     >
