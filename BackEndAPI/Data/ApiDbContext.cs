@@ -1,8 +1,10 @@
 ﻿using BackEndAPI.Controllers;
 using BackEndAPI.Models;
+using BackEndAPI.Tenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
+using System;
 using System.Security.AccessControl;
 using System.Text.Json;
 using System.Xml;
@@ -11,7 +13,12 @@ namespace BackEndAPI.Data
 {
     public class ApiDbContext : DbContext
     {
-
+        public ApiDbContext(DbContextOptions<ApiDbContext> options, TenantInfo tenant)
+        : base(options)
+        {
+            Tenant = tenant;
+        }
+        public TenantInfo Tenant { get; set; }  
         public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
         public DbSet<TipoSubscripcion> TipoSubscriptions => Set<TipoSubscripcion>();
         public DbSet<Empresa> Empresas => Set<Empresa>();

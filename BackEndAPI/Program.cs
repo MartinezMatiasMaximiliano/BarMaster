@@ -5,6 +5,7 @@ using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
+using BackEndAPI.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -16,7 +17,12 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 #region CONTROLLERS Y SWAGGER
+
+builder.Services.AddSingleton<IConnectionStringProvider, ConnectionStringProvider>();
+builder.Services.AddScoped<ITenantResolver, TenantResolverHeader>();
+builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -58,6 +64,8 @@ builder.Services.AddCors(options =>
 #endregion
 
 #region SERVICIOS
+
+
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
@@ -113,6 +121,7 @@ DirectoryInfo infoUploads = Directory.CreateDirectory(uploads);
 #endregion
 
 #region MIDDLEWARES
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(uploads),
@@ -127,6 +136,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<TenantDbMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
