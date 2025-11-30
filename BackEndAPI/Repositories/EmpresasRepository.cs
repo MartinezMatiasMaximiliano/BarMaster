@@ -17,21 +17,21 @@ namespace BackEndAPI.Repositories
         {
             return await _context.Empresas
                 .Include(e => e.Sucursales)
-                .Include(e => e.Propietario)
+                //.Include(e => e.Propietario)
                 .ToListAsync();
         }
         public async Task<Empresa?> GetEmpresaById(Guid id)
         {
             return await _context.Empresas
                 .Include(e=>e.Sucursales)
-                .Include(e=>e.Propietario)
+                //.Include(e=>e.Propietario)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
         public async Task<Empresa?> GetEmpresaByNombre(string nombre)
         {
             return await _context.Empresas
                 .Include(e => e.Sucursales)
-                .Include(e => e.Propietario)
+                //.Include(e => e.Propietario)
                 .FirstOrDefaultAsync(e => e.Nombre.ToLower() == nombre.ToLower());
         }
         public async Task<Empresa> AddEmpresa(Empresa empresa)

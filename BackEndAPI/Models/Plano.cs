@@ -3,11 +3,10 @@
     public class Plano
     {
         public Guid Id { get; set; }
-        public string nombre { get; set; } = null!;
-        public string? detalles { get; set; }
-
-        //Foreign Key
         public Guid IdSucursal { get; set; }
+        public string Nombre { get; set; } = null!;
+        public string? Detalles { get; set; }
+
 
         //navegacion
         public Sucursal Sucursal { get; set; } = null!;   

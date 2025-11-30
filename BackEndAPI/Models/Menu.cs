@@ -3,11 +3,11 @@
     public class Menu
     {
         public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid IdSucursal { get; set; }
         public string Nombre { get; set; } = null!;
         public bool Activo { get; set; } = true;
 
-        //foreign key
-        public Guid IdSucursal { get; set; }
+        
 
         //navegacion
         public Sucursal Sucursal { get; set; } = null!;

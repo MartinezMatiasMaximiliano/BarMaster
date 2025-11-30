@@ -3,6 +3,7 @@ using System;
 using BackEndAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251129220328_init")]
+    partial class init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -106,7 +109,12 @@ namespace BackEndAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("ProductoId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
 
                     b.ToTable("Categorias");
                 });
@@ -707,21 +715,6 @@ namespace BackEndAPI.Migrations
                     b.ToTable("Visitas");
                 });
 
-            modelBuilder.Entity("CategoriaProducto", b =>
-                {
-                    b.Property<Guid>("CategoriasId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProductosId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("CategoriasId", "ProductosId");
-
-                    b.HasIndex("ProductosId");
-
-                    b.ToTable("CategoriaProducto");
-                });
-
             modelBuilder.Entity("MenuProducto", b =>
                 {
                     b.Property<Guid>("MenusId")
@@ -770,6 +763,13 @@ namespace BackEndAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Sucursal");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Categoria", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Producto", null)
+                        .WithMany("Categorias")
+                        .HasForeignKey("ProductoId");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Delivery", b =>
@@ -965,21 +965,6 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Mozo");
                 });
 
-            modelBuilder.Entity("CategoriaProducto", b =>
-                {
-                    b.HasOne("BackEndAPI.Models.Categoria", null)
-                        .WithMany()
-                        .HasForeignKey("CategoriasId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BackEndAPI.Models.Producto", null)
-                        .WithMany()
-                        .HasForeignKey("ProductosId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("MenuProducto", b =>
                 {
                     b.HasOne("BackEndAPI.Models.Menu", null)
@@ -1014,6 +999,8 @@ namespace BackEndAPI.Migrations
 
             modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
                 {
+                    b.Navigation("Categorias");
+
                     b.Navigation("Opciones");
                 });
 

@@ -62,26 +62,20 @@ namespace BackEndAPI.Data
                 .WithMany()
                 .HasForeignKey(e => e.IdTipoSubscripcion);
 
-            // Relacion Empresa 1:1 Persona (Propietario)
-            modelBuilder.Entity<Empresa>()
-                .HasOne(e => e.Propietario)
-                .WithOne(p => p.EmpresaPropietario)
-                .HasForeignKey<Empresa>(e => e.IdPropietario)
-                .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un propietario si tiene una empresa asociada
+            ////// Relacion Empresa 1:1 Persona (Propietario)
+            ////modelBuilder.Entity<Empresa>()
+            ////    .HasOne(e => e.Propietario)
+            ////    .WithOne()
+            ////    .HasForeignKey<Empresa>(e => e.IdPropietario)
+            ////    .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un propietario si tiene una empresa asociada
 
             // Relacion Empresa 1:N Persona (Empleados)
             modelBuilder.Entity<Empresa>()
                 .HasMany(e => e.Personas)
-                .WithOne(p => p.EmpresaEmpleado)
+                .WithOne(p => p.Empresa)
                 .HasForeignKey(p => p.IdEmpresa)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una empresa, se borran sus empleados
 
-            // Relacion Sucursal N:1 Persona (Encargado)
-            modelBuilder.Entity<Sucursal>()
-                .HasOne(s => s.Encargado)
-                .WithMany(p => p.Sucursales)
-                .HasForeignKey(s => s.IdEncargado)
-                .OnDelete(DeleteBehavior.SetNull); // Si se borra un encargado, se pone a null en la sucursal
 
             // Relacion Sucursal N:1 Empresa
             modelBuilder.Entity<Sucursal>()
@@ -97,9 +91,15 @@ namespace BackEndAPI.Data
                 .HasForeignKey(r => r.IdSucursal)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus reservas
 
+            modelBuilder.Entity<Reserva>()
+                .HasOne(r => r.Estado)
+                .WithMany()
+                .HasForeignKey(r => r.IdEstadoReserva)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // Relacion Sucursal 1:N PlanosMesas
             modelBuilder.Entity<Sucursal>()
-                .HasMany(s => s.PlanosMesas)
+                .HasMany(s => s.Planos)
                 .WithOne(r => r.Sucursal)
                 .HasForeignKey(r => r.IdSucursal)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus planos de mesas
@@ -110,13 +110,6 @@ namespace BackEndAPI.Data
                 .WithMany()
                 .HasForeignKey(p => p.IdRol)
                 .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un rol si tiene personas asociadas
-
-            // Relacion Visita N:1 Mesa
-            modelBuilder.Entity<Visita>()
-                .HasOne(v => v.Mesa)
-                .WithMany(m => m.Visitas)
-                .HasForeignKey(v => v.IdMesa)
-                .OnDelete(DeleteBehavior.SetNull); // si se borra una mesa, se pone a null en la visita
 
             // Relacion Visita N:1 Caja
             modelBuilder.Entity<Visita>()
@@ -153,17 +146,19 @@ namespace BackEndAPI.Data
                 .HasForeignKey(o => o.IdProducto)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra un producto, se borran sus opciones
 
-            // Relacion ProductosPorVisita N:1 Visita 
-            modelBuilder.Entity<ProductosPorVisita>()
-                .HasOne(pv => pv.Visita)
-                .WithMany(v => v.ProductosPorVisita)
-                .HasForeignKey(pv => pv.IdVisita);
-
             // Relacion ProductosPorVisita N:1 Producto
             modelBuilder.Entity<ProductosPorVisita>()
                 .HasOne(pv => pv.Producto)
                 .WithMany()
-                .HasForeignKey(pv => pv.IdProducto).OnDelete(DeleteBehavior.SetNull); // Si se borra un producto, se pone a null en productos por visita
+                .HasForeignKey(pv => pv.IdProducto)
+                .OnDelete(DeleteBehavior.SetNull); // Si se borra un producto, se pone a null en productos por visita
+
+            modelBuilder.Entity<ProductosPorVisita>()
+               .HasOne(pv => pv.Visita)
+               .WithMany()
+               .HasForeignKey(pv => pv.IdVisita)
+               .OnDelete(DeleteBehavior.SetNull); 
+
 
             // Relacion TipoPago 1:N Pagos
             modelBuilder.Entity<Pago>()
@@ -172,6 +167,12 @@ namespace BackEndAPI.Data
                 .HasForeignKey(p => p.IdTipoPago)
                 .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un tipo de pago si tiene pagos asociados
 
+            
+            modelBuilder.Entity<Pago>()
+                .HasOne(p => p.Visita)
+                .WithMany(v => v.Pagos)
+                .HasForeignKey(p => p.IdVisita)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Relacion Visita N:1 Mozo (Persona)
             modelBuilder.Entity<Visita>()
@@ -180,17 +181,23 @@ namespace BackEndAPI.Data
                 .HasForeignKey(v => v.IdMozo)
                 .OnDelete(DeleteBehavior.SetNull); // Si se borra un mozo, se pone a null en la visita
 
-            modelBuilder.Entity<Delivery>()
-                .HasOne(d => d.Pago)
-                .WithOne()
-                .HasForeignKey<Delivery>(d => d.IdPago)
+            modelBuilder.Entity<Visita>()
+                .HasOne(v => v.Mesa)
+                .WithMany()
+                .HasForeignKey(v => v.IdMesa)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Delivery>()
-            .HasOne(d => d.Cadete)
-            .WithMany()
-            .HasForeignKey(d => d.IdCadete)
-            .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Visita>()
+                .HasMany(v => v.Productos)
+                .WithOne(pv => pv.Visita)
+                .HasForeignKey(v => v.IdVisita)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            ////modelBuilder.Entity<Delivery>()
+            ////.HasOne(d => d.Cadete)
+            ////.WithMany()
+            ////.HasForeignKey(d => d.IdCadete)
+            ////.OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Delivery>()
                 .HasOne(d => d.TipoEnvio)
@@ -199,10 +206,20 @@ namespace BackEndAPI.Data
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Delivery>()
-                .HasOne(d => d.Caja)
-                .WithMany()
-                .HasForeignKey(d => d.IdCaja)
+                .HasOne(d => d.Sucursal)
+                .WithMany(s => s.Deliveries)
+                .HasForeignKey(d => d.IdSucursal)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Delivery>()
+                .HasOne(d => d.Visita)
+                .WithMany()
+                .HasForeignKey(d => d.IdVisita)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Producto>()
+                .HasMany(p => p.Categorias)
+                .WithMany(c => c.Productos);              
 
             base.OnModelCreating(modelBuilder);
 

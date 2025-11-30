@@ -35,7 +35,7 @@ namespace BackEndAPI.Services
                 Telefono = nuevaSucursal.Telefono,
                 Username = nuevaSucursal.Username,
                 IdEmpresa = nuevaSucursal.IdEmpresa,
-                IdEncargado = null
+                //IdEncargado = null
 
             };
             sucursal.EstablecerContrasena(passwordHash, passwordSalt);
