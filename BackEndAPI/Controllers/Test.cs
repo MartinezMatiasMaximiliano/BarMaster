@@ -10,7 +10,7 @@ namespace BackEndAPI.Controllers
         [HttpPost("/ping")]
         public IActionResult Ping()
         {
-            var db = HttpContext.Items["TenantDbContext"] as ApiDbContext
+            var db = HttpContext.Items["DbContext"] as ApiDbContext
                  ?? throw new Exception("No DB context available");
             var products = db.TipoPagos.ToList();
             return Ok(products);

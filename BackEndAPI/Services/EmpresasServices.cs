@@ -2,6 +2,7 @@
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
+using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 
 namespace BackEndAPI.Services
@@ -9,9 +10,11 @@ namespace BackEndAPI.Services
     public class EmpresasServices : IEmpresasServices
     {
         private readonly IEmpresasRepository _empresasRepository;
-        public EmpresasServices(IEmpresasRepository empresasRepository)
+        private readonly PasswordService _passwordService;
+        public EmpresasServices(IEmpresasRepository empresasRepository,PasswordService passwordService)
         {
             _empresasRepository = empresasRepository;
+            _passwordService = passwordService;
         }
         public async Task<IEnumerable<Empresa>> GetAllEmpresas()
         {
@@ -42,7 +45,16 @@ namespace BackEndAPI.Services
                 Nombre = request.Nombre,
                 Telefonos = request.Telefonos,
                 Emails = request.Emails,
+                Activo = true,
+                FechaInscripcion = DateTime.UtcNow,
+                IdTipoSubscripcion = 1,
+                Username = $"empresa@{request.Nombre}",
             };
+
+            _passwordService.CrearPasswordHash(request.Password, out byte[] hash, out byte[] salt);
+            empresa.EstablecerContrasena(hash, salt);
+
+
             await _empresasRepository.AddEmpresa(empresa);
             return empresa;
         }

@@ -12,7 +12,10 @@ namespace BackEndAPI.Tenancy
         public async Task InvokeAsync(HttpContext context, Data.AppDbContextFactory dbContextFactory)
         {
             using var dbContext = await dbContextFactory.CreateAsync(context);
-            context.Items["TenantDbContext"] = dbContext;
+            context.RequestServices
+            .GetRequiredService<IHttpContextAccessor>()
+            .HttpContext!
+            .Items["DbContext"] = dbContext;
 
             await _next(context);
         }

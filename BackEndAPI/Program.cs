@@ -17,12 +17,12 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 #region CONTROLLERS Y SWAGGER
-
 builder.Services.AddSingleton<IConnectionStringProvider, ConnectionStringProvider>();
 builder.Services.AddScoped<ITenantResolver, TenantResolverHeader>();
 builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddControllers();
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentDbContext, CurrentDbContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -51,6 +51,31 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Description = "Enter your API key",
+        Name = "X-Tenant-ID",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 #endregion
 
 #region CORS
@@ -69,17 +94,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
-
-
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
-
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 builder.Services.AddScoped<IEmpresasServices, EmpresasServices>();
-
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthServices, AuthServices>();
-
 builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
 builder.Services.AddScoped<ISucursalesServices, SucursalesServices>();
 

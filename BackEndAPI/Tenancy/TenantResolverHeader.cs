@@ -1,6 +1,5 @@
 ﻿namespace BackEndAPI.Tenancy
 {
-    //extrae la informacion del tenant de la solicitud 
     public interface ITenantResolver
     {
         Task<TenantInfo?> ResolveTenantAsync(HttpContext httpContext);
