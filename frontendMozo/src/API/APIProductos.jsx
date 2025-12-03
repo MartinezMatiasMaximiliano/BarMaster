@@ -31,18 +31,23 @@ export async function BuscarUnProducto(Id) {
     }
 }
 
-export function CrearProducto(datos) {
-    console.log("DATOS EN API: ", datos)
-    axios.post(
-        BASE_URL,
-        new CrearProductoDTO(datos.nombre, datos.descripcion, datos.precio, true, datos.categorias, datos.imagen), {
-        headers: {
-            "Content-Type": "multipart/form-data"
-        }
-    })
-        .then(data => console.log(data))
-        .catch(error => console.log(error));
-    connection.send("RecargarMenu");
+export async function CrearProducto(datos) {
+    try {
+        console.log("DATOS EN API: ", datos)
+        const response = await axios.post(
+            BASE_URL,
+            new CrearProductoDTO(datos.nombre, datos.descripcion, datos.precio, true, datos.categorias, datos.imagen), {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        });
+        connection.send("RecargarMenu");
+        return response.data;
+    } catch (error) {
+        console.error("Error al crear producto:", error);
+        alert(error.response?.data?.error?.mensaje || "Error al crear el producto");
+        return error.response;
+    }
 }
 
 export async function ModificarProducto(datos) {

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { React, useState, useEffect } from 'react'
+import { React, useState, useEffect, useRef } from 'react'
 import Mesa from "../components/Mesa/Mesa";
 import { Container, Form } from 'react-bootstrap';
 import { modificar as modificarMozo } from '../redux/slices/mozoSlice';
@@ -34,10 +34,57 @@ function Index(props) {
     const [ListaMesasFiltradas, setListaMesasFiltradas] = useState(undefined);
     const [empresaData, setEmpresaData] = useState(null);
     const [fechaHora, setFechaHora] = useState(new Date());
+    const inputRef = useRef(null);
 
     const handleChange = (event) => {
         dispatch(modificarCodigoMozo(event.target.value));
     }
+
+    // Capturar eventos de teclado para escribir automáticamente en el input
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            // Ignorar si el usuario está escribiendo en un input, textarea o está en un elemento editable
+            const target = event.target;
+            const isInputElement = target.tagName === 'INPUT' || 
+                                  target.tagName === 'TEXTAREA' || 
+                                  target.isContentEditable;
+            
+            // Si está escribiendo en el input del código, no hacer nada (evitar duplicación)
+            if (isInputElement && target === inputRef.current) {
+                return;
+            }
+
+            // Ignorar teclas especiales que no son caracteres
+            const key = event.key;
+            
+            // Si es una tecla imprimible (letra, número, o algunos símbolos)
+            if (key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                event.preventDefault();
+                const nuevoCodigo = codigoMozo + key;
+                dispatch(modificarCodigoMozo(nuevoCodigo));
+            }
+            // Manejar Backspace para borrar el último carácter
+            else if (key === 'Backspace' && !isInputElement) {
+                event.preventDefault();
+                if (codigoMozo.length > 0) {
+                    dispatch(modificarCodigoMozo(codigoMozo.slice(0, -1)));
+                }
+            }
+            // Manejar Enter para limpiar el código
+            else if (key === 'Enter' && !isInputElement) {
+                event.preventDefault();
+                dispatch(modificarCodigoMozo(''));
+            }
+        };
+
+        // Agregar el event listener al document
+        document.addEventListener('keydown', handleKeyDown);
+
+        // Limpiar el event listener al desmontar
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [codigoMozo, dispatch]);
 
     // Cargar datos de la empresa
     useEffect(() => {
@@ -139,6 +186,7 @@ function Index(props) {
                 <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                     <Form.Label>Código</Form.Label>
                     <Form.Control
+                        ref={inputRef}
                         onChange={(e) => handleChange(e)}
                         type="password"
                         value={codigoMozo}

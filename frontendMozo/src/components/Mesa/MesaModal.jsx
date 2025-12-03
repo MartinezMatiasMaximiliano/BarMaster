@@ -1,10 +1,28 @@
 // components/Mesa/MesaModal.jsx
-import React from 'react';
-import { Button, Modal } from 'react-bootstrap';
-import Alert from '@mui/material/Alert';
+import React, { useState } from 'react';
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Alert,
+    Typography,
+    Stack,
+    Box,
+    IconButton
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import Lista from "../Listas/Lista";
 import Modal_Generico from "../Modals/Modal_Generico";
 import Modal_Ver_Cuenta from "../Modals/Modal_Ver_Cuenta";
+import Modal_AgregarPedidos from "../Modals/Agregar_Pedidos/Modal_AgregarPedidos";
 import { formatearFecha, calcularTotalPrecio } from './dateFormatter';
 
 export const MesaModal = ({
@@ -18,36 +36,140 @@ export const MesaModal = ({
     onCancelarPedidos,
     onCerrarMesa
 }) => {
+    const [showAgregarPedidos, setShowAgregarPedidos] = useState(false);
     const fechaFormateada = formatearFecha(pedidoMesa?.fechaRealizado);
     const totalPrecio = calcularTotalPrecio(pedidoMesa?.items);
 
     return (
-        <Modal show={show} onHide={handleClose}>
-            <Modal.Header closeButton>
-                <Modal.Title>Mesa {datos_mesa.numeroMesa}</Modal.Title>
-                {datos_mesa.codigoParaPedir && (
-                    <Alert
-                        icon={false}
-                        severity="warning"
-                        sx={{ fontSize: '1.2rem', ml: ".7em" }}
+        <Dialog 
+            open={show} 
+            onClose={handleClose}
+            maxWidth="sm"
+            fullWidth
+            disableEnforceFocus
+        >
+            <DialogTitle>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <CalendarTodayIcon color="action" />
+                            <Typography variant="h6" color="text.secondary" component="span">
+                                {fechaFormateada}
+                            </Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <TableRestaurantIcon color="primary" />
+                            <Typography variant="h6" component="span">
+                                Mesa {datos_mesa.numeroMesa}
+                            </Typography>
+                        </Stack>
+                        {datos_mesa.codigoParaPedir && (
+                            <Alert
+                                icon={<VpnKeyIcon />}
+                                severity="warning"
+                                sx={{ fontSize: '1.2rem', py: 0.5, px: 1 }}
+                            >
+                                {datos_mesa.codigoParaPedir}
+                            </Alert>
+                        )}
+                    </Stack>
+                    <IconButton
+                        aria-label="close"
+                        onClick={handleClose}
+                        sx={{
+                            color: (theme) => theme.palette.grey[500],
+                        }}
                     >
-                        {datos_mesa.codigoParaPedir}
-                    </Alert>
-                )}
-            </Modal.Header>
+                        <CloseIcon />
+                    </IconButton>
+                </Stack>
+            </DialogTitle>
 
-            <Modal.Body>
-                <h3>{fechaFormateada} - Total ${totalPrecio}</h3>
-                <div>
-                    <Lista
-                        items={pedidoMesa?.items || []}
-                        handleCheckBox={handleChangeCheckBox}
-                        checkBoxSeleccionados={checkBoxSeleccionados}
-                    />
-                </div>
+            <DialogContent dividers>
+                <Box 
+                    sx={{ 
+                        mb: 3,
+                        p: 2,
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'divider'
+                    }}
+                >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <AttachMoneyIcon color="primary" />
+                        <Typography variant="h6" color="primary" fontWeight="bold">
+                            Total: ${totalPrecio}
+                        </Typography>
+                    </Stack>
+                </Box>
+                
+                <Box 
+                    sx={{ 
+                        mb: 3,
+                        p: 2,
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'divider'
+                    }}
+                >
+                    <Stack spacing={1}>
+                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                            <RestaurantMenuIcon color="primary" />
+                            <Typography variant="h6" component="h3">
+                                Pedidos Actuales
+                            </Typography>
+                            {pedidoMesa?.items && pedidoMesa.items.length > 0 && (
+                                <Typography variant="body2" color="text.secondary">
+                                    ({pedidoMesa.items.length} {pedidoMesa.items.length === 1 ? 'item' : 'items'})
+                                </Typography>
+                            )}
+                        </Stack>
+                        {(!pedidoMesa?.items || pedidoMesa.items.length === 0) ? (
+                            <Box
+                                sx={{
+                                    p: 3,
+                                    textAlign: 'center'
+                                }}
+                            >
+                                <RestaurantMenuIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+                                <Typography variant="body1" color="text.secondary" fontWeight="medium">
+                                    No hay pedidos actualmente
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                    Los pedidos que se agreguen a esta mesa aparecerán aquí
+                                </Typography>
+                            </Box>
+                        ) : (
+                            <Lista
+                                items={pedidoMesa.items}
+                                handleCheckBox={handleChangeCheckBox}
+                                checkBoxSeleccionados={checkBoxSeleccionados}
+                            />
+                        )}
+                    </Stack>
+                </Box>
 
                 {datos_mesa.codigoParaPedir && (
-                    <div>
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: 2
+                        }}
+                    >
+                        <Button
+                            variant="contained"
+                            color="success"
+                            startIcon={<AddShoppingCartIcon />}
+                            onClick={() => setShowAgregarPedidos(true)}
+                            sx={{ 
+                                width: '100%',
+                                py: 1.5
+                            }}
+                        >
+                            Agregar Pedidos
+                        </Button>
+
                         <Modal_Ver_Cuenta
                             titulo="Ver cuenta"
                             numeroMesa={datos_mesa.numeroMesa}
@@ -79,15 +201,26 @@ export const MesaModal = ({
                             cerrar_modal={handleClose}
                             disabled={activarCancelarPedido}
                         />
-                    </div>
+                    </Box>
                 )}
-            </Modal.Body>
+            </DialogContent>
 
-            <Modal.Footer>
-                <Button variant="primary" onClick={handleClose}>
+            <DialogActions sx={{ px: 3, py: 2 }}>
+                <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleClose}
+                >
                     Cerrar
                 </Button>
-            </Modal.Footer>
-        </Modal>
+            </DialogActions>
+
+            {/* Modal para agregar pedidos */}
+            <Modal_AgregarPedidos
+                open={showAgregarPedidos}
+                onClose={() => setShowAgregarPedidos(false)}
+                numeroMesa={datos_mesa.numeroMesa}
+            />
+        </Dialog>
     );
 };

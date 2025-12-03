@@ -3,7 +3,6 @@ import {
     Alert,
     Box,
     Card,
-    CircularProgress,
     Container,
     Stack,
     Tab,
@@ -20,6 +19,7 @@ import { Historial } from './components/Historial';
 import { Movimientos } from './components/Movimientos';
 import { ObtenerHistorialCaja } from '../../API/APICaja';
 import { obtenerMensajeError } from './utils/constants';
+import { LoadingWrapper } from '../../components/common/LoadingWrapper';
 
 function Caja() {
     const {
@@ -99,11 +99,7 @@ function Caja() {
                     </Alert>
                 )}
 
-                {loadingCaja ? (
-                    <Stack alignItems="center" py={6}>
-                        <CircularProgress />
-                    </Stack>
-                ) : (
+                <LoadingWrapper minHeight={300} sx={{ py: 6 }}>
                     <>
                         <EstadoActual cajaActiva={cajaActiva} onRecargar={cargarDatos} />
                         <Card variant="outlined">
@@ -161,7 +157,7 @@ function Caja() {
                             </Box>
                         </Card>
                     </>
-                )}
+                </LoadingWrapper>
             </Stack>
         </Container>
     );

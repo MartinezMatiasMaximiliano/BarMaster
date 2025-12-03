@@ -3,8 +3,7 @@ import Grafica_Pizza from "../components/Graficas/Grafica_Pizza";
 import Grafica_Curva from "../components/Graficas/Grafica_Curva";
 import Grafica_Barras from "../components/Graficas/Grafica_Barras";
 import Mapa_Calor from "../components/Graficas/Mapa_calor";
-import Grid from '@mui/material/Grid';
-import { TextField } from "@mui/material";
+import { TextField, Box } from "@mui/material";
 import { calcularCrecimientoMensual, formatearFecha, calcularGananciasPorHora, mesas, calcularGananciasPorFecha, contarMesas, contarPedidosPorDia, contarProductos } from '../components/Graficas/Funciones'
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -91,24 +90,24 @@ const Graficas = (props) => {
             <p>Si no se selecciona fecha, se mostrarán registros históricos</p>
 
             {/* --- Contenedor de gráficas --- */}
-            <Grid container spacing={4} direction="column" className="mt-4">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, mt: 4 }}>
                 <hr></hr>
-                <Grid size={12}>
+                <Box>
                     <h3 style={{ textAlign: "center" }}>Ganancias por fecha {chipFecha}</h3>
                     <Grafica_Curva data={datos} calcularDatos={calcularGananciasPorFecha} />
-                </Grid>
+                </Box>
                 <hr></hr>
-                <Grid size={12}>   
+                <Box>   
                     <h3 style={{ textAlign: "center" }}>Ganancias acumuladas {chipFecha}</h3>
                     <Grafica_Curva data={dataFiltrada} calcularDatos={calcularCrecimientoMensual} />
-                </Grid>
+                </Box>
                 <hr></hr>
-                <Grid size={12}>
+                <Box>
                     <h3 style={{ textAlign: "center" }}>Mejores horarios {chipFecha}</h3>
                     <Grafica_Curva data={dataFiltrada} calcularDatos={calcularGananciasPorHora}></Grafica_Curva>
-                </Grid>
+                </Box>
                 <hr></hr>
-                <Grid size={12}>
+                <Box>
                     <h3 style={{ textAlign: "center" }}>Mapa de calor por mesas {chipFecha}</h3>
                     <Mapa_Calor
                         fechaInicio={fechaInicio}
@@ -117,26 +116,26 @@ const Graficas = (props) => {
                         mesas={mesas}
                         contarMesas={contarMesas}
                     />
-                </Grid>
+                </Box>
                 <hr></hr>
-                <Grid size={12}>
+                <Box>
                     <h3 style={{ textAlign: "center" }}>Pedidos por día {chipFecha}</h3>
                     <Grafica_Barras
                         data={dataFiltrada}
                         calcularDatos={contarPedidosPorDia}
                         datosX={["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]}
                     />
-                </Grid>
+                </Box>
                 <hr></hr>
-                <Grid size={12}>
+                <Box>
                     <h3 style={{ textAlign: "center" }}>Platos más consumidos {chipFecha}</h3>
                     <Grafica_Pizza
                         data={dataFiltrada}
                         calcularDatos={contarProductos}
                         limite={5}
                     />
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
         </div>
     );
 };

@@ -1,71 +1,58 @@
-import { React, useState, useEffect } from "react";
+import { React, useState } from "react"
 import {
     Button,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
-    IconButton,
     Stack,
     Box
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import { Renderizados } from "./Renderizados";
+import IconButton from '@mui/material/IconButton';
 import Errores from "./Errores"
 import Handlers from "./Handlers";
+import { Renderizados } from "./Renderizados";
 
-function Modal_Editar(props) {
+function Modal_Agregar(props) {
     const [show, setShow] = useState(false);
-
-    const { id, activo, ...filaFiltrada } = props.fila;
-
-    const [editValues, setEditValues] = useState({ ...filaFiltrada });
-
-    const handleShow = () => setShow(true);
-
-    useEffect(() => {
-        if (show) setEditValues({ ...filaFiltrada });
-    }, [show, filaFiltrada]);
-
-    const { errors, setErrors, handleChange, handleSave } = Handlers({
-            id,
-            editValues,
-            setEditValues,
-            modificar: props.modificar,
-            recargarComponentes: props.recargarComponentes,
-            handleClose: () => setShow(false),
-        });
 
     const handleClose = () => {
         setErrors({});
         setShow(false);
     };
+    const handleShow = () => setShow(true);
+
+    const { errors, setErrors, handleChange, handleSave } = Handlers({
+        agregar: props.agregar,
+        recargarComponentes: props.recargarComponentes,
+        handleClose,
+    });
 
     const renderizados = Renderizados(props, handleChange);
 
-    console.log("EDITVALUES: ", editValues)
-
     return (
         <>
-            <IconButton
-                color="primary"
+            <Button 
+                variant="contained" 
+                color="primary" 
                 onClick={handleShow}
-                disabled={!props.disabled}
-                size="small"
+                startIcon={<AddIcon />}
             >
-                <EditIcon fontSize="small" />
-            </IconButton>
+                Agregar
+            </Button>
 
             <Dialog 
                 open={show} 
                 onClose={handleClose}
                 maxWidth="sm"
                 fullWidth
+                disableEnforceFocus
             >
                 <DialogTitle>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <span>Editar</span>
+                        <span>Agregar {props.nombre || 'registro'}</span>
                         <IconButton
                             aria-label="close"
                             onClick={handleClose}
@@ -82,10 +69,9 @@ function Modal_Editar(props) {
                     <Errores errors={errors} />
                     <Box component="form" sx={{ mt: 1 }}>
                         <Stack spacing={2}>
-                            {props.campos.map((campo, index) => {
-                                const value = editValues[campo.name];
+                            {props.campos.map((campo, index) => {   
                                 const renderer = renderizados[campo.type] || renderizados.text;
-                                return renderer(campo, value, index);
+                                return renderer(campo, index);
                             })}
                         </Stack>
                     </Box>
@@ -95,7 +81,7 @@ function Modal_Editar(props) {
                         Cancelar
                     </Button>
                     <Button onClick={handleSave} variant="contained" color="primary">
-                        Editar
+                        Agregar
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -103,4 +89,4 @@ function Modal_Editar(props) {
     );
 }
 
-export default Modal_Editar;
+export default Modal_Agregar;

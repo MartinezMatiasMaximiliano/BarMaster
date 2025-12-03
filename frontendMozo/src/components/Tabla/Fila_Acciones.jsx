@@ -1,7 +1,7 @@
 import React from "react";
 import { Stack } from "@mui/material";
 import Modal_Eliminar from "../Modals/Modal_Eliminar";
-import Modal_Editar from "../Modals/Editar/Modal_Editar";
+import Modal_Editar from "../Modals/Editar_ABM/Modal_Editar";
 import Switch from "../Switch";
 import { Campos } from "../../configs/agregar/Categorias"
 

@@ -7,7 +7,6 @@ import {
     CardHeader,
     CircularProgress,
     Divider,
-    Grid,
     Stack,
     TextField,
     Typography
@@ -22,57 +21,55 @@ export const FormularioCierre = ({ formCierre, diferencia, guardando, onChange, 
             <Divider />
             <CardContent>
                 <Box component="form" onSubmit={onSubmit}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Fecha de cierre"
-                                type="date"
-                                name="fecha"
-                                value={formCierre.fecha}
-                                onChange={onChange}
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Hora de cierre"
-                                type="time"
-                                name="hora"
-                                value={formCierre.hora}
-                                onChange={onChange}
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Monto final real"
-                                type="number"
-                                name="montoFinal"
-                                value={formCierre.montoFinal}
-                                onChange={onChange}
-                                fullWidth
-                                inputProps={{ min: 0, step: '0.01' }}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Observaciones"
-                                name="observaciones"
-                                value={formCierre.observaciones}
-                                onChange={onChange}
-                                fullWidth
-                                multiline
-                                minRows={1}
-                                maxRows={4}
-                                placeholder="Diferencias, billetes faltantes, etc."
-                            />
-                        </Grid>
-                    </Grid>
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                            gap: 2
+                        }}
+                    >
+                        <TextField
+                            label="Fecha de cierre"
+                            type="date"
+                            name="fecha"
+                            value={formCierre.fecha}
+                            onChange={onChange}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            required
+                        />
+                        <TextField
+                            label="Hora de cierre"
+                            type="time"
+                            name="hora"
+                            value={formCierre.hora}
+                            onChange={onChange}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            required
+                        />
+                        <TextField
+                            label="Monto final real"
+                            type="number"
+                            name="montoFinal"
+                            value={formCierre.montoFinal}
+                            onChange={onChange}
+                            fullWidth
+                            inputProps={{ min: 0, step: '0.01' }}
+                            required
+                        />
+                        <TextField
+                            label="Observaciones"
+                            name="observaciones"
+                            value={formCierre.observaciones}
+                            onChange={onChange}
+                            fullWidth
+                            multiline
+                            minRows={1}
+                            maxRows={4}
+                            placeholder="Diferencias, billetes faltantes, etc."
+                        />
+                    </Box>
                     <Stack spacing={1} mt={3}>
                         <Typography variant="body2" color="text.secondary">
                             Diferencia vs. esperado:{' '}

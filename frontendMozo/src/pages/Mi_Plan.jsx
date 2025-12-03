@@ -9,7 +9,6 @@ import {
     CircularProgress,
     Container,
     Divider,
-    Grid,
     IconButton,
     Stack,
     Tooltip,
@@ -186,34 +185,36 @@ function Mi_Plan() {
                             }
                         />
                         <CardContent>
-                            <Grid container spacing={3}>
-                                <Grid item xs={12} sm={6}>
-                                    <Stack spacing={1}>
-                                        <Stack direction="row" spacing={0.5} alignItems="center">
-                                            <StoreIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                            <Typography variant="caption" color="text.secondary">
-                                                Nombre
-                                            </Typography>
-                                        </Stack>
-                                        <Typography variant="body1" fontWeight="medium">
-                                            {empresaData.nombreEmpresa || 'N/A'}
+                            <Box
+                                sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                                    gap: 3
+                                }}
+                            >
+                                <Stack spacing={1}>
+                                    <Stack direction="row" spacing={0.5} alignItems="center">
+                                        <StoreIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                        <Typography variant="caption" color="text.secondary">
+                                            Nombre
                                         </Typography>
                                     </Stack>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <Stack spacing={1}>
-                                        <Stack direction="row" spacing={0.5} alignItems="center">
-                                            <StorefrontIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                            <Typography variant="caption" color="text.secondary">
-                                                Sucursal
-                                            </Typography>
-                                        </Stack>
-                                        <Typography variant="body1" fontWeight="medium">
-                                            #{empresaData.numeroSucursal || 'N/A'}
+                                    <Typography variant="body1" fontWeight="medium">
+                                        {empresaData.nombreEmpresa || 'N/A'}
+                                    </Typography>
+                                </Stack>
+                                <Stack spacing={1}>
+                                    <Stack direction="row" spacing={0.5} alignItems="center">
+                                        <StorefrontIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                        <Typography variant="caption" color="text.secondary">
+                                            Sucursal
                                         </Typography>
                                     </Stack>
-                                </Grid>
-                                <Grid item xs={12}>
+                                    <Typography variant="body1" fontWeight="medium">
+                                        #{empresaData.numeroSucursal || 'N/A'}
+                                    </Typography>
+                                </Stack>
+                                <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
                                     <Stack spacing={1}>
                                         <Stack direction="row" spacing={0.5} alignItems="center">
                                             <LocationOnIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
@@ -225,8 +226,8 @@ function Mi_Plan() {
                                             {empresaData.direccion || 'N/A'}
                                         </Typography>
                                     </Stack>
-                                </Grid>
-                            </Grid>
+                                </Box>
+                            </Box>
                         </CardContent>
                     </Card>
                 )}
@@ -262,63 +263,61 @@ function Mi_Plan() {
                         }
                     />
                     <CardContent>
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} sm={6}>
-                                <Stack spacing={1}>
-                                    <Stack direction="row" spacing={0.5} alignItems="center">
-                                        <TagIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                        <Typography variant="caption" color="text.secondary">
-                                            ID de Suscripción
-                                        </Typography>
-                                    </Stack>
-                                    <Typography variant="body1" fontWeight="medium">
-                                        #{planData.idSubscripcion || 'N/A'}
-                                    </Typography>
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Stack spacing={1}>
-                                    <Stack direction="row" spacing={0.5} alignItems="center">
-                                        <AttachMoneyIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                        <Typography variant="caption" color="text.secondary">
-                                            Precio
-                                        </Typography>
-                                    </Stack>
-                                    <Stack direction="row" spacing={1} alignItems="center">
-                                        <AttachMoneyIcon color="primary" fontSize="small" />
-                                        <Typography variant="body1" fontWeight="medium">
-                                            {planData.precio ? currencyFormatter.format(planData.precio) : 'N/A'}
-                                        </Typography>
-                                    </Stack>
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Stack spacing={1}>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                                gap: 3
+                            }}
+                        >
+                            <Stack spacing={1}>
+                                <Stack direction="row" spacing={0.5} alignItems="center">
+                                    <TagIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                     <Typography variant="caption" color="text.secondary">
-                                        <CalendarTodayIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
-                                        Fecha de Inicio
-                                    </Typography>
-                                    <Typography variant="body1" fontWeight="medium">
-                                        {dateFormatter(planData.fechaInicio)}
+                                        ID de Suscripción
                                     </Typography>
                                 </Stack>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Stack spacing={1}>
+                                <Typography variant="body1" fontWeight="medium">
+                                    #{planData.idSubscripcion || 'N/A'}
+                                </Typography>
+                            </Stack>
+                            <Stack spacing={1}>
+                                <Stack direction="row" spacing={0.5} alignItems="center">
+                                    <AttachMoneyIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                     <Typography variant="caption" color="text.secondary">
-                                        <CalendarTodayIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
-                                        Fecha de Vencimiento
-                                    </Typography>
-                                    <Typography 
-                                        variant="body1" 
-                                        fontWeight="medium"
-                                        color={isPlanActivo ? 'text.primary' : 'error'}
-                                    >
-                                        {dateFormatter(planData.fechaFin)}
+                                        Precio
                                     </Typography>
                                 </Stack>
-                            </Grid>
-                        </Grid>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <AttachMoneyIcon color="primary" fontSize="small" />
+                                    <Typography variant="body1" fontWeight="medium">
+                                        {planData.precio ? currencyFormatter.format(planData.precio) : 'N/A'}
+                                    </Typography>
+                                </Stack>
+                            </Stack>
+                            <Stack spacing={1}>
+                                <Typography variant="caption" color="text.secondary">
+                                    <CalendarTodayIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
+                                    Fecha de Inicio
+                                </Typography>
+                                <Typography variant="body1" fontWeight="medium">
+                                    {dateFormatter(planData.fechaInicio)}
+                                </Typography>
+                            </Stack>
+                            <Stack spacing={1}>
+                                <Typography variant="caption" color="text.secondary">
+                                    <CalendarTodayIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
+                                    Fecha de Vencimiento
+                                </Typography>
+                                <Typography 
+                                    variant="body1" 
+                                    fontWeight="medium"
+                                    color={isPlanActivo ? 'text.primary' : 'error'}
+                                >
+                                    {dateFormatter(planData.fechaFin)}
+                                </Typography>
+                            </Stack>
+                        </Box>
                     </CardContent>
                 </Card>
 
@@ -335,14 +334,20 @@ function Mi_Plan() {
                                 No hay módulos activos en tu plan.
                             </Alert>
                         ) : (
-                            <Grid container spacing={2}>
+                            <Box
+                                sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                                    gap: 2
+                                }}
+                            >
                                 {planData.modulos.map((modulo, index) => {
                                     const config = modulosConfig[modulo] || {
                                         icon: <CheckCircleIcon />,
                                         color: 'default'
                                     };
                                     return (
-                                        <Grid item xs={12} sm={6} md={4} key={index}>
+                                        <Box key={index}>
                                             <Card
                                                 variant="outlined"
                                                 sx={{
@@ -375,10 +380,10 @@ function Mi_Plan() {
                                                     {modulo}
                                                 </Typography>
                                             </Card>
-                                        </Grid>
+                                        </Box>
                                     );
                                 })}
-                            </Grid>
+                            </Box>
                         )}
                     </CardContent>
                 </Card>

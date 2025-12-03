@@ -205,7 +205,16 @@ function Modal_Ver_cuenta(props) {
 
     return (
         <>
-            <Button variant="primary" className="me-2" onClick={handleShow}>
+            <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleShow}
+                startIcon={<ReceiptIcon />}
+                sx={{ 
+                    width: '100%',
+                    py: 1.5
+                }}
+            >
                 {props.textoBoton}
             </Button>
 
@@ -214,6 +223,7 @@ function Modal_Ver_cuenta(props) {
                 onClose={handleClose}
                 maxWidth="md"
                 fullWidth
+                disableEnforceFocus
                 PaperProps={{ sx: { borderRadius: 3 } }}
             >
                 <DialogTitle sx={{ pb: 1 }}>

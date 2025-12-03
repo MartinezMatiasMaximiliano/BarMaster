@@ -46,6 +46,7 @@ function Modal_Eliminar(props) {
                 onClose={handleClose}
                 maxWidth="sm"
                 fullWidth
+                disableEnforceFocus
             >
                 <DialogTitle>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
