@@ -1,4 +1,7 @@
 ﻿using BackEndAPI.Data;
+using BackEndAPI.Tenancy;
+using BackEndAPI.Tenancy.Models;
+using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndAPI.Controllers
@@ -7,33 +10,20 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class Test : ControllerBase
     {
-        [HttpPost("/ping")]
-        public IActionResult Ping()
+
+        public Test()
         {
-            var db = HttpContext.Items["DbContext"] as ApiDbContext
-                 ?? throw new Exception("No DB context available");
-            var products = db.TipoPagos.ToList();
-            return Ok(products);
+
         }
 
-        [HttpPost("/ping2")]
-        public IActionResult Ping2([FromBody] string nombre)
+        [HttpPost("/test")]
+        public IActionResult Ping([FromBody] string nombre)
         {
-            var db = HttpContext.Items["TenantDbContext"] as ApiDbContext
-                ?? throw new Exception("No DB context available");
-
-            db.TipoPagos.Add(new Models.TipoPago { Nombre = nombre });
-            db.SaveChangesAsync();
-
-            return Ok();
+            return Ok($"Pong {nombre}");
         }
+
     }
 
-    public class info
-    {
-        public string user { get; set; }
-        public string password { get; set; }
-        public string tenantId { get; set; }
-    }
+
 
 }

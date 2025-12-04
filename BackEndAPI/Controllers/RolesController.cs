@@ -16,9 +16,9 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class RolesController : ControllerBase
     {
-        private readonly ApiDbContext _context;
+        private readonly AppDbContext _context;
 
-        public RolesController(ApiDbContext context)
+        public RolesController(AppDbContext context)
         {
             _context = context;
         }   

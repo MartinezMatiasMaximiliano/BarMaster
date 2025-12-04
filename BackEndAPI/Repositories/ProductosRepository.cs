@@ -1,16 +1,19 @@
 ﻿using BackEndAPI.Data;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
+using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEndAPI.Repositories
 {
     public class ProductosRepository : IProductosRepository
     {
-        private readonly ApiDbContext _context;
-        public ProductosRepository(ApiDbContext context)
+        private readonly ICurrentDbContext _context;
+        private readonly AppDbContext db;
+        public ProductosRepository(ICurrentDbContext context)
         {
             _context = context;
+            db = context.Db;
         }
 
         public async Task AddProductoAsync(Producto producto)

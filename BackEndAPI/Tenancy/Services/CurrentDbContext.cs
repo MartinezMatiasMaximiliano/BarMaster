@@ -1,13 +1,13 @@
 ﻿using BackEndAPI.Data;
 using System;
 
-namespace BackEndAPI.Tenancy
+namespace BackEndAPI.Tenancy.Services
 {
-
     public interface ICurrentDbContext
     {
-        ApiDbContext Db { get; }
+        AppDbContext Db { get; }
     }
+
     public class CurrentDbContext : ICurrentDbContext
     {
         private readonly IHttpContextAccessor _http;
@@ -17,7 +17,7 @@ namespace BackEndAPI.Tenancy
             _http = http;
         }
 
-        public ApiDbContext Db =>
-            (ApiDbContext)_http.HttpContext!.Items["DbContext"]!;
+        public AppDbContext Db => (AppDbContext)_http.HttpContext!.Items["DbContext"]!;
+
     }
 }

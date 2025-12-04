@@ -15,9 +15,9 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class CategoriasController : ControllerBase
     {
-        private readonly ApiDbContext _context;
+        private readonly AppDbContext _context;
 
-        public CategoriasController(ApiDbContext context)
+        public CategoriasController(AppDbContext context)
         {
             _context = context;
         }

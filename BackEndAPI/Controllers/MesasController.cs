@@ -16,9 +16,9 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class MesasController : ControllerBase
     {
-        private readonly ApiDbContext _context;
+        private readonly AppDbContext _context;
 
-        public MesasController(ApiDbContext context)
+        public MesasController(AppDbContext context)
         {
             _context = context;
         }

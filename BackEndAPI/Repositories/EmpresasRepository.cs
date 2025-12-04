@@ -2,7 +2,8 @@
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
-using BackEndAPI.Tenancy;
+using BackEndAPI.Tenancy.Models;
+using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEndAPI.Repositories
@@ -10,7 +11,7 @@ namespace BackEndAPI.Repositories
     public class EmpresasRepository : IEmpresasRepository
     {
         private readonly ICurrentDbContext _context;
-        private readonly ApiDbContext db;
+        private readonly AppDbContext db;
         public EmpresasRepository(ICurrentDbContext context)
         {
             _context = context;
@@ -26,7 +27,7 @@ namespace BackEndAPI.Repositories
         public async Task<Empresa?> GetEmpresaById(Guid id)
         {
             return await db.Empresas
-                .Include(e=>e.Sucursales)
+                .Include(e => e.Sucursales)
                 //.Include(e=>e.Propietario)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
@@ -37,11 +38,21 @@ namespace BackEndAPI.Repositories
                 //.Include(e => e.Propietario)
                 .FirstOrDefaultAsync(e => e.Nombre.ToLower() == nombre.ToLower());
         }
-        public async Task<Empresa> AddEmpresa(Empresa empresa)
+        public async Task<Empresa> AddEmpresa(Empresa empresa, Tenant tenant)
         {
-            await db.AddAsync(empresa);
-            await db.SaveChangesAsync();
-            return empresa;
+            try
+            {
+
+
+                await db.Empresas.AddAsync(empresa);
+                await db.SaveChangesAsync();
+                return empresa;
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
         public async Task UpdateEmpresa(Empresa empresa)
         {

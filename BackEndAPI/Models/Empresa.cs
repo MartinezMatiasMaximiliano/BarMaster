@@ -7,7 +7,7 @@ namespace BackEndAPI.Models
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         //public Guid? IdPropietario { get; set; }
-        public short IdTipoSubscripcion { get; set; }
+        public short? IdTipoSubscripcion { get; set; }
         public string Nombre { get; set; } = null!;
         public string[]? Telefonos { get; set; }
         public string[]? Emails { get; set; }
@@ -22,7 +22,7 @@ namespace BackEndAPI.Models
 
         //navegacion
         //public Persona? Propietario { get; set; }
-        public TipoSubscripcion TipoSubscripcion { get; set; } = null!;
+        public TipoSubscripcion? TipoSubscripcion { get; set; } = null!;
         public ICollection<Sucursal> Sucursales { get; set; } = new List<Sucursal>();
         public ICollection<Persona> Personas { get; set; } = new List<Persona>();
 

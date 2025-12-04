@@ -5,7 +5,7 @@ using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
-using BackEndAPI.Tenancy;
+using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -17,12 +17,9 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 #region CONTROLLERS Y SWAGGER
-builder.Services.AddSingleton<IConnectionStringProvider, ConnectionStringProvider>();
-builder.Services.AddScoped<ITenantResolver, TenantResolverHeader>();
-builder.Services.AddScoped<AppDbContextFactory>();
+
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentDbContext, CurrentDbContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -50,10 +47,8 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
-});
-builder.Services.AddSwaggerGen(c =>
-{
-    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+
+    options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
     {
         Description = "Enter your API key",
         Name = "X-Tenant-ID",
@@ -61,7 +56,7 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey
     });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -90,10 +85,14 @@ builder.Services.AddCors(options =>
 
 #region SERVICIOS
 
-
+builder.Services.AddScoped<ITenantProvider, TenantProvider>();
+builder.Services.AddScoped<ITenantProvisioner, TenantProvisioner>();
+builder.Services.AddScoped<ITenantResolver, TenantResolver>();
+builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<ICurrentDbContext, CurrentDbContext>();
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
@@ -103,12 +102,14 @@ builder.Services.AddScoped<IAuthServices, AuthServices>();
 builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
 builder.Services.AddScoped<ISucursalesServices, SucursalesServices>();
 
+builder.Services.AddDbContext<MasterDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Master")));
+
 
 
 QuestPDF.Settings.License = LicenseType.Community;
 builder.Services.AddSignalR();
-builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase")));
+
 
 #endregion
 
@@ -156,6 +157,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseMiddleware<TenantDbMiddleware>();
 
 app.UseHttpsRedirection();

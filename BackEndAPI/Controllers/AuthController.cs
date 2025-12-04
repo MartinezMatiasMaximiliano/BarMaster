@@ -21,14 +21,12 @@ namespace BackEndAPI.Controllers
     {
 
         private readonly IAuthServices _authServices;
-        private readonly PasswordService _passwordService;
-        public AuthController(IAuthServices authServices, PasswordService passwordService)
+        public AuthController(IAuthServices authServices)
         {
             _authServices = authServices;
-            _passwordService = passwordService;
         }
 
-        [HttpPost("/Login/Sucursal")]
+        [HttpPost("/Login")]
         public async Task<IActionResult> LoginSucursal([FromBody] LoginDTO request)
         {
             try

@@ -1,7 +1,8 @@
 ﻿using BackEndAPI.Controllers;
 using BackEndAPI.Models;
-using BackEndAPI.Tenancy;
+using BackEndAPI.Tenancy.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
 using System;
@@ -11,15 +12,9 @@ using System.Xml;
 
 namespace BackEndAPI.Data
 {
-    public class ApiDbContext : DbContext
+    public class AppDbContext : DbContext
     {
-        public ApiDbContext(DbContextOptions<ApiDbContext> options, TenantInfo tenant)
-        : base(options)
-        {
-            Tenant = tenant;
-        }
-        public TenantInfo Tenant { get; set; }  
-        public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         public DbSet<TipoSubscripcion> TipoSubscriptions => Set<TipoSubscripcion>();
         public DbSet<Empresa> Empresas => Set<Empresa>();
         public DbSet<Sucursal> Sucursales => Set<Sucursal>();
@@ -297,6 +292,20 @@ namespace BackEndAPI.Data
 
         //    return auditEntries;
         //}
+    }
+    public class AppDbContextFactoriy : IDesignTimeDbContextFactory<AppDbContext>
+    {
+        public AppDbContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+
+            // Dummy connection for EF migration generation ONLY.
+            optionsBuilder.UseNpgsql(
+                "Host=localhost; Database=test; Username=postgres; Password=123456"
+            );
+
+            return new AppDbContext(optionsBuilder.Options);
+        }
     }
 }
 
