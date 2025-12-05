@@ -26,7 +26,7 @@ namespace BackEndAPI.Controllers
             _authServices = authServices;
         }
 
-        [HttpPost("/Login")]
+        [HttpPost("/Login/Sucursal")]
         public async Task<IActionResult> LoginSucursal([FromBody] LoginDTO request)
         {
             try
@@ -47,6 +47,21 @@ namespace BackEndAPI.Controllers
                 }   
             }
         }
+
+        [HttpPost("/Login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO request)
+        {
+            try
+            {
+                var result = await _authServices.Authenticate(request);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(); 
+            }
+        }
+
     }
 }
 

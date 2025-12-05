@@ -42,12 +42,9 @@ namespace BackEndAPI.Repositories
         {
             try
             {
-
-
                 await db.Empresas.AddAsync(empresa);
                 await db.SaveChangesAsync();
                 return empresa;
-
             }
             catch (Exception ex)
             {
