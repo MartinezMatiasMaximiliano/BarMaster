@@ -50,23 +50,39 @@ public class AuthServices : IAuthServices
         if (tenant == null)
         {
             //falla en busqueda por nombre de empresa
-            throw new Exception();
+            throw new Exception("usuario no encontrado");
         }
 
-        var empresa = await _empresasRepository.GetEmpresaByNombre(NombreEmpresa);
+         var empresa = await _empresasRepository.GetEmpresaByNombre(NombreEmpresa);
+
+        if (empresa == null)
+        {
+            //falla en busqueda por nombre de empresa
+            throw new Exception("usuario no encontrado");
+        }   
 
         if (NombreSucursal == "empresa")
         {
-            var password = _passwordService.VerificarPasswordHash(loginDTO.Password, empresa.PasswordHash, empresa.PasswordSalt);
-
+            if (!_passwordService.VerificarPasswordHash(loginDTO.Password, empresa.PasswordHash, empresa.PasswordSalt))
+            {
+                return null;
+            }
+            return _jwtServices.CrearJWTEmpresa(empresa);
         }
         else
         {
-
+            foreach (var sucursal in empresa.Sucursales)
+            {
+                if (sucursal.Nombre.ToLower() == NombreSucursal.ToLower())
+                {
+                    if (!_passwordService.VerificarPasswordHash(loginDTO.Password, sucursal.PasswordHash, sucursal.PasswordSalt))
+                    {
+                        return null;
+                    }
+                    return _jwtServices.CrearJWTSucursal(sucursal);
+                }
+            }
         }
-
-
-        var stop = "";
 
         return null;
     }

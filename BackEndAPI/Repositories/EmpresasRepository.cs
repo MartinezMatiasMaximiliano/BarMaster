@@ -12,10 +12,13 @@ namespace BackEndAPI.Repositories
     {
         private readonly ICurrentDbContext _context;
         private readonly AppDbContext db;
+        private string connectionstring { get; set; } = string.Empty;
+
         public EmpresasRepository(ICurrentDbContext context)
         {
             _context = context;
             db = context.Db;
+
         }
         public async Task<IEnumerable<Empresa>> GetAllEmpresas()
         {
@@ -33,6 +36,8 @@ namespace BackEndAPI.Repositories
         }
         public async Task<Empresa?> GetEmpresaByNombre(string nombre)
         {
+            if (db == null) return null;
+
             return await db.Empresas
                 .Include(e => e.Sucursales)
                 //.Include(e => e.Propietario)

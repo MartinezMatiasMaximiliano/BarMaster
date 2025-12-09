@@ -1,4 +1,5 @@
-﻿using BackEndAPI.Tenancy.Services;
+﻿using BackEndAPI.Tenancy.Models;
+using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -25,6 +26,14 @@ namespace BackEndAPI.Data
                 return null;
             }
 
+            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+            optionsBuilder.UseNpgsql(tenant.ConnectionString);
+
+            return new AppDbContext(optionsBuilder.Options);
+        }
+
+        public async Task<AppDbContext> CreateWithTenantAsync(Tenant tenant) 
+        {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseNpgsql(tenant.ConnectionString);
 

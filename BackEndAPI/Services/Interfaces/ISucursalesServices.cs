@@ -5,6 +5,7 @@ namespace BackEndAPI.Services.Interfaces
 {
     public interface ISucursalesServices
     {
-        Task<Sucursal?> CrearSucursal(CrearSucursalDTO nuevaSucursal);
+        Task<Sucursal?> CrearSucursal(CrearSucursalDTO nuevaSucursal,Guid IdEmpresa);
+        Task<Sucursal?> BuscarSucursalPorId(Guid IdSucursal);
     }
 }

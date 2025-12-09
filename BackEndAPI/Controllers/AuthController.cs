@@ -26,27 +26,27 @@ namespace BackEndAPI.Controllers
             _authServices = authServices;
         }
 
-        [HttpPost("/Login/Sucursal")]
-        public async Task<IActionResult> LoginSucursal([FromBody] LoginDTO request)
-        {
-            try
-            {
-                var result = await _authServices.LoginSucursal(request.Username,request.Password);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Sucursal no encontrada":
-                        return BadRequest("Sucursal no encontrada");
-                    case "Contraseña incorrecta":
-                        return Unauthorized("Contraseña incorrecta");
-                    default:
-                        return StatusCode(500, "Error interno del servidor");
-                }   
-            }
-        }
+        //[HttpPost("/Login/Sucursal")]
+        //public async Task<IActionResult> LoginSucursal([FromBody] LoginDTO request)
+        //{
+        //    try
+        //    {
+        //        var result = await _authServices.LoginSucursal(request.Username,request.Password);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        switch (ex.Message)
+        //        {
+        //            case "Sucursal no encontrada":
+        //                return BadRequest("Sucursal no encontrada");
+        //            case "Contraseña incorrecta":
+        //                return Unauthorized("Contraseña incorrecta");
+        //            default:
+        //                return StatusCode(500, "Error interno del servidor");
+        //        }   
+        //    }
+        //}
 
         [HttpPost("/Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO request)
@@ -54,11 +54,26 @@ namespace BackEndAPI.Controllers
             try
             {
                 var result = await _authServices.Authenticate(request);
-                return Ok();
+                
+                if (result == null)
+                {
+                    return Unauthorized("Usuario o contraseña incorrectos");
+                }   
+
+                return Ok(result);
+
             }
             catch (Exception ex)
             {
-                return BadRequest(); 
+                switch (ex.Message)
+                {
+                    case "usuario no encontrado":
+                        return BadRequest("usuario no encontrado");
+                    case "Contraseña incorrecta":
+                        return Unauthorized("Contraseña incorrecta");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
             }
         }
 

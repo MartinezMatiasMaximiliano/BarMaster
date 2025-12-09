@@ -19,12 +19,18 @@ namespace BackEndAPI.Repositories
 
         public async Task<Sucursal?> GetSucursalById(Guid id)
         {
-            return await db.Sucursales.FirstOrDefaultAsync(s => s.Id == id);
+            return await db.Sucursales
+                .Include( s => s.Planos)
+                .Include(s => s.Reservas)
+                .Include(s => s.Menus)
+                .Include(s => s.Cajas)
+                .Include(s => s.Deliveries)
+                .FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public async Task<Sucursal?> GetSucursalByUsername(string username)
+        public async Task<Sucursal?> GetSucursalByUsername(string nombre)
         {
-            return await db.Sucursales.FirstOrDefaultAsync(s => s.Username == username);
+            return await db.Sucursales.FirstOrDefaultAsync(s => s.Nombre == nombre);
         }
 
         public async Task<Sucursal?> CrearSucursal(Sucursal sucursal)

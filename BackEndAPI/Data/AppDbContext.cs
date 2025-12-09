@@ -293,7 +293,7 @@ namespace BackEndAPI.Data
         //    return auditEntries;
         //}
     }
-    public class AppDbContextFactoriy : IDesignTimeDbContextFactory<AppDbContext>
+    public class AppDbContextFactoryMigrate : IDesignTimeDbContextFactory<AppDbContext>
     {
         public AppDbContext CreateDbContext(string[] args)
         {
