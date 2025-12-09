@@ -5,13 +5,10 @@ namespace BackEndAPI.Models
 {
     public class Categoria
     { 
-        public int Id { get; set; }
-
-        [MaxLength(30)]
-        public string Nombre { get; set; } = string.Empty;
-
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Nombre { get; set; } = null!;
         public bool Activo { get; set; } = true;
 
-        public List<Producto> Productos { get; set; } = new List<Producto> { };
+        public ICollection<Producto> Productos { get; set; } = new List<Producto>();
     }
 }
