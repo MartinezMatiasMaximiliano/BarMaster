@@ -22,13 +22,78 @@ namespace BackEndAPI.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("BackEndAPI.Models.Categoria", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Auditorias", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Anterior")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PK")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Posterior")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tabla")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Auditorias");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Caja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaApertura")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaCierre")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("MontoApertura")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MontoCierre")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdSucursal");
+
+                    b.ToTable("Cajas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Categoria", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
@@ -38,101 +103,217 @@ namespace BackEndAPI.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<Guid?>("ProductoId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
 
                     b.ToTable("Categorias");
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Item", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Empresa", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("integer");
+                    b.Property<string[]>("Emails")
+                        .HasColumnType("text[]");
 
-                    b.Property<string>("Indicaciones")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime>("FechaInscripcion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("IdPropietario")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("PedidoId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("Precio")
-                        .HasColumnType("numeric");
+                    b.Property<string[]>("Telefonos")
+                        .HasColumnType("text[]");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PedidoId");
-
-                    b.ToTable("Items");
-                });
-
-            modelBuilder.Entity("BackEndAPI.Models.Mesa", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CodigoParaPedir")
-                        .HasColumnType("text");
-
-                    b.Property<int>("NumeroMesa")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PersonaId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NumeroMesa")
+                    b.HasIndex("IdPropietario")
                         .IsUnique();
 
-                    b.HasIndex("PersonaId");
-
-                    b.ToTable("Mesas");
+                    b.ToTable("Empresas");
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Pedido", b =>
+            modelBuilder.Entity("BackEndAPI.Models.EstadoReserva", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EstadoReservas");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "Pendiente"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "Confirmada"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nombre = "Cancelada"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Nombre = "Completada"
+                        });
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Menu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("FechaRealizado")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("MesaId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MesaId");
+                    b.HasIndex("IdSucursal");
 
-                    b.ToTable("Pedidos");
+                    b.ToTable("Menus");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Mesa", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Capacidad")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CodigoParaPedir")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("IdMozo")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("IdPlano")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("SucursalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<float>("h")
+                        .HasColumnType("real");
+
+                    b.Property<float>("w")
+                        .HasColumnType("real");
+
+                    b.Property<float>("x")
+                        .HasColumnType("real");
+
+                    b.Property<float>("y")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdMozo");
+
+                    b.HasIndex("IdPlano");
+
+                    b.HasIndex("SucursalId");
+
+                    b.ToTable("Mesas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Opcion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdProducto")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("PrecioExtra")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdProducto");
+
+                    b.ToTable("Opciones");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Pagos", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("IdTipoPago")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("IdVisita")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("VisitaId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdTipoPago");
+
+                    b.HasIndex("VisitaId");
+
+                    b.ToTable("Pagos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Persona", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
@@ -142,16 +323,22 @@ namespace BackEndAPI.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("CodigoDeServicio")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Direccion")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Dni")
-                        .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("IdEmpresa")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("IdRol")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Nombres")
                         .IsRequired()
@@ -165,37 +352,66 @@ namespace BackEndAPI.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
-                    b.Property<int>("RolId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("SucursalId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Telefono")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdEmpresa");
+
+                    b.HasIndex("IdRol");
+
+                    b.HasIndex("SucursalId");
+
+                    b.ToTable("Personas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Plano", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("detalles")
+                        .HasColumnType("text");
+
+                    b.Property<string>("nombre")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Dni")
-                        .IsUnique();
+                    b.HasIndex("IdSucursal");
 
-                    b.HasIndex("RolId");
-
-                    b.ToTable("Personas");
+                    b.ToTable("Planos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
+                    b.Property<string>("Codigo")
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("Costo")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("IdEmpresa")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -210,7 +426,84 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IdEmpresa");
+
                     b.ToTable("Productos");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.ProductosPorVisita", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Detalles")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("IdProducto")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdVisita")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NombreProducto")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("PrecioDelMomento")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PrecioTotal")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdProducto");
+
+                    b.HasIndex("IdVisita");
+
+                    b.ToTable("ProductosPorVisita");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Reserva", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("CantidadDePersonas")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EstadoId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("IdMesa")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NombreReserva")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstadoId");
+
+                    b.HasIndex("IdMesa");
+
+                    b.HasIndex("IdSucursal");
+
+                    b.ToTable("Reservas");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Rol", b =>
@@ -228,69 +521,383 @@ namespace BackEndAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "Empleado"
+                        });
                 });
 
-            modelBuilder.Entity("CategoriaProducto", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Sucursal", b =>
                 {
-                    b.Property<int>("CategoriasId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("IdEmpresa")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("IdEncargado")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdEmpresa");
+
+                    b.HasIndex("IdEncargado");
+
+                    b.ToTable("Sucursales");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.TipoPago", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    b.Property<int>("ProductosId")
-                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.HasKey("CategoriasId", "ProductosId");
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TipoPagos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "Efectivo"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "Tarjeta de Crédito"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nombre = "Tarjeta de Débito"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Nombre = "Transferencia Bancaria"
+                        });
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Visita", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IdCaja")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdMesa")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("IdMozo")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdCaja");
+
+                    b.HasIndex("IdMesa");
+
+                    b.HasIndex("IdMozo");
+
+                    b.ToTable("Visitas");
+                });
+
+            modelBuilder.Entity("MenuProducto", b =>
+                {
+                    b.Property<Guid>("MenusId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductosId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("MenusId", "ProductosId");
 
                     b.HasIndex("ProductosId");
 
-                    b.ToTable("CategoriaProducto");
+                    b.ToTable("MenuProducto");
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Item", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Caja", b =>
                 {
-                    b.HasOne("BackEndAPI.Models.Pedido", null)
-                        .WithMany("Items")
-                        .HasForeignKey("PedidoId")
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
+                        .WithMany("Cajas")
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.Navigation("Sucursal");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Categoria", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Producto", null)
+                        .WithMany("Categorias")
+                        .HasForeignKey("ProductoId");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Empresa", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Persona", "Propietario")
+                        .WithOne("EmpresaPropietario")
+                        .HasForeignKey("BackEndAPI.Models.Empresa", "IdPropietario")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Propietario");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Menu", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
+                        .WithMany("Menus")
+                        .HasForeignKey("IdSucursal")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Sucursal");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Mesa", b =>
                 {
-                    b.HasOne("BackEndAPI.Models.Persona", "Persona")
+                    b.HasOne("BackEndAPI.Models.Persona", "Mozo")
                         .WithMany("Mesas")
-                        .HasForeignKey("PersonaId")
+                        .HasForeignKey("IdMozo")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("Persona");
+                    b.HasOne("BackEndAPI.Models.Plano", "Plano")
+                        .WithMany("Mesas")
+                        .HasForeignKey("IdPlano")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BackEndAPI.Models.Sucursal", null)
+                        .WithMany("Mesas")
+                        .HasForeignKey("SucursalId");
+
+                    b.Navigation("Mozo");
+
+                    b.Navigation("Plano");
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Pedido", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Opcion", b =>
                 {
-                    b.HasOne("BackEndAPI.Models.Mesa", "Mesa")
-                        .WithMany()
-                        .HasForeignKey("MesaId")
+                    b.HasOne("BackEndAPI.Models.Producto", "Producto")
+                        .WithMany("Opciones")
+                        .HasForeignKey("IdProducto")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Mesa");
+                    b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Pagos", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.TipoPago", "TipoPago")
+                        .WithMany()
+                        .HasForeignKey("IdTipoPago")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Visita", "Visita")
+                        .WithMany("Pagos")
+                        .HasForeignKey("VisitaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TipoPago");
+
+                    b.Navigation("Visita");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Persona", b =>
                 {
-                    b.HasOne("BackEndAPI.Models.Rol", "Rol")
-                        .WithMany()
-                        .HasForeignKey("RolId")
+                    b.HasOne("BackEndAPI.Models.Empresa", "EmpresaEmpleado")
+                        .WithMany("Personas")
+                        .HasForeignKey("IdEmpresa")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Rol", "Rol")
+                        .WithMany()
+                        .HasForeignKey("IdRol")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Sucursal", null)
+                        .WithMany("Personas")
+                        .HasForeignKey("SucursalId");
+
+                    b.Navigation("EmpresaEmpleado");
 
                     b.Navigation("Rol");
                 });
 
-            modelBuilder.Entity("CategoriaProducto", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Plano", b =>
                 {
-                    b.HasOne("BackEndAPI.Models.Categoria", null)
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
+                        .WithMany("PlanosMesas")
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sucursal");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Empresa", "Empresa")
+                        .WithMany("Productos")
+                        .HasForeignKey("IdEmpresa")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.ProductosPorVisita", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Producto", "Producto")
                         .WithMany()
-                        .HasForeignKey("CategoriasId")
+                        .HasForeignKey("IdProducto")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BackEndAPI.Models.Visita", "Visita")
+                        .WithMany("ProductosPorVisita")
+                        .HasForeignKey("IdVisita")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
+
+                    b.Navigation("Visita");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Reserva", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.EstadoReserva", "Estado")
+                        .WithMany()
+                        .HasForeignKey("EstadoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Mesa", "Mesa")
+                        .WithMany("Reservas")
+                        .HasForeignKey("IdMesa")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
+                        .WithMany("Reservas")
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("Mesa");
+
+                    b.Navigation("Sucursal");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Sucursal", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Empresa", "Empresa")
+                        .WithMany("Sucursales")
+                        .HasForeignKey("IdEmpresa")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Persona", "Encargado")
+                        .WithMany("Sucursales")
+                        .HasForeignKey("IdEncargado")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Empresa");
+
+                    b.Navigation("Encargado");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Visita", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Caja", "Caja")
+                        .WithMany("Visitas")
+                        .HasForeignKey("IdCaja")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Mesa", "Mesa")
+                        .WithMany("Visitas")
+                        .HasForeignKey("IdMesa")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Persona", "Mozo")
+                        .WithMany()
+                        .HasForeignKey("IdMozo")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Caja");
+
+                    b.Navigation("Mesa");
+
+                    b.Navigation("Mozo");
+                });
+
+            modelBuilder.Entity("MenuProducto", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Menu", null)
+                        .WithMany()
+                        .HasForeignKey("MenusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -301,14 +908,68 @@ namespace BackEndAPI.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("BackEndAPI.Models.Pedido", b =>
+            modelBuilder.Entity("BackEndAPI.Models.Caja", b =>
                 {
-                    b.Navigation("Items");
+                    b.Navigation("Visitas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Empresa", b =>
+                {
+                    b.Navigation("Personas");
+
+                    b.Navigation("Productos");
+
+                    b.Navigation("Sucursales");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Mesa", b =>
+                {
+                    b.Navigation("Reservas");
+
+                    b.Navigation("Visitas");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Persona", b =>
                 {
+                    b.Navigation("EmpresaPropietario");
+
                     b.Navigation("Mesas");
+
+                    b.Navigation("Sucursales");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Plano", b =>
+                {
+                    b.Navigation("Mesas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
+                {
+                    b.Navigation("Categorias");
+
+                    b.Navigation("Opciones");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Sucursal", b =>
+                {
+                    b.Navigation("Cajas");
+
+                    b.Navigation("Menus");
+
+                    b.Navigation("Mesas");
+
+                    b.Navigation("Personas");
+
+                    b.Navigation("PlanosMesas");
+
+                    b.Navigation("Reservas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Visita", b =>
+                {
+                    b.Navigation("Pagos");
+
+                    b.Navigation("ProductosPorVisita");
                 });
 #pragma warning restore 612, 618
         }

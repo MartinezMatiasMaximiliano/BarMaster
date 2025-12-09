@@ -1,23 +1,23 @@
 using BackEndAPI.Data;
 using BackEndAPI.Hubs;
+using BackEndAPI.Repositories;
+using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
+using BackEndAPI.Services.Global;
+using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 
 var builder = WebApplication.CreateBuilder(args);
-// Add services to the container.
+
+#region CONTROLLERS Y SWAGGER
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -45,32 +45,48 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+#endregion
 
+#region CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder => builder.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader());
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
 });
+#endregion
 
-//builder.Services.AddCors(options =>
-//{
-//    options.AddDefaultPolicy(builder =>
-//    builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
-//                               .AllowAnyMethod()
-//                               .AllowAnyHeader()
-//                               .AllowCredentials()
-//                               );
-//});
-
-
+#region SERVICIOS
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
+
+
+builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
+builder.Services.AddScoped<IProductosServices, ProductosServices>();
+
+builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
+builder.Services.AddScoped<IEmpresasServices, EmpresasServices>();
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthServices, AuthServices>();
+
+builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
+builder.Services.AddScoped<ISucursalesServices, SucursalesServices>();
+
+
+
 QuestPDF.Settings.License = LicenseType.Community;
 builder.Services.AddSignalR();
-builder.Services.AddDbContext<ApiDbContext>(o =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase")));
+builder.Services.AddDbContext<ApiDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase")));
+
+#endregion
+
+#region JWT
+var signingKey = builder.Configuration["JWT:SigningKey"]
+    ?? throw new InvalidOperationException("JWT SigningKey not configured");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -83,35 +99,43 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["JWT:Issuer"],
             ValidAudience = builder.Configuration["JWT:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey))
         };
     });
+
+#endregion
+
 var app = builder.Build();
 
-app.UseStaticFiles();
+#region CARPETAS
+var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+DirectoryInfo infoUploads = Directory.CreateDirectory(uploads);
+#endregion
+
+#region MIDDLEWARES
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads")),
+    FileProvider = new PhysicalFileProvider(uploads),
     RequestPath = "/uploads",
 });
+
 app.UseRouting();
 app.UseCors("AllowAll");
-//app.UseCors();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-
-
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+#endregion
+
+#region ENDPOINTS
 app.MapControllers();
 app.MapHub<NotificacionesHub>("/NotificacionesHub");
+#endregion
 
 app.Run();

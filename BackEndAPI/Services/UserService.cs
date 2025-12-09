@@ -1,7 +1,7 @@
 ﻿using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
-using BackEndAPI.Services;
+using BackEndAPI.Services.Global;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -35,7 +35,7 @@ namespace BackEndAPI.Services
             };
             _passwordService.CrearPasswordHash(DTO.Dni, out byte[] hashContrasena, out byte[] saltContrasena); // Genera hash y salt
 
-             usuario.EstablecerContrasena(hashContrasena, saltContrasena);
+            usuario.EstablecerContrasena(hashContrasena, saltContrasena);
 
             return usuario;
         }
@@ -45,7 +45,7 @@ namespace BackEndAPI.Services
             return _passwordService.VerificarPasswordHash(contrasena, usuario.PasswordHash, usuario.PasswordSalt);
         }
 
-        public JWTToken CrearJWT(string Dni,int id,string Nombres,string Apellido,string Rol)
+        public JWTToken CrearJWT(string Dni, int id, string Nombres, string Apellido, string Rol)
         {
             int hours_expire = 1;
             var claims = new[]
@@ -68,15 +68,15 @@ namespace BackEndAPI.Services
 
             return new JWTToken
             {
-                Access_token = tokenString,
-                Token_type = "bearer",
-                Dni = Dni,
-                Nombres = Nombres,
-                Apellido = Apellido,
-                Id = id,
-                Rol = Rol,
-                expires = token.ValidTo.ToString(),
-                Expires_in = 3600 * hours_expire
+                //Access_token = tokenString,
+                //Token_type = "bearer",
+                //Dni = Dni,
+                //Nombres = Nombres,
+                //Apellido = Apellido,
+                ////Id = id,
+                //Rol = Rol,
+                //expires = token.ValidTo.ToString(),
+                //Expires_in = 3600 * hours_expire
             };
         }
     }
