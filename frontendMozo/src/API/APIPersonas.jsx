@@ -80,7 +80,7 @@ export async function ModificarPassword(id,nuevoPassword,token) {
     try {
         const response = await axios.put(
             BASE_URL + 'password/' + id,
-            nuevoPassword.toString(),
+            JSON.stringify(nuevoPassword),
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -89,8 +89,10 @@ export async function ModificarPassword(id,nuevoPassword,token) {
             }
         );
         console.log("RESPONSE:", response.data);
+        return response.data;
     } catch (error) {
-        console.log("ERROR:", error.data);
+        console.log("ERROR:", error.response?.data || error.message);
+        throw error;
     }
 }
 

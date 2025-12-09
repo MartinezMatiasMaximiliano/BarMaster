@@ -5,12 +5,16 @@ import { Container, Form } from 'react-bootstrap';
 import { modificar as modificarMozo } from '../redux/slices/mozoSlice';
 import { modificar as modificarCodigoMozo } from '../redux/slices/codigoMozoSlice';
 import { useSelector, useDispatch } from 'react-redux'
-import { Chip } from "@mui/material";
+import { Chip, Box, Typography, Stack } from "@mui/material";
 import { GetChipNombreCompleto } from '../Helpers/HelperFunctions';
 import GridLayout, { WidthProvider } from "react-grid-layout";
 import Button from '@mui/material/Button';
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+import { ObtenerDatosEmpresa } from '../API/APIEmpresas';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import BusinessIcon from '@mui/icons-material/Business';
 
 const ResponsiveGridLayout = WidthProvider(GridLayout);
 
@@ -291,10 +295,33 @@ function Index(props) {
     const [ListaMesas, setListaMesas] = useState([]);
 
     const [ListaMesasFiltradas, setListaMesasFiltradas] = useState(undefined);
+    const [empresaData, setEmpresaData] = useState(null);
+    const [fechaHora, setFechaHora] = useState(new Date());
 
     const handleChange = (event) => {
         dispatch(modificarCodigoMozo(event.target.value));
     }
+
+    // Cargar datos de la empresa
+    useEffect(() => {
+        const cargarEmpresa = async () => {
+            try {
+                const data = await ObtenerDatosEmpresa();
+                setEmpresaData(data);
+            } catch (error) {
+                console.error('Error al cargar datos de la empresa:', error);
+            }
+        };
+        cargarEmpresa();
+    }, []);
+
+    // Actualizar fecha y hora cada segundo
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setFechaHora(new Date());
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         filtrarMesas();
@@ -343,6 +370,23 @@ function Index(props) {
     }
 
 
+    const formatearFecha = (fecha) => {
+        return fecha.toLocaleDateString('es-AR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    const formatearHora = (fecha) => {
+        return fecha.toLocaleTimeString('es-AR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    };
+
     return (
         <Container className="position-relative" style={{ height: "98vh" }}>
             <ResponsiveGridLayout
@@ -360,7 +404,7 @@ function Index(props) {
 
 
 
-            <div className="position-absolute bottom-0 start-0 w-100 p-3 d-flex align-items-end gap-3">
+            <div className="position-absolute bottom-0 start-0 w-100 p-3 d-flex align-items-end gap-3 flex-wrap">
                 <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                     <Form.Label>Código</Form.Label>
                     <Form.Control
@@ -371,6 +415,28 @@ function Index(props) {
                     />
                 </Form.Group>
                 {mozo?.nombre ? GetChipNombreCompleto(mozo.nombre, mozo.apellido) : (<Chip label="Codigo incorrecto" variant="outlined" color="error" />)}
+                
+                {/* Fecha, hora y empresa - menos invasivo */}
+                <Box sx={{ ml: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <CalendarTodayIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14 }} />
+                        <Typography variant="caption" color="text.secondary">
+                            {formatearFecha(fechaHora)}
+                        </Typography>
+                        <AccessTimeIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14, ml: 1 }} />
+                        <Typography variant="caption" color="text.secondary">
+                            {formatearHora(fechaHora)}
+                        </Typography>
+                    </Stack>
+                    {empresaData && (
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                            <BusinessIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14 }} />
+                            <Typography variant="caption" color="text.secondary">
+                                {empresaData.nombreEmpresa} - Sucursal #{empresaData.numeroSucursal}
+                            </Typography>
+                        </Stack>
+                    )}
+                </Box>
             </div>
 
         </Container>

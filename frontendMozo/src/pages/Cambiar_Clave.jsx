@@ -1,14 +1,33 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Alert } from '@mui/material';
 import { ModificarPassword } from '../API/APIPersonas';
+import {
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    Chip,
+    CircularProgress,
+    Container,
+    Divider,
+    Grid,
+    IconButton,
+    Stack,
+    TextField,
+    Tooltip,
+    Typography
+} from '@mui/material';
+import LockResetIcon from '@mui/icons-material/LockReset';
 
 const PasswordChangeForm = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
@@ -18,51 +37,73 @@ const PasswordChangeForm = () => {
             return;
         }
 
+        if (newPassword.length < 6) {
+            setError('La contraseña debe tener al menos 6 caracteres.');
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             setError('Las contraseñas nuevas no coinciden.');
             return;
         }
 
-        // AquÃ­ podrÃ­as hacer una llamada a una API para cambiar la contraseña
-        ModificarPassword(localStorage.getItem('id'), newPassword, localStorage.getItem('token'));
-        // Por ahora simulamos Ã©xito:
-        setSuccess('Contraseña cambiada exitosamente.');
-        setNewPassword('');
-        setConfirmPassword('');
+        const id = localStorage.getItem('id');
+        const token = localStorage.getItem('token');
+
+        if (!id || !token) {
+            setError('No se encontró información de sesión. Por favor, inicia sesión nuevamente.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await ModificarPassword(id, newPassword, token);
+            setSuccess('Contraseña cambiada exitosamente.');
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (error) {
+            const errorMessage = error.response?.data?.error?.mensaje 
+                || error.response?.data?.title 
+                || error.message 
+                || 'Error al cambiar la contraseña. Por favor, intenta nuevamente.';
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ maxWidth: 400, mx: 'auto', mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}
-        >
-            <Typography variant="h6" textAlign="center">
-                Cambiar Contraseña
-            </Typography>
-
-            <TextField
-                label="Nueva Contraseña"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-            />
-            <TextField
-                label="Confirmar Nueva Contraseña"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-            />
-
-            {error && <Alert severity="error">{error}</Alert>}
-            {success && <Alert severity="success">{success}</Alert>}
-
-            <Button type="submit" variant="contained" color="primary">
-                Cambiar Contraseña
-            </Button>
-        </Box>
+        <Container maxWidth="sm" sx={{py:4}}>
+            <Card variant="outlined">
+                <CardHeader title="Cambiar Contraseña"/>
+                <CardContent>
+                {error && (
+                        <Alert severity="error" onClose={() => setError('')}>
+                            {error}
+                        </Alert>
+                    )}
+                    {success && (
+                    <Alert severity="success" onClose={() => setSuccess('')}>
+                        {success}
+                    </Alert>
+                )}
+                    <Box component="form" sx={{ maxWidth: 400, mx: 'auto', mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <TextField label="Nueva Contraseña" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                        <TextField label="Confirmar Nueva Contraseña" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                    </Box>
+                    <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3}>
+                        <Button
+                            onClick={handleSubmit}
+                            variant="contained"
+                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <LockResetIcon />}
+                            disabled={loading}
+                        >
+                            {loading ? 'Guardando...' : 'Guardar'}
+                        </Button>
+                    </Stack>
+                </CardContent>
+            </Card>
+        </Container>
     );
 };
 

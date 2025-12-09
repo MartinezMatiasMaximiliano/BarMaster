@@ -2,7 +2,7 @@ import React from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
-import Modal_Agregar from "../components/Modals/Agregar/Index";
+import Modal_Agregar from "../components/Modals/Agregar_ABM/Index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -60,11 +60,11 @@ function Abm_Personas(props) {
                 titulo={props.titulo}
                 filas={props.datos_personas}
                 columnas={columnas}
+                onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
                         columnas={['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Rol']}
-                        configSelect={configSelect}
                         agregar={api.crear}
                         campos={Campos}
                     >

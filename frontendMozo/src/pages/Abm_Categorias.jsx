@@ -3,7 +3,7 @@ import { Container } from 'react-bootstrap'
 import { CrearCategoria, BorrarCategoria, DesactivarCategoria, ActivarCategoria, ModificarCategoria } from "../API/APICategorias";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
-import Modal_Agregar from "../components/Modals/Agregar/Index";
+import Modal_Agregar from "../components/Modals/Agregar_ABM/Index";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 import { Campos } from "../configs/agregar/Categorias"
@@ -18,8 +18,6 @@ function Abm_Categorias(props) {
     };
 
     const columnas = [
-        // Si tu dataset tiene imagen, podés agregar esta columna como type:'image'
-        // { key: 'imagen', label: '', type: 'image', align: 'right' },
 
         { key: "nombre", label: "Nombre", align: "right" },
 
@@ -46,6 +44,7 @@ function Abm_Categorias(props) {
                 titulo={props.titulo}
                 filas={props.datos_categorias}
                 columnas={columnas}
+                onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}

@@ -1,12 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { React, useState, useEffect } from 'react'
+import { React, useState, useEffect, useRef } from 'react'
 import Mesa from "../components/Mesa/Mesa";
 import { Container, Form } from 'react-bootstrap';
 import { modificar as modificarMozo } from '../redux/slices/mozoSlice';
 import { modificar as modificarCodigoMozo } from '../redux/slices/codigoMozoSlice';
 import { useSelector, useDispatch } from 'react-redux'
-import { Chip } from "@mui/material";
+import { Chip, Box, Typography, Stack } from "@mui/material";
 import { GetChipNombreCompleto } from '../Helpers/HelperFunctions';
+import { ObtenerDatosEmpresa } from '../API/APIEmpresas';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import BusinessIcon from '@mui/icons-material/Business';
 
 function Index(props) {
 
@@ -28,10 +32,80 @@ function Index(props) {
     const [ListaMesas, setListaMesas] = useState([]);
 
     const [ListaMesasFiltradas, setListaMesasFiltradas] = useState(undefined);
+    const [empresaData, setEmpresaData] = useState(null);
+    const [fechaHora, setFechaHora] = useState(new Date());
+    const inputRef = useRef(null);
 
     const handleChange = (event) => {
         dispatch(modificarCodigoMozo(event.target.value));
     }
+
+    // Capturar eventos de teclado para escribir automáticamente en el input
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            // Ignorar si el usuario está escribiendo en un input, textarea o está en un elemento editable
+            const target = event.target;
+            const isInputElement = target.tagName === 'INPUT' || 
+                                  target.tagName === 'TEXTAREA' || 
+                                  target.isContentEditable;
+            
+            // Si está escribiendo en el input del código, no hacer nada (evitar duplicación)
+            if (isInputElement && target === inputRef.current) {
+                return;
+            }
+
+            // Ignorar teclas especiales que no son caracteres
+            const key = event.key;
+            
+            // Si es una tecla imprimible (letra, número, o algunos símbolos)
+            if (key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                event.preventDefault();
+                const nuevoCodigo = codigoMozo + key;
+                dispatch(modificarCodigoMozo(nuevoCodigo));
+            }
+            // Manejar Backspace para borrar el último carácter
+            else if (key === 'Backspace' && !isInputElement) {
+                event.preventDefault();
+                if (codigoMozo.length > 0) {
+                    dispatch(modificarCodigoMozo(codigoMozo.slice(0, -1)));
+                }
+            }
+            // Manejar Enter para limpiar el código
+            else if (key === 'Enter' && !isInputElement) {
+                event.preventDefault();
+                dispatch(modificarCodigoMozo(''));
+            }
+        };
+
+        // Agregar el event listener al document
+        document.addEventListener('keydown', handleKeyDown);
+
+        // Limpiar el event listener al desmontar
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [codigoMozo, dispatch]);
+
+    // Cargar datos de la empresa
+    useEffect(() => {
+        const cargarEmpresa = async () => {
+            try {
+                const data = await ObtenerDatosEmpresa();
+                setEmpresaData(data);
+            } catch (error) {
+                console.error('Error al cargar datos de la empresa:', error);
+            }
+        };
+        cargarEmpresa();
+    }, []);
+
+    // Actualizar fecha y hora cada segundo
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setFechaHora(new Date());
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         filtrarMesas();
@@ -80,6 +154,23 @@ function Index(props) {
     }
 
 
+    const formatearFecha = (fecha) => {
+        return fecha.toLocaleDateString('es-AR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    const formatearHora = (fecha) => {
+        return fecha.toLocaleTimeString('es-AR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    };
+
     return (
         <Container className="position-relative" style={{ height: "98vh" }}>
             <div className="row pt-4 g-3">
@@ -91,10 +182,11 @@ function Index(props) {
             </div>
 
 
-            <div className="position-absolute bottom-0 start-0 w-100 p-3 d-flex align-items-end gap-3">
+            <div className="position-absolute bottom-0 start-0 w-100 p-3 d-flex align-items-end gap-3 flex-wrap">
                 <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                     <Form.Label>Código</Form.Label>
                     <Form.Control
+                        ref={inputRef}
                         onChange={(e) => handleChange(e)}
                         type="password"
                         value={codigoMozo}
@@ -102,6 +194,28 @@ function Index(props) {
                     />
                 </Form.Group>
                 {mozo?.nombre ? GetChipNombreCompleto(mozo.nombre, mozo.apellido) : (<Chip label="Codigo incorrecto" variant="outlined" color="error" />)}
+                
+                {/* Fecha, hora y empresa - menos invasivo */}
+                <Box sx={{ ml: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <CalendarTodayIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14 }} />
+                        <Typography variant="caption" color="text.secondary">
+                            {formatearFecha(fechaHora)}
+                        </Typography>
+                        <AccessTimeIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14, ml: 1 }} />
+                        <Typography variant="caption" color="text.secondary">
+                            {formatearHora(fechaHora)}
+                        </Typography>
+                    </Stack>
+                    {empresaData && (
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                            <BusinessIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14 }} />
+                            <Typography variant="caption" color="text.secondary">
+                                {empresaData.nombreEmpresa} - Sucursal #{empresaData.numeroSucursal}
+                            </Typography>
+                        </Stack>
+                    )}
+                </Box>
             </div>
 
         </Container>

@@ -2,7 +2,7 @@ import React from "react";
 import { Container } from "react-bootstrap";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
-import Modal_Agregar from "../components/Modals/Agregar/Index";
+import Modal_Agregar from "../components/Modals/Agregar_ABM/Index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -53,11 +53,11 @@ function Abm_Menu(props) {
                 titulo={props.titulo}
                 filas={props.datos_menu}
                 columnas={columnas}
+                onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
                         columnas={["Imagen", "Nombre", "Precio", "Descripción", "Categorias"]}
-                        categoriasTotales={props.categorias}
                         agregar={api.crear}
                         campos={Campos}
                     >

@@ -27,6 +27,7 @@ export default function Handlers({ id, editValues, setEditValues, modificar, rec
     console.log("EDITVALUES: ", editValues)
     if (Object.keys(errors).length === 0) {
         await modificar({ ...editValues, id: id });
+        setErrors({});
         handleClose();
         await recargarComponentes();
     }

@@ -1,7 +1,16 @@
 import { React, useState } from "react"
-import { Button, Modal } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import {
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    IconButton,
+    Stack,
+    Typography
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 
 function Modal_Eliminar(props) {
 
@@ -24,26 +33,50 @@ function Modal_Eliminar(props) {
 
     return (
         <>
-            <Button variant="primary" onClick={handleShow} className="ms-2">
-                <FontAwesomeIcon icon={faTrash} />
-            </Button>
+            <IconButton
+                color="error"
+                onClick={handleShow}
+                size="small"
+            >
+                <DeleteIcon fontSize="small" />
+            </IconButton>
 
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Eliminar {props.mensaje}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p>Esta seguro que desea borrar el registro ?</p>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
+            <Dialog 
+                open={show} 
+                onClose={handleClose}
+                maxWidth="sm"
+                fullWidth
+                disableEnforceFocus
+            >
+                <DialogTitle>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <span>Eliminar {props.mensaje}</span>
+                        <IconButton
+                            aria-label="close"
+                            onClick={handleClose}
+                            size="small"
+                            sx={{
+                                color: (theme) => theme.palette.grey[500],
+                            }}
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </Stack>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Typography variant="body1">
+                        ¿Está seguro que desea borrar el registro?
+                    </Typography>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, py: 2 }}>
+                    <Button onClick={handleClose} variant="outlined">
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleSave}>
+                    <Button onClick={handleSave} variant="contained" color="error">
                         Eliminar
                     </Button>
-                </Modal.Footer>
-            </Modal>
+                </DialogActions>
+            </Dialog>
         </>
     );
 }
