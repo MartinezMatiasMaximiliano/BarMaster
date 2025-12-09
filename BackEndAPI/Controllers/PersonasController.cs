@@ -18,11 +18,11 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class PersonasController : ControllerBase
     {
-        private readonly ApiDbContext _context;
+        private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly PasswordService _passwordService;
 
-        public PersonasController(UserService userService, ApiDbContext context, PasswordService passwordService)
+        public PersonasController(UserService userService, AppDbContext context, PasswordService passwordService)
         {
             _context = context;
             _userService = userService;

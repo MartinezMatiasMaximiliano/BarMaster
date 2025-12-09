@@ -17,9 +17,9 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class ItemsController : ControllerBase
     {
-        private readonly ApiDbContext _context;
+        private readonly AppDbContext _context;
 
-        public ItemsController(ApiDbContext context)
+        public ItemsController(AppDbContext context)
         {
             _context = context;
         }

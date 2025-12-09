@@ -1,22 +1,26 @@
 ﻿using BackEndAPI.Data;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
+using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEndAPI.Repositories
 {
     public class ProductosRepository : IProductosRepository
     {
-        private readonly ApiDbContext _context;
-        public ProductosRepository(ApiDbContext context)
+        private readonly ICurrentDbContext _context;
+        private readonly AppDbContext db;
+        public ProductosRepository(ICurrentDbContext context)
         {
             _context = context;
+            db = context.Db;
         }
 
         public async Task AddProductoAsync(Producto producto)
         {
-            await _context.Productos.AddAsync(producto);
-            await _context.SaveChangesAsync();
+            throw new NotImplementedException();
+            //await _context.Productos.AddAsync(producto);
+            //await _context.SaveChangesAsync();
         }
 
         public async Task DeleteProductoAsync(Guid id)
@@ -26,7 +30,8 @@ namespace BackEndAPI.Repositories
 
         public async Task<IEnumerable<Producto>> GetAllProductosAsync()
         {
-            return await _context.Productos.ToListAsync();
+            throw new NotImplementedException();
+            //return await _context.Productos.ToListAsync();
         }
 
         public Task<Producto> GetProductoByIdAsync(Guid id)

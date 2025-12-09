@@ -21,34 +21,62 @@ namespace BackEndAPI.Controllers
     {
 
         private readonly IAuthServices _authServices;
-        private readonly PasswordService _passwordService;
-        public AuthController(IAuthServices authServices, PasswordService passwordService)
+        public AuthController(IAuthServices authServices)
         {
             _authServices = authServices;
-            _passwordService = passwordService;
         }
 
-        [HttpPost("/Login/Sucursal")]
-        public async Task<IActionResult> LoginSucursal([FromBody] LoginDTO request)
+        //[HttpPost("/Login/Sucursal")]
+        //public async Task<IActionResult> LoginSucursal([FromBody] LoginDTO request)
+        //{
+        //    try
+        //    {
+        //        var result = await _authServices.LoginSucursal(request.Username,request.Password);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        switch (ex.Message)
+        //        {
+        //            case "Sucursal no encontrada":
+        //                return BadRequest("Sucursal no encontrada");
+        //            case "Contraseña incorrecta":
+        //                return Unauthorized("Contraseña incorrecta");
+        //            default:
+        //                return StatusCode(500, "Error interno del servidor");
+        //        }   
+        //    }
+        //}
+
+        [HttpPost("/Login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO request)
         {
             try
             {
-                var result = await _authServices.LoginSucursal(request.Username,request.Password);
+                var result = await _authServices.Authenticate(request);
+                
+                if (result == null)
+                {
+                    return Unauthorized("Usuario o contraseña incorrectos");
+                }   
+
                 return Ok(result);
+
             }
             catch (Exception ex)
             {
                 switch (ex.Message)
                 {
-                    case "Sucursal no encontrada":
-                        return BadRequest("Sucursal no encontrada");
+                    case "usuario no encontrado":
+                        return BadRequest("usuario no encontrado");
                     case "Contraseña incorrecta":
                         return Unauthorized("Contraseña incorrecta");
                     default:
                         return StatusCode(500, "Error interno del servidor");
-                }   
+                }
             }
         }
+
     }
 }
 

@@ -17,9 +17,9 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class PedidosController : ControllerBase
     {
-        private readonly ApiDbContext _context;
+        private readonly AppDbContext _context;
 
-        public PedidosController(ApiDbContext context)
+        public PedidosController(AppDbContext context)
         {
             _context = context;
         }

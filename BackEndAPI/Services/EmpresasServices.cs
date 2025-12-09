@@ -1,17 +1,27 @@
 ﻿using BackEndAPI.Controllers;
+using BackEndAPI.Data;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
+using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
+using BackEndAPI.Tenancy.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackEndAPI.Services
 {
     public class EmpresasServices : IEmpresasServices
     {
         private readonly IEmpresasRepository _empresasRepository;
-        public EmpresasServices(IEmpresasRepository empresasRepository)
+        private readonly ITenantProvisioner _tenantProvisioner;
+        private readonly ITenantProvider _tenantProvider;
+        private readonly PasswordService _passwordService;
+        public EmpresasServices(IEmpresasRepository empresasRepository,ITenantProvisioner tenantProvisioner , ITenantProvider tenantProvider,PasswordService passwordService)
         {
             _empresasRepository = empresasRepository;
+            _tenantProvisioner = tenantProvisioner;
+            _tenantProvider = tenantProvider;
+            _passwordService = passwordService;
         }
         public async Task<IEnumerable<Empresa>> GetAllEmpresas()
         {
@@ -30,7 +40,7 @@ namespace BackEndAPI.Services
         }
         public async Task<Empresa> AddEmpresa(CrearEmpresaDTO request)
         {
-            var result = await _empresasRepository.GetEmpresaByNombre(request.Nombre);
+            var result = await _tenantProvider.GetTenant(request.Nombre);
 
             if (result != null)
             {
@@ -42,8 +52,15 @@ namespace BackEndAPI.Services
                 Nombre = request.Nombre,
                 Telefonos = request.Telefonos,
                 Emails = request.Emails,
+                Activo = true,
+                FechaInscripcion = DateTime.UtcNow,
+                IdTipoSubscripcion = null,
+                Username = $"{request.Nombre}@empresa",
             };
-            await _empresasRepository.AddEmpresa(empresa);
+            _passwordService.CrearPasswordHash(request.Password, out byte[] hash, out byte[] salt);
+            empresa.EstablecerContrasena(hash, salt);
+
+            var tenantInfo = await _tenantProvisioner.ProvisionTenantAsync(empresa);
             return empresa;
         }
         public Task<bool> UpdateEmpresa(Guid id,ActualizarEmpresaDTO request)
