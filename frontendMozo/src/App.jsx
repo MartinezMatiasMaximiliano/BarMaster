@@ -18,6 +18,8 @@ import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery_TakeAway from './pages/Delivery_TakeAway'
 import Caja from './pages/Caja/Caja'
 import Mi_Plan from './pages/Mi_Plan'
+import PanelSucursales from './pages/PanelSucursales'
+import DetalleSucursal from './pages/DetalleSucursal'
 import Login from './pages/Login';
 import { PostItems } from './API/APIPedidos';
 import { BuscarTodasLasMesas } from './API/APIMesas';
@@ -35,6 +37,7 @@ import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
 
 export const LoginContext = createContext();
+export const SucursalContext = createContext();
 
 function App() {
 
@@ -46,6 +49,12 @@ function App() {
 
     const [logeado, setLogeado] = useState(false);
     const [rol, setRol] = useState(localStorage.getItem('rol') || '');
+    
+    // State de sucursal activa
+    const [sucursalActiva, setSucursalActiva] = useState(() => {
+        const saved = localStorage.getItem('sucursalActiva');
+        return saved ? JSON.parse(saved) : null;
+    });
 
     // States que usan redux
     const pedidosActivos = useSelector((state) => state.pedidosActivos.value); 
@@ -65,16 +74,31 @@ function App() {
 
     useEffect(() => {
         if (location.pathname === '/') {
-            BuscarTodasLasMesas().then(data => SetMesas(data))
-            BuscarTodosLosMozos().then(data => SetMozos(data))
-            BuscarTodosLosProductos().then(data => SetMenu(data))
-            BuscarTodasLasPersonas().then(data => SetPersonas(data))
-            BuscarTodosLosRoles().then(data => SetRoles(data))
-            BuscarTodosLosPedidos().then(data => SetPedidos(data))
-            BuscarTodasLasCategorias().then(data => SetCategorias(data));
+            // Si hay una sucursal activa, cargar datos de esa sucursal
+            // Por ahora cargamos todos los datos, pero aquí se puede filtrar por sucursal
+            if (sucursalActiva) {
+                // TODO: Cuando la API esté lista, aquí se harían las llamadas filtradas por sucursal
+                // Por ejemplo: BuscarTodasLasMesas(sucursalActiva.Id)
+                BuscarTodasLasMesas().then(data => SetMesas(data))
+                BuscarTodosLosMozos().then(data => SetMozos(data))
+                BuscarTodosLosProductos().then(data => SetMenu(data))
+                BuscarTodasLasPersonas().then(data => SetPersonas(data))
+                BuscarTodosLosRoles().then(data => SetRoles(data))
+                BuscarTodosLosPedidos().then(data => SetPedidos(data))
+                BuscarTodasLasCategorias().then(data => SetCategorias(data));
+            } else {
+                // Si no hay sucursal activa, limpiar datos
+                SetMesas([]);
+                SetMozos([]);
+                SetMenu([]);
+                SetPersonas([]);
+                SetRoles([]);
+                SetPedidos([]);
+                SetCategorias([]);
+            }
         }
         
-    }, [location.search, location.pathname])
+    }, [location.search, location.pathname, sucursalActiva])
 
     const { sendRecargarTicket } = useSignalR({
         onRegistrarProducto: (pedido, numeroMesa) => { AgregarItemsAPedido(pedido, numeroMesa) },
@@ -168,6 +192,7 @@ function App() {
 
     return (
         <LoginContext.Provider value={{ logeado, setLogeado, rol, setRol }}>
+            <SucursalContext.Provider value={{ sucursalActiva, setSucursalActiva }}>
             <Box
                 sx={{
                     display: 'flex',
@@ -213,6 +238,8 @@ function App() {
                         <Route path="/delivery_takeaway" element={<Control_Login><Delivery_TakeAway recargarComponentes={recargarDeliveryTakeAway} titulo="Delivery/Take Away" /></Control_Login>} />
                         <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
                         <Route path="/mi_plan" element={<Control_Login><Mi_Plan /></Control_Login>} />
+                        <Route path="/panel_sucursales" element={<Control_Login><PanelSucursales /></Control_Login>} />
+                        <Route path="/sucursal/:idEmpresa/:idSucursal" element={<Control_Login><DetalleSucursal /></Control_Login>} />
                         <Route path="/login" element={<Login />} />
                     </Routes>
                 </Box>
@@ -232,6 +259,7 @@ function App() {
                     {Notificaciones.reverse()}
                 </Box>
             </Box>
+            </SucursalContext.Provider>
         </LoginContext.Provider>
     )
 }

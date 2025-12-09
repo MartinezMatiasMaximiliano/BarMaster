@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { React, useState, useEffect, useRef } from 'react'
+import { React, useState, useEffect, useRef, useContext } from 'react'
 import Mesa from "../components/Mesa/Mesa";
 import { Container, Form } from 'react-bootstrap';
 import { modificar as modificarMozo } from '../redux/slices/mozoSlice';
@@ -7,14 +7,15 @@ import { modificar as modificarCodigoMozo } from '../redux/slices/codigoMozoSlic
 import { useSelector, useDispatch } from 'react-redux'
 import { Chip, Box, Typography, Stack } from "@mui/material";
 import { GetChipNombreCompleto } from '../Helpers/HelperFunctions';
-import { ObtenerDatosEmpresa } from '../API/APIEmpresas';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import BusinessIcon from '@mui/icons-material/Business';
+import { SucursalContext } from '../App';
 
 function Index(props) {
 
     const dispatch = useDispatch();
+    const { sucursalActiva } = useContext(SucursalContext);
 
     const mozo = useSelector((state) => state.mozo.value); 
 
@@ -32,7 +33,6 @@ function Index(props) {
     const [ListaMesas, setListaMesas] = useState([]);
 
     const [ListaMesasFiltradas, setListaMesasFiltradas] = useState(undefined);
-    const [empresaData, setEmpresaData] = useState(null);
     const [fechaHora, setFechaHora] = useState(new Date());
     const inputRef = useRef(null);
 
@@ -85,19 +85,6 @@ function Index(props) {
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [codigoMozo, dispatch]);
-
-    // Cargar datos de la empresa
-    useEffect(() => {
-        const cargarEmpresa = async () => {
-            try {
-                const data = await ObtenerDatosEmpresa();
-                setEmpresaData(data);
-            } catch (error) {
-                console.error('Error al cargar datos de la empresa:', error);
-            }
-        };
-        cargarEmpresa();
-    }, []);
 
     // Actualizar fecha y hora cada segundo
     useEffect(() => {
@@ -207,11 +194,11 @@ function Index(props) {
                             {formatearHora(fechaHora)}
                         </Typography>
                     </Stack>
-                    {empresaData && (
+                    {sucursalActiva && (
                         <Stack direction="row" spacing={0.5} alignItems="center">
                             <BusinessIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14 }} />
                             <Typography variant="caption" color="text.secondary">
-                                {empresaData.nombreEmpresa} - Sucursal #{empresaData.numeroSucursal}
+                                {sucursalActiva.NombreEmpresa} - {sucursalActiva.Direccion}
                             </Typography>
                         </Stack>
                     )}

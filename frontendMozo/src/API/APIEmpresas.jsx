@@ -26,6 +26,31 @@ const datosPruebaEmpresa = {
     direccion: "Av. Corrientes 1234, CABA"
 };
 
+const datosPruebaEmpresasConSucursales = [
+    {
+        "Id": 1,
+        "Nombre": "La Cafetería",
+        "Emails": ["contacto@lacafeteria.com", "reservas@lacafeteria.com"],
+        "Sucursales": [
+            {
+                "Direccion": "Santiago y 25 de Mayo",
+                "Telefono": "381-445-1200",
+                "IdEmpresa": 1
+            },
+            {
+                "Direccion": "Chacabuco 136",
+                "Telefono": "381-422-8899",
+                "IdEmpresa": 1
+            },
+            {
+                "Direccion": "Lavalle y 9 de Julio",
+                "Telefono": "381-431-7722",
+                "IdEmpresa": 1
+            }
+        ]
+    }
+];
+
 /**
  * Obtiene la información del plan de suscripción de la empresa actual
  * @returns {Promise<Object>} Datos del plan con estructura:
@@ -80,6 +105,38 @@ export async function ObtenerDatosEmpresa() {
         setTimeout(() => {
             resolve(datosPruebaEmpresa);
         }, 200);
+    });
+}
+
+/**
+ * Obtiene todas las empresas con sus sucursales
+ * @returns {Promise<Array>} Array de empresas con estructura:
+ * [{
+ *   Id: number,
+ *   Nombre: string,
+ *   Emails: string[],
+ *   Sucursales: [{
+ *     Direccion: string,
+ *     Telefono: string,
+ *     IdEmpresa: number
+ *   }]
+ * }]
+ */
+export async function ObtenerEmpresasConSucursales() {
+    // TODO: Descomentar cuando esté lista la API
+    // try {
+    //     const response = await axios.get(BASE_URL + "empresas-con-sucursales");
+    //     return response.data;
+    // } catch (error) {
+    //     console.error("Error al obtener las empresas con sucursales:", error);
+    //     throw error;
+    // }
+
+    // DATOS DE PRUEBA - Retorna datos simulados con latencia
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(datosPruebaEmpresasConSucursales);
+        }, 300);
     });
 }
 

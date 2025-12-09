@@ -25,6 +25,7 @@ import PointOfSaleOutlinedIcon from '@mui/icons-material/PointOfSaleOutlined';
 import LockResetOutlinedIcon from '@mui/icons-material/LockResetOutlined';
 import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
+import StoreOutlinedIcon from '@mui/icons-material/StoreOutlined';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 
@@ -41,6 +42,7 @@ const menuConfig = {
         { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         { path: "/graficas", label: "Graficas", icon: QueryStatsOutlinedIcon },
         { path: "/mi_plan", label: "Mi Plan", icon: StarOutlineOutlinedIcon },
+        { path: "/panel_sucursales", label: "Panel de Sucursales", icon: StoreOutlinedIcon },
     ],
     Cajero: [
         { path: "/abm_menu", label: "Gestión de Menu", icon: RestaurantMenuOutlinedIcon },
