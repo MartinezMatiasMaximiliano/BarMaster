@@ -4,6 +4,7 @@
     {
         public string Access_token { get; set; } = string.Empty;
         public string Token_type { get; set; } = string.Empty;
+        public string Auth_type { get; set; } = string.Empty; 
         public int Expires_in { get; set; } = -1;
         public string expires { get; set; } = string.Empty;
     }
