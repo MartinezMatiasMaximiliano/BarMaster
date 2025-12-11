@@ -21,6 +21,7 @@ import Mi_Plan from './pages/Mi_Plan'
 import PanelSucursales from './pages/PanelSucursales'
 import DetalleSucursal from './pages/DetalleSucursal'
 import Login from './pages/Login';
+import LoginEmpresaSucursal from './components/LoginEmpresaSucursal';
 import { PostItems } from './API/APIPedidos';
 import { BuscarTodasLasMesas } from './API/APIMesas';
 import { BuscarTodosLosProductos } from './API/APIProductos';
@@ -241,6 +242,7 @@ function App() {
                         <Route path="/panel_sucursales" element={<Control_Login><PanelSucursales /></Control_Login>} />
                         <Route path="/sucursal/:idEmpresa/:idSucursal" element={<Control_Login><DetalleSucursal /></Control_Login>} />
                         <Route path="/login" element={<Login />} />
+                        <Route path="/login-empresa-sucursal" element={<LoginEmpresaSucursal />} />
                     </Routes>
                 </Box>
                 <Box
