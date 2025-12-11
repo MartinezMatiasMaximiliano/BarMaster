@@ -21,7 +21,7 @@ namespace BackEndAPI.Services
         {
             var busqueda = await _sucursalesRepository.GetSucursalByUsername(nuevaSucursal.Nombre);
 
-            if (busqueda == null)
+            if (busqueda != null)
             {
                 throw new Exception("Sucursal ya existe");
             }

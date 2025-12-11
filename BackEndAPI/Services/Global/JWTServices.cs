@@ -46,6 +46,7 @@ namespace BackEndAPI.Services.Global
             {
                 Access_token = tokenString,
                 Token_type = "bearer",
+                Auth_type = "sucursal",
                 expires = token.ValidTo.ToString(),
                 Expires_in = 3600 * hours_expire
             };
@@ -77,6 +78,7 @@ namespace BackEndAPI.Services.Global
             {
                 Access_token = tokenString,
                 Token_type = "bearer",
+                Auth_type = "empresa",
                 expires = token.ValidTo.ToString(),
                 Expires_in = 3600 * hours_expire
             };
