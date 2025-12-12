@@ -4,8 +4,8 @@ import authService from '../connections/AuthService';
 import { useNavigate } from 'react-router-dom';
 import { LoginContext } from '../App';
 
-const Login = () => {
-    const navigate = useNavigate(); // useNavigate se usa para redirigir a los usuarios a una nueva ruta cuando ocurre un evento.
+const LoginUsuarios = () => {
+    const navigate = useNavigate();
     const loginProvider = useContext(LoginContext);
 
     const handleLogin = async (Dni, password) => {
@@ -13,7 +13,7 @@ const Login = () => {
             const exito = await authService.login(Dni, password);
             if (exito) {
                 loginProvider.setLogeado(true);
-                loginProvider.setRol(localStorage.getItem("rol"))
+                loginProvider.setRol(localStorage.getItem("rol"));
                 navigate('/');
             } else {
                 alert('Credenciales incorrectas.');
@@ -22,7 +22,7 @@ const Login = () => {
             console.error('Error durante el login', error);
             alert('Hubo un problema al intentar iniciar sesión');
         }
-    }
+    };
 
     return (
         <div>
@@ -32,5 +32,5 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default LoginUsuarios;
 

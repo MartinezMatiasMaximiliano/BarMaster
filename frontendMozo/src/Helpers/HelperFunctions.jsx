@@ -3,6 +3,27 @@ import Toast_Notificacion from "../components/Toast_Notificacion";
 import { Chip } from "@mui/material";
 import Avatar from '@mui/material/Avatar';
 
+/* Funcion para confirmar el del sistema (sirve para el sistema de una sucursal y para el panel de sucursales) */
+export const handleConfirmarSalir = (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
+    // Limpiar localStorage
+    localStorage.clear();
+    
+    // Limpiar contextos - verificar qué método está disponible
+    if (loginContext?.setLogeadoEmpresaSucursal) {
+        loginContext.setLogeadoEmpresaSucursal(false);
+    }
+    if (loginContext?.setLogeadoUsuario) {
+        loginContext.setLogeadoUsuario(false);
+    }
+    if (authTypeContext?.setAuthType) {
+        authTypeContext.setAuthType(null);
+    }
+    
+    // Cerrar diálogo y redirigir al login
+    setOpenConfirmDialog(false);
+    navigate('/');
+};
+
 export function formatearFecha(fechaISO) {
     const fecha = new Date(fechaISO);
 
@@ -14,6 +35,23 @@ export function formatearFecha(fechaISO) {
     const minutos = String(fecha.getMinutes()).padStart(2, '0');
 
     return `${dia}/${mes}/${anio} ${horas}:${minutos}`;
+}
+
+export function formatearFechaCompleta(fecha) {
+    return fecha.toLocaleDateString('es-AR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+export function formatearHoraCompleta(fecha) {
+    return fecha.toLocaleTimeString('es-AR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
 }
 
 export function GetChipNombreCompleto(Nombre, Apellido) {

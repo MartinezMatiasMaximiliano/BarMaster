@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -13,9 +13,20 @@ import {
     BorrarPersona,
     ModificarPersona
 } from "../API/APIPersonas";
-import { Campos } from "../configs/agregar/Delivery_Takeaway";
+import { Campos, inicializarCampos } from "../configs/agregar/Delivery_Takeaway";
 
 function Delivery_TakeAway(props) {
+    const [campos, setCampos] = useState(Campos);
+
+    // Inicializar campos solo cuando el componente se monte y haya token
+    useEffect(() => {
+        if (localStorage.getItem('token')) {
+            inicializarCampos().then(camposInicializados => {
+                setCampos(camposInicializados);
+            });
+        }
+    }, []);
+
     const [deliveries, setDeliveries] = useState([
         {
             "uuid": "a7e25e44-31b2-4d6a-b0e1-8d5a4b7fce14",
@@ -175,7 +186,7 @@ function Delivery_TakeAway(props) {
                     configSelect={configSelect}
                     showToggle={() => false}
                     showEditar={true}
-                    campos={Campos}
+                    campos={campos}
                 />
             ),
         },
@@ -201,7 +212,7 @@ function Delivery_TakeAway(props) {
                         columnas={['Cliente', 'Dirección', 'Telefono', 'Indicaciones', 'Envio', 'Productos']}
                         configSelect={configSelect}
                         agregar={api.crear}
-                        campos={Campos}
+                        campos={campos}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>

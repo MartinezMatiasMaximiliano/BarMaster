@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LoginContext } from "../../App";
 import { Box, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
@@ -10,16 +10,18 @@ import NavBar_Chip from './NavBar_Chip'
 function NavBar() {
 
     const loginProvider = useContext(LoginContext);
+    const navigate = useNavigate();
 
     function cerrarSesion() {
         localStorage.clear();
         loginProvider.setLogeado(false);
         loginProvider.setRol("");
+        navigate('/');
     }
 
     const quickLinks = [
-        { path: "/", label: "Mesas 1", icon: TableRestaurantOutlinedIcon },
-        { path: "/index2", label: "Mesas 2 (plano)", icon: AppsOutlinedIcon }
+        { path: "/sistema_sucursal", label: "Mesas 1", icon: TableRestaurantOutlinedIcon },
+        { path: "/Index2", label: "Mesas 2 (plano)", icon: AppsOutlinedIcon }
     ];
 
     return (
@@ -54,12 +56,12 @@ function NavBar() {
             </List>
             <Divider />
             <NavBar_Botones
-                logeado={loginProvider.logeado}
+                logeadoUsuario={loginProvider.logeadoUsuario}
                 rol={loginProvider.rol}
                 cerrarSesion={cerrarSesion}
             />
             <Box mt="auto">
-                <NavBar_Chip logeado={loginProvider.logeado} />
+                <NavBar_Chip logeado={loginProvider.logeadoUsuario} />
             </Box>
         </Box>
     );

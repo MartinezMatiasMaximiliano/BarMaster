@@ -6,7 +6,7 @@ const tiposDeEnvio = [
   { id: 3, nombre: "Largo", precio: 1000 },
 ];
 
-export const Campos = [
+const camposBase = [
   { name: "Cliente", label: "Cliente", type: "text" },
   { name: "Direccion", label: "Dirección", type: "text" },
   { name: "Telefono", label: "Teléfono", type: "text" },
@@ -15,15 +15,26 @@ export const Campos = [
   { name: "Productos", label: "Productos", type: "select", options: [] },
 ];
 
-// Carga asincrónica SIN await (no rompe el build)
-BuscarTodosLosProductos().then(data => {
-  const productos = (data ?? [])
-    .filter(producto => producto.activo)
-    .map(producto => ({
-      id: producto.id,
-      nombre: producto.nombre,
-    }));
+// Función para inicializar los campos con los datos de productos
+export const inicializarCampos = async () => {
+  try {
+    const data = await BuscarTodosLosProductos();
+    const productos = (data ?? [])
+      .filter(producto => producto.activo)
+      .map(producto => ({
+        id: producto.id,
+        nombre: producto.nombre,
+      }));
 
-  // Actualizamos solo el campo de productos
-  Campos[5].options = productos;
-});
+    // Retornar una copia de los campos con las opciones cargadas
+    return camposBase.map((campo, index) => 
+      index === 5 ? { ...campo, options: productos } : campo
+    );
+  } catch (error) {
+    console.error("Error al cargar productos:", error);
+    return camposBase;
+  }
+};
+
+// Exportar campos base para compatibilidad
+export const Campos = camposBase;

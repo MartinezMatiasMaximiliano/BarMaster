@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -11,9 +11,20 @@ import {
     BorrarMesa,
 } from "../API/APIMesas";
 import { Campos as Campos_Agregar } from "../configs/agregar/Mesas"
-import { Campos as Campos_Editar} from "../configs/modificar/Mesas"
+import { Campos as Campos_Editar, inicializarCampos } from "../configs/modificar/Mesas"
 
 function Abm_Mesas(props) {
+    const [camposEditar, setCamposEditar] = useState(Campos_Editar);
+
+    // Inicializar campos solo cuando el componente se monte y haya token
+    useEffect(() => {
+        if (localStorage.getItem('token')) {
+            inicializarCampos().then(campos => {
+                setCamposEditar(campos);
+            });
+        }
+    }, []);
+
     const api = {
         crear: CrearMesa,
         modificar: ModificarMesa,
@@ -35,7 +46,7 @@ function Abm_Mesas(props) {
                     recargar={props.recargarComponentes}
                     showEditar={fila.codigoParaPedir}
                     showToggle={() => false} // las mesas no se activan/desactivan
-                    campos={Campos_Editar}
+                    campos={camposEditar}
                 />
             ),
         },

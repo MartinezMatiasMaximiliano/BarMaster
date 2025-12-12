@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -12,9 +12,20 @@ import {
     DesactivarProducto,
     ModificarProducto,
 } from "../API/APIProductos";
-import { Campos } from "../configs/agregar/Producto"
+import { Campos, inicializarCampos } from "../configs/agregar/Producto"
 
 function Abm_Menu(props) {
+    const [campos, setCampos] = useState(Campos);
+
+    // Inicializar campos solo cuando el componente se monte y haya token
+    useEffect(() => {
+        if (localStorage.getItem('token')) {
+            inicializarCampos().then(camposInicializados => {
+                setCampos(camposInicializados);
+            });
+        }
+    }, []);
+
     const api = {
         crear: CrearProducto,
         eliminar: BorrarProducto,
@@ -41,7 +52,7 @@ function Abm_Menu(props) {
                     recargar={props.recargarComponentes}
                     showEditar={true}
                     showToggle={() => true}
-                    campos={Campos}
+                    campos={campos}
                 />
             ),
         },
@@ -59,7 +70,7 @@ function Abm_Menu(props) {
                         recargarComponentes={props.recargarComponentes}
                         columnas={["Imagen", "Nombre", "Precio", "Descripción", "Categorias"]}
                         agregar={api.crear}
-                        campos={Campos}
+                        campos={campos}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>

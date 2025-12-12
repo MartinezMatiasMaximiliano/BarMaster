@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -12,9 +12,19 @@ import {
     ActivarPersona,
     ModificarPersona
 } from "../API/APIPersonas";
-import { Campos } from "../configs/agregar/Personas"
+import { Campos, inicializarCampos } from "../configs/agregar/Personas"
 
 function Abm_Personas(props) {
+    const [campos, setCampos] = useState(Campos);
+
+    // Inicializar campos solo cuando el componente se monte y haya token
+    useEffect(() => {
+        if (localStorage.getItem('token')) {
+            inicializarCampos().then(camposInicializados => {
+                setCampos(camposInicializados);
+            });
+        }
+    }, []);
 
     const api = {
         crear: RegistrarPersona,
@@ -48,7 +58,7 @@ function Abm_Personas(props) {
                     recargar={props.recargarComponentes}
                     showEditar={true}
                     showToggle={() => true}
-                    campos={Campos}
+                    campos={campos}
                 />
             ),
         },
@@ -66,7 +76,7 @@ function Abm_Personas(props) {
                         recargarComponentes={props.recargarComponentes}
                         columnas={['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Rol']}
                         agregar={api.crear}
-                        campos={Campos}
+                        campos={campos}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>

@@ -1,6 +1,6 @@
 import { BuscarTodasLasCategorias } from "../../API/APICategorias";
 
-export const Campos = [
+const camposBase = [
   { name: "imagen", label: "Imagen", type: "image" },
   { name: "nombre", label: "Nombre", type: "text" },
   { name: "precio", label: "Precio", type: "text" },
@@ -8,12 +8,23 @@ export const Campos = [
   { name: "categorias", label: "Categorías", type: "select_multiple", options: [] },
 ];
 
-// Carga asincrónica SIN await (no rompe el build)
-BuscarTodasLasCategorias().then(data => {
-  const categorias = data
-    .filter(c => c.activo === true)
-    .map(c => c.nombre);
+// Función para inicializar los campos con los datos de categorías
+export const inicializarCampos = async () => {
+  try {
+    const data = await BuscarTodasLasCategorias();
+    const categorias = data
+      .filter(c => c.activo === true)
+      .map(c => c.nombre);
 
-  // Actualizamos el arreglo exportado por referencia
-  Campos[4].options = categorias;
-});
+    // Retornar una copia de los campos con las opciones cargadas
+    return camposBase.map((campo, index) => 
+      index === 4 ? { ...campo, options: categorias } : campo
+    );
+  } catch (error) {
+    console.error("Error al cargar categorías:", error);
+    return camposBase;
+  }
+};
+
+// Exportar campos base para compatibilidad
+export const Campos = camposBase;

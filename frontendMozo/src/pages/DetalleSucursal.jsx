@@ -53,7 +53,6 @@ const datosPrueba = [
 function DetalleSucursal() {
     const { idEmpresa, idSucursal } = useParams();
     const navigate = useNavigate();
-    const { setSucursalActiva } = useContext(SucursalContext);
     const [loading, setLoading] = useState(true);
     const [empresa, setEmpresa] = useState(null);
     const [sucursal, setSucursal] = useState(null);
@@ -90,13 +89,6 @@ function DetalleSucursal() {
             IdEmpresa: empresa.Id,
             NombreEmpresa: empresa.Nombre
         };
-
-        // Guardar en el contexto y localStorage
-        setSucursalActiva(sucursalInfo);
-        localStorage.setItem('sucursalActiva', JSON.stringify(sucursalInfo));
-
-        // Redirigir a la página principal
-        // Los datos se cargarán automáticamente al cambiar sucursalActiva (vía useEffect en App.jsx)
         navigate('/');
     };
 
