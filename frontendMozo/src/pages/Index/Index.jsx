@@ -2,11 +2,11 @@ import React, { useState, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
-import { modificar as modificarCodigoMozo } from '../redux/slices/codigoMozoSlice';
-import { LoginContext, AuthTypeContext } from '../App';
-import { handleConfirmarSalir } from '../Helpers/HelperFunctions';
+import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoSlice';
+import { LoginContext, AuthTypeContext } from '../../App';
+import { handleConfirmarSalir } from '../../Helpers/HelperFunctions';
 import { useKeyboardInput } from './hooks/useKeyboardInput';
-import { useMesaFiltering } from './hooks/useMesaFiltering';
+import { useMesaFiltering } from './hooks/useMesaFiltering.jsx';
 import { useMozoCode } from './hooks/useMozoCode';
 import { useDateTime } from './hooks/useDateTime';
 import { MesasGrid } from './components/MesasGrid';
@@ -65,3 +65,4 @@ function Index(props) {
 }
 
 export default Index;
+

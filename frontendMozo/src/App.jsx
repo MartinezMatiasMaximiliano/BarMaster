@@ -5,7 +5,7 @@ import { Box } from '@mui/material'
 import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos } from './Helpers/HelperFunctions'
 import useSignalR from './hooks/useSignalR'
 import Navbar from "./components/NavBar/NavBar";
-import Index from './pages/Index';
+import Index from './pages/Index/Index';
 import Index2 from './pages/Index2';
 import Listado_Mozos from './pages/Lista_Mozos';
 import Abm_Mesas from './pages/Abm_Mesas';
@@ -18,10 +18,10 @@ import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery_TakeAway from './pages/Delivery_TakeAway'
 import Caja from './pages/Caja/Caja'
 import Mi_Plan from './pages/Mi_Plan'
-import PanelSucursales from './pages/PanelSucursales'
-import DetalleSucursal from './pages/DetalleSucursal'
-import LoginUsuarios from './pages/LoginUsuarios';
-import LoginEmpresaSucursal from './pages/LoginEmpresaSucursal';
+import PanelSucursales from './pages/Panel_Sucursales'
+import DetalleSucursal from './pages/Detalle_Sucursal'
+import LoginUsuarios from './pages/Login_Usuarios';
+import LoginEmpresaSucursal from './pages/Login_Empresa_Sucursal';
 import { PostItems } from './API/APIPedidos';
 import { BuscarTodasLasMesas } from './API/APIMesas';
 import { BuscarTodosLosProductos } from './API/APIProductos';

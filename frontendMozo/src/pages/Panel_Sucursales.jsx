@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Typography,
@@ -22,7 +22,8 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper
+    Paper,
+    CircularProgress
 } from '@mui/material';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -41,8 +42,17 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CloseIcon from '@mui/icons-material/Close';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
+import PeopleIcon from '@mui/icons-material/People';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { LoginContext, AuthTypeContext } from '../App';
 import { handleConfirmarSalir } from '../Helpers/HelperFunctions';
+import { ObtenerMetricasSucursales } from '../API/APIMetricasSucursales';
+import { formatearMoneda, formatearPorcentaje, prepararDatosUltimos7Dias, prepararDatosPorDiaSemana } from '../utils/metricasSucursales';
+import Grafica_Mini_Linea from '../components/Graficas/Grafica_Mini_Linea';
+import Grafica_Mini_Barras from '../components/Graficas/Grafica_Mini_Barras';
 
 // Mapeo de módulos a iconos y colores (copiado de Mi_Plan.jsx)
 const modulosConfig = {
@@ -151,6 +161,9 @@ const datosPrueba = [
 
 function PanelSucursales() {
     const [empresas] = useState(datosPrueba);
+    const [metricasSucursales, setMetricasSucursales] = useState([]);
+    const [loadingMetricas, setLoadingMetricas] = useState(true);
+    const [periodo, setPeriodo] = useState('mes'); // 'hoy', 'semana', 'mes'
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [openPlanDialog, setOpenPlanDialog] = useState(false);
     const navigate = useNavigate();
@@ -172,6 +185,67 @@ function PanelSucursales() {
     const handleCerrarPlanDialog = () => {
         setOpenPlanDialog(false);
     };
+
+    // Cargar métricas de sucursales
+    useEffect(() => {
+        const cargarMetricas = async () => {
+            setLoadingMetricas(true);
+            try {
+                // Obtener ID de empresa del contexto o del primer elemento
+                const idEmpresa = empresas.length > 0 ? empresas[0].Id : null;
+                if (idEmpresa) {
+                    const metricas = await ObtenerMetricasSucursales(idEmpresa);
+                    setMetricasSucursales(metricas);
+                }
+            } catch (error) {
+                console.error('Error al cargar métricas:', error);
+            } finally {
+                setLoadingMetricas(false);
+            }
+        };
+
+        cargarMetricas();
+    }, [empresas]);
+
+    // Obtener métricas de una sucursal por su ID o dirección
+    const obtenerMetricasSucursal = (sucursal) => {
+        // Intentar encontrar por ID primero, luego por dirección
+        return metricasSucursales.find(m => 
+            m.idSucursal === sucursal.Id?.toString() || 
+            m.direccion === sucursal.Direccion
+        ) || null;
+    };
+
+    // Calcular resumen general
+    const calcularResumenGeneral = () => {
+        if (!metricasSucursales || metricasSucursales.length === 0) {
+            return {
+                totalIngresos: 0,
+                totalVisitas: 0,
+                sucursalesActivas: 0,
+                ticketPromedioGeneral: 0
+            };
+        }
+
+        const campoIngresos = periodo === 'hoy' ? 'ingresosHoy' : 
+                              periodo === 'semana' ? 'ingresosSemana' : 'ingresosMes';
+
+        const totalIngresos = metricasSucursales.reduce((sum, m) => sum + (m[campoIngresos] || 0), 0);
+        const totalVisitas = metricasSucursales.reduce((sum, m) => sum + (m.totalVisitas || 0), 0);
+        const sucursalesActivas = metricasSucursales.filter(m => 
+            m.cajaActiva?.estado === 'abierta'
+        ).length;
+        const ticketPromedioGeneral = totalVisitas > 0 ? totalIngresos / totalVisitas : 0;
+
+        return {
+            totalIngresos,
+            totalVisitas,
+            sucursalesActivas,
+            ticketPromedioGeneral
+        };
+    };
+
+    const resumenGeneral = calcularResumenGeneral();
 
     // Calcular el desglose de facturación por sucursal
     const calcularDesgloseFacturacion = () => {
@@ -318,6 +392,135 @@ function PanelSucursales() {
                     </Button>
                 </Stack>
             </Box>
+
+            {/* Selector de Período */}
+            {!loadingMetricas && metricasSucursales.length > 0 && (
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                    <Chip
+                        label="Hoy"
+                        onClick={() => setPeriodo('hoy')}
+                        color={periodo === 'hoy' ? 'primary' : 'default'}
+                        variant={periodo === 'hoy' ? 'filled' : 'outlined'}
+                        sx={{ cursor: 'pointer' }}
+                    />
+                    <Chip
+                        label="Semana"
+                        onClick={() => setPeriodo('semana')}
+                        color={periodo === 'semana' ? 'primary' : 'default'}
+                        variant={periodo === 'semana' ? 'filled' : 'outlined'}
+                        sx={{ cursor: 'pointer' }}
+                    />
+                    <Chip
+                        label="Mes"
+                        onClick={() => setPeriodo('mes')}
+                        color={periodo === 'mes' ? 'primary' : 'default'}
+                        variant={periodo === 'mes' ? 'filled' : 'outlined'}
+                        sx={{ cursor: 'pointer' }}
+                    />
+                </Box>
+            )}
+
+            {/* Sección de Resumen General */}
+            {!loadingMetricas && metricasSucursales.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                    <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+                        Resumen General
+                    </Typography>
+                    <Grid container spacing={3}>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card sx={{ 
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: 'white',
+                                height: '100%'
+                            }}>
+                                <CardContent>
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <AttachMoneyIcon sx={{ fontSize: 40 }} />
+                                        <Box>
+                                            <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                                                Ingresos {periodo === 'hoy' ? 'Hoy' : periodo === 'semana' ? 'Esta Semana' : 'Este Mes'}
+                                            </Typography>
+                                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                                {formatearMoneda(resumenGeneral.totalIngresos)}
+                                            </Typography>
+                                        </Box>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card sx={{ 
+                                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                                color: 'white',
+                                height: '100%'
+                            }}>
+                                <CardContent>
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <PeopleIcon sx={{ fontSize: 40 }} />
+                                        <Box>
+                                            <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                                                Total de Visitas
+                                            </Typography>
+                                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                                {resumenGeneral.totalVisitas}
+                                            </Typography>
+                                        </Box>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card sx={{ 
+                                background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                                color: 'white',
+                                height: '100%'
+                            }}>
+                                <CardContent>
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <PointOfSaleIcon sx={{ fontSize: 40 }} />
+                                        <Box>
+                                            <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                                                Sucursales Activas
+                                            </Typography>
+                                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                                {resumenGeneral.sucursalesActivas} / {metricasSucursales.length}
+                                            </Typography>
+                                        </Box>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card sx={{ 
+                                background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                                color: 'white',
+                                height: '100%'
+                            }}>
+                                <CardContent>
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <LocalAtmIcon sx={{ fontSize: 40 }} />
+                                        <Box>
+                                            <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                                                Ticket Promedio
+                                            </Typography>
+                                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                                {formatearMoneda(resumenGeneral.ticketPromedioGeneral)}
+                                            </Typography>
+                                        </Box>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
+                </Box>
+            )}
+
+            {/* Loading state */}
+            {loadingMetricas && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                    <CircularProgress />
+                </Box>
+            )}
 
             {/* Diálogo de confirmación */}
             <Dialog
@@ -729,7 +932,7 @@ function PanelSucursales() {
                                     {empresa.Sucursales && empresa.Sucursales.length > 0 ? (
                                         <Grid container spacing={2} sx={{ width: '100%' }}>
                                             {empresa.Sucursales.map((sucursal, index) => (
-                                                <Grid item xs={12} key={index} sx={{ width: '100%', maxWidth: '100%' }}>
+                                                <Grid key={index} sx={{ width: '100%', maxWidth: '100%' }}>
                                                     <Card
                                                         variant="outlined"
                                                         sx={{
@@ -848,6 +1051,226 @@ function PanelSucursales() {
                                                                     </Typography>
                                                                 </Box>
                                                             </Stack>
+
+                                                            {/* Métricas de la Sucursal */}
+                                                            {(() => {
+                                                                const metricas = obtenerMetricasSucursal(sucursal);
+                                                                if (!metricas) return null;
+                                                                
+                                                                const campoIngresos = periodo === 'hoy' ? 'ingresosHoy' : 
+                                                                                      periodo === 'semana' ? 'ingresosSemana' : 'ingresosMes';
+                                                                const ingresos = metricas[campoIngresos] || 0;
+                                                                const crecimiento = metricas.crecimientoIngresos || 0;
+                                                                
+                                                                return (
+                                                                    <>
+                                                                        <Divider sx={{ my: 1.5 }} />
+                                                                        <Box>
+                                                                            <Typography 
+                                                                                variant="caption" 
+                                                                                color="text.secondary" 
+                                                                                sx={{ 
+                                                                                    fontWeight: 600,
+                                                                                    textTransform: 'uppercase',
+                                                                                    fontSize: '0.7rem',
+                                                                                    letterSpacing: 0.5,
+                                                                                    mb: 1.5,
+                                                                                    display: 'block'
+                                                                                }}
+                                                                            >
+                                                                                Métricas de Desempeño
+                                                                            </Typography>
+                                                                            
+                                                                            <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
+                                                                                <Grid item xs={6}>
+                                                                                    <Box sx={{ 
+                                                                                        p: 1, 
+                                                                                        borderRadius: 1, 
+                                                                                        bgcolor: 'success.light',
+                                                                                        border: '1px solid',
+                                                                                        borderColor: 'success.main'
+                                                                                    }}>
+                                                                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                                                                                            Ingresos
+                                                                                        </Typography>
+                                                                                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.dark' }}>
+                                                                                            {formatearMoneda(ingresos)}
+                                                                                        </Typography>
+                                                                                    </Box>
+                                                                                </Grid>
+                                                                                <Grid item xs={6}>
+                                                                                    <Box sx={{ 
+                                                                                        p: 1, 
+                                                                                        borderRadius: 1, 
+                                                                                        bgcolor: 'info.light',
+                                                                                        border: '1px solid',
+                                                                                        borderColor: 'info.main'
+                                                                                    }}>
+                                                                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                                                                                            Ticket Promedio
+                                                                                        </Typography>
+                                                                                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'info.dark' }}>
+                                                                                            {formatearMoneda(metricas.ticketPromedio || 0)}
+                                                                                        </Typography>
+                                                                                    </Box>
+                                                                                </Grid>
+                                                                                <Grid item xs={6}>
+                                                                                    <Box sx={{ 
+                                                                                        p: 1, 
+                                                                                        borderRadius: 1, 
+                                                                                        bgcolor: 'warning.light',
+                                                                                        border: '1px solid',
+                                                                                        borderColor: 'warning.main'
+                                                                                    }}>
+                                                                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                                                                                            Visitas
+                                                                                        </Typography>
+                                                                                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'warning.dark' }}>
+                                                                                            {metricas.totalVisitas || 0}
+                                                                                        </Typography>
+                                                                                    </Box>
+                                                                                </Grid>
+                                                                                <Grid item xs={6}>
+                                                                                    <Box sx={{ 
+                                                                                        p: 1, 
+                                                                                        borderRadius: 1, 
+                                                                                        bgcolor: crecimiento >= 0 ? 'success.light' : 'error.light',
+                                                                                        border: '1px solid',
+                                                                                        borderColor: crecimiento >= 0 ? 'success.main' : 'error.main'
+                                                                                    }}>
+                                                                                        <Stack direction="row" spacing={0.5} alignItems="center">
+                                                                                            {crecimiento >= 0 ? (
+                                                                                                <TrendingUpIcon sx={{ fontSize: 14, color: 'success.dark' }} />
+                                                                                            ) : (
+                                                                                                <TrendingDownIcon sx={{ fontSize: 14, color: 'error.dark' }} />
+                                                                                            )}
+                                                                                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                                                                                                Crecimiento
+                                                                                            </Typography>
+                                                                                        </Stack>
+                                                                                        <Typography variant="body2" sx={{ 
+                                                                                            fontWeight: 700, 
+                                                                                            color: crecimiento >= 0 ? 'success.dark' : 'error.dark' 
+                                                                                        }}>
+                                                                                            {formatearPorcentaje(crecimiento)}
+                                                                                        </Typography>
+                                                                                    </Box>
+                                                                                </Grid>
+                                                                            </Grid>
+                                                                            
+                                                                            {/* Estado de Caja y Actividad - En la misma línea */}
+                                                                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
+                                                                                <Chip
+                                                                                    icon={<CheckCircleIcon />}
+                                                                                    label={metricas.cajaActiva?.estado === 'abierta' ? 'Caja Abierta' : 'Caja Cerrada'}
+                                                                                    color={metricas.cajaActiva?.estado === 'abierta' ? 'success' : 'default'}
+                                                                                    size="small"
+                                                                                    variant="outlined"
+                                                                                    sx={{ fontSize: '0.7rem', height: '24px' }}
+                                                                                />
+                                                                                {metricas.visitasActivas > 0 && (
+                                                                                    <Chip
+                                                                                        icon={<PeopleIcon />}
+                                                                                        label={`${metricas.visitasActivas} Activas`}
+                                                                                        color="info"
+                                                                                        size="small"
+                                                                                        variant="outlined"
+                                                                                        sx={{ fontSize: '0.7rem', height: '24px' }}
+                                                                                    />
+                                                                                )}
+                                                                                {metricas.deliveriesPendientes > 0 && (
+                                                                                    <Chip
+                                                                                        icon={<DeliveryDiningIcon />}
+                                                                                        label={`${metricas.deliveriesPendientes} Pendientes`}
+                                                                                        color="warning"
+                                                                                        size="small"
+                                                                                        variant="outlined"
+                                                                                        sx={{ fontSize: '0.7rem', height: '24px' }}
+                                                                                    />
+                                                                                )}
+                                                                            </Stack>
+                                                                        </Box>
+                                                                    </>
+                                                                );
+                                                            })()}
+
+                                                            {/* Gráficos de Desempeño */}
+                                                            {(() => {
+                                                                const metricas = obtenerMetricasSucursal(sucursal);
+                                                                if (!metricas || !metricas.visitas || metricas.visitas.length === 0) return null;
+                                                                
+                                                                const datosUltimos7Dias = prepararDatosUltimos7Dias(metricas.visitas);
+                                                                const datosPorDiaSemana = prepararDatosPorDiaSemana(metricas.visitas);
+                                                                
+                                                                return (
+                                                                    <>
+                                                                        <Divider sx={{ my: 1.5 }} />
+                                                                        <Box>
+                                                                            <Typography 
+                                                                                variant="caption" 
+                                                                                color="text.secondary" 
+                                                                                sx={{ 
+                                                                                    fontWeight: 600,
+                                                                                    textTransform: 'uppercase',
+                                                                                    fontSize: '0.7rem',
+                                                                                    letterSpacing: 0.5,
+                                                                                    mb: 1,
+                                                                                    display: 'block'
+                                                                                }}
+                                                                            >
+                                                                                Tendencias
+                                                                            </Typography>
+                                                                            
+                                                                            <Grid container spacing={1.5}>
+                                                                                <Grid item xs={6}>
+                                                                                    <Box sx={{ 
+                                                                                        p: 1, 
+                                                                                        borderRadius: 1, 
+                                                                                        bgcolor: 'background.default',
+                                                                                        border: '1px solid',
+                                                                                        borderColor: 'divider'
+                                                                                    }}>
+                                                                                        <Typography 
+                                                                                            variant="caption" 
+                                                                                            color="text.secondary" 
+                                                                                            sx={{ fontSize: '0.65rem', mb: 0.5, display: 'block' }}
+                                                                                        >
+                                                                                            Últimos 7 días
+                                                                                        </Typography>
+                                                                                        <Grafica_Mini_Linea 
+                                                                                            data={datosUltimos7Dias} 
+                                                                                            height={140}
+                                                                                            color="#667eea"
+                                                                                        />
+                                                                                    </Box>
+                                                                                </Grid>
+                                                                                <Grid item xs={6}>
+                                                                                    <Box sx={{ 
+                                                                                        p: 1, 
+                                                                                        borderRadius: 1, 
+                                                                                        bgcolor: 'background.default',
+                                                                                        border: '1px solid',
+                                                                                        borderColor: 'divider'
+                                                                                    }}>
+                                                                                        <Typography 
+                                                                                            variant="caption" 
+                                                                                            color="text.secondary" 
+                                                                                            sx={{ fontSize: '0.65rem', mb: 0.5, display: 'block' }}
+                                                                                        >
+                                                                                            Por día de la semana
+                                                                                        </Typography>
+                                                                                        <Grafica_Mini_Barras 
+                                                                                            data={datosPorDiaSemana} 
+                                                                                            height={140}
+                                                                                            color="#764ba2"
+                                                                                        />
+                                                                                    </Box>
+                                                                                </Grid>
+                                                                            </Grid>
+                                                                        </Box>
+                                                                    </>
+                                                                );
+                                                            })()}
 
                                                             {/* Plan y Módulos */}
                                                             <Divider sx={{ my: 2 }} />
