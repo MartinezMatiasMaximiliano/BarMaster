@@ -21,7 +21,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import Lista from "../Listas/Lista";
 import Modal_Generico from "../Modals/Modal_Generico";
-import Modal_Ver_Cuenta from "../Modals/Modal_Ver_Cuenta";
+import Modal_Ver_Cuenta from "../Modals/Modal_Ver_Cuenta/Modal_Ver_Cuenta";
 import Modal_AgregarPedidos from "../Modals/Agregar_Pedidos/Modal_AgregarPedidos";
 import { formatearFecha, calcularTotalPrecio } from './dateFormatter';
 

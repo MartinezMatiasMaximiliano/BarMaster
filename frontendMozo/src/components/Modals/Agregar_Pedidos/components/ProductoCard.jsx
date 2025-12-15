@@ -1,4 +1,5 @@
 import { Card, Typography, Box } from '@mui/material';
+import { gradientPrimary } from '../../../../styles/buttonStyles';
 
 export const ProductoCard = ({ producto, onAgregar }) => {
     const imagenFondo = producto.imagenUrl 
@@ -16,7 +17,7 @@ export const ProductoCard = ({ producto, onAgregar }) => {
                 position: 'relative',
                 cursor: 'pointer',
                 overflow: 'hidden',
-                backgroundImage: imagenFondo ? `url(${imagenFondo})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundImage: imagenFondo ? `url(${imagenFondo})` : gradientPrimary,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',

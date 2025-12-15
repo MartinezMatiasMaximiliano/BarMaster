@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
-import Modal_Agregar from "../components/Modals/Agregar_ABM/Index";
+import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
 import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
 import { formatearFecha } from "../Helpers/HelperFunctions"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,9 +13,9 @@ import {
     BorrarPersona,
     ModificarPersona
 } from "../API/APIPersonas";
-import { Campos, inicializarCampos } from "../configs/agregar/Delivery_Takeaway";
+import { Campos, inicializarCampos } from "../configs/agregar/Delivery";
 
-function Delivery_TakeAway(props) {
+function Delivery(props) {
     const [campos, setCampos] = useState(Campos);
 
     // Inicializar campos solo cuando el componente se monte y haya token
@@ -102,7 +102,7 @@ function Delivery_TakeAway(props) {
         }
     ]);
 
-    const toggleEntregado = (uuid) => {
+    const toggleEntregadoDelivery = (uuid) => {
         setDeliveries((prev) =>
             prev.map((delivery) =>
                 delivery.uuid === uuid
@@ -140,7 +140,7 @@ function Delivery_TakeAway(props) {
         ],
     }
 
-    const columnas = [
+    const columnasDelivery = [
         {
             key: "fechaHora",
             label: "Fecha",
@@ -169,7 +169,7 @@ function Delivery_TakeAway(props) {
             render: (fila) => (
                 <Checkbox
                     checked={!!fila.entregado}
-                    onChange={() => toggleEntregado(fila.uuid)}
+                    onChange={() => toggleEntregadoDelivery(fila.uuid)}
                 />
             ),
         }, 
@@ -202,9 +202,9 @@ function Delivery_TakeAway(props) {
     return (
         <Container>
             <Tabla
-                titulo={props.titulo}
+                titulo="Delivery"
                 filas={deliveries}
-                columnas={columnas}
+                columnas={columnasDelivery}
                 onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
                     <Modal_Agregar
@@ -222,4 +222,5 @@ function Delivery_TakeAway(props) {
     );
 }
 
-export default Delivery_TakeAway;
+export default Delivery;
+

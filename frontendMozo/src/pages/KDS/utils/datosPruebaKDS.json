@@ -1,0 +1,354 @@
+[
+  {
+    "numeroMesa": 5,
+    "fechaRealizado": "2025-12-15T18:30:00",
+    "items": [
+      {
+        "id": 101,
+        "nombre": "Milanesa Napolitana",
+        "indicaciones": "Sin tomate, extra queso",
+        "precio": 12500,
+        "estado": 0,
+        "cantidad": 2
+      },
+      {
+        "id": 102,
+        "nombre": "Ensalada César",
+        "indicaciones": "Sin crutones",
+        "precio": 8500,
+        "estado": 0,
+        "cantidad": 1
+      },
+      {
+        "id": 103,
+        "nombre": "Pizza Margarita",
+        "indicaciones": "",
+        "precio": 12000,
+        "estado": 1,
+        "cantidad": 3
+      }
+    ]
+  },
+  {
+    "numeroMesa": 3,
+    "fechaRealizado": "2025-12-15T18:25:00",
+    "items": [
+      {
+        "id": 104,
+        "nombre": "Bondiola Desmenuzada",
+        "indicaciones": "Bien cocida",
+        "precio": 13000,
+        "estado": 0,
+        "cantidad": 1
+      },
+      {
+        "id": 105,
+        "nombre": "Papas Fritas",
+        "indicaciones": "Extra crujientes",
+        "precio": 4500,
+        "estado": 1,
+        "cantidad": 2
+      }
+    ]
+  },
+  {
+    "numeroMesa": 8,
+    "fechaRealizado": "2025-12-15T18:15:00",
+    "items": [
+      {
+        "id": 106,
+        "nombre": "Paella Valenciana",
+        "indicaciones": "Sin mariscos, solo pollo",
+        "precio": 16500,
+        "estado": 2,
+        "cantidad": 1
+      },
+      {
+        "id": 107,
+        "nombre": "Risotto de Hongos",
+        "indicaciones": "",
+        "precio": 11000,
+        "estado": 2,
+        "cantidad": 1
+      }
+    ]
+  },
+  {
+    "numeroMesa": 12,
+    "fechaRealizado": "2025-12-15T18:10:00",
+    "items": [
+      {
+        "id": 108,
+        "nombre": "Hamburguesa Clásica",
+        "indicaciones": "Sin cebolla, sin pepinillos",
+        "precio": 9500,
+        "estado": 0,
+        "cantidad": 4
+      },
+      {
+        "id": 109,
+        "nombre": "Papas Fritas",
+        "indicaciones": "",
+        "precio": 4500,
+        "estado": 0,
+        "cantidad": 2
+      },
+      {
+        "id": 110,
+        "nombre": "Coca Cola",
+        "indicaciones": "",
+        "precio": 2500,
+        "estado": 1,
+        "cantidad": 3
+      }
+    ]
+  },
+  {
+    "numeroMesa": 2,
+    "fechaRealizado": "2025-12-15T18:05:00",
+    "items": [
+      {
+        "id": 111,
+        "nombre": "Sushi Roll",
+        "indicaciones": "Sin wasabi",
+        "precio": 18000,
+        "estado": 0,
+        "cantidad": 2
+      },
+      {
+        "id": 112,
+        "nombre": "Sopa Miso",
+        "indicaciones": "",
+        "precio": 5500,
+        "estado": 1,
+        "cantidad": 1
+      }
+    ]
+  },
+  {
+    "numeroMesa": 15,
+    "fechaRealizado": "2025-12-15T18:00:00",
+    "items": [
+      {
+        "id": 113,
+        "nombre": "Asado de Tira",
+        "indicaciones": "Punto medio",
+        "precio": 22000,
+        "estado": 0,
+        "cantidad": 1
+      },
+      {
+        "id": 114,
+        "nombre": "Ensalada Mixta",
+        "indicaciones": "Sin aceitunas",
+        "precio": 7500,
+        "estado": 0,
+        "cantidad": 2
+      },
+      {
+        "id": 115,
+        "nombre": "Chorizo a la Parrilla",
+        "indicaciones": "",
+        "precio": 6000,
+        "estado": 1,
+        "cantidad": 3
+      }
+    ]
+  },
+  {
+    "numeroMesa": 7,
+    "fechaRealizado": "2025-12-15T17:55:00",
+    "items": [
+      {
+        "id": 116,
+        "nombre": "Lasaña de Carne",
+        "indicaciones": "Extra queso",
+        "precio": 14000,
+        "estado": 0,
+        "cantidad": 1
+      },
+      {
+        "id": 117,
+        "nombre": "Pan de Ajo",
+        "indicaciones": "",
+        "precio": 3500,
+        "estado": 1,
+        "cantidad": 4
+      }
+    ]
+  },
+  {
+    "numeroMesa": 20,
+    "fechaRealizado": "2025-12-15T17:50:00",
+    "items": [
+      {
+        "id": 118,
+        "nombre": "Pescado a la Plancha",
+        "indicaciones": "Con limón",
+        "precio": 15000,
+        "estado": 2,
+        "cantidad": 1
+      },
+      {
+        "id": 119,
+        "nombre": "Puré de Papas",
+        "indicaciones": "",
+        "precio": 5000,
+        "estado": 2,
+        "cantidad": 2
+      }
+    ]
+  },
+  {
+    "numeroMesa": 4,
+    "fechaRealizado": "2025-12-15T17:45:00",
+    "items": [
+      {
+        "id": 120,
+        "nombre": "Ravioles de Ricotta",
+        "indicaciones": "Salsa blanca",
+        "precio": 11500,
+        "estado": 0,
+        "cantidad": 2
+      }
+    ]
+  },
+  {
+    "numeroMesa": 11,
+    "fechaRealizado": "2025-12-15T17:40:00",
+    "items": [
+      {
+        "id": 121,
+        "nombre": "Tacos de Pollo",
+        "indicaciones": "Sin cilantro",
+        "precio": 9800,
+        "estado": 1,
+        "cantidad": 6
+      },
+      {
+        "id": 122,
+        "nombre": "Nachos con Queso",
+        "indicaciones": "Extra jalapeños",
+        "precio": 7200,
+        "estado": 1,
+        "cantidad": 1
+      }
+    ]
+  },
+  {
+    "numeroMesa": 6,
+    "fechaRealizado": "2025-12-15T17:35:00",
+    "items": [
+      {
+        "id": 123,
+        "nombre": "Pollo al Curry",
+        "indicaciones": "Picante medio",
+        "precio": 13500,
+        "estado": 0,
+        "cantidad": 1
+      },
+      {
+        "id": 124,
+        "nombre": "Arroz Basmati",
+        "indicaciones": "",
+        "precio": 4000,
+        "estado": 0,
+        "cantidad": 2
+      }
+    ]
+  },
+  {
+    "numeroMesa": 9,
+    "fechaRealizado": "2025-12-15T17:30:00",
+    "items": [
+      {
+        "id": 125,
+        "nombre": "Cazuela de Mariscos",
+        "indicaciones": "Sin mejillones",
+        "precio": 19500,
+        "estado": 0,
+        "cantidad": 1
+      }
+    ]
+  },
+  {
+    "numeroMesa": 14,
+    "fechaRealizado": "2025-12-15T17:25:00",
+    "items": [
+      {
+        "id": 126,
+        "nombre": "Costillas BBQ",
+        "indicaciones": "Bien cocidas",
+        "precio": 17500,
+        "estado": 1,
+        "cantidad": 2
+      },
+      {
+        "id": 127,
+        "nombre": "Ensalada Coleslaw",
+        "indicaciones": "",
+        "precio": 6000,
+        "estado": 1,
+        "cantidad": 1
+      }
+    ]
+  },
+  {
+    "numeroMesa": 1,
+    "fechaRealizado": "2025-12-15T17:20:00",
+    "items": [
+      {
+        "id": 128,
+        "nombre": "Pasta Carbonara",
+        "indicaciones": "Sin panceta",
+        "precio": 12800,
+        "estado": 2,
+        "cantidad": 1
+      }
+    ]
+  },
+  {
+    "numeroMesa": 10,
+    "fechaRealizado": "2025-12-15T17:15:00",
+    "items": [
+      {
+        "id": 129,
+        "nombre": "Empanadas de Carne",
+        "indicaciones": "4 unidades",
+        "precio": 8000,
+        "estado": 0,
+        "cantidad": 4
+      },
+      {
+        "id": 130,
+        "nombre": "Empanadas de Queso",
+        "indicaciones": "2 unidades",
+        "precio": 5000,
+        "estado": 0,
+        "cantidad": 2
+      }
+    ]
+  },
+  {
+    "numeroMesa": 13,
+    "fechaRealizado": "2025-12-15T17:10:00",
+    "items": [
+      {
+        "id": 131,
+        "nombre": "Bife de Chorizo",
+        "indicaciones": "A punto",
+        "precio": 18500,
+        "estado": 1,
+        "cantidad": 1
+      },
+      {
+        "id": 132,
+        "nombre": "Papas Noisette",
+        "indicaciones": "",
+        "precio": 5500,
+        "estado": 1,
+        "cantidad": 3
+      }
+    ]
+  }
+]

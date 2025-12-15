@@ -12,54 +12,102 @@ import {
     ListItem,
     ListItemButton,
     ListItemIcon,
-    ListItemText
+    ListItemText,
+    Collapse
 } from "@mui/material";
 import RestaurantMenuOutlinedIcon from '@mui/icons-material/RestaurantMenuOutlined';
 import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import DeliveryDiningOutlinedIcon from '@mui/icons-material/DeliveryDiningOutlined';
+import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
 import PointOfSaleOutlinedIcon from '@mui/icons-material/PointOfSaleOutlined';
 import LockResetOutlinedIcon from '@mui/icons-material/LockResetOutlined';
 import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
-import StoreOutlinedIcon from '@mui/icons-material/StoreOutlined';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
+import AttachMoneyOutlinedIcon from '@mui/icons-material/AttachMoneyOutlined';
+import WorkOutlineOutlinedIcon from '@mui/icons-material/WorkOutlineOutlined';
+import KitchenIcon from '@mui/icons-material/Kitchen';
 
 const menuConfig = {
-    Encargado: [
-        { path: "/abm_menu", label: "ABM MENU", icon: RestaurantMenuOutlinedIcon },
-        { path: "/abm_mesas", label: "ABM Mesas", icon: TableRestaurantOutlinedIcon },
-        { path: "/abm_categorias", label: "ABM Categorías", icon: CategoryOutlinedIcon },
-        { path: "/abm_personas", label: "ABM Personas", icon: GroupOutlinedIcon },
-        { path: "/delivery_takeaway", label: "Delivery/Take Away", icon: DeliveryDiningOutlinedIcon },
-        { path: "/lista_mozos", label: "Listado de Mozos", icon: ChecklistOutlinedIcon },
-        { path: "/distribucion_mesas", label: "Distribución de las Mesas", icon: AppsOutlinedIcon },
-        { path: "/caja", label: "Caja", icon: PointOfSaleOutlinedIcon },
-        { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
-        { path: "/graficas", label: "Graficas", icon: QueryStatsOutlinedIcon },
-        { path: "/mi_plan", label: "Mi Plan", icon: StarOutlineOutlinedIcon },
-        { path: "/panel_sucursales", label: "Panel de Sucursales", icon: StoreOutlinedIcon },
-    ],
-    Cajero: [
-        { path: "/abm_menu", label: "Gestión de Menu", icon: RestaurantMenuOutlinedIcon },
-        { path: "/delivery_takeaway", label: "Delivery/Take Away", icon: DeliveryDiningOutlinedIcon },
-        { path: "/lista_mozos", label: "Listado de Mozos", icon: ChecklistOutlinedIcon },
-        { path: "/abm_mesas", label: "Gestión de Mesas", icon: TableRestaurantOutlinedIcon },
-        { path: "/distribucion_mesas", label: "Distribución de las Mesas", icon: AppsOutlinedIcon },
-        { path: "/caja", label: "Caja", icon: PointOfSaleOutlinedIcon },
-        { path: "/abm_categorias", label: "Gestión de Categorías", icon: CategoryOutlinedIcon },
-        { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
-    ],
+    Encargado: {
+        "Gestión": [
+            { path: "/abm_menu", label: "Menú", icon: RestaurantMenuOutlinedIcon },
+            { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
+            { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
+            { path: "/abm_personas", label: "Personas", icon: GroupOutlinedIcon },
+            { path: "/lista_mozos", label: "Listado de Mozos", icon: ChecklistOutlinedIcon },
+        ],
+        "Operaciones": [
+            { path: "/reservas", label: "Reservas", icon: EventNoteOutlinedIcon },
+            { path: "/delivery", label: "Delivery", icon: DeliveryDiningOutlinedIcon },
+            { path: "/takeaway", label: "Take Away", icon: ShoppingBagOutlinedIcon },
+            { path: "/kds", label: "Vista de Cocina", icon: KitchenIcon },
+            { path: "/distribucion_mesas", label: "Distribución de las Mesas", icon: AppsOutlinedIcon },
+        ],
+        "Finanzas": [
+            { path: "/caja", label: "Caja", icon: PointOfSaleOutlinedIcon },
+            { path: "/graficas", label: "Graficas", icon: QueryStatsOutlinedIcon },
+        ],
+        "Configuración": [
+            { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
+            { path: "/mi_plan", label: "Mi Plan", icon: StarOutlineOutlinedIcon },
+        ],
+    },
+    Cajero: {
+        "Gestión": [
+            { path: "/abm_menu", label: "Menú", icon: RestaurantMenuOutlinedIcon },
+            { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
+            { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
+            { path: "/lista_mozos", label: "Listado de Mozos", icon: ChecklistOutlinedIcon },
+        ],
+        "Operaciones": [
+            { path: "/delivery", label: "Delivery", icon: DeliveryDiningOutlinedIcon },
+            { path: "/takeaway", label: "Take Away", icon: ShoppingBagOutlinedIcon },
+            { path: "/kds", label: "Vista de Cocina", icon: KitchenIcon },
+            { path: "/reservas", label: "Reservas", icon: EventNoteOutlinedIcon },
+            { path: "/distribucion_mesas", label: "Distribución de las Mesas", icon: AppsOutlinedIcon },
+        ],
+        "Finanzas": [
+            { path: "/caja", label: "Caja", icon: PointOfSaleOutlinedIcon },
+        ],
+        "Configuración": [
+            { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
+        ],
+    },
 };
 
 function NavBar_Botones(props) {
     const [showLogout, setShowLogout] = useState(false);
+    const [openFolders, setOpenFolders] = useState({});
 
-    if (!props.logeado) {
+    const handleFolderToggle = (folderName) => {
+        setOpenFolders(prev => ({
+            ...prev,
+            [folderName]: !prev[folderName]
+        }));
+    };
+
+    const getFolderIcon = (folderName) => {
+        const iconMap = {
+            "Gestión": BusinessOutlinedIcon,
+            "Operaciones": WorkOutlineOutlinedIcon,
+            "Finanzas": AttachMoneyOutlinedIcon,
+            "Configuración": SettingsOutlinedIcon,
+        };
+        return iconMap[folderName] || SettingsOutlinedIcon;
+    };
+
+    if (!props.logeadoUsuario) {
         return (
             <List dense disablePadding>
                 <ListItem disablePadding>
@@ -74,20 +122,41 @@ function NavBar_Botones(props) {
         );
     }
 
-    const menuItems = menuConfig[props.rol] || [];
+    const menuSections = menuConfig[props.rol] || {};
 
     return (
         <Stack spacing={2}>
             <List dense disablePadding>
-                {menuItems.map(({ path, label, icon: Icon }) => (
-                    <ListItem disablePadding key={path}>
-                        <ListItemButton component={Link} to={path}>
-                            <ListItemIcon sx={{ minWidth: 32 }}>
-                                <Icon fontSize="small" />
-                            </ListItemIcon>
-                            <ListItemText primary={label} />
-                        </ListItemButton>
-                    </ListItem>
+                {Object.entries(menuSections).map(([folderName, items]) => (
+                    <React.Fragment key={folderName}>
+                        <ListItem disablePadding>
+                            <ListItemButton onClick={() => handleFolderToggle(folderName)}>
+                                <ListItemIcon sx={{ minWidth: 32 }}>
+                                    {React.createElement(getFolderIcon(folderName), { fontSize: "small" })}
+                                </ListItemIcon>
+                                <ListItemText primary={folderName} />
+                                {openFolders[folderName] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                            </ListItemButton>
+                        </ListItem>
+                        <Collapse in={openFolders[folderName]} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding dense>
+                                {items.map(({ path, label, icon: Icon }) => (
+                                    <ListItem disablePadding key={path}>
+                                        <ListItemButton 
+                                            component={Link} 
+                                            to={path}
+                                            sx={{ pl: 4 }}
+                                        >
+                                            <ListItemIcon sx={{ minWidth: 32 }}>
+                                                <Icon fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText primary={label} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Collapse>
+                    </React.Fragment>
                 ))}
             </List>
             <List dense disablePadding>

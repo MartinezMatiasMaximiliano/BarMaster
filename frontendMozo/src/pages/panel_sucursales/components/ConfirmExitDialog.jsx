@@ -1,20 +1,29 @@
 import React from 'react';
 import {
-    Button,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogContentText,
-    DialogActions
+    DialogActions,
+    Button
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { cancelButtonStyles } from '../../../styles/buttonStyles';
+import { handleConfirmarSalir } from '../../../Helpers/HelperFunctions';
 
-export const ConfirmLogoutDialog = ({ 
+/**
+ * Componente de diálogo para confirmar la salida del sistema
+ */
+const ConfirmExitDialog = ({ 
     open, 
     onClose, 
-    onConfirm 
+    loginContext, 
+    authTypeContext, 
+    navigate 
 }) => {
+    const handleConfirm = () => {
+        handleConfirmarSalir(loginContext, authTypeContext, onClose, navigate);
+    };
+
     return (
         <Dialog
             open={open}
@@ -30,14 +39,20 @@ export const ConfirmLogoutDialog = ({
         >
             <DialogTitle 
                 id="confirm-dialog-title"
-                sx={{ fontWeight: 600, pb: 1 }}
+                sx={{ 
+                    fontWeight: 600,
+                    pb: 1
+                }}
             >
                 Confirmar salida
             </DialogTitle>
             <DialogContent>
                 <DialogContentText 
                     id="confirm-dialog-description"
-                    sx={{ fontSize: '1rem', color: 'text.primary' }}
+                    sx={{ 
+                        fontSize: '1rem',
+                        color: 'text.primary'
+                    }}
                 >
                     ¿Estás seguro de que deseas salir del sistema? 
                     <br />
@@ -48,16 +63,24 @@ export const ConfirmLogoutDialog = ({
                 <Button
                     onClick={onClose}
                     variant="outlined"
-                    sx={cancelButtonStyles}
+                    sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        px: 3
+                    }}
                 >
                     Cancelar
                 </Button>
                 <Button
-                    onClick={onConfirm}
+                    onClick={handleConfirm}
                     variant="contained"
                     color="error"
                     startIcon={<LogoutIcon />}
-                    sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
+                    sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        px: 3
+                    }}
                 >
                     Salir
                 </Button>
@@ -65,4 +88,6 @@ export const ConfirmLogoutDialog = ({
         </Dialog>
     );
 };
+
+export default ConfirmExitDialog;
 

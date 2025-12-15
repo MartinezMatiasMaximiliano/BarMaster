@@ -14,6 +14,7 @@ import {
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import { gradientPrimary } from '../../../../styles/buttonStyles';
 
 export const Carrito = ({ 
     carrito, 
@@ -101,7 +102,7 @@ export const Carrito = ({
                                                 justifyContent: 'space-between',
                                                 alignItems: 'flex-start',
                                                 width: '100%',
-                                                backgroundImage: imagenFondo ? `url(${imagenFondo})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                backgroundImage: imagenFondo ? `url(${imagenFondo})` : gradientPrimary,
                                                 backgroundSize: 'cover',
                                                 backgroundPosition: 'center',
                                                 backgroundRepeat: 'no-repeat',

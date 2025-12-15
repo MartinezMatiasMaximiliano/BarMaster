@@ -165,13 +165,13 @@ const regex = {
 
 const tipoColumnas = {
     string: ['nombre', 'apellido'],
-    int: ['precio', 'numero', 'telefono', 'dni'],
+    int: ['precio', 'numero', 'telefono', 'dni', 'cantidaddepersonas', 'mesa'],
     image: ['imagen'],
     int4: ['codigodeservicio'], 
-    texto: ["direccion", "descripcion"]
+    texto: ["direccion", "descripcion", "nombrereserva"]
 };
 
-const camposObligatorios = ['nombre', 'descripcion', 'precio', 'rol', 'categorias', 'apellido', 'dni', 'numero']
+const camposObligatorios = ['nombre', 'descripcion', 'precio', 'rol', 'categorias', 'apellido', 'dni', 'numero', 'fechahora', 'nombrereserva', 'cantidaddepersonas', 'mesa', 'estado']
 
 export function validarCampos(key, valor, setErrors) {
     if (camposObligatorios.includes(key.toLowerCase())) {

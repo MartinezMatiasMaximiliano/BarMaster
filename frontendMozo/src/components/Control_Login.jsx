@@ -3,9 +3,9 @@ import { Navigate } from "react-router-dom";
 import { LoginContext } from "../App";
 
 export default function Control_Login({children}) {
-    const { logeado } = useContext(LoginContext);
+    const { logeadoUsuario } = useContext(LoginContext);
 
-    if (!logeado) {
+    if (!logeadoUsuario) {
         return <Navigate to="/" replace />;
     }
     return children;

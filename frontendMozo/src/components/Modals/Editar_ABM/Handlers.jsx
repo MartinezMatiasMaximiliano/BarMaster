@@ -8,6 +8,14 @@ export default function Handlers({ id, editValues, setEditValues, modificar, rec
   const fieldHandlers = {
     select_multiple: (event) => event.target.value,
     image: (event) => event.target.files[0],
+    "datetime-local": (event) => {
+      const value = event.target.value;
+      // Convertir datetime-local a ISO string
+      if (value) {
+        return new Date(value).toISOString();
+      }
+      return value;
+    },
     default: (event) => event.target.value,
   };
 

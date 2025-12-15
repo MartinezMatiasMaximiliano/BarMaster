@@ -1,23 +1,24 @@
-import { React, useState, useEffect } from "react";
+import { React, useState } from "react"
 import {
     Button,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
-    IconButton,
     Stack,
     Box,
     Typography,
-    Divider
+    Divider,
+    Paper
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SaveIcon from '@mui/icons-material/Save';
-import { Renderizados } from "./Renderizados";
+import IconButton from '@mui/material/IconButton';
 import Errores from "./Errores"
 import Handlers from "./Handlers";
+import { Renderizados } from "./Renderizados";
 import { 
     gradientButtonStyles, 
     cancelButtonStyles, 
@@ -25,56 +26,34 @@ import {
     dialogActionsStyles 
 } from "../../../styles/buttonStyles";
 
-function Modal_Editar(props) {
+function Modal_Agregar(props) {
     const [show, setShow] = useState(false);
-
-    const { id, activo } = props.fila;
-
-    // Inicializar editValues con los valores de la fila
-    const getInitialValues = () => {
-        const { id, activo, ...rest } = props.fila;
-        return rest;
-    };
-
-    const [editValues, setEditValues] = useState(() => getInitialValues());
-
-    const handleShow = () => setShow(true);
-
-    // Solo resetear valores cuando el modal se abre, no en cada render
-    useEffect(() => {
-        if (show) {
-            const { id, activo, ...filaFiltrada } = props.fila;
-            setEditValues({ ...filaFiltrada });
-        }
-    }, [show]);
-
-    const { errors, setErrors, handleChange, handleSave } = Handlers({
-            id,
-            editValues,
-            setEditValues,
-            modificar: props.modificar,
-            recargarComponentes: props.recargarComponentes,
-            handleClose: () => setShow(false),
-        });
 
     const handleClose = () => {
         setErrors({});
         setShow(false);
     };
+    const handleShow = () => setShow(true);
+
+    const { errors, setErrors, handleChange, handleSave } = Handlers({
+        agregar: props.agregar,
+        recargarComponentes: props.recargarComponentes,
+        handleClose,
+    });
 
     const renderizados = Renderizados(props, handleChange);
     const nombreRegistro = props.nombre || 'registro';
 
     return (
         <>
-            <IconButton
-                color="primary"
+            <Button 
+                variant="contained" 
+                color="primary" 
                 onClick={handleShow}
-                disabled={!props.disabled}
-                size="small"
+                startIcon={<AddIcon />}
             >
-                <EditIcon fontSize="small" />
-            </IconButton>
+                Agregar
+            </Button>
 
             <Dialog 
                 open={show} 
@@ -103,14 +82,14 @@ function Modal_Editar(props) {
                                     justifyContent: 'center',
                                 }}
                             >
-                                <EditIcon />
+                                <AddIcon />
                             </Box>
                             <Box>
                                 <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
-                                    Editar {nombreRegistro}
+                                    Agregar {nombreRegistro}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                    Modifique los campos que desee actualizar
+                                    Complete los campos para crear un nuevo {nombreRegistro.toLowerCase()}
                                 </Typography>
                             </Box>
                         </Stack>
@@ -134,10 +113,9 @@ function Modal_Editar(props) {
                     <Errores errors={errors} />
                     <Box component="form" sx={{ mt: 1 }}>
                         <Stack spacing={3}>
-                            {props.campos.map((campo, index) => {
-                                const value = editValues[campo.name];
+                            {props.campos.map((campo, index) => {   
                                 const renderer = renderizados[campo.type] || renderizados.text;
-                                return renderer(campo, value, index);
+                                return renderer(campo, index);
                             })}
                         </Stack>
                     </Box>
@@ -159,7 +137,7 @@ function Modal_Editar(props) {
                         startIcon={<SaveIcon />}
                         sx={gradientButtonStyles}
                     >
-                        Guardar Cambios
+                        Agregar
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -167,4 +145,5 @@ function Modal_Editar(props) {
     );
 }
 
-export default Modal_Editar;
+export default Modal_Agregar;
+
