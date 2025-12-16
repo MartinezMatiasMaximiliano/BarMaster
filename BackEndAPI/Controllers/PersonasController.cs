@@ -1,15 +1,7 @@
-﻿using BackEndAPI.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using BackEndAPI.Models;
-using BackEndAPI.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.AspNetCore.Authorization;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.Mapping;
-using BackEndAPI.Services.Global;
+using BackEndAPI.Services.Interfaces;
 
 
 namespace BackEndAPI.Controllers
@@ -18,186 +10,110 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class PersonasController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly UserService _userService;
-        private readonly PasswordService _passwordService;
-
-        public PersonasController(UserService userService, AppDbContext context, PasswordService passwordService)
+        private readonly IPersonasServices _personasServices;
+        public PersonasController(IPersonasServices personasServices)
         {
-            _context = context;
-            _userService = userService;
-            _passwordService = passwordService;
+            _personasServices = personasServices;
         }
 
-        //[HttpGet]
-        //public async Task<ActionResult<List<PersonaDTO>>> Get()
-        //{
-        //    var busqueda = await _context.Personas.Include(persona => persona.Rol).ToListAsync();
-        //    var ListaPersonas = busqueda.Select(persona => new PersonaDTO
-        //    {
-        //        Id = persona.Id,
-        //        CodigoDeServicio = persona.CodigoDeServicio,
-        //        DatosPersonales = new DatosPersonales
-        //        {
-        //            Nombres = persona.Nombres,
-        //            Apellido = persona.Apellido,
-        //            Direccion = persona.Direccion,
-        //            Telefono = persona.Telefono,
-        //            Dni = persona.Dni,
-        //            Activo = persona.Activo,
-        //        },
-        //        Rol = new Rol
-        //        {
-        //            Id = persona.Rol.Id,
-        //            Nombre = persona.Rol.Nombre,
-        //        }
-        //    }).OrderBy(persona => persona.Id).ToList();
+        // Endpoint para registrar usuarios
+        [HttpPost("/Registrar")]
+        public async Task<IActionResult> Post(CrearPersonaDTO DTO)
+        {
+            try
+            {
+                var IdEmpresa = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa")!.Value) : Guid.Empty;
+                if (IdEmpresa == Guid.Empty)
+                {
+                    throw new Exception("Empresa no identificada");
+                }
 
-        //    return Ok(ListaPersonas);
-        //}
+                var usuario = await _personasServices.CrearPersona(DTO, IdEmpresa);
+                return Created("created", new EntregaDTO(201, "CREATED", $"Creado exitosamente, Id:{usuario.Id}"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Empresa no identificada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "Ya existe una persona con el mismo DNI.":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se pudo crear la persona":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se pudo Encontrar un Rol de Mozos":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se pudo Encontrar un Rol con Id":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                }
 
-        //[HttpGet("{Id}")]
-        //public async Task<ActionResult<PersonaDTO>> Get(int Id)
-        //{
-        //    var busqueda = await _context.Personas.Include(persona => persona.Rol).FirstAsync(persona => persona.Id == Id);
+            }
 
-        //    if (busqueda == null)
-        //    {
-        //        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se encontró una Persona con Id: {Id}"));
-        //    }
+        }
 
-        //    var persona = new PersonaDTO
-        //    {
-        //        Id = busqueda.Id,
-        //        CodigoDeServicio = busqueda.CodigoDeServicio,
-        //        DatosPersonales = new DatosPersonales
-        //        {
-        //            Nombres = busqueda.Nombres,
-        //            Apellido = busqueda.Apellido,
-        //            Direccion = busqueda.Direccion,
-        //            Dni = busqueda.Dni,
-        //            Telefono = busqueda.Telefono,
-        //            Activo = busqueda.Activo,
-        //        }
-        //    };
+        [HttpPut("/Modificar")]
+        public async Task<IActionResult> ModificarPersona(ModificarPersonaDTO DTO)
+        {
+            try
+            {
+                var actualizado = await _personasServices.ActualizarPersona(DTO);
+                return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{DTO.Id}"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Persona no identificada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
 
-        //    return Ok(persona);
-        //}
+                }
+            }
+        }
 
-        //[HttpGet("/Mozos")]
-        //public async Task<ActionResult<List<PersonaDTO>>> GetMozos()
-        //{
-        //    var busqueda = await _context.Personas.Include(persona => persona.Rol).Where(persona => persona.Rol.Nombre.ToLower() == "mozo" && persona.Activo == true).ToListAsync();
-        //    var ListaPersonas = busqueda.Select(persona => new PersonaDTO
-        //    {
-        //        Id = persona.Id,
-        //        CodigoDeServicio = persona.CodigoDeServicio,
-        //        DatosPersonales = new DatosPersonales
-        //        {
-        //            Nombres = persona.Nombres,
-        //            Apellido = persona.Apellido,
-        //            Direccion = persona.Direccion,
-        //            Telefono = persona.Telefono,
-        //            Dni = persona.Dni,
-        //            Activo = persona.Activo,
-        //        }
-        //    }).ToList();
+        [HttpPut("/activarDesactivar/{Id}")]
+        public async Task<IActionResult> ActivarDesactivarPersona(Guid Id)
+        {
+            try
+            {
+                var actualizado = await _personasServices.CambiarEstado(Id);
+                return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{Id}"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Persona no identificada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                }
+            }
+        }
 
-        //    return Ok(ListaPersonas);
-        //}
-
-        //[HttpPut("{Id}")]
-        //public async Task<ActionResult> Put(int Id, ModificarPersonaDTO request)
-        //{
-        //    var busqueda = await _context.Personas.FirstOrDefaultAsync(mozo => mozo.Id == Id);
-
-        //    if (busqueda == null)
-        //    {
-        //        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se pudo encontrar una Persona con Id:{Id}"));
-        //    }
-
-        //    if (request.idRol != 0)
-        //    {
-        //        var busquedaRol = await _context.Roles.FirstOrDefaultAsync(rol => rol.Id == request.idRol);
-        //        if (busquedaRol == null)
-        //        {
-        //            return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se pudo encontrar un Rol con Id:{Id}"));
-        //        }
-        //        else
-        //        {
-        //            busqueda.Rol = busquedaRol;
-        //        }
-        //    }
-
-
-
-        //    busqueda.CodigoDeServicio = !string.IsNullOrEmpty(request.CodigoDeServicio) ? request.CodigoDeServicio : busqueda.CodigoDeServicio;
-        //    busqueda.Nombres = !string.IsNullOrEmpty(request.Nombres) ? request.Nombres : busqueda.Nombres;
-        //    busqueda.Apellido = !string.IsNullOrEmpty(request.Apellido) ? request.Apellido : busqueda.Apellido;
-        //    busqueda.Direccion = !string.IsNullOrEmpty(request.Direccion) ? request.Direccion : busqueda.Direccion;
-        //    busqueda.Dni = !string.IsNullOrEmpty(request.Dni) ? request.Dni : busqueda.Dni;
-        //    busqueda.Telefono = !string.IsNullOrEmpty(request.Telefono) ? request.Telefono : busqueda.Telefono;
-
-        //    _context.Entry(busqueda).State = EntityState.Modified;
-        //    await _context.SaveChangesAsync();
-        //    return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{Id}"));
-        //}
-
-        //[Authorize]
-        //[HttpPut("password/{Id}")]
-        //public async Task<ActionResult> PutPassword(int Id, [FromBody] string PasswordNuevo)
-        //{
-        //    var busqueda = await _context.Personas.FirstOrDefaultAsync(mozo => mozo.Id == Id);
-
-        //    if (busqueda == null)
-        //    {
-        //        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se pudo encontrar una Persona con Id:{Id}"));
-        //    }
-
-        //    _passwordService.CrearPasswordHash(PasswordNuevo, out byte[] hashContrasena, out byte[] saltContrasena); 
-
-        //    busqueda.EstablecerContrasena(hashContrasena, saltContrasena);
-
-        //    _context.Entry(busqueda).State = EntityState.Modified;
-        //    await _context.SaveChangesAsync();
-        //    return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{Id}"));
-        //}
-
-        //[HttpPut("{Id}/{State}")]
-        //public async Task<ActionResult> Put(int Id, bool State)
-        //{
-        //    var busqueda = await _context.Personas.FirstAsync(persona => persona.Id == Id);
-
-        //    if (busqueda == null)
-        //    {
-        //        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se pudo encontrar una Persona con Id:{Id}"));
-        //    }
-
-        //    busqueda.Activo = State;
-        //    var buscarMesas = await _context.Mesas.Where(mesa => mesa.Persona.Id == Id).ToListAsync();
-        //    buscarMesas.ForEach(mesa => mesa.Persona = null);
-        //    _context.Entry(busqueda).State = EntityState.Modified;
-        //    await _context.SaveChangesAsync();
-        //    return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{Id}"));
-        //}
-
-        //[HttpDelete("{Id}")]
-        //[Authorize]
-        //public async Task<ActionResult> Delete(int Id)
-        //{
-        //    var busqueda = await _context.Personas.Include(persona => persona.Rol).FirstAsync(persona => persona.Id == Id);
-
-        //    if (busqueda == null)
-        //    {
-        //        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No se encontró una Persona con Id: {Id}"));
-        //    }
-
-        //    _context.Personas.Remove(busqueda);
-        //    await _context.SaveChangesAsync();
-        //    return Ok(new EntregaDTO(200, "OK", $"Eliminado exitosamente, Id:{Id}"));
-        //}
-
-
+        [HttpDelete("/Eliminar/{Id}")]
+        public async Task<IActionResult> EliminarPersona(Guid Id)
+        {
+            try
+            {
+                var eliminado = await _personasServices.EliminarPersona(Id);
+                return Ok(new EntregaDTO(200, "OK", $"Eliminado exitosamente, Id:{Id}"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Persona no identificada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                }
+            }
+        }
     }
 }
+
 

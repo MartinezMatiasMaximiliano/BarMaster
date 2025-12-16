@@ -6,7 +6,7 @@ namespace BackEndAPI.DTOs.Request
     public class ModificarPersonaDTO
     {
 
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string CodigoDeServicio { get; set; } = string.Empty;
         public int idRol { get; set; }
         public string Nombres { get; set; } = string.Empty;

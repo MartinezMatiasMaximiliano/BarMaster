@@ -1,5 +1,4 @@
 ﻿using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Models;
@@ -12,8 +11,6 @@ namespace BackEndAPI.Repositories
     {
         private readonly ICurrentDbContext _context;
         private readonly AppDbContext db;
-        private string connectionstring { get; set; } = string.Empty;
-
         public EmpresasRepository(ICurrentDbContext context)
         {
             _context = context;

@@ -11,38 +11,19 @@ namespace BackEndAPI.Services
 {
     public class UserService
     {
-        private readonly PasswordService _passwordService;
+        
         private readonly IConfiguration _config;
         private readonly SymmetricSecurityKey _key;
 
         public UserService(IConfiguration config)
         {
-            _passwordService = new PasswordService();
             _config = config;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SigningKey"]));
         }
 
-        public Persona CrearUsuario(CrearPersonaDTO DTO)
-        {
-            var usuario = new Persona
-            {
-                Nombres = DTO.Nombres,
-                Apellido = DTO.Apellido,
-                Dni = DTO.Dni,
-                Direccion = DTO.Direccion,
-                Telefono = DTO.Telefono,
-                Activo = DTO.Activo,
-            };
-            _passwordService.CrearPasswordHash(DTO.Dni, out byte[] hashContrasena, out byte[] saltContrasena); // Genera hash y salt
-
-            usuario.EstablecerContrasena(hashContrasena, saltContrasena);
-
-            return usuario;
-        }
-
         public bool VerificarUsuario(Persona usuario, string contrasena)
         {
-            return _passwordService.VerificarPasswordHash(contrasena, usuario.PasswordHash, usuario.PasswordSalt);
+            throw new NotImplementedException();
         }
 
         public JWTToken CrearJWT(string Dni, int id, string Nombres, string Apellido, string Rol)
