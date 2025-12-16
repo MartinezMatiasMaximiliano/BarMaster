@@ -8,9 +8,9 @@ namespace BackEndAPI.Services.Interfaces
         Task<Persona?> CrearPersona(CrearPersonaDTO nuevaPersona,Guid IdEmpresa);
         Task<Persona?> BuscarPersonaPorId(Guid IdPersona);
         Task<Persona?> BuscarPersonaPorDni(string Dni);
+        Task<List<Persona>> BuscarListaPersonasPorEmpresaId(Guid IdEmpresa);
         Task<Persona?> ActualizarPersona(ModificarPersonaDTO personaActualizada);
         Task<Persona?> CambiarEstado(Guid IdPersona);
         Task<Persona?> EliminarPersona(Guid IdPersona);
-        Task<List<Persona>> GetPersonasByEmpresaId(Guid IdEmpresa);
     }
 }

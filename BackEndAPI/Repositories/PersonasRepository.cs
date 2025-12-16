@@ -15,7 +15,12 @@ namespace BackEndAPI.Repositories
             _context = context;
             db = context.Db;
         }
-
+        public async Task<Persona?> CrearPersona(Persona nuevaPersona)
+        {
+            db.Personas.Add(nuevaPersona);
+            await db.SaveChangesAsync();
+            return nuevaPersona;
+        }
         public async Task<Persona?> GetPersonaPorId(Guid IdPersona)
         {
            return await db.Personas.FirstOrDefaultAsync(p => p.Id == IdPersona);
@@ -24,11 +29,10 @@ namespace BackEndAPI.Repositories
         {
             return await db.Personas.FirstOrDefaultAsync(p => p.Dni == Dni);
         }
-        public async Task<Persona?> CrearPersona(Persona nuevaPersona)
+        public async Task<List<Persona>> GetListaPersonasByEmpresaId(Guid IdEmpresa)
         {
-            db.Personas.Add(nuevaPersona);
-            await db.SaveChangesAsync();
-            return nuevaPersona;
+            return await db.Personas.Include(p => p.Rol).ToListAsync();
+            
         }
         public async Task<Persona?> ActualizarPersona(Persona personaActualizada)
         {
@@ -43,13 +47,10 @@ namespace BackEndAPI.Repositories
             return null;
 
         }
-        public Task<List<Persona>> GetListaPersonasByEmpresaId(Guid IdEmpresa)
-        {
-            throw new NotImplementedException();
-        }
         public async Task<bool> EsCodigoUnico(string codigoDeServicio)
         {
             return !await db.Personas.AnyAsync(p => p.CodigoDeServicio == codigoDeServicio);
         }
+
     }
 }
