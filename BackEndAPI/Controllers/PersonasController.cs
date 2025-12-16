@@ -27,6 +27,25 @@ namespace BackEndAPI.Controllers
                     throw new Exception("Empresa no identificada");
                 }
                 var listaPersonas = await _personasServices.BuscarListaPersonasPorEmpresaId(IdEmpresa);
+
+                var response = listaPersonas.Select(persona => new PersonaDTO
+                {
+                    Id = persona.Id,
+                    CodigoDeServicio = persona.CodigoDeServicio,
+                    Rol = persona.Rol,
+                    IdEmpresa = persona.IdEmpresa,
+                    DatosPersonales = new DatosPersonales
+                    {
+                        Nombres = persona.Nombres,
+                        Apellido = persona.Apellido,
+                        Dni = persona.Dni,
+                        Direccion = persona.Direccion,
+                        Telefono = persona.Telefono,
+                        Email = persona.Email,
+                        Activo = persona.Activo,
+                    }
+                }).ToList();
+
                 return Ok(listaPersonas);
 
             }
@@ -52,9 +71,27 @@ namespace BackEndAPI.Controllers
                 var persona = await _personasServices.BuscarPersonaPorId(Id);
                 if (persona == null)
                 {
-                    return NotFound(new ErrorDTO(404, "NOT FOUND", "No se encontró la persona con el IdPersona proporcionado"));
+                    throw new Exception("Persona no identificada");
                 }
-                return Ok(persona);
+
+                PersonaDTO response = new PersonaDTO
+                {
+                    Id = persona.Id,
+                    CodigoDeServicio = persona.CodigoDeServicio,
+                    Rol = persona.Rol,
+                    IdEmpresa = persona.IdEmpresa,
+                    DatosPersonales = new DatosPersonales
+                    {
+                        Nombres = persona.Nombres,
+                        Apellido = persona.Apellido,
+                        Dni = persona.Dni,
+                        Direccion = persona.Direccion,
+                        Telefono = persona.Telefono,
+                        Email = persona.Email,
+                        Activo = persona.Activo,
+                    }
+                };
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -67,7 +104,7 @@ namespace BackEndAPI.Controllers
                     default:
                         return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
                 }
-                
+
             }
         }
 

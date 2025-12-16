@@ -23,11 +23,11 @@ namespace BackEndAPI.Repositories
         }
         public async Task<Persona?> GetPersonaPorId(Guid IdPersona)
         {
-           return await db.Personas.FirstOrDefaultAsync(p => p.Id == IdPersona);
+           return await db.Personas.Include(p => p.Rol).FirstOrDefaultAsync(p => p.Id == IdPersona);
         }
         public async Task<Persona?> GetPersonaPorDni(string Dni)
         {
-            return await db.Personas.FirstOrDefaultAsync(p => p.Dni == Dni);
+            return await db.Personas.Include(p => p.Rol).FirstOrDefaultAsync(p => p.Dni == Dni);
         }
         public async Task<List<Persona>> GetListaPersonasByEmpresaId(Guid IdEmpresa)
         {
