@@ -97,6 +97,8 @@ builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
 builder.Services.AddScoped<IPersonasRepository, PersonasRepository>();
 builder.Services.AddScoped<IPersonasServices, PersonasServices>();  
+builder.Services.AddScoped<IPlanosRepository, PlanosRepository>();
+builder.Services.AddScoped<IPlanosServices, PlanosServices>();
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 builder.Services.AddScoped<IEmpresasServices, EmpresasServices>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();

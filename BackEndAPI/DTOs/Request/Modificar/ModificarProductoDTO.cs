@@ -1,4 +1,4 @@
-﻿namespace BackEndAPI.DTOs.Request
+﻿namespace BackEndAPI.DTOs.Request.Modificar
 {
     public class ModificarProductoDTO
     {
