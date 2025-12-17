@@ -2,10 +2,12 @@
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace BackEndAPI.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class PersonasController : ControllerBase
