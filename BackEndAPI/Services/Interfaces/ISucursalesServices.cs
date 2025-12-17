@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request;
+﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Models;
 
 namespace BackEndAPI.Services.Interfaces
