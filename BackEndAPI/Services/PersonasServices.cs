@@ -4,6 +4,8 @@ using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using Humanizer;
+using NuGet.Versioning;
+using System.Net;
 
 namespace BackEndAPI.Services
 {
@@ -52,9 +54,52 @@ namespace BackEndAPI.Services
             await _personasRepository.CrearPersona(usuario);
             return usuario;
         }
-        public Task<Persona?> ActualizarPersona(ModificarPersonaDTO personaActualizada)
+        public Task<Persona?> BuscarPersonaPorId(Guid IdPersona)
         {
-            throw new NotImplementedException();
+            var busqueda = _personasRepository.GetPersonaPorId(IdPersona);
+            if (busqueda == null)
+            {
+                throw new Exception("No se encontró una persona con el IdPersona proporcionado.");
+            }
+            return busqueda;
+        }
+        public Task<Persona?> BuscarPersonaPorDni(string Dni)
+        {
+            var busqueda = _personasRepository.GetPersonaPorDni(Dni);
+            if (busqueda == null)
+            {
+                throw new Exception("No se encontró una persona con el DNI proporcionado.");
+            }
+            return busqueda;
+        }
+        public async Task<List<Persona>> BuscarListaPersonasPorEmpresaId(Guid IdEmpresa)
+        {
+            var busqueda = await _personasRepository.GetListaPersonasByEmpresaId(IdEmpresa);
+            if (busqueda == null || busqueda.Count == 0)
+            {
+                throw new Exception("No se encontraron personas para la empresa proporcionada.");
+            }
+            return busqueda;
+        }
+        public async Task<Persona?> ActualizarPersona(ModificarPersonaDTO personaActualizada)
+        {
+            var persona =  await _personasRepository.GetPersonaPorId(personaActualizada.Id);
+            if (persona == null)
+            {
+                throw new Exception("Persona no identificada");
+            }
+
+            persona.Nombres = !string.IsNullOrEmpty(personaActualizada.Nombres) ? personaActualizada.Nombres : persona.Nombres;
+            persona.Apellido = !string.IsNullOrEmpty(personaActualizada.Apellido) ? personaActualizada.Apellido : persona.Apellido;
+            persona.Dni = !string.IsNullOrEmpty(personaActualizada.Dni) ? personaActualizada.Dni : persona.Dni;
+            persona.Direccion = !string.IsNullOrEmpty(personaActualizada.Direccion) ? personaActualizada.Direccion : persona.Direccion;
+            persona.Telefono = !string.IsNullOrEmpty(personaActualizada.Telefono) ? personaActualizada.Telefono : persona.Telefono;
+            persona.Email = !string.IsNullOrEmpty(personaActualizada.Email) ? personaActualizada.Email : persona.Email;
+            persona.IdRol = personaActualizada.IdRol;
+            persona.CodigoDeServicio = !string.IsNullOrEmpty(personaActualizada.CodigoDeServicio) ? personaActualizada.CodigoDeServicio : persona.CodigoDeServicio;
+            
+            await _personasRepository.ActualizarPersona(persona);
+            return persona;
         }
         public async Task<Persona?> CambiarEstado(Guid IdPersona)
         {
@@ -67,21 +112,14 @@ namespace BackEndAPI.Services
             await _personasRepository.ActualizarPersona(persona);
             return persona;
         }
-        public Task<Persona?> BuscarPersonaPorId(Guid IdPersona)
-        {
-            throw new NotImplementedException();
-        }
         public Task<Persona?> EliminarPersona(Guid IdPersona)
         {
-            throw new NotImplementedException();
-        }
-        public Task<List<Persona>> GetPersonasByEmpresaId(Guid IdEmpresa)
-        {
-            throw new NotImplementedException();
-        }
-        public Task<Persona?> BuscarPersonaPorDni(string Dni)
-        {
-            throw new NotImplementedException();
+            var persona =  _personasRepository.GetPersonaPorId(IdPersona);
+            if (persona == null)
+            {
+                throw new Exception("Persona no identificada");
+            }
+            return _personasRepository.EliminarPersona(IdPersona);
         }
     }
 }

@@ -16,7 +16,98 @@ namespace BackEndAPI.Controllers
             _personasServices = personasServices;
         }
 
-        // Endpoint para registrar usuarios
+        [HttpGet("/ListaEmpleados")]
+        public async Task<IActionResult> GetListaPersonasDeEmpresa()
+        {
+            try
+            {
+                var IdEmpresa = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa")!.Value) : Guid.Empty;
+                if (IdEmpresa == Guid.Empty)
+                {
+                    throw new Exception("Empresa no identificada");
+                }
+                var listaPersonas = await _personasServices.BuscarListaPersonasPorEmpresaId(IdEmpresa);
+
+                var response = listaPersonas.Select(persona => new PersonaDTO
+                {
+                    Id = persona.Id,
+                    CodigoDeServicio = persona.CodigoDeServicio,
+                    Rol = persona.Rol,
+                    IdEmpresa = persona.IdEmpresa,
+                    DatosPersonales = new DatosPersonales
+                    {
+                        Nombres = persona.Nombres,
+                        Apellido = persona.Apellido,
+                        Dni = persona.Dni,
+                        Direccion = persona.Direccion,
+                        Telefono = persona.Telefono,
+                        Email = persona.Email,
+                        Activo = persona.Activo,
+                    }
+                }).ToList();
+
+                return Ok(listaPersonas);
+
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Empresa no identificada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se encontraron personas para la empresa proporcionada.":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                }
+            }
+        }
+
+        [HttpGet("/Persona")]
+        public async Task<IActionResult> GetPersonaPorId([FromQuery] Guid Id)
+        {
+            try
+            {
+                var persona = await _personasServices.BuscarPersonaPorId(Id);
+                if (persona == null)
+                {
+                    throw new Exception("Persona no identificada");
+                }
+
+                PersonaDTO response = new PersonaDTO
+                {
+                    Id = persona.Id,
+                    CodigoDeServicio = persona.CodigoDeServicio,
+                    Rol = persona.Rol,
+                    IdEmpresa = persona.IdEmpresa,
+                    DatosPersonales = new DatosPersonales
+                    {
+                        Nombres = persona.Nombres,
+                        Apellido = persona.Apellido,
+                        Dni = persona.Dni,
+                        Direccion = persona.Direccion,
+                        Telefono = persona.Telefono,
+                        Email = persona.Email,
+                        Activo = persona.Activo,
+                    }
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Persona no identificada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se encontró una persona con el DNI proporcionado.":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                }
+
+            }
+        }
+
         [HttpPost("/Registrar")]
         public async Task<IActionResult> Post(CrearPersonaDTO DTO)
         {
