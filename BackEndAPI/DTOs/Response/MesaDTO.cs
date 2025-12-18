@@ -1,12 +1,13 @@
-﻿using BackEndAPI.Models;
-
-namespace BackEndAPI.DTOs.Response
+﻿namespace BackEndAPI.DTOs.Response
 {
     public class MesaDTO
     {
-        public int Id { get; set; }
-        public int NumeroMesa { get; set; }
-        public string CodigoParaPedir { get; set; }
-        public Persona Encargado { get; set; }
+        public Guid Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public int Capacidad { get; set; }
+        public float x { get; set; }
+        public float y { get; set; }
+        public float w { get; set; }
+        public float h { get; set; }
     }
 }

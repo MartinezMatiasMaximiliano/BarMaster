@@ -63,7 +63,26 @@ namespace BackEndAPI.Controllers
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
                 var planos = await _planosServices.BuscarListaDePlanos(IdSucursal);
-                return Ok(planos);
+
+                var response = planos.Select(plano => new PlanosDTO
+                {
+                    Id = plano.Id,
+                    Nombre = plano.Nombre,
+                    Detalles = plano.Detalles,
+                    IdSucursal = plano.IdSucursal,
+                    Mesas = plano.Mesas.Select(mesa => new MesaDTO
+                    {
+                        Id = mesa.Id,
+                        Nombre = mesa.Nombre,
+                        Capacidad = mesa.Capacidad,
+                        x = mesa.x,
+                        y = mesa.y,
+                        w = mesa.w,
+                        h = mesa.h
+                    }).ToList()
+                }).ToList();
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -88,6 +107,25 @@ namespace BackEndAPI.Controllers
                 }
 
                 var plano = await _planosServices.ObtenerPlanoPorId(IdPlano);
+
+                var response = new PlanosDTO
+                {
+                    Id = plano.Id,
+                    Nombre = plano.Nombre,
+                    Detalles = plano.Detalles,
+                    IdSucursal = plano.IdSucursal,
+                    Mesas = plano.Mesas.Select(mesa => new MesaDTO
+                    {
+                        Id = mesa.Id,
+                        Nombre = mesa.Nombre,
+                        Capacidad = mesa.Capacidad,
+                        x = mesa.x,
+                        y = mesa.y,
+                        w = mesa.w,
+                        h = mesa.h
+                    }).ToList()
+                };
+
                 return Ok(plano);
             }
             catch (Exception ex)
