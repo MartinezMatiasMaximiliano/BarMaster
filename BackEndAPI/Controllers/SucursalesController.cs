@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request;
+﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;

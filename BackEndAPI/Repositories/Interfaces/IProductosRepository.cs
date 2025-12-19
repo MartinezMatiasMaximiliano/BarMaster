@@ -5,12 +5,11 @@ namespace BackEndAPI.Repositories.Interfaces
     public interface IProductosRepository
     {
         Task<IEnumerable<Producto>> GetAllProductosAsync();
-        Task<Producto> GetProductoByIdAsync(Guid id);
-        Task AddProductoAsync(Producto producto);
-        Task UpdateProductoAsync(Producto producto);
-        Task DeleteProductoAsync(Guid id);
-        Task<bool> ProductoExistsAsync(Guid id);
-       
-
+        Task<Producto?> GetProductoPorId(Guid id);
+        Task<Producto?> GetProductoPorNombre(string nombre);
+        Task<Producto?> AddProducto(Producto producto);
+        Task<Producto?> UpdateProducto(Producto producto);
+        Task<Producto?> DeleteProductoAsync(Guid id);
+        Task<bool> ProductoExiste(string nombre);
     }
 }

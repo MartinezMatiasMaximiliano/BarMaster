@@ -1,18 +1,12 @@
-﻿using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request;
+﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Response;
-using BackEndAPI.Models;
 using BackEndAPI.Services.Interfaces;
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Immutable;
-using System.Linq;
 
 namespace BackEndAPI.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ProductosController : ControllerBase
@@ -49,6 +43,95 @@ namespace BackEndAPI.Controllers
             //    return StatusCode(500, "Internal server error catch: Get Productos - " + e.Message);
             //}
         }
+
+        [HttpPost]
+        public async Task<ActionResult> Post([FromBody]CrearProductoDTO request)
+        {
+            try
+            {
+                
+                if (request == null)
+                {
+                    throw new Exception("Request nulo");
+                }
+
+                var busqueda = await _productosServices.ProductoExiste(request.Nombre);
+
+                if (busqueda == true)
+                {
+                    throw new Exception("El producto ya existe");
+                }
+
+                var producto = await _productosServices.CrearProducto(request);
+                return Ok(producto);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "El producto ya existe":
+                        return Conflict("El producto ya existe");
+                    case "Request nulo":
+                        return BadRequest("Request nulo");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+
+            }
+
+        }
+        //{
+        //    try
+        //    {
+        //        var BuscarProducto = await _context.Productos.Where(producto => producto.Nombre == request.Nombre).FirstOrDefaultAsync();
+
+        //        if (BuscarProducto != null)
+        //        {
+        //            return Conflict(new ErrorDTO(409, "CONFLICT", $"La categoria {BuscarProducto.Nombre} ya existe"));
+        //        };
+
+        //        if (request.Categorias.Length == 0)
+        //        {
+        //            return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Se necesita al menos una categoria existente!"));
+        //        }
+
+        //        var ListaCategorias = await _context.Categorias
+        //            .Where(categoria => request.Categorias.Contains(categoria.Nombre)).ToListAsync();
+
+        //        if (ListaCategorias.Count != request.Categorias.Length)
+        //        {
+        //            return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Una o más categorias no existen"));
+        //        }
+
+        //        var producto = new Producto
+        //        {
+        //            Nombre = request.Nombre,
+        //            Descripcion = request.Descripcion,
+        //            Precio = request.Precio,
+        //            Activo = request.Activo,
+        //            Categorias = ListaCategorias,
+        //        };
+
+        //        if (request.Imagen == null || request.Imagen.Length == 0)
+        //        {
+        //            producto.PathImagen = $"uploads/ImagenesProductos/Placeholder.jpeg";
+        //        }
+        //        else
+        //        {
+        //            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/ImagenesProductos/");
+        //            if (!Directory.Exists(folderPath))
+        //            {
+        //                Directory.CreateDirectory(folderPath);
+        //            }
+
+        //            var fileExtension = Path.GetFileName(request.Imagen.FileName).Split('.').Last();
+        //            var filePath = Path.Combine(folderPath, $"{request.Nombre.Dehumanize()}.{fileExtension}");
+
+        //            using (var stream = new FileStream(filePath, FileMode.Create))
+        //            {
+        //                await request.Imagen.CopyToAsync(stream);
+        //            }
+        //            producto.PathImagen = $"uploads/ImagenesProductos/{request.Nombre.Dehumanize()}.{fileExtension}";
 
 
     }
@@ -91,71 +174,7 @@ namespace BackEndAPI.Controllers
 
 //}
 
-//[HttpPost]
-//public async Task<ActionResult> Post(CrearProductoDTO request)
-//{
-//    try
-//    {
-//        var BuscarProducto = await _context.Productos.Where(producto => producto.Nombre == request.Nombre).FirstOrDefaultAsync();
 
-//        if (BuscarProducto != null)
-//        {
-//            return Conflict(new ErrorDTO(409, "CONFLICT", $"La categoria {BuscarProducto.Nombre} ya existe"));
-//        };
-
-//        if (request.Categorias.Length == 0)
-//        {
-//            return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Se necesita al menos una categoria existente!"));
-//        }
-
-//        var ListaCategorias = await _context.Categorias
-//            .Where(categoria => request.Categorias.Contains(categoria.Nombre)).ToListAsync();
-
-//        if (ListaCategorias.Count != request.Categorias.Length)
-//        {
-//            return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Una o más categorias no existen"));
-//        }
-
-//        var producto = new Producto
-//        {
-//            Nombre = request.Nombre,
-//            Descripcion = request.Descripcion,
-//            Precio = request.Precio,
-//            Activo = request.Activo,
-//            Categorias = ListaCategorias,
-//        };
-
-//        if (request.Imagen == null || request.Imagen.Length == 0)
-//        {
-//            producto.PathImagen = $"uploads/ImagenesProductos/Placeholder.jpeg";
-//        }
-//        else
-//        {
-//            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/ImagenesProductos/");
-//            if (!Directory.Exists(folderPath))
-//            {
-//                Directory.CreateDirectory(folderPath);
-//            }
-
-//            var fileExtension = Path.GetFileName(request.Imagen.FileName).Split('.').Last();
-//            var filePath = Path.Combine(folderPath, $"{request.Nombre.Dehumanize()}.{fileExtension}");
-
-//            using (var stream = new FileStream(filePath, FileMode.Create))
-//            {
-//                await request.Imagen.CopyToAsync(stream);
-//            }
-//            producto.PathImagen = $"uploads/ImagenesProductos/{request.Nombre.Dehumanize()}.{fileExtension}";
-//        }
-
-//        await _context.Productos.AddAsync(producto);
-//        await _context.SaveChangesAsync();
-//        return Created("created", new EntregaDTO(201, "CREATED", $"Creado exitosamente, Id:{producto.Id}"));
-//    }
-//    catch (Exception e)
-//    {
-//        return StatusCode(500, "Internal server error catch: Post Productos - " + e.Message);
-//    }
-//}
 
 //[HttpPut("{Id}")]
 //public async Task<ActionResult> Put(int Id, ModificarProductoDTO request)
