@@ -14,7 +14,7 @@ function NavBar() {
 
     function cerrarSesion() {
         localStorage.clear();
-        loginProvider.setLogeado(false);
+        loginProvider.setLogeadoUsuario(false);
         loginProvider.setRol("");
         navigate('/');
     }

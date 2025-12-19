@@ -1,0 +1,1159 @@
+{
+  "visitas": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "fechaHora": "2025-01-15T10:30:00Z",
+      "total": 12500.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440001",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440010",
+      "fechaHora": "2025-01-15T11:15:00Z",
+      "total": 18900.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440002",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440020",
+      "fechaHora": "2025-01-15T12:00:00Z",
+      "total": 15200.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440003",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440030",
+      "fechaHora": "2025-01-15T13:20:00Z",
+      "total": 22100.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440001",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440040",
+      "fechaHora": "2025-01-15T14:10:00Z",
+      "total": 16300.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440004",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440050",
+      "fechaHora": "2025-01-15T15:30:00Z",
+      "total": 8500.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440005",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440060",
+      "fechaHora": "2025-01-15T16:45:00Z",
+      "total": 19500.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440006",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440070",
+      "fechaHora": "2025-01-15T18:00:00Z",
+      "total": 14200.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440007",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440080",
+      "fechaHora": "2025-01-15T19:15:00Z",
+      "total": 27800.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440001",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440090",
+      "fechaHora": "2025-01-15T20:30:00Z",
+      "total": 18900.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440008",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440002"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440100",
+      "fechaHora": "2025-01-14T09:30:00Z",
+      "total": 18200.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440009",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440003"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440110",
+      "fechaHora": "2025-01-14T10:45:00Z",
+      "total": 15400.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440010",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440003"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440120",
+      "fechaHora": "2025-01-14T12:00:00Z",
+      "total": 21300.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440011",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440003"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440130",
+      "fechaHora": "2025-01-14T13:15:00Z",
+      "total": 19700.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440012",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440003"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440140",
+      "fechaHora": "2025-01-14T14:30:00Z",
+      "total": 16800.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440013",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440003"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440150",
+      "fechaHora": "2025-01-13T09:00:00Z",
+      "total": 11200.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440014",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440160",
+      "fechaHora": "2025-01-13T10:20:00Z",
+      "total": 18900.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440015",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440170",
+      "fechaHora": "2025-01-13T11:40:00Z",
+      "total": 14500.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440016",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440180",
+      "fechaHora": "2025-01-13T13:00:00Z",
+      "total": 20300.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440017",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440190",
+      "fechaHora": "2025-01-13T14:30:00Z",
+      "total": 17600.00,
+      "estado": "Pagado",
+      "idMesa": "660e8400-e29b-41d4-a716-446655440018",
+      "idCaja": "770e8400-e29b-41d4-a716-446655440004"
+    }
+  ],
+  "productosPorVisita": [
+    {
+      "id": 1,
+      "nombreProducto": "Pizza Margarita",
+      "detalles": "Sin cebolla",
+      "precioDelMomento": 3500.00,
+      "cantidad": 2,
+      "precioTotal": 7000.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "id": 2,
+      "nombreProducto": "Coca Cola 500ml",
+      "detalles": "",
+      "precioDelMomento": 800.00,
+      "cantidad": 2,
+      "precioTotal": 1600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "id": 3,
+      "nombreProducto": "Ensalada César",
+      "detalles": "Sin crutones",
+      "precioDelMomento": 2900.00,
+      "cantidad": 1,
+      "precioTotal": 2900.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "id": 4,
+      "nombreProducto": "Pizza Napolitana",
+      "detalles": "",
+      "precioDelMomento": 4200.00,
+      "cantidad": 3,
+      "precioTotal": 12600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440010"
+    },
+    {
+      "id": 5,
+      "nombreProducto": "Agua Mineral",
+      "detalles": "",
+      "precioDelMomento": 500.00,
+      "cantidad": 2,
+      "precioTotal": 1000.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440010"
+    },
+    {
+      "id": 6,
+      "nombreProducto": "Helado de Vainilla",
+      "detalles": "",
+      "precioDelMomento": 2300.00,
+      "cantidad": 1,
+      "precioTotal": 2300.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440010"
+    },
+    {
+      "id": 7,
+      "nombreProducto": "Hamburguesa Clásica",
+      "detalles": "Sin tomate",
+      "precioDelMomento": 3800.00,
+      "cantidad": 2,
+      "precioTotal": 7600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440020"
+    },
+    {
+      "id": 8,
+      "nombreProducto": "Papas Fritas",
+      "detalles": "",
+      "precioDelMomento": 1800.00,
+      "cantidad": 2,
+      "precioTotal": 3600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440020"
+    },
+    {
+      "id": 9,
+      "nombreProducto": "Cerveza Artesanal",
+      "detalles": "",
+      "precioDelMomento": 2000.00,
+      "cantidad": 2,
+      "precioTotal": 4000.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440020"
+    },
+    {
+      "id": 10,
+      "nombreProducto": "Pizza Cuatro Quesos",
+      "detalles": "",
+      "precioDelMomento": 4800.00,
+      "cantidad": 2,
+      "precioTotal": 9600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440030"
+    },
+    {
+      "id": 11,
+      "nombreProducto": "Ravioles de Ricotta",
+      "detalles": "",
+      "precioDelMomento": 4500.00,
+      "cantidad": 2,
+      "precioTotal": 9000.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440030"
+    },
+    {
+      "id": 12,
+      "nombreProducto": "Vino Tinto",
+      "detalles": "",
+      "precioDelMomento": 3500.00,
+      "cantidad": 1,
+      "precioTotal": 3500.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440030"
+    },
+    {
+      "id": 13,
+      "nombreProducto": "Milanesa Napolitana",
+      "detalles": "Bien cocida",
+      "precioDelMomento": 5200.00,
+      "cantidad": 2,
+      "precioTotal": 10400.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440040"
+    },
+    {
+      "id": 14,
+      "nombreProducto": "Ensalada Mixta",
+      "detalles": "",
+      "precioDelMomento": 2200.00,
+      "cantidad": 1,
+      "precioTotal": 2200.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440040"
+    },
+    {
+      "id": 15,
+      "nombreProducto": "Gaseosa",
+      "detalles": "",
+      "precioDelMomento": 700.00,
+      "cantidad": 3,
+      "precioTotal": 2100.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440040"
+    },
+    {
+      "id": 16,
+      "nombreProducto": "Empanadas de Carne",
+      "detalles": "",
+      "precioDelMomento": 300.00,
+      "cantidad": 12,
+      "precioTotal": 3600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440050"
+    },
+    {
+      "id": 17,
+      "nombreProducto": "Coca Cola 1L",
+      "detalles": "",
+      "precioDelMomento": 1200.00,
+      "cantidad": 2,
+      "precioTotal": 2400.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440050"
+    },
+    {
+      "id": 18,
+      "nombreProducto": "Flan con Dulce de Leche",
+      "detalles": "",
+      "precioDelMomento": 2500.00,
+      "cantidad": 1,
+      "precioTotal": 2500.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440050"
+    },
+    {
+      "id": 19,
+      "nombreProducto": "Asado para 2",
+      "detalles": "",
+      "precioDelMomento": 8500.00,
+      "cantidad": 1,
+      "precioTotal": 8500.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440060"
+    },
+    {
+      "id": 20,
+      "nombreProducto": "Ensalada Rusa",
+      "detalles": "",
+      "precioDelMomento": 2800.00,
+      "cantidad": 2,
+      "precioTotal": 5600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440060"
+    },
+    {
+      "id": 21,
+      "nombreProducto": "Vino Blanco",
+      "detalles": "",
+      "precioDelMomento": 3200.00,
+      "cantidad": 1,
+      "precioTotal": 3200.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440060"
+    },
+    {
+      "id": 22,
+      "nombreProducto": "Agua con Gas",
+      "detalles": "",
+      "precioDelMomento": 600.00,
+      "cantidad": 2,
+      "precioTotal": 1200.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440060"
+    },
+    {
+      "id": 23,
+      "nombreProducto": "Pizza Especial",
+      "detalles": "",
+      "precioDelMomento": 4600.00,
+      "cantidad": 1,
+      "precioTotal": 4600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440070"
+    },
+    {
+      "id": 24,
+      "nombreProducto": "Cerveza Rubia",
+      "detalles": "",
+      "precioDelMomento": 1800.00,
+      "cantidad": 2,
+      "precioTotal": 3600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440070"
+    },
+    {
+      "id": 25,
+      "nombreProducto": "Papas con Cheddar",
+      "detalles": "",
+      "precioDelMomento": 2400.00,
+      "cantidad": 2,
+      "precioTotal": 4800.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440070"
+    },
+    {
+      "id": 26,
+      "nombreProducto": "Agua Mineral",
+      "detalles": "",
+      "precioDelMomento": 500.00,
+      "cantidad": 2,
+      "precioTotal": 1000.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440070"
+    },
+    {
+      "id": 27,
+      "nombreProducto": "Parrillada Completa",
+      "detalles": "",
+      "precioDelMomento": 12000.00,
+      "cantidad": 1,
+      "precioTotal": 12000.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440080"
+    },
+    {
+      "id": 28,
+      "nombreProducto": "Ensalada de Frutas",
+      "detalles": "",
+      "precioDelMomento": 2800.00,
+      "cantidad": 2,
+      "precioTotal": 5600.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440080"
+    },
+    {
+      "id": 29,
+      "nombreProducto": "Vino Reserva",
+      "detalles": "",
+      "precioDelMomento": 6500.00,
+      "cantidad": 1,
+      "precioTotal": 6500.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440080"
+    },
+    {
+      "id": 30,
+      "nombreProducto": "Agua con Gas",
+      "detalles": "",
+      "precioDelMomento": 600.00,
+      "cantidad": 3,
+      "precioTotal": 1800.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440080"
+    },
+    {
+      "id": 31,
+      "nombreProducto": "Pizza Margarita",
+      "detalles": "",
+      "precioDelMomento": 3500.00,
+      "cantidad": 3,
+      "precioTotal": 10500.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440090"
+    },
+    {
+      "id": 32,
+      "nombreProducto": "Coca Cola 500ml",
+      "detalles": "",
+      "precioDelMomento": 800.00,
+      "cantidad": 3,
+      "precioTotal": 2400.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440090"
+    },
+    {
+      "id": 33,
+      "nombreProducto": "Helado de Chocolate",
+      "detalles": "",
+      "precioDelMomento": 2500.00,
+      "cantidad": 2,
+      "precioTotal": 5000.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440090"
+    },
+    {
+      "id": 34,
+      "nombreProducto": "Ensalada César",
+      "detalles": "",
+      "precioDelMomento": 2900.00,
+      "cantidad": 1,
+      "precioTotal": 2900.00,
+      "idVisita": "550e8400-e29b-41d4-a716-446655440100"
+    }
+  ],
+  "pagos": [
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440003",
+      "monto": 12500.00,
+      "fechaHora": "2025-01-15T12:00:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440000",
+      "idTipoPago": 1,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440013",
+      "monto": 18900.00,
+      "fechaHora": "2025-01-15T11:30:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440010",
+      "idTipoPago": 2,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440010"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440023",
+      "monto": 15200.00,
+      "fechaHora": "2025-01-15T12:15:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440020",
+      "idTipoPago": 1,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440020"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440033",
+      "monto": 22100.00,
+      "fechaHora": "2025-01-15T13:35:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440030",
+      "idTipoPago": 2,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440030"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440043",
+      "monto": 16300.00,
+      "fechaHora": "2025-01-15T14:25:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440040",
+      "idTipoPago": 1,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440040"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440053",
+      "monto": 8500.00,
+      "fechaHora": "2025-01-15T15:45:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440050",
+      "idTipoPago": 1,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440050"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440063",
+      "monto": 19500.00,
+      "fechaHora": "2025-01-15T17:00:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440060",
+      "idTipoPago": 2,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440060"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440073",
+      "monto": 14200.00,
+      "fechaHora": "2025-01-15T18:15:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440070",
+      "idTipoPago": 1,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440070"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440083",
+      "monto": 27800.00,
+      "fechaHora": "2025-01-15T19:30:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440080",
+      "idTipoPago": 2,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440080"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440093",
+      "monto": 18900.00,
+      "fechaHora": "2025-01-15T20:45:00Z",
+      "idVisita": "550e8400-e29b-41d4-a716-446655440090",
+      "idTipoPago": 1,
+      "visitaId": "550e8400-e29b-41d4-a716-446655440090"
+    }
+  ],
+  "tipoPagos": [
+    {
+      "id": 1,
+      "nombre": "Efectivo"
+    },
+    {
+      "id": 2,
+      "nombre": "Tarjeta"
+    },
+    {
+      "id": 3,
+      "nombre": "Transferencia"
+    }
+  ],
+  "cajas": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440002",
+      "fechaApertura": "2025-01-15T08:00:00Z",
+      "fechaCierre": "2025-01-15T22:00:00Z",
+      "montoApertura": 50000.00,
+      "montoCierre": 175000.00,
+      "total": 175000.00,
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440003",
+      "fechaApertura": "2025-01-14T08:00:00Z",
+      "fechaCierre": "2025-01-14T22:00:00Z",
+      "montoApertura": 50000.00,
+      "montoCierre": 180000.00,
+      "total": 180000.00,
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440004",
+      "fechaApertura": "2025-01-13T08:00:00Z",
+      "fechaCierre": "2025-01-13T22:00:00Z",
+      "montoApertura": 50000.00,
+      "montoCierre": 165000.00,
+      "total": 165000.00,
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    }
+  ],
+  "mesas": [
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440001",
+      "nombre": "Mesa 5",
+      "codigoParaPedir": "M5",
+      "capacidad": 4,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440005",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440002",
+      "nombre": "Mesa 12",
+      "codigoParaPedir": "M12",
+      "capacidad": 6,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440006",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440003",
+      "nombre": "Mesa 3",
+      "codigoParaPedir": "M3",
+      "capacidad": 2,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440005",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440004",
+      "nombre": "Mesa 8",
+      "codigoParaPedir": "M8",
+      "capacidad": 4,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440007",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440005",
+      "nombre": "Mesa 15",
+      "codigoParaPedir": "M15",
+      "capacidad": 8,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440006",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440006",
+      "nombre": "Mesa 7",
+      "codigoParaPedir": "M7",
+      "capacidad": 4,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440005",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440007",
+      "nombre": "Mesa 2",
+      "codigoParaPedir": "M2",
+      "capacidad": 2,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440007",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440008",
+      "nombre": "Mesa 10",
+      "codigoParaPedir": "M10",
+      "capacidad": 6,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440005",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440009",
+      "nombre": "Mesa 4",
+      "codigoParaPedir": "M4",
+      "capacidad": 4,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440006",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440010",
+      "nombre": "Mesa 9",
+      "codigoParaPedir": "M9",
+      "capacidad": 4,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440007",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440011",
+      "nombre": "Mesa 6",
+      "codigoParaPedir": "M6",
+      "capacidad": 4,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440005",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440012",
+      "nombre": "Mesa 11",
+      "codigoParaPedir": "M11",
+      "capacidad": 6,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440006",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440013",
+      "nombre": "Mesa 13",
+      "codigoParaPedir": "M13",
+      "capacidad": 8,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440007",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440014",
+      "nombre": "Mesa 1",
+      "codigoParaPedir": "M1",
+      "capacidad": 2,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440005",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440015",
+      "nombre": "Mesa 14",
+      "codigoParaPedir": "M14",
+      "capacidad": 4,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440006",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440016",
+      "nombre": "Mesa 16",
+      "codigoParaPedir": "M16",
+      "capacidad": 6,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440007",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440017",
+      "nombre": "Mesa 17",
+      "codigoParaPedir": "M17",
+      "capacidad": 4,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440005",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440018",
+      "nombre": "Mesa 18",
+      "codigoParaPedir": "M18",
+      "capacidad": 8,
+      "idMozo": "aa0e8400-e29b-41d4-a716-446655440006",
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    }
+  ],
+  "productos": [
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440006",
+      "codigo": "PIZ001",
+      "nombre": "Pizza Margarita",
+      "descripcion": "Pizza con tomate, mozzarella y albahaca",
+      "precio": 3500.00,
+      "costo": 1200.00,
+      "activo": true,
+      "pathImagen": "/images/pizza-margarita.jpg",
+      "idCategoria": 1,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440016",
+      "codigo": "PIZ002",
+      "nombre": "Pizza Napolitana",
+      "descripcion": "Pizza con tomate, mozzarella, anchoas y aceitunas",
+      "precio": 4200.00,
+      "costo": 1500.00,
+      "activo": true,
+      "pathImagen": "/images/pizza-napolitana.jpg",
+      "idCategoria": 1,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440026",
+      "codigo": "PIZ003",
+      "nombre": "Pizza Cuatro Quesos",
+      "descripcion": "Pizza con cuatro tipos de queso",
+      "precio": 4800.00,
+      "costo": 1800.00,
+      "activo": true,
+      "pathImagen": "/images/pizza-cuatro-quesos.jpg",
+      "idCategoria": 1,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440036",
+      "codigo": "PIZ004",
+      "nombre": "Pizza Especial",
+      "descripcion": "Pizza con jamón, morrones y huevo",
+      "precio": 4600.00,
+      "costo": 1700.00,
+      "activo": true,
+      "pathImagen": "/images/pizza-especial.jpg",
+      "idCategoria": 1,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440046",
+      "codigo": "HAM001",
+      "nombre": "Hamburguesa Clásica",
+      "descripcion": "Hamburguesa con carne, lechuga, tomate y queso",
+      "precio": 3800.00,
+      "costo": 1400.00,
+      "activo": true,
+      "pathImagen": "/images/hamburguesa-clasica.jpg",
+      "idCategoria": 2,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440056",
+      "codigo": "MIL001",
+      "nombre": "Milanesa Napolitana",
+      "descripcion": "Milanesa con jamón, queso y salsa de tomate",
+      "precio": 5200.00,
+      "costo": 2000.00,
+      "activo": true,
+      "pathImagen": "/images/milanesa-napolitana.jpg",
+      "idCategoria": 2,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440066",
+      "codigo": "EMP001",
+      "nombre": "Empanadas de Carne",
+      "descripcion": "Empanadas fritas de carne",
+      "precio": 300.00,
+      "costo": 100.00,
+      "activo": true,
+      "pathImagen": "/images/empanadas-carne.jpg",
+      "idCategoria": 2,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440076",
+      "codigo": "ASA001",
+      "nombre": "Asado para 2",
+      "descripcion": "Asado completo para dos personas",
+      "precio": 8500.00,
+      "costo": 3500.00,
+      "activo": true,
+      "pathImagen": "/images/asado-para-2.jpg",
+      "idCategoria": 2,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440086",
+      "codigo": "PAR001",
+      "nombre": "Parrillada Completa",
+      "descripcion": "Parrillada completa para 4 personas",
+      "precio": 12000.00,
+      "costo": 5000.00,
+      "activo": true,
+      "pathImagen": "/images/parrillada-completa.jpg",
+      "idCategoria": 2,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440096",
+      "codigo": "ENS001",
+      "nombre": "Ensalada César",
+      "descripcion": "Ensalada César con pollo",
+      "precio": 2900.00,
+      "costo": 900.00,
+      "activo": true,
+      "pathImagen": "/images/ensalada-cesar.jpg",
+      "idCategoria": 3,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440106",
+      "codigo": "ENS002",
+      "nombre": "Ensalada Mixta",
+      "descripcion": "Ensalada mixta con verduras frescas",
+      "precio": 2200.00,
+      "costo": 700.00,
+      "activo": true,
+      "pathImagen": "/images/ensalada-mixta.jpg",
+      "idCategoria": 3,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440116",
+      "codigo": "ENS003",
+      "nombre": "Ensalada Rusa",
+      "descripcion": "Ensalada rusa tradicional",
+      "precio": 2800.00,
+      "costo": 800.00,
+      "activo": true,
+      "pathImagen": "/images/ensalada-rusa.jpg",
+      "idCategoria": 3,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440126",
+      "codigo": "ENS004",
+      "nombre": "Ensalada de Frutas",
+      "descripcion": "Ensalada de frutas frescas",
+      "precio": 2800.00,
+      "costo": 1000.00,
+      "activo": true,
+      "pathImagen": "/images/ensalada-frutas.jpg",
+      "idCategoria": 3,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440136",
+      "codigo": "BEB001",
+      "nombre": "Coca Cola 500ml",
+      "descripcion": "Coca Cola 500ml",
+      "precio": 800.00,
+      "costo": 300.00,
+      "activo": true,
+      "pathImagen": "/images/coca-cola-500ml.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440146",
+      "codigo": "BEB002",
+      "nombre": "Coca Cola 1L",
+      "descripcion": "Coca Cola 1 litro",
+      "precio": 1200.00,
+      "costo": 450.00,
+      "activo": true,
+      "pathImagen": "/images/coca-cola-1l.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440156",
+      "codigo": "BEB003",
+      "nombre": "Agua Mineral",
+      "descripcion": "Agua mineral sin gas",
+      "precio": 500.00,
+      "costo": 150.00,
+      "activo": true,
+      "pathImagen": "/images/agua-mineral.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440166",
+      "codigo": "BEB004",
+      "nombre": "Agua con Gas",
+      "descripcion": "Agua mineral con gas",
+      "precio": 600.00,
+      "costo": 180.00,
+      "activo": true,
+      "pathImagen": "/images/agua-con-gas.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440176",
+      "codigo": "BEB005",
+      "nombre": "Gaseosa",
+      "descripcion": "Gaseosa sabor cola",
+      "precio": 700.00,
+      "costo": 250.00,
+      "activo": true,
+      "pathImagen": "/images/gaseosa.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440186",
+      "codigo": "BEB006",
+      "nombre": "Cerveza Artesanal",
+      "descripcion": "Cerveza artesanal 500ml",
+      "precio": 2000.00,
+      "costo": 800.00,
+      "activo": true,
+      "pathImagen": "/images/cerveza-artesanal.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440196",
+      "codigo": "BEB007",
+      "nombre": "Cerveza Rubia",
+      "descripcion": "Cerveza rubia 500ml",
+      "precio": 1800.00,
+      "costo": 700.00,
+      "activo": true,
+      "pathImagen": "/images/cerveza-rubia.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440206",
+      "codigo": "BEB008",
+      "nombre": "Vino Tinto",
+      "descripcion": "Vino tinto reserva",
+      "precio": 3500.00,
+      "costo": 1500.00,
+      "activo": true,
+      "pathImagen": "/images/vino-tinto.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440216",
+      "codigo": "BEB009",
+      "nombre": "Vino Blanco",
+      "descripcion": "Vino blanco reserva",
+      "precio": 3200.00,
+      "costo": 1400.00,
+      "activo": true,
+      "pathImagen": "/images/vino-blanco.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440226",
+      "codigo": "BEB010",
+      "nombre": "Vino Reserva",
+      "descripcion": "Vino reserva premium",
+      "precio": 6500.00,
+      "costo": 3000.00,
+      "activo": true,
+      "pathImagen": "/images/vino-reserva.jpg",
+      "idCategoria": 4,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440236",
+      "codigo": "POST001",
+      "nombre": "Helado de Vainilla",
+      "descripcion": "Helado de vainilla",
+      "precio": 2300.00,
+      "costo": 800.00,
+      "activo": true,
+      "pathImagen": "/images/helado-vainilla.jpg",
+      "idCategoria": 5,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440246",
+      "codigo": "POST002",
+      "nombre": "Helado de Chocolate",
+      "descripcion": "Helado de chocolate",
+      "precio": 2500.00,
+      "costo": 900.00,
+      "activo": true,
+      "pathImagen": "/images/helado-chocolate.jpg",
+      "idCategoria": 5,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440256",
+      "codigo": "POST003",
+      "nombre": "Flan con Dulce de Leche",
+      "descripcion": "Flan casero con dulce de leche",
+      "precio": 2500.00,
+      "costo": 700.00,
+      "activo": true,
+      "pathImagen": "/images/flan-dulce-leche.jpg",
+      "idCategoria": 5,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440266",
+      "codigo": "PAST001",
+      "nombre": "Ravioles de Ricotta",
+      "descripcion": "Ravioles caseros de ricotta",
+      "precio": 4500.00,
+      "costo": 1800.00,
+      "activo": true,
+      "pathImagen": "/images/ravioles-ricotta.jpg",
+      "idCategoria": 6,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440276",
+      "codigo": "PAP001",
+      "nombre": "Papas Fritas",
+      "descripcion": "Papas fritas caseras",
+      "precio": 1800.00,
+      "costo": 600.00,
+      "activo": true,
+      "pathImagen": "/images/papas-fritas.jpg",
+      "idCategoria": 7,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    },
+    {
+      "id": "bb0e8400-e29b-41d4-a716-446655440286",
+      "codigo": "PAP002",
+      "nombre": "Papas con Cheddar",
+      "descripcion": "Papas fritas con queso cheddar",
+      "precio": 2400.00,
+      "costo": 800.00,
+      "activo": true,
+      "pathImagen": "/images/papas-cheddar.jpg",
+      "idCategoria": 7,
+      "idEmpresa": "cc0e8400-e29b-41d4-a716-446655440007"
+    }
+  ],
+  "categorias": [
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440008",
+      "nombre": "Pizzas",
+      "activo": true
+    },
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440018",
+      "nombre": "Platos Principales",
+      "activo": true
+    },
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440028",
+      "nombre": "Ensaladas",
+      "activo": true
+    },
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440038",
+      "nombre": "Bebidas",
+      "activo": true
+    },
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440048",
+      "nombre": "Postres",
+      "activo": true
+    },
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440058",
+      "nombre": "Pastas",
+      "activo": true
+    },
+    {
+      "id": "dd0e8400-e29b-41d4-a716-446655440068",
+      "nombre": "Acompañamientos",
+      "activo": true
+    }
+  ],
+  "menus": [
+    {
+      "id": "ee0e8400-e29b-41d4-a716-446655440009",
+      "nombre": "Menú Principal",
+      "activo": true,
+      "idSucursal": "990e8400-e29b-41d4-a716-446655440004"
+    }
+  ],
+  "mozos": [
+    {
+      "id": "aa0e8400-e29b-41d4-a716-446655440005",
+      "nombres": "Juan",
+      "apellido": "Pérez",
+      "codigoDeServicio": "1234"
+    },
+    {
+      "id": "aa0e8400-e29b-41d4-a716-446655440006",
+      "nombres": "María",
+      "apellido": "González",
+      "codigoDeServicio": "2345"
+    },
+    {
+      "id": "aa0e8400-e29b-41d4-a716-446655440007",
+      "nombres": "Carlos",
+      "apellido": "Rodríguez",
+      "codigoDeServicio": "3456"
+    }
+  ]
+}
+

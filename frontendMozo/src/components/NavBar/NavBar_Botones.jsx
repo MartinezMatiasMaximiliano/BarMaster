@@ -37,6 +37,7 @@ import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 import AttachMoneyOutlinedIcon from '@mui/icons-material/AttachMoneyOutlined';
 import WorkOutlineOutlinedIcon from '@mui/icons-material/WorkOutlineOutlined';
 import KitchenIcon from '@mui/icons-material/Kitchen';
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 
 const menuConfig = {
     Encargado: {
@@ -57,6 +58,13 @@ const menuConfig = {
         "Finanzas": [
             { path: "/caja", label: "Caja", icon: PointOfSaleOutlinedIcon },
             { path: "/graficas", label: "Graficas", icon: QueryStatsOutlinedIcon },
+            { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_ventas", label: "Reporte Ventas", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_productos", label: "Reporte Productos", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_mozos", label: "Reporte Mozos", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_mesas", label: "Reporte Mesas", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_rentabilidad", label: "Reporte Rentabilidad", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_caja", label: "Reporte Caja", icon: AssessmentOutlinedIcon },
         ],
         "Configuración": [
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
@@ -79,6 +87,13 @@ const menuConfig = {
         ],
         "Finanzas": [
             { path: "/caja", label: "Caja", icon: PointOfSaleOutlinedIcon },
+            { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_ventas", label: "Reporte Ventas", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_productos", label: "Reporte Productos", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_mozos", label: "Reporte Mozos", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_mesas", label: "Reporte Mesas", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_rentabilidad", label: "Reporte Rentabilidad", icon: AssessmentOutlinedIcon },
+            { path: "/reporte_caja", label: "Reporte Caja", icon: AssessmentOutlinedIcon },
         ],
         "Configuración": [
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },

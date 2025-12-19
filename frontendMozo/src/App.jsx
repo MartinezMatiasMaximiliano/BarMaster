@@ -21,6 +21,14 @@ import Reservas from './pages/Reservas'
 import Caja from './pages/Caja/Caja'
 import KDS from './pages/KDS/KDS'
 import Mi_Plan from './pages/Mi_Plan'
+import Reportes from './pages/Reportes/Reportes'
+import ReporteVentas from './pages/Reportes/ReporteVentas'
+import ReporteProductos from './pages/Reportes/ReporteProductos'
+import ReporteMozos from './pages/Reportes/ReporteMozos'
+import ReporteMesas from './pages/Reportes/ReporteMesas'
+import ReporteRentabilidad from './pages/Reportes/ReporteRentabilidad'
+import ReporteCaja from './pages/Reportes/ReporteCaja'
+import ReporteResumido from './pages/Reportes/ReporteResumido'
 import PanelSucursales from './pages/panel_sucursales/Panel_Sucursales'
 import DetalleSucursal from './pages/Detalle_Sucursal'
 import LoginUsuarios from './pages/Login_Usuarios';
@@ -277,6 +285,14 @@ function App() {
                             <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
                             <Route path="/reservas" element={<Control_Login><Reservas recargarComponentes={() => {}} titulo="Reservas" /></Control_Login>} />
                             <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
+                            <Route path="/reportes" element={<Control_Login><Reportes /></Control_Login>} />
+                            <Route path="/reporte_ventas" element={<Control_Login><ReporteVentas /></Control_Login>} />
+                            <Route path="/reporte_productos" element={<Control_Login><ReporteProductos /></Control_Login>} />
+                            <Route path="/reporte_mozos" element={<Control_Login><ReporteMozos /></Control_Login>} />
+                            <Route path="/reporte_mesas" element={<Control_Login><ReporteMesas /></Control_Login>} />
+                            <Route path="/reporte_rentabilidad" element={<Control_Login><ReporteRentabilidad /></Control_Login>} />
+                            <Route path="/reporte_caja" element={<Control_Login><ReporteCaja /></Control_Login>} />
+                            <Route path="/reporte_resumido" element={<Control_Login><ReporteResumido /></Control_Login>} />
                             <Route path="/distribucion_mesas" element={<Control_Login><Distribucion_mesas /></Control_Login>} />
                             <Route path="/delivery" element={<Control_Login><Delivery recargarComponentes={recargarDeliveryTakeAway} titulo="Delivery" /></Control_Login>} />
                             <Route path="/takeaway" element={<Control_Login><TakeAway recargarComponentes={recargarDeliveryTakeAway} titulo="Take Away" /></Control_Login>} />
