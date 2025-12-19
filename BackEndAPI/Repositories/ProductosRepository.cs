@@ -16,37 +16,43 @@ namespace BackEndAPI.Repositories
             db = context.Db;
         }
 
-        public async Task AddProductoAsync(Producto producto)
-        {
-            throw new NotImplementedException();
-            //await _context.Productos.AddAsync(producto);
-            //await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteProductoAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<IEnumerable<Producto>> GetAllProductosAsync()
         {
-            throw new NotImplementedException();
-            //return await _context.Productos.ToListAsync();
+            return await db.Productos.ToListAsync();
         }
 
-        public Task<Producto> GetProductoByIdAsync(Guid id)
+        public async Task<Producto?> GetProductoPorId(Guid id)
+        {
+            return await db.Productos.FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<Producto?> GetProductoPorNombre(string nombre)
+        {
+            return await db.Productos.FirstOrDefaultAsync(p => p.Nombre == nombre);
+        }
+
+        public async Task<Producto?> AddProducto(Producto producto)
+        {
+            await db.Productos.AddAsync(producto);
+            await db.SaveChangesAsync();
+            return producto;
+        }
+
+        public Task<Producto?> UpdateProducto(Producto producto)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> ProductoExistsAsync(Guid id)
+        public async Task<Producto?> DeleteProductoAsync(Guid id)
         {
-            throw new NotImplementedException();
+            db.Productos.Remove(new Producto { Id = id});
+            await db.SaveChangesAsync();
+            return null;
         }
 
-        public Task UpdateProductoAsync(Producto producto)
+        public async Task<bool> ProductoExiste(string nombre)
         {
-            throw new NotImplementedException();
+            return await db.Productos.AnyAsync(p => p.Nombre == nombre);
         }
     }
 }

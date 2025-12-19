@@ -86,7 +86,7 @@ namespace BackEndAPI.Controllers
 
                 if (result == null)
                 {
-                    return BadRequest("No se pudo crear la empresa.");
+                    throw new Exception("No se pudo crear la empresa.");
                 }
 
                 EmpresaResponseDTO response = new()
@@ -104,8 +104,10 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
-                    case string msg when msg.Contains("Ya existe"):
-                        return BadRequest("Empresa ya existe");
+                    case "Ya existe una empresa con el nombre solicitado.":
+                        return BadRequest("Ya existe una empresa con el nombre solicitado.");
+                    case "No se pudo crear la empresa.":
+                        return BadRequest("No se pudo crear la empresa.");
                     default:
                         return StatusCode(500, $"Error interno del servidor: {ex.Message}");
                 }

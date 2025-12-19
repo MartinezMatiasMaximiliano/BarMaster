@@ -1,4 +1,4 @@
-﻿namespace BackEndAPI.DTOs.Request
+﻿namespace BackEndAPI.DTOs.Request.Crear
 {
     public class CrearSucursalDTO
     {

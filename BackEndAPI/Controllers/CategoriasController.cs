@@ -2,6 +2,7 @@
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
+using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -15,14 +16,49 @@ namespace BackEndAPI.Controllers
     [ApiController]
     public class CategoriasController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ICategoriasServices _CategoriasServices;
+           
 
-        public CategoriasController(AppDbContext context)
+        public CategoriasController(ICategoriasServices categoriasServices)
         {
-            _context = context;
+            _CategoriasServices = categoriasServices;
         }
 
-        ////buscar todas las categorias
+        [HttpPost("/Categorias")]
+        public async Task<IActionResult> CrearCategoria([FromQuery] string Nombre)
+        {
+            try
+            {
+                var nuevaCategoria = await _CategoriasServices.CrearCategoria(Nombre);
+                return Ok(nuevaCategoria.Nombre);
+            }
+            catch (Exception ex)
+            {
+
+                switch (ex.Message)
+                {
+                    case "La categoria ya existe":
+                        return BadRequest(ex.Message);
+                    case "El nombre es obligatorio":
+                        return BadRequest(ex.Message);
+                    default:
+                        return StatusCode(500, "Error Interno de servidor");
+                }
+            }
+        }
+
+        //buscar una sola categoria
+
+        //buscar una lista de categorias
+
+        //HardDelete una categoria
+
+        //activar o desactivar una categoria
+
+        //modificar una categoria
+    }
+}
+ ////buscar todas las categorias
         //[HttpGet]
         //public async Task<ActionResult<CategoriaDTO>> Get()
         //{
@@ -154,5 +190,3 @@ namespace BackEndAPI.Controllers
         //        return StatusCode(500, "Internal server error catch: Delete Categorias - " + e.Message);
         //    }
         //}
-    }
-}

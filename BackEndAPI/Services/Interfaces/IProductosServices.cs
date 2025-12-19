@@ -1,15 +1,16 @@
-﻿using BackEndAPI.DTOs.Response;
+﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
 
 namespace BackEndAPI.Services.Interfaces
 {
     public interface IProductosServices
     {
-        Task<IEnumerable<Producto>> GetAllProductosAsync();
-        Task<Producto> GetProductoByIdAsync(int id);
-        Task AddProductoAsync(Producto producto);
-        Task UpdateProductoAsync(Producto producto);
-        Task DeleteProductoAsync(int id);
-        Task<bool> ProductoExistsAsync(int id);
+        Task<Producto?> CrearProducto(CrearProductoDTO producto);
+        Task<IEnumerable<Producto>> BuscarListaProductos();
+        Task<Producto> BuscarProductoPorId(int id);
+        Task ActualizarProducto(Producto producto);
+        Task EliminarProducto(int id);
+        Task<bool> ProductoExiste(string nombre);
     }
 }

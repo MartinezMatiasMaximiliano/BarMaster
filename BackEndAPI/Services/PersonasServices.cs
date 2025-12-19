@@ -1,4 +1,5 @@
-﻿using BackEndAPI.DTOs.Request;
+﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
@@ -22,7 +23,7 @@ namespace BackEndAPI.Services
         public async Task<Persona?> CrearPersona(CrearPersonaDTO nuevaPersona, Guid IdEmpresa)
         {
             var existente = await _personasRepository.GetPersonaPorDni(nuevaPersona.Dni);
-            if (existente == null) {
+            if (existente != null) {
                 throw new Exception("Ya existe una persona con el mismo DNI.");
             }
 

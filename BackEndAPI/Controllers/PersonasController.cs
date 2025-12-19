@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 
 
 namespace BackEndAPI.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class PersonasController : ControllerBase
