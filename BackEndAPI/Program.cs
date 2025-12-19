@@ -94,6 +94,8 @@ builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<ICurrentDbContext, CurrentDbContext>();
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
+builder.Services.AddScoped<ICategoriasServices, CategoriasServices>();
+builder.Services.AddScoped<ICategoriasRepository, CategoriasRepository>();
 builder.Services.AddScoped<IPersonasRepository, PersonasRepository>();
 builder.Services.AddScoped<IMesasRepository, MesasRepository>();
 builder.Services.AddScoped<IMesasServices, MesasServices>();
