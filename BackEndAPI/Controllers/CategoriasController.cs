@@ -37,7 +37,7 @@ namespace BackEndAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error Interno de servidor");
+                return StatusCode(500, "Error Interno de servidor: " + ex.Message);
             }
         }
 
@@ -123,7 +123,7 @@ namespace BackEndAPI.Controllers
             try
             {
                 await _CategoriasServices.EliminarCategoria(id);
-                return Ok("Categoria eliminada exitosamente");
+                return Ok(new EntregaDTO(200,"DELETED","Categoría eliminada exitosamente"));
             }
             catch (Exception ex)
             {

@@ -33,7 +33,7 @@ namespace BackEndAPI.Repositories
             return await db.Categorias.ToListAsync();
         }
 
-        public async Task<Categoria?> GetCategoriaById(Guid id)
+        public async Task<Categoria?> GetCategoriaPorId(Guid id)
         {
             return await db.Categorias.FirstOrDefaultAsync(c => c.Id == id);
         }
@@ -45,16 +45,11 @@ namespace BackEndAPI.Repositories
             return null;
         }
 
-        public async Task<Categoria?> EliminarCategoria(Guid id)
+        public async Task<Categoria?> EliminarCategoria(Categoria categoriaAEliminar)
         {
-            var categoria = await db.Categorias.FirstOrDefaultAsync(c => c.Id == id);
-            if (categoria == null)
-            {
-                return null;
-            }
-            db.Categorias.Remove(categoria);
+            db.Categorias.Remove(categoriaAEliminar);
             await db.SaveChangesAsync();
-            return categoria;
+            return categoriaAEliminar;
         }
     }
 }

@@ -43,7 +43,7 @@ namespace BackEndAPI.Services
 
         public async Task<Categoria> BuscarCategoriaPorId(Guid id)
         {
-            var categoria = await _categoriasRepository.GetCategoriaById(id);
+            var categoria = await _categoriasRepository.GetCategoriaPorId(id);
             if (categoria == null)
             {
                 throw new Exception("La categoria no existe");
@@ -57,7 +57,7 @@ namespace BackEndAPI.Services
                 throw new Exception("El nombre es obligatorio");
             }
 
-            var categoria = await _categoriasRepository.GetCategoriaById(id);
+            var categoria = await _categoriasRepository.GetCategoriaPorId(id);
             
             if (categoria == null)
             {
@@ -87,14 +87,14 @@ namespace BackEndAPI.Services
 
         public async Task<Categoria?> EliminarCategoria(Guid id)
         {
-            var categoria = await _categoriasRepository.GetCategoriaById(id);
-            if (categoria == null)
+            var categoriaAEliminar = await _categoriasRepository.GetCategoriaPorId(id);
+            if (categoriaAEliminar == null)
             {
                 throw new Exception("La categoria no existe");
             }
 
-            await _categoriasRepository.EliminarCategoria(id);
-            return categoria;
+            await _categoriasRepository.EliminarCategoria(categoriaAEliminar);
+            return categoriaAEliminar;
         }
     }
 }
