@@ -27,5 +27,29 @@ namespace BackEndAPI.Repositories
             await db.SaveChangesAsync();
             return nuevaCategoria;
         }
+
+        public async Task<IEnumerable<Categoria>> GetAllCategorias()
+        {
+            return await db.Categorias.ToListAsync();
+        }
+
+        public async Task<Categoria?> GetCategoriaPorId(Guid id)
+        {
+            return await db.Categorias.FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<Categoria?> ActualizarCategoria(Categoria categoria)
+        {
+            db.Entry(categoria).State = EntityState.Modified;
+            await db.SaveChangesAsync();
+            return null;
+        }
+
+        public async Task<Categoria?> EliminarCategoria(Categoria categoriaAEliminar)
+        {
+            db.Categorias.Remove(categoriaAEliminar);
+            await db.SaveChangesAsync();
+            return categoriaAEliminar;
+        }
     }
 }

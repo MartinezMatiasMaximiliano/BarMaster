@@ -108,6 +108,10 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthServices, AuthServices>();
 builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
 builder.Services.AddScoped<ISucursalesServices, SucursalesServices>();
+builder.Services.AddScoped<ITipoPagosRepository, TipoPagosRepository>();
+builder.Services.AddScoped<ITipoPagosServices, TipoPagosServices>();
+builder.Services.AddScoped<IReservasRepository, ReservasRepository>();
+builder.Services.AddScoped<IReservasServices, ReservasServices>();
 
 builder.Services.AddDbContext<MasterDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Master")));

@@ -1,17 +1,13 @@
-﻿using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request;
+﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
-using BackEndAPI.Models;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
-using Microsoft.EntityFrameworkCore;
 
 namespace BackEndAPI.Controllers
 {
+    [Authorize] 
     [Route("[controller]")]
     [ApiController]
     public class CategoriasController : ControllerBase
@@ -24,17 +20,69 @@ namespace BackEndAPI.Controllers
             _CategoriasServices = categoriasServices;
         }
 
-        [HttpPost("/Categorias")]
-        public async Task<IActionResult> CrearCategoria([FromQuery] string Nombre)
+        [HttpGet("/Categorias")]
+        public async Task<IActionResult> GetListaCategorias()
         {
             try
             {
-                var nuevaCategoria = await _CategoriasServices.CrearCategoria(Nombre);
-                return Ok(nuevaCategoria.Nombre);
+                var categorias = await _CategoriasServices.BuscarListaCategorias();
+                var listaCategorias = categorias.Select(categoria => new CategoriaDTO
+                {
+                    Id = categoria.Id,
+                    Nombre = categoria.Nombre,
+                    Activo = categoria.Activo
+                }).ToList();
+
+                return Ok(listaCategorias);
             }
             catch (Exception ex)
             {
+                return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+            }
+        }
 
+        [HttpGet("/Categorias/{id}")]
+        public async Task<IActionResult> GetCategoriaPorId(Guid id)
+        {
+            try
+            {
+                var categoria = await _CategoriasServices.BuscarCategoriaPorId(id);
+                var categoriaDTO = new CategoriaDTO
+                {
+                    Id = categoria.Id,
+                    Nombre = categoria.Nombre,
+                    Activo = categoria.Activo
+                };
+                return Ok(categoriaDTO);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "La categoria no existe":
+                        return NotFound(ex.Message);
+                    default:
+                        return StatusCode(500, "Error Interno de servidor");
+                }
+            }
+        }
+
+        [HttpPost("/Categorias")]
+        public async Task<IActionResult> CrearCategoria([FromBody] CrearCategoriaDTO request)
+        {
+            try
+            {
+                var nuevaCategoria = await _CategoriasServices.CrearCategoria(request);
+                var categoriaDTO = new CategoriaDTO
+                {
+                    Id = nuevaCategoria.Id,
+                    Nombre = nuevaCategoria.Nombre,
+                    Activo = nuevaCategoria.Activo
+                };
+                return Ok(categoriaDTO);
+            }
+            catch (Exception ex)
+            {
                 switch (ex.Message)
                 {
                     case "La categoria ya existe":
@@ -47,15 +95,47 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        //buscar una sola categoria
+        [HttpPut("/Categorias/{id}")]
+        public async Task<IActionResult> ModificarCategoria(Guid id, [FromBody] ModificarCategoriaDTO request)
+        {
+            try
+            {
+                await _CategoriasServices.ModificarCategoria(id, request);
+                return Ok("Categoria modificada exitosamente");
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "La categoria no existe":
+                        return NotFound(ex.Message);
+                    case "Ya existe una categoria con ese nombre":
+                        return BadRequest(ex.Message);
+                    default:
+                        return StatusCode(500, "Error Interno de servidor");
+                }
+            }
+        }
 
-        //buscar una lista de categorias
-
-        //HardDelete una categoria
-
-        //activar o desactivar una categoria
-
-        //modificar una categoria
+        [HttpDelete("/Categorias/{id}")]
+        public async Task<IActionResult> EliminarCategoria(Guid id)
+        {
+            try
+            {
+                await _CategoriasServices.EliminarCategoria(id);
+                return Ok(new EntregaDTO(200,"DELETED","Categoría eliminada exitosamente"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "La categoria no existe":
+                        return NotFound(ex.Message);
+                    default:
+                        return StatusCode(500, "Error Interno de servidor");
+                }
+            }
+        }
     }
 }
  ////buscar todas las categorias
