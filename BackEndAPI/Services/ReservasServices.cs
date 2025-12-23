@@ -20,6 +20,25 @@ namespace BackEndAPI.Services
             return await _reservasRepository.GetAllReservas();
         }
 
+        public async Task<Reserva> CrearReserva(CrearReservaDTO request, Guid IdSucursal)
+        {
+            if (string.IsNullOrWhiteSpace(request.NombreReserva))
+            {
+                throw new Exception("El nombre de la reserva es obligatorio");
+            }
+
+            Reserva nuevaReserva = new Reserva
+            {
+                IdSucursal = IdSucursal,
+                IdEstadoReserva = request.IdEstadoReserva,
+                FechaHora = request.FechaHora,
+                NombreReserva = request.NombreReserva,
+                CantidadDePersonas = request.CantidadDePersonas
+            };
+
+            return await _reservasRepository.CrearReserva(nuevaReserva);
+        }
+
         public async Task<Reserva?> ActualizarReserva(ModificarReservaDTO ReservaActualizada) {
             var reserva = await _reservasRepository.GetReservaPorId(ReservaActualizada.Id) ?? throw new Exception("Reserva no encontrada");
             reserva.IdEstadoReserva = ReservaActualizada.IdEstadoReserva;
@@ -27,6 +46,11 @@ namespace BackEndAPI.Services
             reserva.NombreReserva = !String.IsNullOrEmpty(ReservaActualizada.NombreReserva) ? ReservaActualizada.NombreReserva : reserva.NombreReserva;
             reserva.CantidadDePersonas = ReservaActualizada.CantidadDePersonas.HasValue ? ReservaActualizada.CantidadDePersonas : reserva.CantidadDePersonas;
             return await _reservasRepository.ActualizarReserva(reserva);
+        }
+
+        public async Task<Reserva?> EliminarReserva(Guid Id) {
+            var reserva = await _reservasRepository.GetReservaPorId(Id) ?? throw new Exception("Reserva no encontrada");
+            return await _reservasRepository.EliminarReserva(reserva);
         }
     }
 }

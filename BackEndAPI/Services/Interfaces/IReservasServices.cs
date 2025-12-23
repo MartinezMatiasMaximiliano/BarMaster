@@ -7,7 +7,9 @@ namespace BackEndAPI.Services.Interfaces
     public interface IReservasServices
     {
         Task<IEnumerable<Reserva>> BuscarReservas();
+        Task<Reserva> CrearReserva(CrearReservaDTO request, Guid IdSucursal);
         Task<Reserva?> ActualizarReserva(ModificarReservaDTO ReservaActualizada);
+        Task<Reserva?> EliminarReserva(Guid Id);
     }
 
 }
