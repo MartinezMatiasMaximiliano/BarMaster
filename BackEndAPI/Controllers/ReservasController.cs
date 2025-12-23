@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using BackEndAPI.Models;
 namespace BackEndAPI.Controllers
 {
-    //ToDo:[Authorize]
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ReservasController : ControllerBase
