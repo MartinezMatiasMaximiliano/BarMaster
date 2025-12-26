@@ -21,7 +21,7 @@ namespace BackEndAPI.Repositories
         }
         public async Task<Reserva?> GetReservaPorId(Guid id)
         {
-            return await db.Reservas.Include(r => r.Estado).FirstOrDefaultAsync();
+            return await db.Reservas.Include(r => r.Estado).FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<Reserva> CrearReserva(Reserva nuevaReserva)

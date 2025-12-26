@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using BackEndAPI.Models;
 namespace BackEndAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ReservasController : ControllerBase
@@ -31,7 +31,11 @@ namespace BackEndAPI.Controllers
                     Id = reserva.Id,
                     FechaHora = reserva.FechaHora,
                     NombreReserva = reserva.NombreReserva,
-                    Estado = reserva.Estado.Nombre,
+                    Estado = new EstadoReservaDTO
+                    {
+                        Id = reserva.Estado.Id,
+                        Nombre = reserva.Estado.Nombre
+                    },
                     CantidadDePersonas = reserva.CantidadDePersonas
                 }).ToList();
 
@@ -62,7 +66,11 @@ namespace BackEndAPI.Controllers
                     FechaHora = nuevaReserva.FechaHora,
                     NombreReserva = nuevaReserva.NombreReserva,
                     CantidadDePersonas = nuevaReserva.CantidadDePersonas,
-                    Estado = nuevaReserva.Estado.Nombre
+                    Estado = new EstadoReservaDTO
+                    {
+                        Id = nuevaReserva.Estado.Id,
+                        Nombre = nuevaReserva.Estado.Nombre
+                    }
                 };
                 return Ok(reservaDTO);
             }
