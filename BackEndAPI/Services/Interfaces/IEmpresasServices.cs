@@ -1,4 +1,5 @@
-﻿using BackEndAPI.DTOs.Request;
+﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 
 namespace BackEndAPI.Services.Interfaces
@@ -9,7 +10,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<Empresa?> GetEmpresaById(Guid id);
         Task<Empresa?> GetEmpresaByNombre(string nombre);
         Task<Empresa> AddEmpresa(CrearEmpresaDTO empresa);
-        Task<bool> UpdateEmpresa(Guid id,ActualizarEmpresaDTO empresa);
+        Task<bool> ModificarEmpresa(Guid id,ModificarEmpresaDTO empresa);
         Task DeleteEmpresa(Guid id);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BackEndAPI.Controllers;
 using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request;
+using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
@@ -44,7 +45,7 @@ namespace BackEndAPI.Services
 
             if (result != null)
             {
-                throw new Exception($"Ya existe una empresa con el nombre {request.Nombre}.");
+                throw new Exception("Ya existe una empresa con el nombre solicitado.");
             }
 
             Empresa empresa = new()
@@ -55,7 +56,7 @@ namespace BackEndAPI.Services
                 Activo = true,
                 FechaInscripcion = DateTime.UtcNow,
                 IdTipoSubscripcion = null,
-                Username = $"{request.Nombre}@empresa",
+                Username = $"{request.Nombre}",
             };
             _passwordService.CrearPasswordHash(request.Password, out byte[] hash, out byte[] salt);
             empresa.EstablecerContrasena(hash, salt);
@@ -63,7 +64,7 @@ namespace BackEndAPI.Services
             var tenantInfo = await _tenantProvisioner.ProvisionTenantAsync(empresa);
             return empresa;
         }
-        public Task<bool> UpdateEmpresa(Guid id,ActualizarEmpresaDTO request)
+        public Task<bool> ModificarEmpresa(Guid id,ModificarEmpresaDTO request)
         {
                 throw new KeyNotFoundException($"La empresa con ID {id} no fue encontrada.");
             //var result = await _repository.GetEmpresaByIdAsync(id);

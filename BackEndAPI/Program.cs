@@ -88,6 +88,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 builder.Services.AddScoped<ITenantProvisioner, TenantProvisioner>();
 builder.Services.AddScoped<ITenantResolver, TenantResolver>();
+builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
 builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
