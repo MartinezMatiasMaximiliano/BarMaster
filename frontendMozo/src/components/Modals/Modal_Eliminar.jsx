@@ -14,7 +14,6 @@ import CloseIcon from '@mui/icons-material/Close';
 
 function Modal_Eliminar(props) {
 
-    const endpoint = props.endpoint;
     const idFila = props.id;
     const userToken = localStorage.getItem('token');
 

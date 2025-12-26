@@ -10,9 +10,13 @@ export default function Handlers({ id, editValues, setEditValues, modificar, rec
     image: (event) => event.target.files[0],
     "datetime-local": (event) => {
       const value = event.target.value;
-      // Convertir datetime-local a ISO string
+      // Convertir datetime-local a ISO string con formato "2025-12-25T20:10:49.795Z"
       if (value) {
-        return new Date(value).toISOString();
+        // Crear Date desde el valor datetime-local (formato: YYYY-MM-DDTHH:mm)
+        // El valor se interpreta como hora local
+        const date = new Date(value);
+        // toISOString() genera el formato correcto con milisegundos y Z
+        return date.toISOString();
       }
       return value;
     },
@@ -32,7 +36,6 @@ export default function Handlers({ id, editValues, setEditValues, modificar, rec
   };
 
   const handleSave = async () => {
-    console.log("EDITVALUES: ", editValues)
     if (Object.keys(errors).length === 0) {
         await modificar({ ...editValues, id: id });
         setErrors({});

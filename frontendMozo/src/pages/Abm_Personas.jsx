@@ -34,12 +34,6 @@ function Abm_Personas(props) {
         modificar: ModificarPersona,
     };
 
-    const configSelect = {
-        titulo: "Rol",
-        name: "rol",
-        datos: props.datos_select,
-    }
-
     const columnas = [
         { key: "nombre", label: "Nombre" }, 
         { key: "apellido", label: "Apellido" },

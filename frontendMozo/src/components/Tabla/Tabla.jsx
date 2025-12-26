@@ -112,7 +112,6 @@ function defaultRender(row, col) {
 }
 
 export default function Tabla(props) {
-    console.log("FILA EN TABLA: ", props.filas)
     return (
         <Card variant="outlined" sx={{ mt: 2 }}>
             <CardHeader
@@ -147,6 +146,12 @@ export default function Tabla(props) {
                 sx={{ pb: 1 }}
             />
             <Divider />
+            {typeof props.renderFiltros === "function" && (
+                <Box sx={{ px: 2, py: 2 }}>
+                    {props.renderFiltros()}
+                </Box>
+            )}
+            {typeof props.renderFiltros === "function" && <Divider />}
             <CardContent sx={{ p: 0 }}>
                 <TableContainer
                     sx={{

@@ -24,7 +24,6 @@ const Graficas = (props) => {
         return fechaPedido >= inicio && fechaPedido <= fin;
     });
 
-    console.log(dataFiltrada)
     function generarRegistros(cantidad = 100) {
         const nombres = [
             "Paella", "Pizza", "Milanesa", "Flan", "Tarta",

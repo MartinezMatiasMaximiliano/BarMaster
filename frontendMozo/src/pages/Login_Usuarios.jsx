@@ -19,7 +19,6 @@ const LoginUsuarios = () => {
         }
 
         // Guardar datos temporales en localStorage
-        localStorage.setItem('token', 'temp_token_' + Date.now());
         localStorage.setItem('nombres', 'Usuario');
         localStorage.setItem('apellido', 'Temporal');
         localStorage.setItem('id', '1');

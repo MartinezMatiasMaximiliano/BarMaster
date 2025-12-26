@@ -149,9 +149,8 @@ export const useKDS = () => {
                 try {
                     const audio = new Audio('/notification.mp3');
                     audio.volume = 0.5;
-                    audio.play().catch(e => console.log('No se pudo reproducir sonido:', e));
+                    audio.play().catch(() => {});
                 } catch (e) {
-                    console.log('Error al reproducir sonido:', e);
                 }
             }
         }

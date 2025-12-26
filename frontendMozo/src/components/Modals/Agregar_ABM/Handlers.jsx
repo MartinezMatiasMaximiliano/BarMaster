@@ -28,7 +28,6 @@ export default function Handlers({ agregar, recargarComponentes, handleClose }) 
 
   const handleSave = async () => {
     if (Object.keys(errors).length === 0) {
-      console.log("VALUES: ", values)
       await agregar(values);
       handleClose();
       await recargarComponentes();

@@ -333,8 +333,6 @@ export const calcularGananciasPorHora = (data) => {
         }
     });
 
-    console.log("TOTALESPORHORA: ", totalesPorHora);
-
     // Convertir a array para la gráfica
     return Object.entries(totalesPorHora).map(([hora, total]) => {
         const h = Number(hora);

@@ -2,7 +2,7 @@ import './styles/App.css'
 import React, { useState, useEffect, createContext } from 'react'
 import { Route, Routes, useLocation, Navigate } from "react-router-dom"
 import { Box } from '@mui/material'
-import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos } from './Helpers/HelperFunctions'
+import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos, MappearReservas } from './Helpers/HelperFunctions'
 import useSignalR from './hooks/useSignalR'
 import Navbar from "./components/NavBar/NavBar";
 import Index from './pages/Index/Index';
@@ -17,7 +17,7 @@ import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery from './pages/Delivery'
 import TakeAway from './pages/TakeAway'
-import Reservas from './pages/Reservas'
+import Abm_Reservas from './pages/Abm_Reservas'
 import Caja from './pages/Caja/Caja'
 import KDS from './pages/KDS/KDS'
 import Mi_Plan from './pages/Mi_Plan'
@@ -41,6 +41,7 @@ import { BuscarTodosLosMozos } from './API/APIPersonas'
 import { BuscarTodasLasPersonas } from './API/APIPersonas'
 import { BuscarTodosLosRoles } from './API/APIRoles'
 import { BuscarTodosLosPedidos, BuscarUnPedido } from './API/APIPedidos'
+import { BuscarTodasLasReservas } from './API/APIReservas'
 import { CambiarEstadoItems } from './API/APIItems'
 import { useSelector, useDispatch } from 'react-redux'
 import { agregarItems as agregarItemsAPedidoActivo, crear as crearPedidosActivos, cambiarEstadoItems } from './redux/slices/pedidosActivosSlice'
@@ -83,17 +84,14 @@ function App() {
     const [personas, SetPersonas] = useState([])
     const [roles, SetRoles] = useState([])
     const [pedidos, SetPedidos] = useState([])
+    const [reservas, SetReservas] = useState([])
 
     // Cada vez que se hace un navigate('/?algo'), se ejecuta este useEffect recargando los componentes
     // Es mucho más rápido que usar window.location.reload() al abrir/cerrar mesa
 
     useEffect(() => {
         if (location.pathname === '/sistema_sucursal') {
-            // Si hay una sucursal activa, cargar datos de esa sucursal
-            // Por ahora cargamos todos los datos, pero aquí se puede filtrar por sucursal
             if (localStorage.getItem('token')) {
-                // TODO: Cuando la API esté lista, aquí se harían las llamadas filtradas por sucursal
-                // Manejar errores para que la app no crashee si los endpoints no existen
                 BuscarTodasLasMesas()
                     .then(data => SetMesas(Array.isArray(data) ? data : []))
                     .catch(() => SetMesas([]));
@@ -114,7 +112,10 @@ function App() {
                     .catch(() => SetPedidos([]));
                 BuscarTodasLasCategorias()
                     .then(data => SetCategorias(Array.isArray(data) ? data : []))
-                    .catch(() => SetCategorias([]));
+                    .catch(() => SetCategorias([]));    
+                BuscarTodasLasReservas()
+                    .then(data => SetReservas(Array.isArray(data) ? data : []))
+                    .catch(() => SetReservas([]));
             } else {
                 // Si no hay sucursal activa, limpiar datos
                 SetMesas([]);
@@ -167,6 +168,10 @@ function App() {
         await BuscarTodosLosMozos().then(data => SetMozos(data));
     }
 
+    async function recargarReservas() {
+        await BuscarTodasLasReservas().then(data => SetReservas(data));
+    }
+
     async function pagarTotal(IdPedido) {
 
         const pedido = await BuscarUnPedido(IdPedido);
@@ -186,7 +191,6 @@ function App() {
     }
 
     function pagarSeparado(ArrayIdsItems) {
-        console.log("ARRAYIDSITEMS", ArrayIdsItems);
         // Hago los cambios en la DB
         CambiarEstadoItems(ArrayIdsItems, "Procesando");
 
@@ -206,7 +210,6 @@ function App() {
             dispatch(agregarItemsAPedidoActivo({ items: nuevoItems, numeroMesa: numeroMesa }));
             sendRecargarTicket(numeroMesa);
         } catch (error) {
-            console.log(error);
         }
     }
 
@@ -216,6 +219,10 @@ function App() {
     const datos_menu_abm = MappearMenu(menu || [])
     const Notificaciones = MappearNotificaciones(notificaciones || [])
     const datos_pedidos = MappearPedidos(pedidos || [])
+    const datos_reservas = MappearReservas(reservas || [])
+
+    console.log("DATOS RESERVAS: ", reservas)
+    console.log("DATOS RESERVAS MAP: ", datos_reservas)
 
     // Si no está logeado, mostrar SOLO el login, sin ningún layout adicional
     if (!logeadoEmpresaSucursal) {
@@ -283,7 +290,7 @@ function App() {
                             <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={datos_mesas_abm} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                             <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
                             <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
-                            <Route path="/reservas" element={<Control_Login><Reservas recargarComponentes={() => {}} titulo="Reservas" /></Control_Login>} />
+                            <Route path="/reservas" element={<Control_Login><Abm_Reservas recargarComponentes={recargarReservas} datos_reservas={datos_reservas} titulo="Reservas" /></Control_Login>} />
                             <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
                             <Route path="/reportes" element={<Control_Login><Reportes /></Control_Login>} />
                             <Route path="/reporte_ventas" element={<Control_Login><ReporteVentas /></Control_Login>} />

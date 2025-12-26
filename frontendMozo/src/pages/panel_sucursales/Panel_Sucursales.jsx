@@ -41,7 +41,6 @@ function PanelSucursales() {
 
     const handleSucursalEnter = (sucursal) => {
         // TODO: Implementar funcionalidad de entrada a la sucursal
-        console.log('Entrando a sucursal:', sucursal);
     };
 
     return (

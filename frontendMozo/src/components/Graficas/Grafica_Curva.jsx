@@ -4,7 +4,6 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContai
 const GraficaGananciasPorFecha = ({ data, calcularDatos }) => {
 
     const dataGanancias = calcularDatos(data);
-    console.log("DATAGANANCIAS: ", dataGanancias)
     return (
         <div style={{ width: "100%", height: 400 }}>
             <ResponsiveContainer>

@@ -36,7 +36,6 @@ function Modal_Cambiar_Codigo_Mozo(props) {
         const valor = e.target.value;
         setValue(valor);
         validarCampos(key, valor, setErrors);
-        console.log("ERRORES: ", errors);
     }
 
     return (

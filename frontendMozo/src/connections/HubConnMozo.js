@@ -11,7 +11,6 @@ const connection = new SignalR.HubConnectionBuilder().withUrl(hubURL, {
 
 const ConectarAHub = async () => {
     await connection.start()
-        .then(() => console.log("Conectado al Hub"))
         .catch(err => console.error("Connection error:", err));
 
     connection.send("RegistrarMozoAGrupo", connection.connectionId)

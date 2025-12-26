@@ -32,7 +32,7 @@ function Modal_Editar(props) {
 
     // Inicializar editValues con los valores de la fila
     const getInitialValues = () => {
-        const { id, activo, ...rest } = props.fila;
+        const { id, activo, estado, Estado, ...rest } = props.fila;
         return rest;
     };
 
@@ -43,7 +43,7 @@ function Modal_Editar(props) {
     // Solo resetear valores cuando el modal se abre, no en cada render
     useEffect(() => {
         if (show) {
-            const { id, activo, ...filaFiltrada } = props.fila;
+            const { id, activo, estado, Estado, ...filaFiltrada } = props.fila;
             setEditValues({ ...filaFiltrada });
         }
     }, [show]);

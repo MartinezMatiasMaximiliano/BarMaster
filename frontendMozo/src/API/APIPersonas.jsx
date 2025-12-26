@@ -88,10 +88,8 @@ export async function ModificarPassword(id,nuevoPassword,token) {
                 }
             }
         );
-        console.log("RESPONSE:", response.data);
         return response.data;
     } catch (error) {
-        console.log("ERROR:", error.response?.data || error.message);
         throw error;
     }
 }

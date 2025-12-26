@@ -81,6 +81,19 @@ export function MappearPedidos(pedidos) {
     );
 }
 
+export function MappearReservas(reservas) {
+    return (
+        reservas.map(reserva => ({
+            id: reserva.id,
+            fechaHora: reserva.fechaHora,
+            nombreReserva: reserva.nombreReserva,
+            cantidadDePersonas: reserva.cantidadDePersonas,
+            IdEstadoReserva: reserva.estado.id,
+            estado: reserva.estado.nombre
+        }))
+    )
+}
+
 export function MappearPersonas(personas) {
     return (
         personas.map(persona => ({
@@ -100,14 +113,14 @@ export function MappearPersonas(personas) {
 export function MappearMozos(mozos) {
     return (
         mozos.map(mozo => ({
-        id: mozo.id,
-        codigoDeServicio: mozo.codigoDeServicio,
-        nombre: mozo.datosPersonales.nombres,
-        apellido: mozo.datosPersonales.apellido,
-        dni: mozo.datosPersonales.dni,
-        direccion: mozo.datosPersonales.direccion,
-        telefono: mozo.datosPersonales.telefono,
-        activo: mozo.datosPersonales.activo
+            id: mozo.id,
+            codigoDeServicio: mozo.codigoDeServicio,
+            nombre: mozo.datosPersonales.nombres,
+            apellido: mozo.datosPersonales.apellido,
+            dni: mozo.datosPersonales.dni,
+            direccion: mozo.datosPersonales.direccion,
+            telefono: mozo.datosPersonales.telefono,
+            activo: mozo.datosPersonales.activo
         }))
     )
 }

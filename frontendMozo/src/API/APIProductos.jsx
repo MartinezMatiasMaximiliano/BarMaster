@@ -33,7 +33,6 @@ export async function BuscarUnProducto(Id) {
 
 export async function CrearProducto(datos) {
     try {
-        console.log("DATOS EN API: ", datos)
         const response = await axios.post(
             BASE_URL,
             new CrearProductoDTO(datos.nombre, datos.descripcion, datos.precio, true, datos.categorias, datos.imagen), {

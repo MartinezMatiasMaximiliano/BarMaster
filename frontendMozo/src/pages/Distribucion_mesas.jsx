@@ -43,7 +43,6 @@ export default function MesasGrid() {
 
     const handleLayoutChange = (newLayout) => {
         setLayout(newLayout);
-        console.log("Nuevas posiciones:", newLayout);
         // Podrías enviar esto al backend para guardarlo
     };
 

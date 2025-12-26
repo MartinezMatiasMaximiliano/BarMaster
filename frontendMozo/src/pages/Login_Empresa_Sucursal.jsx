@@ -52,10 +52,14 @@ const LoginEmpresaSucursal = () => {
      */
     const handleLoginSuccess = (response) => {
         const authType = response.auth_type;
+        // Extraer y guardar el tenant ID (parte antes del @)
+        const tenantId = authService.extractCompanyName(formData.username);
+        
         // Guardar datos en localStorage
         localStorage.setItem('token', response.access_token);
         localStorage.setItem('auth_type', authType);
         localStorage.setItem('username', formData.username);
+        localStorage.setItem('tenantId', tenantId);
 
         // Actualizar contextos
         loginContext.setLogeadoEmpresaSucursal(true);
