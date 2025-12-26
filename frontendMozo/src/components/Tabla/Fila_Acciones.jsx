@@ -16,13 +16,15 @@ export default function Fila_Acciones(props) {
                 />
             )}
 
-            <Modal_Editar
-                recargarComponentes={props.recargar}
-                fila={props.fila}
-                modificar={props.api.modificar}
-                campos={props.campos}
-                disabled={props.showEditar}
-            />
+            {props.showEditar && (
+                <Modal_Editar
+                    recargarComponentes={props.recargar}
+                    fila={props.fila}
+                    modificar={props.api.modificar}
+                    campos={props.campos}
+                    disabled={false}
+                />
+            )}
 
             <Modal_Eliminar
                 recargarComponentes={props.recargar}

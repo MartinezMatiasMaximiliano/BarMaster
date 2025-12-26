@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Container } from 'react-bootstrap'
 import { CrearReserva, ModificarReserva, BorrarReserva } from "../API/APIReservas";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
+import Ordenar from "../components/Ordenar/Ordenar";
+import Filtros from "../components/Filtros/Filtros";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 import { Campos } from "../configs/agregar/Reservas"
@@ -23,6 +25,20 @@ const getEstadoColor = (idEstado) => {
 };
 
 function Abm_Reservas(props) {
+    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_reservas || []);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_reservas || []);
+
+    // Actualizar filas filtradas cuando cambien los datos originales
+    React.useEffect(() => {
+        setFilasFiltradas(props.datos_reservas || []);
+        setFilasOrdenadas(props.datos_reservas || []);
+    }, [props.datos_reservas]);
+
+    // Actualizar filas ordenadas cuando cambien las filas filtradas
+    React.useEffect(() => {
+        setFilasOrdenadas(filasFiltradas);
+    }, [filasFiltradas]);
+
     const api = {
         crear: CrearReserva,
         modificar: ModificarReserva,
@@ -73,7 +89,7 @@ function Abm_Reservas(props) {
         <Container>
             <Tabla
                 titulo={props.titulo}
-                filas={props.datos_reservas}
+                filas={filasOrdenadas}
                 columnas={columnas}
                 onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
@@ -84,6 +100,37 @@ function Abm_Reservas(props) {
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>
+                )}
+                renderOrdenar={() => (
+                    <Ordenar
+                        filas={filasFiltradas}
+                        opcionesOrdenamiento={[
+                            { label: 'Fecha y Hora', campo: 'fechaHora', tipoOrden: 'fecha' },
+                            { label: 'Estado', campo: 'estado', tipoOrden: 'texto' }
+                        ]}
+                        onOrdenar={setFilasOrdenadas}
+                    />
+                )}
+                renderFiltros={() => (
+                    <Filtros
+                        filas={props.datos_reservas || []}
+                        columnas={columnas}
+                        configuracionFiltros={{
+                            fechaHora: { tipo: 'text' },
+                            nombreReserva: { tipo: 'text' },
+                            cantidadDePersonas: { tipo: 'number' },
+                            estado: { 
+                                tipo: 'select', 
+                                opciones: [
+                                    { id: 1, nombre: 'Pendiente' },
+                                    { id: 2, nombre: 'Confirmada' },
+                                    { id: 3, nombre: 'Cancelada' },
+                                    { id: 4, nombre: 'Completada' }
+                                ]
+                            }
+                        }}
+                        onFiltrar={setFilasFiltradas}
+                    />
                 )}
             />
         </Container>

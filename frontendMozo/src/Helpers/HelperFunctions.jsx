@@ -5,6 +5,9 @@ import Avatar from '@mui/material/Avatar';
 
 /* Funcion para confirmar el del sistema (sirve para el sistema de una sucursal y para el panel de sucursales) */
 export const handleConfirmarSalir = (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
+    // Cerrar diálogo primero
+    setOpenConfirmDialog(false);
+    
     // Limpiar localStorage
     localStorage.clear();
     
@@ -19,9 +22,8 @@ export const handleConfirmarSalir = (loginContext, authTypeContext, setOpenConfi
         authTypeContext.setAuthType(null);
     }
     
-    // Cerrar diálogo y redirigir al login
-    setOpenConfirmDialog(false);
-    navigate('/');
+    // Redirigir al login principal usando window.location para forzar recarga completa
+    window.location.href = '/';
 };
 
 export function formatearFecha(fechaISO) {

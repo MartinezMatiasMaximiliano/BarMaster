@@ -3,6 +3,8 @@ import { Container } from "react-bootstrap";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
+import Ordenar from "../components/Ordenar/Ordenar";
+import Filtros from "../components/Filtros/Filtros";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -15,6 +17,8 @@ import { Campos as Campos_Editar, inicializarCampos } from "../configs/modificar
 
 function Abm_Mesas(props) {
     const [camposEditar, setCamposEditar] = useState(Campos_Editar);
+    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_mesas || []);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_mesas || []);
 
     // Inicializar campos solo cuando el componente se monte y haya token
     useEffect(() => {
@@ -24,6 +28,17 @@ function Abm_Mesas(props) {
             });
         }
     }, []);
+
+    // Actualizar filas filtradas cuando cambien los datos originales
+    React.useEffect(() => {
+        setFilasFiltradas(props.datos_mesas || []);
+        setFilasOrdenadas(props.datos_mesas || []);
+    }, [props.datos_mesas]);
+
+    // Actualizar filas ordenadas cuando cambien las filas filtradas
+    React.useEffect(() => {
+        setFilasOrdenadas(filasFiltradas);
+    }, [filasFiltradas]);
 
     const api = {
         crear: CrearMesa,
@@ -56,7 +71,7 @@ function Abm_Mesas(props) {
         <Container>
             <Tabla
                 titulo={props.titulo}
-                filas={props.datos_mesas}
+                filas={filasOrdenadas}
                 columnas={columnas}
                 onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
@@ -68,6 +83,29 @@ function Abm_Mesas(props) {
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>
+                )}
+                renderOrdenar={() => (
+                    <Ordenar
+                        filas={filasFiltradas}
+                        opcionesOrdenamiento={[
+                            { label: 'Número de Mesa', campo: 'numero', tipoOrden: 'numero' },
+                            { label: 'Código', campo: 'codigoParaPedir', tipoOrden: 'texto' },
+                            { label: 'Mozo', campo: 'nombreMozo', tipoOrden: 'texto' }
+                        ]}
+                        onOrdenar={setFilasOrdenadas}
+                    />
+                )}
+                renderFiltros={() => (
+                    <Filtros
+                        filas={props.datos_mesas || []}
+                        columnas={columnas}
+                        configuracionFiltros={{
+                            numero: { tipo: 'number' },
+                            codigoParaPedir: { tipo: 'text' },
+                            nombreMozo: { tipo: 'text' }
+                        }}
+                        onFiltrar={setFilasFiltradas}
+                    />
                 )}
             />
         </Container>

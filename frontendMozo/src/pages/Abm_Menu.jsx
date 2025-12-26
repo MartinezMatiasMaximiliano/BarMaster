@@ -3,6 +3,8 @@ import { Container } from "react-bootstrap";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
+import Ordenar from "../components/Ordenar/Ordenar";
+import Filtros from "../components/Filtros/Filtros";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -16,6 +18,8 @@ import { Campos, inicializarCampos } from "../configs/agregar/Producto"
 
 function Abm_Menu(props) {
     const [campos, setCampos] = useState(Campos);
+    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_menu || []);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_menu || []);
 
     // Inicializar campos solo cuando el componente se monte y haya token
     useEffect(() => {
@@ -25,6 +29,17 @@ function Abm_Menu(props) {
             });
         }
     }, []);
+
+    // Actualizar filas filtradas cuando cambien los datos originales
+    React.useEffect(() => {
+        setFilasFiltradas(props.datos_menu || []);
+        setFilasOrdenadas(props.datos_menu || []);
+    }, [props.datos_menu]);
+
+    // Actualizar filas ordenadas cuando cambien las filas filtradas
+    React.useEffect(() => {
+        setFilasOrdenadas(filasFiltradas);
+    }, [filasFiltradas]);
 
     const api = {
         crear: CrearProducto,
@@ -62,7 +77,7 @@ function Abm_Menu(props) {
         <Container>
             <Tabla
                 titulo={props.titulo}
-                filas={props.datos_menu}
+                filas={filasOrdenadas}
                 columnas={columnas}
                 onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
@@ -74,6 +89,29 @@ function Abm_Menu(props) {
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>
+                )}
+                renderOrdenar={() => (
+                    <Ordenar
+                        filas={filasFiltradas}
+                        opcionesOrdenamiento={[
+                            { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
+                            { label: 'Precio', campo: 'precio', tipoOrden: 'numero' }
+                        ]}
+                        onOrdenar={setFilasOrdenadas}
+                    />
+                )}
+                renderFiltros={() => (
+                    <Filtros
+                        filas={props.datos_menu || []}
+                        columnas={columnas}
+                        configuracionFiltros={{
+                            nombre: { tipo: 'text' },
+                            precio: { tipo: 'number' },
+                            descripcion: { tipo: 'text' },
+                            categorias: { tipo: 'text' }
+                        }}
+                        onFiltrar={setFilasFiltradas}
+                    />
                 )}
             />
         </Container>

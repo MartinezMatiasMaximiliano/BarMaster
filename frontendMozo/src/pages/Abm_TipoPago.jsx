@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Container } from 'react-bootstrap'
-import { CrearCategoria, BorrarCategoria, DesactivarCategoria, ActivarCategoria, ModificarCategoria } from "../API/APICategorias";
+import { CrearTipoPago, BorrarTipoPago } from "../API/APITipoPagos";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
@@ -8,17 +8,17 @@ import Ordenar from "../components/Ordenar/Ordenar";
 import Filtros from "../components/Filtros/Filtros";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
-import { Campos } from "../configs/agregar/Categorias"
+import { Campos } from "../configs/agregar/TipoPago"
 
-function Abm_Categorias(props) {
-    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_categorias || []);
-    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_categorias || []);
+function Abm_TipoPago(props) {
+    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_tipo_pagos || []);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_tipo_pagos || []);
 
     // Actualizar filas filtradas cuando cambien los datos originales
     React.useEffect(() => {
-        setFilasFiltradas(props.datos_categorias || []);
-        setFilasOrdenadas(props.datos_categorias || []);
-    }, [props.datos_categorias]);
+        setFilasFiltradas(props.datos_tipo_pagos || []);
+        setFilasOrdenadas(props.datos_tipo_pagos || []);
+    }, [props.datos_tipo_pagos]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
     React.useEffect(() => {
@@ -26,17 +26,12 @@ function Abm_Categorias(props) {
     }, [filasFiltradas]);
 
     const api = {
-        crear: CrearCategoria,
-        eliminar: BorrarCategoria,
-        desactivar: DesactivarCategoria,
-        activar: ActivarCategoria,
-        modificar: ModificarCategoria,
+        crear: CrearTipoPago,
+        eliminar: BorrarTipoPago,
     };
 
     const columnas = [
-
         { key: "nombre", label: "Nombre", align: "right" },
-
         {
             key: "__acciones",
             label: "Acciones",
@@ -46,8 +41,8 @@ function Abm_Categorias(props) {
                     fila={fila}
                     api={api}
                     recargar={props.recargarComponentes}
-                    showEditar={true}
-                    showToggle={() => true} // en Categorías sí mostramos Switch
+                    showEditar={false} // Los tipos de pago no se pueden modificar
+                    showToggle={() => false} // Los tipos de pago no tienen activo/inactivo
                     campos={Campos}
                 />
             ),
@@ -81,7 +76,7 @@ function Abm_Categorias(props) {
                 )}
                 renderFiltros={() => (
                     <Filtros
-                        filas={props.datos_categorias || []}
+                        filas={props.datos_tipo_pagos || []}
                         columnas={columnas}
                         configuracionFiltros={{
                             nombre: { tipo: 'text' }
@@ -94,4 +89,5 @@ function Abm_Categorias(props) {
     );
 }
 
-export default Abm_Categorias;
+export default Abm_TipoPago;
+

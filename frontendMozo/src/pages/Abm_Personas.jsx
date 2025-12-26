@@ -3,6 +3,8 @@ import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
+import Ordenar from "../components/Ordenar/Ordenar";
+import Filtros from "../components/Filtros/Filtros";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -16,6 +18,8 @@ import { Campos, inicializarCampos } from "../configs/agregar/Personas"
 
 function Abm_Personas(props) {
     const [campos, setCampos] = useState(Campos);
+    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_personas || []);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_personas || []);
 
     // Inicializar campos solo cuando el componente se monte y haya token
     useEffect(() => {
@@ -25,6 +29,17 @@ function Abm_Personas(props) {
             });
         }
     }, []);
+
+    // Actualizar filas filtradas cuando cambien los datos originales
+    React.useEffect(() => {
+        setFilasFiltradas(props.datos_personas || []);
+        setFilasOrdenadas(props.datos_personas || []);
+    }, [props.datos_personas]);
+
+    // Actualizar filas ordenadas cuando cambien las filas filtradas
+    React.useEffect(() => {
+        setFilasOrdenadas(filasFiltradas);
+    }, [filasFiltradas]);
 
     const api = {
         crear: RegistrarPersona,
@@ -62,7 +77,7 @@ function Abm_Personas(props) {
         <Container>
             <Tabla
                 titulo={props.titulo}
-                filas={props.datos_personas}
+                filas={filasOrdenadas}
                 columnas={columnas}
                 onRefresh={props.recargarComponentes}
                 renderAgregar={() => (
@@ -74,6 +89,36 @@ function Abm_Personas(props) {
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>
+                )}
+                renderOrdenar={() => (
+                    <Ordenar
+                        filas={filasFiltradas}
+                        opcionesOrdenamiento={[
+                            { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
+                            { label: 'Apellido', campo: 'apellido', tipoOrden: 'texto' },
+                            { label: 'DNI', campo: 'dni', tipoOrden: 'numero' },
+                            { label: 'Rol', campo: 'rolNombre', tipoOrden: 'texto' }
+                        ]}
+                        onOrdenar={setFilasOrdenadas}
+                    />
+                )}
+                renderFiltros={() => (
+                    <Filtros
+                        filas={props.datos_personas || []}
+                        columnas={columnas}
+                        configuracionFiltros={{
+                            nombre: { tipo: 'text' },
+                            apellido: { tipo: 'text' },
+                            dni: { tipo: 'text' },
+                            direccion: { tipo: 'text' },
+                            telefono: { tipo: 'text' },
+                            rolNombre: { 
+                                tipo: 'select',
+                                opciones: props.datos_select ? props.datos_select.map(rol => ({ id: rol.id, nombre: rol.nombre })) : []
+                            }
+                        }}
+                        onFiltrar={setFilasFiltradas}
+                    />
                 )}
             />
         </Container>

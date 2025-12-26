@@ -113,45 +113,54 @@ function defaultRender(row, col) {
 
 export default function Tabla(props) {
     return (
-        <Card variant="outlined" sx={{ mt: 2 }}>
-            <CardHeader
-                title={
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            width: '100%'
-                        }}
-                    >
-                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
-                            {typeof props.renderAgregar === "function" ? props.renderAgregar() : null}
+        <Box sx={{ mt: 2 }}>
+            {(typeof props.renderOrdenar === "function" || typeof props.renderFiltros === "function") && (
+                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                    {typeof props.renderFiltros === "function" && (
+                        <Box sx={{ flex: 1, minWidth: 200 }}>
+                            {props.renderFiltros()}
                         </Box>
-                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                            <Typography variant="h5" component="h2" fontWeight={600}>
-                                {props.titulo}
-                            </Typography>
+                    )}
+                    {typeof props.renderOrdenar === "function" && (
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            {props.renderOrdenar()}
                         </Box>
-                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-                            {typeof props.onRefresh === "function" && (
-                                <Tooltip title="Recargar">
-                                    <IconButton onClick={props.onRefresh} size="small">
-                                        <RefreshIcon fontSize="small" />
-                                    </IconButton>
-                                </Tooltip>
-                            )}
-                        </Box>
-                    </Box>
-                }
-                sx={{ pb: 1 }}
-            />
-            <Divider />
-            {typeof props.renderFiltros === "function" && (
-                <Box sx={{ px: 2, py: 2 }}>
-                    {props.renderFiltros()}
+                    )}
                 </Box>
             )}
-            {typeof props.renderFiltros === "function" && <Divider />}
+            <Card variant="outlined">
+                <CardHeader
+                    title={
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                width: '100%'
+                            }}
+                        >
+                            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
+                                {typeof props.renderAgregar === "function" ? props.renderAgregar() : null}
+                            </Box>
+                            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                                <Typography variant="h5" component="h2" fontWeight={600}>
+                                    {props.titulo}
+                                </Typography>
+                            </Box>
+                            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                                {typeof props.onRefresh === "function" && (
+                                    <Tooltip title="Recargar">
+                                        <IconButton onClick={props.onRefresh} size="small">
+                                            <RefreshIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                            </Box>
+                        </Box>
+                    }
+                    sx={{ pb: 1 }}
+                />
+                <Divider />
             <CardContent sx={{ p: 0 }}>
                 <TableContainer
                     sx={{
@@ -197,6 +206,7 @@ export default function Tabla(props) {
                     </Table>
                 </TableContainer>
             </CardContent>
-        </Card>
+            </Card>
+        </Box>
     );
 }
