@@ -70,7 +70,7 @@ function Modal_Editar(props) {
             <IconButton
                 color="primary"
                 onClick={handleShow}
-                disabled={!props.disabled}
+                disabled={props.disabled}
                 size="small"
             >
                 <EditIcon fontSize="small" />
