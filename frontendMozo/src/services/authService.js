@@ -29,6 +29,18 @@ export const authService = {
             console.error("Error en login de empresa/sucursal:", error);
             throw error;
         }
+    },
+
+    // Función helper para obtener los headers de autorización y tenant
+    getAuthHeaders: () => {
+        const token = localStorage.getItem('token');
+        const tenantId = localStorage.getItem('tenantId');
+        return {
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'X-Tenant-ID': tenantId || ''
+            }
+        };
     }
 };
 

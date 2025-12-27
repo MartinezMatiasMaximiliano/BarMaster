@@ -1,21 +1,11 @@
 import axios from 'axios'
-const BASE_URL = import.meta.env.VITE_BASE_URL + "TipoPagos"
+import { authService } from '../services/authService'
 
-// Función helper para obtener los headers de autorización y tenant
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    const tenantId = localStorage.getItem('tenantId');
-    return {
-        headers: {
-            Authorization: 'Bearer ' + token,
-            'X-Tenant-ID': tenantId || ''
-        }
-    };
-}
+const BASE_URL = import.meta.env.VITE_BASE_URL + "TipoPagos"
 
 export async function BuscarTodosLosTipoPagos() {
     try {
-        const response = await axios.get(BASE_URL, getAuthHeaders());
+        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -29,7 +19,7 @@ export async function CrearTipoPago(datos) {
         const nombre = datos.nombre || datos; // Por si acaso viene directamente el string
         const response = await axios.post(BASE_URL, nombre, {
             headers: {
-                ...getAuthHeaders().headers,
+                ...authService.getAuthHeaders().headers,
                 'Content-Type': 'application/json'
             }
         });
@@ -47,7 +37,7 @@ export async function CrearTipoPago(datos) {
 
 export async function BuscarUnTipoPago(Id) {
     try {
-        const response = await axios.get(`${BASE_URL}/${Id}`, getAuthHeaders());
+        const response = await axios.get(`${BASE_URL}/${Id}`, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response;
@@ -60,7 +50,7 @@ export async function ModificarTipoPago(datos) {
         const nombre = datos.nombre || datos; // Por si acaso viene directamente el string
         const response = await axios.put(`${BASE_URL}/${datos.id}`, nombre, {
             headers: {
-                ...getAuthHeaders().headers,
+                ...authService.getAuthHeaders().headers,
                 'Content-Type': 'application/json'
             }
         });
@@ -79,7 +69,7 @@ export async function ModificarTipoPago(datos) {
 export async function BorrarTipoPago(Id, Token) {
     // Token se mantiene como parámetro para compatibilidad, pero se obtiene de localStorage
     try {
-        const response = await axios.delete(`${BASE_URL}/${Id}`, getAuthHeaders());
+        const response = await axios.delete(`${BASE_URL}/${Id}`, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {

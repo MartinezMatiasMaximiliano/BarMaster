@@ -39,6 +39,7 @@ import WorkOutlineOutlinedIcon from '@mui/icons-material/WorkOutlineOutlined';
 import KitchenIcon from '@mui/icons-material/Kitchen';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
+import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 
 const menuConfig = {
     Encargado: {
@@ -48,6 +49,7 @@ const menuConfig = {
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_personas", label: "Personas", icon: GroupOutlinedIcon },
             { path: "/abm_tipo_pago", label: "Tipos de Pago", icon: PaymentOutlinedIcon },
+            { path: "/abm_planos", label: "Planos", icon: MapOutlinedIcon },
             { path: "/lista_mozos", label: "Listado de Mozos", icon: ChecklistOutlinedIcon },
         ],
         "Operaciones": [
@@ -79,6 +81,7 @@ const menuConfig = {
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_pago", label: "Tipos de Pago", icon: PaymentOutlinedIcon },
+            { path: "/abm_planos", label: "Planos", icon: MapOutlinedIcon },
             { path: "/lista_mozos", label: "Listado de Mozos", icon: ChecklistOutlinedIcon },
         ],
         "Operaciones": [

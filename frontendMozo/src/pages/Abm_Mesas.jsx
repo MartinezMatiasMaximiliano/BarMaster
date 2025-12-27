@@ -12,19 +12,32 @@ import {
     ModificarMesa,
     BorrarMesa,
 } from "../API/APIMesas";
-import { Campos as Campos_Agregar } from "../configs/agregar/Mesas"
+import { Campos as Campos_Agregar, inicializarCampos as inicializarCamposAgregar } from "../configs/agregar/Mesas"
 import { Campos as Campos_Editar, inicializarCampos } from "../configs/modificar/Mesas"
+import { BuscarTodosLosPlanos } from "../API/APIPlanos";
 
 function Abm_Mesas(props) {
     const [camposEditar, setCamposEditar] = useState(Campos_Editar);
+    const [camposAgregar, setCamposAgregar] = useState(Campos_Agregar);
+    const [opcionesPlanos, setOpcionesPlanos] = useState([]);
     const [filasFiltradas, setFilasFiltradas] = useState(props.datos_mesas || []);
     const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_mesas || []);
 
-    // Inicializar campos solo cuando el componente se monte y haya token
+    // Inicializar campos y planos solo cuando el componente se monte y haya token
     useEffect(() => {
         if (localStorage.getItem('token')) {
-            inicializarCampos().then(campos => {
-                setCamposEditar(campos);
+            // Cargar campos de edición y agregar en paralelo
+            Promise.all([
+                inicializarCampos(),
+                inicializarCamposAgregar(),
+                BuscarTodosLosPlanos()
+            ]).then(([camposEdit, camposAdd, planosData]) => {
+                setCamposEditar(camposEdit);
+                setCamposAgregar(camposAdd);
+                
+                // Preparar opciones de planos para el filtro
+                const opciones = (planosData || []).map(p => ({ id: p.id, nombre: p.nombre }));
+                setOpcionesPlanos(opciones);
             });
         }
     }, []);
@@ -49,6 +62,7 @@ function Abm_Mesas(props) {
     const columnas = [
         { key: "numero", label: "Número de Mesa", align: "right" },
         { key: "codigoParaPedir", label: "Código", align: "right" },
+        { key: "nombrePlano", label: "Plano", align: "right" },
         { key: "nombreMozo", label: "Mozo", align: "right" },
         {
             key: "__acciones",
@@ -77,9 +91,9 @@ function Abm_Mesas(props) {
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
-                        columnas={["Número de Mesa", "Código", "Mozo"]}
+                        columnas={["Número de Mesa", "Código", "Plano", "Mozo"]}
                         agregar={api.crear}
-                        campos={Campos_Agregar}
+                        campos={camposAgregar}
                     >
                         <FontAwesomeIcon icon={faSquarePlus} />
                     </Modal_Agregar>
@@ -90,6 +104,7 @@ function Abm_Mesas(props) {
                         opcionesOrdenamiento={[
                             { label: 'Número de Mesa', campo: 'numero', tipoOrden: 'numero' },
                             { label: 'Código', campo: 'codigoParaPedir', tipoOrden: 'texto' },
+                            { label: 'Plano', campo: 'nombrePlano', tipoOrden: 'texto' },
                             { label: 'Mozo', campo: 'nombreMozo', tipoOrden: 'texto' }
                         ]}
                         onOrdenar={setFilasOrdenadas}
@@ -102,6 +117,10 @@ function Abm_Mesas(props) {
                         configuracionFiltros={{
                             numero: { tipo: 'number' },
                             codigoParaPedir: { tipo: 'text' },
+                            nombrePlano: { 
+                                tipo: 'select', 
+                                opciones: opcionesPlanos
+                            },
                             nombreMozo: { tipo: 'text' }
                         }}
                         onFiltrar={setFilasFiltradas}

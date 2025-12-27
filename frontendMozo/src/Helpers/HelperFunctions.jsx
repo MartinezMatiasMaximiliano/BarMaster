@@ -159,6 +159,18 @@ export function MappearMesas(mesas) {
             codigoParaPedir: mesa.codigoParaPedir,
             nombreMozo: mesa.persona == null ? "Sin Mozo" : mesa.persona.nombres + ' ' + mesa.persona.apellido,
             idMozo: mesa.persona == null ? '' : mesa.persona.id,
+            idPlano: mesa.plano?.id || mesa.idPlano || null,
+            nombrePlano: mesa.plano?.nombre || null,
+        }))
+    )
+}
+
+export function MappearPlanos(planos) {
+    return (
+        planos.map(plano => ({
+            id: plano.id,
+            nombre: plano.nombre,
+            detalles: plano.detalles,
         }))
     )
 }

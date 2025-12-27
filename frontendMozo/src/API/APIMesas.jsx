@@ -1,33 +1,44 @@
 import axios from 'axios'
-const BASE_URL = import.meta.env.VITE_BASE_URL + "Mesas/"
+import { authService } from '../services/authService'
+
+const BASE_URL = import.meta.env.VITE_BASE_URL + "Mesa/"
 
 class CrearMesaDTO {
-    constructor(numeroMesa) {
-        this.numeroMesa = numeroMesa;
-    }
-}
-
-export async function BuscarTodasLasMesas() {
-    try {
-        const response = await axios.get(BASE_URL);
-        return response.data;
-    } catch (error) {
-        return error.response.data
+    constructor(nombre, idPlano, capacidad = 0, x = 0, y = 0, w = 0, h = 0) {
+        this.Nombre = nombre;
+        this.IdPlano = idPlano || null;
+        this.Capacidad = capacidad;
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
     }
 }
 
 export async function CrearMesa(datos) {
     try {
-        const response = await axios.post(BASE_URL, new CrearMesaDTO(datos.numero));
+        console.log("DATOS", datos);
+        const response = await axios.post(
+            BASE_URL, 
+            new CrearMesaDTO(datos.numero, datos.idPlano), 
+            authService.getAuthHeaders()
+        );
         return response.data;
     } catch (error) {
-        alert(error.response.data.error.mensaje)
+        if (error.response?.data?.error?.mensaje) {
+            alert(error.response.data.error.mensaje);
+        } else if (error.response?.data) {
+            alert(error.response.data);
+        } else {
+            alert("Error al crear la mesa");
+        }
+        return error.response;
     }
 }
 
 export async function AbrirMesa(Id, codigoMozo) {
     try {
-        const response = await axios.put(`${BASE_URL}${Id}/Abrir?codigoMozo=${codigoMozo}` );
+        const response = await axios.put(`${BASE_URL}${Id}/Abrir?codigoMozo=${codigoMozo}`, {}, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -36,7 +47,7 @@ export async function AbrirMesa(Id, codigoMozo) {
 
 export async function CerrarMesa(Id) {
     try {
-        const response = await axios.put(`${BASE_URL}${Id}/Cerrar?codigoMozo=null`);
+        const response = await axios.put(`${BASE_URL}${Id}/Cerrar?codigoMozo=null`, {}, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -45,7 +56,7 @@ export async function CerrarMesa(Id) {
 
 export async function ModificarMesa(datos) {
     try {
-        const response = await axios.put(BASE_URL + datos.id, { MozoId: datos.idMozo});
+        const response = await axios.put(BASE_URL + datos.id, { MozoId: datos.idMozo}, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -63,7 +74,7 @@ export async function ModificarMesa(datos) {
 
 export async function PonerMozoEnNull(MesaId) {
     try {
-        const response = await axios.put(BASE_URL + MesaId, { MozoId: -1 });
+        const response = await axios.put(BASE_URL + MesaId, { MozoId: -1 }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -72,7 +83,7 @@ export async function PonerMozoEnNull(MesaId) {
 
 export async function DesactivarMesa(Id) {
     try {
-        const response = await axios.put(BASE_URL + Id, { activo: false });
+        const response = await axios.put(BASE_URL + Id, { activo: false }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -81,7 +92,7 @@ export async function DesactivarMesa(Id) {
 
 export async function ActivarMesa(Id) {
     try {
-        const response = await axios.put(BASE_URL + Id, { activo: true });
+        const response = await axios.put(BASE_URL + Id, { activo: true }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -89,11 +100,10 @@ export async function ActivarMesa(Id) {
 }
 
 
-export async function BorrarMesa(IdMesa, token) {
+export async function BorrarMesa(IdMesa, Token) {
+    // Token se mantiene como parámetro para compatibilidad, pero se obtiene de localStorage
     try {
-        const response = await axios.delete(BASE_URL + IdMesa,{
-            headers: {
-                Authorization: 'Bearer ' + token} })
+        const response = await axios.delete(BASE_URL + IdMesa, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);

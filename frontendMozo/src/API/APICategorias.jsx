@@ -1,21 +1,11 @@
 import axios from 'axios'
-const BASE_URL = import.meta.env.VITE_BASE_URL + "Categorias"
+import { authService } from '../services/authService'
 
-// Función helper para obtener los headers de autorización y tenant
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    const tenantId = localStorage.getItem('tenantId');
-    return {
-        headers: {
-            Authorization: 'Bearer ' + token,
-            'X-Tenant-ID': tenantId || ''
-        }
-    };
-}
+const BASE_URL = import.meta.env.VITE_BASE_URL + "Categorias"
 
 export async function BuscarTodasLasCategorias() {
     try {
-        const response = await axios.get(BASE_URL, getAuthHeaders());
+        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -28,7 +18,7 @@ export async function CrearCategoria(datos) {
         const response = await axios.post(BASE_URL, { 
             Nombre: datos.nombre, 
             Activo: true 
-        }, getAuthHeaders());
+        }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {
@@ -43,7 +33,7 @@ export async function CrearCategoria(datos) {
 
 export async function BuscarUnaCategoria(Id) {
     try {
-        const response = await axios.get(`${BASE_URL}/${Id}`, getAuthHeaders());
+        const response = await axios.get(`${BASE_URL}/${Id}`, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response;
@@ -61,7 +51,7 @@ export async function ModificarCategoria(datos) {
             body.Activo = datos.activo;
         }
         
-        const response = await axios.put(`${BASE_URL}/${datos.id}`, body, getAuthHeaders());
+        const response = await axios.put(`${BASE_URL}/${datos.id}`, body, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {
@@ -78,7 +68,7 @@ export async function ActivarCategoria(Id) {
     try {
         const response = await axios.put(`${BASE_URL}/${Id}`, { 
             Activo: true 
-        }, getAuthHeaders());
+        }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {
@@ -95,7 +85,7 @@ export async function DesactivarCategoria(Id) {
     try {
         const response = await axios.put(`${BASE_URL}/${Id}`, { 
             Activo: false 
-        }, getAuthHeaders());
+        }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {
@@ -111,7 +101,7 @@ export async function DesactivarCategoria(Id) {
 export async function BorrarCategoria(Id, Token) {
     // Token se mantiene como parámetro para compatibilidad, pero se obtiene de localStorage
     try {
-        const response = await axios.delete(`${BASE_URL}/${Id}`, getAuthHeaders());
+        const response = await axios.delete(`${BASE_URL}/${Id}`, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {

@@ -2,7 +2,7 @@ import './styles/App.css'
 import React, { useState, useEffect, createContext } from 'react'
 import { Route, Routes, useLocation, Navigate } from "react-router-dom"
 import { Box } from '@mui/material'
-import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos, MappearReservas } from './Helpers/HelperFunctions'
+import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos, MappearReservas, MappearPlanos } from './Helpers/HelperFunctions'
 import useSignalR from './hooks/useSignalR'
 import Navbar from "./components/NavBar/NavBar";
 import Index from './pages/Index/Index';
@@ -19,6 +19,7 @@ import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery from './pages/Delivery'
 import TakeAway from './pages/TakeAway'
 import Abm_Reservas from './pages/Abm_Reservas'
+import Abm_Planos from './pages/Abm_Planos'
 import Caja from './pages/Caja/Caja'
 import KDS from './pages/KDS/KDS'
 import Mi_Plan from './pages/Mi_Plan'
@@ -35,7 +36,6 @@ import DetalleSucursal from './pages/Detalle_Sucursal'
 import LoginUsuarios from './pages/Login_Usuarios';
 import LoginEmpresaSucursal from './pages/Login_Empresa_Sucursal';
 import { PostItems } from './API/APIPedidos';
-import { BuscarTodasLasMesas } from './API/APIMesas';
 import { BuscarTodosLosProductos } from './API/APIProductos';
 import { BuscarTodasLasCategorias } from './API/APICategorias';
 import { BuscarTodosLosMozos } from './API/APIPersonas'
@@ -44,6 +44,7 @@ import { BuscarTodosLosRoles } from './API/APIRoles'
 import { BuscarTodosLosPedidos, BuscarUnPedido } from './API/APIPedidos'
 import { BuscarTodasLasReservas } from './API/APIReservas'
 import { BuscarTodosLosTipoPagos } from './API/APITipoPagos'
+import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { CambiarEstadoItems } from './API/APIItems'
 import { useSelector, useDispatch } from 'react-redux'
 import { agregarItems as agregarItemsAPedidoActivo, crear as crearPedidosActivos, cambiarEstadoItems } from './redux/slices/pedidosActivosSlice'
@@ -88,6 +89,7 @@ function App() {
     const [pedidos, SetPedidos] = useState([])
     const [reservas, SetReservas] = useState([])
     const [tipoPagos, SetTipoPagos] = useState([])
+    const [planos, SetPlanos] = useState([])
 
     // Cada vez que se hace un navigate('/?algo'), se ejecuta este useEffect recargando los componentes
     // Es mucho más rápido que usar window.location.reload() al abrir/cerrar mesa
@@ -95,9 +97,6 @@ function App() {
     useEffect(() => {
         if (location.pathname === '/sistema_sucursal') {
             if (localStorage.getItem('token')) {
-                BuscarTodasLasMesas()
-                    .then(data => SetMesas(Array.isArray(data) ? data : []))
-                    .catch(() => SetMesas([]));
                 BuscarTodosLosMozos()
                     .then(data => SetMozos(Array.isArray(data) ? data : []))
                     .catch(() => SetMozos([]));
@@ -122,6 +121,9 @@ function App() {
                 BuscarTodosLosTipoPagos()
                     .then(data => SetTipoPagos(Array.isArray(data) ? data : []))
                     .catch(() => SetTipoPagos([]));
+                BuscarTodosLosPlanos()
+                    .then(data => SetPlanos(Array.isArray(data) ? data : []))
+                    .catch(() => SetPlanos([]));
             } else {
                 // Si no hay sucursal activa, limpiar datos
                 SetMesas([]);
@@ -133,6 +135,7 @@ function App() {
                 SetCategorias([]);
                 SetReservas([]);
                 SetTipoPagos([]);
+                SetPlanos([]);
             }
         }
         
@@ -184,6 +187,10 @@ function App() {
         await BuscarTodosLosTipoPagos().then(data => SetTipoPagos(data));
     }
 
+    async function recargarPlanos() {
+        await BuscarTodosLosPlanos().then(data => SetPlanos(data));
+    }
+
     async function pagarTotal(IdPedido) {
 
         const pedido = await BuscarUnPedido(IdPedido);
@@ -232,9 +239,7 @@ function App() {
     const Notificaciones = MappearNotificaciones(notificaciones || [])
     const datos_pedidos = MappearPedidos(pedidos || [])
     const datos_reservas = MappearReservas(reservas || [])
-
-    console.log("DATOS RESERVAS: ", reservas)
-    console.log("DATOS RESERVAS MAP: ", datos_reservas)
+    const datos_planos_abm = MappearPlanos(planos || [])
 
     // Si no está logeado, mostrar SOLO el login, sin ningún layout adicional
     if (!logeadoEmpresaSucursal) {
@@ -304,6 +309,7 @@ function App() {
                             <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
                             <Route path="/abm_tipo_pago" element={<Control_Login><Abm_TipoPago recargarComponentes={recargarTipoPagos} datos_tipo_pagos={tipoPagos} titulo="Tipos de Pago" /></Control_Login>} />
                             <Route path="/reservas" element={<Control_Login><Abm_Reservas recargarComponentes={recargarReservas} datos_reservas={datos_reservas} titulo="Reservas" /></Control_Login>} />
+                            <Route path="/abm_planos" element={<Control_Login><Abm_Planos recargarComponentes={recargarPlanos} datos_planos={datos_planos_abm} titulo="Planos" /></Control_Login>} />
                             <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
                             <Route path="/reportes" element={<Control_Login><Reportes /></Control_Login>} />
                             <Route path="/reporte_ventas" element={<Control_Login><ReporteVentas /></Control_Login>} />

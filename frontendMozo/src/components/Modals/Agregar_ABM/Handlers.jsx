@@ -7,6 +7,11 @@ export default function Handlers({ agregar, recargarComponentes, handleClose }) 
 
   const fieldHandlers = {
     select_multiple: (event) => event.target.value,
+    select: (event) => {
+      // Convertir cadena vacía a null para campos opcionales como idPlano
+      const value = event.target.value;
+      return value === '' ? null : value;
+    },
     image: (event) => event.target.files[0],
     "datetime-local": (event) => {
       const value = event.target.value;
@@ -28,6 +33,7 @@ export default function Handlers({ agregar, recargarComponentes, handleClose }) 
 
   const handleSave = async () => {
     if (Object.keys(errors).length === 0) {
+      console.log("VALUES", values);
       await agregar(values);
       handleClose();
       await recargarComponentes();

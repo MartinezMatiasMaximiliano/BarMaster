@@ -6,11 +6,17 @@ import FormControl from '@mui/material/FormControl';
 import Select_ from '@mui/material/Select';
 
 export default function Select(props) {
-    const [value, setValue] = React.useState(props.datoActual ? props.datoActual : '');
+    // Manejar valor inicial: si es null, undefined o vacío, usar cadena vacía
+    const valorInicial = props.datoActual !== null && props.datoActual !== undefined && props.datoActual !== '' 
+        ? props.datoActual 
+        : '';
+    const [value, setValue] = React.useState(valorInicial);
 
     const handleChange = (event) => {
-        setValue(event.target.value);
-        props.handleChange(event, props.campo.name);
+        const nuevoValor = event.target.value;
+        setValue(nuevoValor);
+        // Pasar el tipo 'select' para que el handler lo procese correctamente
+        props.handleChange(event, props.campo.name, 'select');
     };
 
     return (
@@ -22,7 +28,7 @@ export default function Select(props) {
                     onChange={handleChange}
                 >
                     {props.campo.options.map((dato, i) => (
-                        <MenuItem key={i} value={dato.id}>
+                        <MenuItem key={i} value={dato.id === null ? '' : dato.id}>
                             {dato.nombre}
                         </MenuItem>
                     ))}

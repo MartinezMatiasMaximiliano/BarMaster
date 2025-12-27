@@ -1,21 +1,11 @@
 import axios from 'axios'
-const BASE_URL = import.meta.env.VITE_BASE_URL + "Reservas"
+import { authService } from '../services/authService'
 
-// Función helper para obtener los headers de autorización y tenant
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    const tenantId = localStorage.getItem('tenantId');
-    return {
-        headers: {
-            Authorization: 'Bearer ' + token,
-            'X-Tenant-ID': tenantId || ''
-        }
-    };
-}
+const BASE_URL = import.meta.env.VITE_BASE_URL + "Reservas"
 
 export async function BuscarTodasLasReservas() {
     try {
-        const response = await axios.get(BASE_URL, getAuthHeaders());
+        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -25,7 +15,7 @@ export async function BuscarTodasLasReservas() {
 
 export async function BuscarUnaReserva(Id) {
     try {
-        const response = await axios.get(`${BASE_URL}/${Id}`, getAuthHeaders());
+        const response = await axios.get(`${BASE_URL}/${Id}`, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response;
@@ -33,9 +23,8 @@ export async function BuscarUnaReserva(Id) {
 }
 
 export async function CrearReserva(datos) {
-    const headers = getAuthHeaders();
     try {
-        const response = await axios.post(BASE_URL, datos, getAuthHeaders());
+        const response = await axios.post(BASE_URL, datos, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response;
@@ -44,7 +33,7 @@ export async function CrearReserva(datos) {
 
 export async function ModificarReserva(datos) {
     try {        
-        const response = await axios.put(BASE_URL, datos, getAuthHeaders());
+        const response = await axios.put(BASE_URL, datos, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {
@@ -60,7 +49,7 @@ export async function ModificarReserva(datos) {
 export async function BorrarReserva(Id) {
     console.log("ID EN API: ", Id)
     try {
-        const response = await axios.delete(`${BASE_URL}?Id=${Id}`, getAuthHeaders());
+        const response = await axios.delete(`${BASE_URL}?Id=${Id}`, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {
