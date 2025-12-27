@@ -24,7 +24,7 @@ namespace BackEndAPI.Controllers
                 
                 if (result == null)
                 {
-                    return Unauthorized("Usuario o contraseña incorrectos");
+                    throw new Exception("Usuario o contraseña incorrectos");
                 }   
 
                 return Ok(result);

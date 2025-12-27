@@ -41,31 +41,31 @@ public class AuthServices : IAuthServices
 
     public async Task<JWTToken> Authenticate(LoginDTO loginDTO)
     {
-        string Username;
-        string? nombreSucursal = null;
+        string EmpresaUsername;
+        string? SucursalUsername = null;
 
         var atIndex = loginDTO.Username.IndexOf('@');
 
         if (atIndex >= 0)
         {
-            Username = loginDTO.Username.Substring(0, atIndex);
-            nombreSucursal = loginDTO.Username.Substring(atIndex + 1);
+            EmpresaUsername = loginDTO.Username.Substring(0, atIndex);
+            SucursalUsername = loginDTO.Username.Substring(atIndex + 1);
         }
         else
         {
-            Username = loginDTO.Username;
+            EmpresaUsername = loginDTO.Username;
         }
 
-        var tenant = await _tenantServices.BuscarTenantPorNombreEmpresa(Username);
+        var tenant = await _tenantServices.BuscarTenantPorNombreEmpresa(EmpresaUsername);
         if (tenant == null)
             throw new Exception("usuario no encontrado");
 
-        var empresa = await _empresasRepository.GetEmpresaByUsername(Username);
+        var empresa = await _empresasRepository.GetEmpresaByUsername(EmpresaUsername);
         if (empresa == null)
             throw new Exception("usuario no encontrado");
 
         // LOGIN EMPRESA
-        if (string.IsNullOrEmpty(nombreSucursal))
+        if (string.IsNullOrEmpty(SucursalUsername))
         {
             if (!_passwordService.VerificarPasswordHash(loginDTO.Password,empresa.PasswordHash,empresa.PasswordSalt)) throw new Exception("usuario no encontrado");
 
@@ -73,7 +73,7 @@ public class AuthServices : IAuthServices
         }
 
         // LOGIN SUCURSAL
-        var sucursal = empresa.Sucursales.FirstOrDefault(s =>s.Nombre.Equals(nombreSucursal, StringComparison.OrdinalIgnoreCase));
+        var sucursal = empresa.Sucursales.FirstOrDefault(s =>s.Username == SucursalUsername);
 
         if (sucursal == null) throw new Exception("usuario no encontrado");
 

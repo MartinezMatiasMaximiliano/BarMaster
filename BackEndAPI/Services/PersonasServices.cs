@@ -50,7 +50,7 @@ namespace BackEndAPI.Services
             {
                 PINUnico = Helpers.CrearPINServicio();
             }
-            while (await _personasRepository.EsCodigoUnico(PINUnico));
+            while (!await _personasRepository.EsCodigoUnico(PINUnico));
 
             usuario.CodigoDeServicio = PINUnico;
             await _personasRepository.CrearPersona(usuario);
