@@ -10,7 +10,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<Empresa?> GetEmpresaById(Guid id);
         Task<Empresa?> GetEmpresaByNombre(string nombre);
         Task<Empresa> AddEmpresa(CrearEmpresaDTO empresa);
-        Task<bool> ModificarEmpresa(Guid id,ModificarEmpresaDTO empresa);
+        Task<bool> ModificarEmpresa(ModificarEmpresaDTO empresa);
         Task DeleteEmpresa(Guid id);
     }
 }

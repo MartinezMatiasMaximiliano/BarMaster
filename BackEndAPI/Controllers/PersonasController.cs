@@ -24,12 +24,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var IdEmpresa = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa")!.Value) : Guid.Empty;
-                if (IdEmpresa == Guid.Empty)
-                {
-                    throw new Exception("Empresa no identificada");
-                }
-                var listaPersonas = await _personasServices.BuscarListaPersonasPorEmpresaId(IdEmpresa);
+                var listaPersonas = await _personasServices.BuscarTodasLasPersonas();
 
                 var response = listaPersonas.Select(persona => new PersonaDTO
                 {

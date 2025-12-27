@@ -31,6 +31,7 @@ namespace BackEndAPI.Services
             {
                 IdRol = nuevaPersona.IdRol,
                 IdEmpresa = IdEmpresa,
+                IdSucursal = null,
                 Nombres = nuevaPersona.Nombres,
                 Apellido = nuevaPersona.Apellido,
                 Dni = nuevaPersona.Dni,
@@ -73,9 +74,9 @@ namespace BackEndAPI.Services
             }
             return busqueda;
         }
-        public async Task<List<Persona>> BuscarListaPersonasPorEmpresaId(Guid IdEmpresa)
+        public async Task<ICollection<Persona>> BuscarTodasLasPersonas()
         {
-            var busqueda = await _personasRepository.GetListaPersonasByEmpresaId(IdEmpresa);
+            var busqueda = await _personasRepository.GetAllPersonas();
             if (busqueda == null || busqueda.Count == 0)
             {
                 throw new Exception("No se encontraron personas para la empresa proporcionada.");

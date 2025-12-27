@@ -34,10 +34,15 @@ namespace BackEndAPI.Repositories
         {
             return await db.Personas.Include(p => p.Rol).FirstOrDefaultAsync(p => p.CodigoDeServicio == CodigoDeServicio);
         }
-        public async Task<List<Persona>> GetListaPersonasByEmpresaId(Guid IdEmpresa)
+        public async Task<ICollection<Persona>> GetAllPersonas()
         {
-            return await db.Personas.Include(p => p.Rol).ToListAsync();
-            
+            return await db.Personas.Include(p => p.Rol).ToListAsync(); 
+        }
+
+        public async Task<List<Persona>> GetListaPersonasPorIdSucursal(Guid IdSucursal)
+        {
+           // return await db.Personas.Include(p => p.Rol).Where(p => p.IdSucursal == Guid.TryParse(IdSucursal));
+           throw new NotImplementedException();
         }
         public async Task<Persona?> ActualizarPersona(Persona personaActualizada)
         {

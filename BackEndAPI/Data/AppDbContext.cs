@@ -41,35 +41,29 @@ namespace BackEndAPI.Data
         {
 
             modelBuilder.Entity<TipoPago>().HasData(
-        new TipoPago { Id = 1, Nombre = "Efectivo" },
-        new TipoPago { Id = 2, Nombre = "Tarjeta de Crédito" },
-        new TipoPago { Id = 3, Nombre = "Tarjeta de Débito" },
-        new TipoPago { Id = 4, Nombre = "Transferencia Bancaria" }
-    );
+                new TipoPago { Id = 1, Nombre = "Efectivo" },
+                new TipoPago { Id = 2, Nombre = "Tarjeta de Crédito" },
+                new TipoPago { Id = 3, Nombre = "Tarjeta de Débito" },
+                new TipoPago { Id = 4, Nombre = "Transferencia Bancaria" }
+            );
 
             modelBuilder.Entity<Rol>().HasData(
-                    new Rol { Id = 1, Nombre = "Admin" },
-                    new Rol { Id = 2, Nombre = "Empleado" }
-                );
+                new Rol { Id = 1, Nombre = "Admin" },
+                new Rol { Id = 2, Nombre = "Empleado" }
+            );
 
             modelBuilder.Entity<EstadoReserva>().HasData(
-                    new EstadoReserva { Id = 1, Nombre = "Pendiente" },
-                    new EstadoReserva { Id = 2, Nombre = "Confirmada" },
-                    new EstadoReserva { Id = 3, Nombre = "Cancelada" },
-                    new EstadoReserva { Id = 4, Nombre = "Completada" }
-                );
+               new EstadoReserva { Id = 1, Nombre = "Pendiente" },
+               new EstadoReserva { Id = 2, Nombre = "Confirmada" },
+               new EstadoReserva { Id = 3, Nombre = "Cancelada" },
+               new EstadoReserva { Id = 4, Nombre = "Completada" }
+            );
+
 
             modelBuilder.Entity<Empresa>()
                 .HasOne(e => e.TipoSubscripcion)
                 .WithMany()
                 .HasForeignKey(e => e.IdTipoSubscripcion);
-
-            ////// Relacion Empresa 1:1 Persona (Propietario)
-            ////modelBuilder.Entity<Empresa>()
-            ////    .HasOne(e => e.Propietario)
-            ////    .WithOne()
-            ////    .HasForeignKey<Empresa>(e => e.IdPropietario)
-            ////    .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un propietario si tiene una empresa asociada
 
             // Relacion Empresa 1:N Persona (Empleados)
             modelBuilder.Entity<Empresa>()
@@ -78,13 +72,26 @@ namespace BackEndAPI.Data
                 .HasForeignKey(p => p.IdEmpresa)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una empresa, se borran sus empleados
 
+            modelBuilder.Entity<Empresa>()
+                .HasMany(s => s.Sucursales)
+                .WithOne(r => r.Empresa)
+                .HasForeignKey(r => r.IdEmpresa)
+                .OnDelete(DeleteBehavior.Cascade); // Si se borra una Empresa, se borran sus sucursales
 
-            // Relacion Sucursal N:1 Empresa
-            modelBuilder.Entity<Sucursal>()
-                .HasOne(s => s.Empresa)
-                .WithMany(e => e.Sucursales)
-                .HasForeignKey(s => s.IdEmpresa)
-                .OnDelete(DeleteBehavior.Cascade); // Si se borra una empresa, se borran sus sucursales
+            // Relacion Persona N:1 Rol
+            modelBuilder.Entity<Persona>()
+                .HasOne(p => p.Rol)
+                .WithMany()
+                .HasForeignKey(p => p.IdRol)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relacion Persona N:1 Rol
+            modelBuilder.Entity<Persona>()
+                .HasOne(p => p.Sucursal)
+                .WithMany()
+                .HasForeignKey(p => p.IdSucursal)
+                .OnDelete(DeleteBehavior.SetNull);
+
 
             // Relacion Sucursal 1:N Reserva
             modelBuilder.Entity<Sucursal>()
@@ -92,6 +99,8 @@ namespace BackEndAPI.Data
                 .WithOne(r => r.Sucursal)
                 .HasForeignKey(r => r.IdSucursal)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus reservas
+
+            
 
             modelBuilder.Entity<Reserva>()
                 .HasOne(r => r.Estado)
@@ -106,20 +115,13 @@ namespace BackEndAPI.Data
                 .HasForeignKey(r => r.IdSucursal)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus planos de mesas
 
-            // Relacion Persona N:1 Rol
-            modelBuilder.Entity<Persona>()
-                .HasOne(p => p.Rol)
-                .WithMany()
-                .HasForeignKey(p => p.IdRol)
-                .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un rol si tiene personas asociadas
-
             // Relacion Visita N:1 Caja
             modelBuilder.Entity<Visita>()
                 .HasOne(v => v.Caja)
                 .WithMany(c => c.Visitas)
                 .HasForeignKey(v => v.IdCaja)
                 .OnDelete(DeleteBehavior.SetNull); // si se borra una caja, se pone a null en la visita
-
+                                                   
             // Relacion Caja N:1 Sucursal
             modelBuilder.Entity<Caja>()
                 .HasOne(c => c.Sucursal)
@@ -159,7 +161,7 @@ namespace BackEndAPI.Data
                .HasOne(pv => pv.Visita)
                .WithMany()
                .HasForeignKey(pv => pv.IdVisita)
-               .OnDelete(DeleteBehavior.SetNull); 
+               .OnDelete(DeleteBehavior.SetNull);
 
 
             // Relacion TipoPago 1:N Pagos
@@ -169,7 +171,7 @@ namespace BackEndAPI.Data
                 .HasForeignKey(p => p.IdTipoPago)
                 .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un tipo de pago si tiene pagos asociados
 
-            
+
             modelBuilder.Entity<Pago>()
                 .HasOne(p => p.Visita)
                 .WithMany(v => v.Pagos)
@@ -221,7 +223,7 @@ namespace BackEndAPI.Data
 
             modelBuilder.Entity<Producto>()
                 .HasMany(p => p.Categorias)
-                .WithMany(c => c.Productos);              
+                .WithMany(c => c.Productos);
 
             base.OnModelCreating(modelBuilder);
 
