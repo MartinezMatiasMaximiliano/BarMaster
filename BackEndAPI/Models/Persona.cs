@@ -7,8 +7,9 @@ namespace BackEndAPI.Models
         public Guid Id { get; set; } = Guid.NewGuid();
         public int IdRol { get; set; }
         public Guid IdEmpresa { get; set; }
-        public string Nombres { get; set; } = string.Empty;
-        public string Apellido { get; set; } = string.Empty;
+        public Guid? IdSucursal { get; set; } = null;
+        public string Nombres { get; set; } = null!;
+        public string Apellido { get; set; } = null!;
         public string? Dni { get; set; } = string.Empty;
         public string? Direccion { get; set; } = string.Empty;
         public string? Telefono { get; set; } = string.Empty;
@@ -21,6 +22,7 @@ namespace BackEndAPI.Models
 
         //navegacion
         public Empresa Empresa { get; set; }
+        public Sucursal? Sucursal { get; set; }
         public Rol Rol { get; set; } = null!;
 
         public void EstablecerContrasena(byte[] hashContrasena, byte[] saltContrasena)

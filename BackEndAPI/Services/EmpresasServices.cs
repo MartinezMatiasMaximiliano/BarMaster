@@ -1,26 +1,22 @@
-﻿using BackEndAPI.Controllers;
-using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request;
+﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using BackEndAPI.Tenancy.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace BackEndAPI.Services
 {
     public class EmpresasServices : IEmpresasServices
     {
         private readonly IEmpresasRepository _empresasRepository;
-        private readonly ITenantProvisioner _tenantProvisioner;
-        private readonly ITenantProvider _tenantProvider;
+        private readonly ITenantServices _tenantServices;
         private readonly PasswordService _passwordService;
-        public EmpresasServices(IEmpresasRepository empresasRepository,ITenantProvisioner tenantProvisioner , ITenantProvider tenantProvider,PasswordService passwordService)
+        public EmpresasServices(IEmpresasRepository empresasRepository, ITenantServices tenantServices, PasswordService passwordService)
         {
             _empresasRepository = empresasRepository;
-            _tenantProvisioner = tenantProvisioner;
-            _tenantProvider = tenantProvider;
+            _tenantServices = tenantServices;
             _passwordService = passwordService;
         }
         public async Task<IEnumerable<Empresa>> GetAllEmpresas()
@@ -35,16 +31,17 @@ namespace BackEndAPI.Services
         }
         public async Task<Empresa?> GetEmpresaByNombre(string nombre)
         {
-            return await _empresasRepository.GetEmpresaByNombre(nombre);
-            
+            return await _empresasRepository.GetEmpresaByUsername(nombre);
+
         }
         public async Task<Empresa> AddEmpresa(CrearEmpresaDTO request)
         {
-            var result = await _tenantProvider.GetTenant(request.Nombre);
+
+            var result = await _tenantServices.BuscarTenantPorNombreEmpresa(request.Nombre.ToLower().Replace(" ",string.Empty));
 
             if (result != null)
             {
-                throw new Exception($"Ya existe una empresa con el nombre {request.Nombre}.");
+                throw new Exception("Ya existe una empresa con el nombre solicitado.");
             }
 
             Empresa empresa = new()
@@ -55,23 +52,18 @@ namespace BackEndAPI.Services
                 Activo = true,
                 FechaInscripcion = DateTime.UtcNow,
                 IdTipoSubscripcion = null,
-                Username = $"{request.Nombre}@empresa",
+                Username = request.Nombre.ToLower().Replace(" ",string.Empty),
             };
             _passwordService.CrearPasswordHash(request.Password, out byte[] hash, out byte[] salt);
             empresa.EstablecerContrasena(hash, salt);
 
-            var tenantInfo = await _tenantProvisioner.ProvisionTenantAsync(empresa);
+            var tenantInfo = await _tenantServices.CrearTenant(empresa);
             return empresa;
         }
-        public Task<bool> UpdateEmpresa(Guid id,ActualizarEmpresaDTO request)
+        public Task<bool> ModificarEmpresa(ModificarEmpresaDTO request)
         {
-                throw new KeyNotFoundException($"La empresa con ID {id} no fue encontrada.");
-            //var result = await _repository.GetEmpresaByIdAsync(id);
-            //if (result == null)
-            //{
-            //}
+            throw new KeyNotFoundException($"La empresa no fue encontrada.");
 
-            
         }
         public async Task DeleteEmpresa(Guid id)
         {

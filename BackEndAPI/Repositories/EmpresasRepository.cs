@@ -31,14 +31,14 @@ namespace BackEndAPI.Repositories
                 //.Include(e=>e.Propietario)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
-        public async Task<Empresa?> GetEmpresaByNombre(string nombre)
+        public async Task<Empresa?> GetEmpresaByUsername(string username)
         {
             if (db == null) return null;
 
             return await db.Empresas
                 .Include(e => e.Sucursales)
                 //.Include(e => e.Propietario)
-                .FirstOrDefaultAsync(e => e.Nombre.ToLower() == nombre.ToLower());
+                .FirstOrDefaultAsync(e => e.Username == username);
         }
         public async Task<Empresa> AddEmpresa(Empresa empresa, Tenant tenant)
         {

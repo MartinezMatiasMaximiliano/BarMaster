@@ -13,10 +13,12 @@ namespace BackEndAPI.Services
     {
         private readonly IMesasRepository _mesasRepository;
         private readonly IPersonasRepository _personasRepository;
-        public MesasServices(IMesasRepository mesasRepository, IPersonasRepository personasRepository)
+        private readonly IVisitasRepository _visitasRepository;
+        public MesasServices(IMesasRepository mesasRepository, IPersonasRepository personasRepository, IVisitasRepository visitasRepository)
         {
             _mesasRepository = mesasRepository;
             _personasRepository = personasRepository;
+            _visitasRepository = visitasRepository;
         }
 
         public async Task<Mesa?> CrearMesa(CrearMesaDTO request)
@@ -71,9 +73,11 @@ namespace BackEndAPI.Services
             return await _mesasRepository.ModificarMesa(buscarMesa);
         }
 
-        public async Task<Mesa?> AbrirCerrarMesa(AbrirMesaDTO request)
+        public async Task<Visita?> AbrirCerrarMesa(AbrirMesaDTO request)
         {
+
             var buscarMesa = await _mesasRepository.ObtenerMesaPorId(request.IdMesa);
+
             if (buscarMesa == null)
             {
                 throw new Exception("La mesa que intenta modificar no existe");
@@ -89,33 +93,46 @@ namespace BackEndAPI.Services
                     throw new Exception("No se encontró un mozo con ese codigo de servicio");
                 }
 
-                //        mesaBuscada.Persona = mozoBuscado;
-                //        var pedido = new Pedido
-                //        {
-                //            Mesa = mesaBuscada,
-                //            FechaRealizado = DateTime.UtcNow,
-                //            Activo = true,
-                //        };
+                var Visita = new Visita()
+                {
+                    //IdCaja = request.IdMesa,
+                    IdMozo = mozoBuscado.Id,
+                    IdMesa = buscarMesa.Id,
+                    FechaHora = DateTime.UtcNow,
+                    Total = 0,
+                    Estado = "Abierta"
 
-                //        _context.Pedidos.Add(pedido);
-                //        await _context.SaveChangesAsync();
+                };
 
-                //        var respuesta = new PedidoDTO
-                //        {
-                //            Id = pedido.Id,
-                //            FechaRealizado = pedido.FechaRealizado,
-                //            IdMesa = pedido.Mesa.Id,
-                //            NumeroMesa = pedido.Mesa.NumeroMesa,
-                //            Activo = pedido.Activo
-                //        };
-                return await _mesasRepository.ModificarMesa(buscarMesa);
+                await _mesasRepository.ModificarMesa(buscarMesa);
+                return await _visitasRepository.CrearVisita(Visita);
+
             }
             else // Lógica para cerrar la mesa
             {
                 buscarMesa.CodigoParaPedir = null;
-                //        mesaBuscada.Persona = null;
-                //        var pedidoDeLaMesa = await _context.Pedidos.Include(pedido => pedido.Items).FirstOrDefaultAsync(pedido => pedido.Mesa == mesaBuscada && pedido.Activo == true);
+                var visita = await _visitasRepository.BuscarVisitaPorId(request.IdVisita);
 
+                if (visita == null)
+                {
+                    throw new Exception("Visita no encontrada");
+                }
+
+                if (visita.Productos.Count() <= 0) //borrar visitas vacias
+                {
+
+                    await _visitasRepository.EliminarVisita(visita);
+                    return visita;
+
+                }else //desactivar visitas no vacias
+                {
+                    visita.Estado = "Cerrada";
+                    //TODO: cerrar una mesa si quedan productos sin pagar?
+
+                    return visita;
+                }
+
+                
                 //        if (pedidoDeLaMesa.Items.Count() == 0)
                 //        {
                 //            _context.Pedidos.Remove(pedidoDeLaMesa);                 
@@ -130,10 +147,7 @@ namespace BackEndAPI.Services
                 //            _context.Entry(pedidoDeLaMesa).State = EntityState.Modified;
                 //        }
 
-                //        _context.Entry(mesaBuscada).State = EntityState.Modified;
-                //        await _context.SaveChangesAsync();
             }
-            return buscarMesa;
         }
     }
 }

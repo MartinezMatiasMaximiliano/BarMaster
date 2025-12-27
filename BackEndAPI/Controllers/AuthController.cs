@@ -24,7 +24,7 @@ namespace BackEndAPI.Controllers
                 
                 if (result == null)
                 {
-                    return Unauthorized("Usuario o contraseña incorrectos");
+                    throw new Exception("Usuario o contraseña incorrectos");
                 }   
 
                 return Ok(result);
@@ -36,8 +36,8 @@ namespace BackEndAPI.Controllers
                 {
                     case "usuario no encontrado":
                         return BadRequest("usuario no encontrado");
-                    case "Contraseña incorrecta":
-                        return Unauthorized("Contraseña incorrecta");
+                    case "Usuario o contraseña incorrectos":
+                        return Unauthorized("Usuario o contraseña incorrectos");
                     default:
                         return StatusCode(500, "Error interno del servidor");
                 }

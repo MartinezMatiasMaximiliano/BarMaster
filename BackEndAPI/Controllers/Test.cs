@@ -3,6 +3,7 @@ using BackEndAPI.Tenancy;
 using BackEndAPI.Tenancy.Models;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackEndAPI.Controllers
 {
@@ -21,11 +22,11 @@ namespace BackEndAPI.Controllers
             _currentDbContext = currentDbContext;
         }   
 
-        [HttpPost("/test")]
-        public IActionResult Ping([FromBody] string nombre)
+        [HttpPost("/migrar")]
+        public async Task<IActionResult> Ping([FromBody] string nombre)
         {
-            var result = _currentDbContext.Db.Empresas.ToList();
-            return Ok($"Pong {nombre}");
+            await _currentDbContext.Db.Database.MigrateAsync();
+            return Ok($"Pong");
         }
 
     }

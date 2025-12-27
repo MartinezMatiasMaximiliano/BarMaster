@@ -8,8 +8,8 @@ namespace BackEndAPI.Models
         public Guid IdEmpresa { get; set; }
         //public Guid? IdEncargado { get; set; }
         public string Nombre { get; set; } = null!;
-        public string Direccion { get; set; } = null!;
-        public string Telefono { get; set; } = null!;
+        public string? Direccion { get; set; }
+        public string? Telefono { get; set; } 
         public string Username { get; set; } = null!;
 
         public byte[] PasswordHash { get; private set; } //Convierte la contraseña en un codigo aleatorio, para no ser guardada como texto plano en la db.

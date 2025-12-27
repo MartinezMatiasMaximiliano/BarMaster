@@ -3,7 +3,8 @@
     public class AbrirMesaDTO
     {
         public Guid IdMesa { get; set; }
-        public string CodigoServicioMozo { get; set; }
+        public string? CodigoServicioMozo { get; set; }
         public bool Abrir { get; set; }
+        public Guid? IdVisita {  get; set; }
     }
 }

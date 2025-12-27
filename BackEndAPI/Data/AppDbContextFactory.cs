@@ -18,22 +18,14 @@ namespace BackEndAPI.Data
         public async Task<AppDbContext> CreateAsync(HttpContext http)
         {
 
-            var resolver = _services.GetRequiredService<ITenantResolver>();
-            var tenant = await resolver.ResolveTenantAsync(http);
+            var resolver = _services.GetRequiredService<ITenantServices>();
+            var tenant = await resolver.BuscarTenantPorHttpContext(http);
 
             if (tenant == null)
             {
                 return null;
             }
 
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseNpgsql(tenant.ConnectionString);
-
-            return new AppDbContext(optionsBuilder.Options);
-        }
-
-        public async Task<AppDbContext> CreateWithTenantAsync(Tenant tenant) 
-        {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseNpgsql(tenant.ConnectionString);
 
