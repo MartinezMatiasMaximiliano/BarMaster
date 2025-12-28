@@ -42,5 +42,12 @@ namespace BackEndAPI.Repositories
             await db.SaveChangesAsync();
             return mesaActualizada;
         }
+
+        public async Task<IEnumerable<Mesa>> ObtenerTodasLasMesas()
+        {
+            return await db.Mesas
+                .Include(m => m.Plano)
+                .ToListAsync();
+        }
     }
 }

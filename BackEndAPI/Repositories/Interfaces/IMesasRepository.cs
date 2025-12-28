@@ -8,7 +8,6 @@ namespace BackEndAPI.Repositories.Interfaces
         public Task<Mesa?> ExisteMesaEnPlano(Guid idPlano, string nombreMesa);
         public Task<Mesa?> CrearMesa(Mesa nuevaMesa);
         public Task<Mesa?> ModificarMesa(Mesa mesaActualizada);
-
-
+        public Task<IEnumerable<Mesa>> ObtenerTodasLasMesas();
     }
 }
