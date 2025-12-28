@@ -9,5 +9,6 @@ namespace BackEndAPI.Services.Interfaces
         public Task<Mesa?> CrearMesa(CrearMesaDTO request);
         public Task<Mesa?> ModificarMesa(ModificarMesaDTO request);
         public Task<Visita?> AbrirCerrarMesa(AbrirMesaDTO request);
+        public Task<IEnumerable<Mesa>> ObtenerTodasLasMesas();
     }
 }

@@ -62,7 +62,7 @@ namespace BackEndAPI.Services
 
             busquedaPlano.Nombre = !string.IsNullOrEmpty(request.Nombre) ? request.Nombre : busquedaPlano.Nombre;
             busquedaPlano.Detalles = !string.IsNullOrEmpty(request.Detalles) ? request.Detalles : busquedaPlano.Detalles;
-
+            busquedaPlano.Mesas = new List<Mesa>(); // Se vacía la lista de mesas para evitar ciclo infinito en la response
 
             return await _planosRepository.ActualizarPlano(busquedaPlano);
         }

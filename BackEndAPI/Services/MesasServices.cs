@@ -149,5 +149,10 @@ namespace BackEndAPI.Services
 
             }
         }
+
+        public async Task<IEnumerable<Mesa>> ObtenerTodasLasMesas()
+        {
+            return await _mesasRepository.ObtenerTodasLasMesas();
+        }
     }
 }

@@ -102,6 +102,39 @@ namespace BackEndAPI.Controllers
             }
 
         }
+
+        [HttpGet("/Mesas")]
+        public async Task<ActionResult> GetTodasLasMesas()
+        {
+            try
+            {
+                var mesas = await _mesasServices.ObtenerTodasLasMesas();
+
+                var response = mesas.Select(mesa => new MesaDTO
+                {
+                    Id = mesa.Id,
+                    Nombre = mesa.Nombre,
+                    Capacidad = mesa.Capacidad,
+                    x = mesa.x,
+                    y = mesa.y,
+                    w = mesa.w,
+                    h = mesa.h,
+                    Plano = mesa.Plano != null ? new PlanoDTO
+                    {
+                        Id = mesa.Plano.Id,
+                        Nombre = mesa.Plano.Nombre,
+                        Detalles = mesa.Plano.Detalles,
+                        IdSucursal = mesa.Plano.IdSucursal
+                    } : null
+                }).ToList();
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", ex.Message));
+            }
+        }
     }
 }
 
