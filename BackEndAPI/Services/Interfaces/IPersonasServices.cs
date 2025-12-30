@@ -13,5 +13,6 @@ namespace BackEndAPI.Services.Interfaces
         Task<Persona?> ActualizarPersona(ModificarPersonaDTO personaActualizada);
         Task<Persona?> CambiarEstado(Guid IdPersona);
         Task<Persona?> EliminarPersona(Guid IdPersona);
+        Task<ICollection<Persona>> BuscarMozos();
     }
 }

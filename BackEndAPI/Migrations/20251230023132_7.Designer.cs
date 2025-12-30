@@ -3,6 +3,7 @@ using System;
 using BackEndAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251230023132_7")]
+    partial class _7
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,7 +58,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Auditorias", (string)null);
+                    b.ToTable("Auditorias");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Caja", b =>
@@ -86,7 +89,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdSucursal");
 
-                    b.ToTable("Cajas", (string)null);
+                    b.ToTable("Cajas");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Categoria", b =>
@@ -104,7 +107,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categorias", (string)null);
+                    b.ToTable("Categorias");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Delivery", b =>
@@ -154,7 +157,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdVisita");
 
-                    b.ToTable("Deliveries", (string)null);
+                    b.ToTable("Deliveries");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Empresa", b =>
@@ -198,7 +201,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdTipoSubscripcion");
 
-                    b.ToTable("Empresas", (string)null);
+                    b.ToTable("Empresas");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.EstadoReserva", b =>
@@ -215,7 +218,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EstadoReservas", (string)null);
+                    b.ToTable("EstadoReservas");
 
                     b.HasData(
                         new
@@ -260,7 +263,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdSucursal");
 
-                    b.ToTable("Menus", (string)null);
+                    b.ToTable("Menus");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Mesa", b =>
@@ -298,7 +301,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdPlano");
 
-                    b.ToTable("Mesas", (string)null);
+                    b.ToTable("Mesas");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Opcion", b =>
@@ -321,7 +324,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdProducto");
 
-                    b.ToTable("Opciones", (string)null);
+                    b.ToTable("Opciones");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Pago", b =>
@@ -348,7 +351,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdVisita");
 
-                    b.ToTable("Pagos", (string)null);
+                    b.ToTable("Pagos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Persona", b =>
@@ -408,7 +411,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdSucursal");
 
-                    b.ToTable("Personas", (string)null);
+                    b.ToTable("Personas");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Plano", b =>
@@ -431,7 +434,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdSucursal");
 
-                    b.ToTable("Planos", (string)null);
+                    b.ToTable("Planos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Producto", b =>
@@ -467,7 +470,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Productos", (string)null);
+                    b.ToTable("Productos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.ProductosPorVisita", b =>
@@ -506,7 +509,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdVisita");
 
-                    b.ToTable("ProductosPorVisita", (string)null);
+                    b.ToTable("ProductosPorVisita");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Reserva", b =>
@@ -537,7 +540,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdSucursal");
 
-                    b.ToTable("Reservas", (string)null);
+                    b.ToTable("Reservas");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Rol", b =>
@@ -554,7 +557,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -604,7 +607,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdEmpresa");
 
-                    b.ToTable("Sucursales", (string)null);
+                    b.ToTable("Sucursales");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.TipoEnvio", b =>
@@ -628,7 +631,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TipoEnvios", (string)null);
+                    b.ToTable("TipoEnvios");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.TipoPago", b =>
@@ -645,7 +648,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TipoPagos", (string)null);
+                    b.ToTable("TipoPagos");
 
                     b.HasData(
                         new
@@ -703,7 +706,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdMozo");
 
-                    b.ToTable("Visitas", (string)null);
+                    b.ToTable("Visitas");
                 });
 
             modelBuilder.Entity("CategoriaProducto", b =>
@@ -718,7 +721,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("ProductosId");
 
-                    b.ToTable("CategoriaProducto", (string)null);
+                    b.ToTable("CategoriaProducto");
                 });
 
             modelBuilder.Entity("MenuProducto", b =>
@@ -733,7 +736,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("ProductosId");
 
-                    b.ToTable("MenuProducto", (string)null);
+                    b.ToTable("MenuProducto");
                 });
 
             modelBuilder.Entity("TipoSubscripcion", b =>
@@ -757,7 +760,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TipoSubscriptions", (string)null);
+                    b.ToTable("TipoSubscriptions");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Caja", b =>

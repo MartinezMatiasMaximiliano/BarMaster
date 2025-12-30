@@ -1,4 +1,6 @@
 ﻿using BackEndAPI.Data;
+using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.Services.Interfaces;
 using BackEndAPI.Tenancy;
 using BackEndAPI.Tenancy.Models;
 using BackEndAPI.Tenancy.Services;
@@ -17,16 +19,25 @@ namespace BackEndAPI.Controllers
     public class Test : ControllerBase
     {
         private readonly ICurrentDbContext _currentDbContext;
+        private readonly ICajasServices _cajasServices;
 
-        public Test(ICurrentDbContext currentDbContext) {
+        public Test(ICurrentDbContext currentDbContext,ICajasServices cajas) {
             _currentDbContext = currentDbContext;
-        }   
+            _cajasServices = cajas;
+        }
 
         [HttpPost("/migrar")]
-        public async Task<IActionResult> Ping([FromBody] string nombre)
+        public async Task<IActionResult> migrar()
         {
-            await _currentDbContext.Db.Database.MigrateAsync();
+            _currentDbContext.Db.Database.Migrate();
             return Ok($"Pong");
+        }
+
+        [HttpPost("/test")]
+        public async Task<IActionResult> test([FromBody] CrearCajaDTO request)
+        {
+            var resultado = await _cajasServices.CrearCaja(request);
+            return Ok();
         }
 
     }
