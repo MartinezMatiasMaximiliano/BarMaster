@@ -202,6 +202,45 @@ namespace BackEndAPI.Controllers
                 }
             }
         }
+
+        [HttpGet("/Mozos")]
+        public async Task<IActionResult> GetMozos()
+        {
+            try
+            {
+                var mozos = await _personasServices.BuscarMozos();
+
+                var response = mozos.Select(persona => new PersonaDTO
+                {
+                    Id = persona.Id,
+                    CodigoDeServicio = persona.CodigoDeServicio,
+                    Rol = persona.Rol,
+                    IdEmpresa = persona.IdEmpresa,
+                    DatosPersonales = new DatosPersonales
+                    {
+                        Nombres = persona.Nombres,
+                        Apellido = persona.Apellido,
+                        Dni = persona.Dni,
+                        Direccion = persona.Direccion,
+                        Telefono = persona.Telefono,
+                        Email = persona.Email,
+                        Activo = persona.Activo,
+                    }
+                }).ToList();
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "No se encontraron mozos.":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                }
+            }
+        }
     }
 }
 

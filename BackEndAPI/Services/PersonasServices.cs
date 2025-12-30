@@ -123,5 +123,14 @@ namespace BackEndAPI.Services
             }
             return _personasRepository.EliminarPersona(IdPersona);
         }
+        public async Task<ICollection<Persona>> BuscarMozos()
+        {
+            var mozos = await _personasRepository.GetPersonasPorNombreRol("Mozo");
+            if (mozos == null || mozos.Count == 0)
+            {
+                throw new Exception("No se encontraron mozos.");
+            }
+            return mozos;
+        }
     }
 }

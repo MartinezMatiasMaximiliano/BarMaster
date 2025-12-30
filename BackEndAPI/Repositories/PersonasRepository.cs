@@ -62,5 +62,13 @@ namespace BackEndAPI.Repositories
             return !await db.Personas.AnyAsync(p => p.CodigoDeServicio == codigoDeServicio);
         }
 
+        public async Task<ICollection<Persona>> GetPersonasPorNombreRol(string nombreRol)
+        {
+            return await db.Personas
+                .Include(p => p.Rol)
+                .Where(p => p.Rol.Nombre == nombreRol)
+                .ToListAsync();
+        }
+
     }
 }
