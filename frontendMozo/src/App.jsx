@@ -6,7 +6,7 @@ import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotifi
 import useSignalR from './hooks/useSignalR'
 import Navbar from "./components/NavBar/NavBar";
 import Index from './pages/Index/Index';
-import Index2 from './pages/Index2';
+import Index2 from './pages/Index2/Index2';
 import Listado_Mozos from './pages/Lista_Mozos';
 import Abm_Mesas from './pages/Abm_Mesas';
 import Abm_Menu from './pages/Abm_Menu';
@@ -342,3 +342,5 @@ function App() {
 }
 
 export default App
+
+

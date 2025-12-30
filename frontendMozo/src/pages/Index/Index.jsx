@@ -6,12 +6,14 @@ import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoS
 import { LoginContext, AuthTypeContext } from '../../App';
 import { handleConfirmarSalir } from '../../Helpers/HelperFunctions';
 import { useKeyboardInput } from './hooks/useKeyboardInput';
+import { useMesas } from './hooks/useMesas';
 import { useMesaFiltering } from './hooks/useMesaFiltering.jsx';
 import { useMozoCode } from './hooks/useMozoCode';
 import { useDateTime } from './hooks/useDateTime';
 import { MesasGrid } from './components/MesasGrid';
 import { BottomBar } from './components/BottomBar';
 import { ConfirmLogoutDialog } from './components/ConfirmLogoutDialog';
+import { LoadingState } from './components/LoadingState';
 
 function Index(props) {
     const dispatch = useDispatch();
@@ -21,8 +23,11 @@ function Index(props) {
     
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     
+    // Cargar todas las mesas desde la API (ignora planos)
+    const { mesas, cargando: cargandoMesas } = useMesas();
+    
     const { inputRef } = useKeyboardInput();
-    const { mesasParaMostrar } = useMesaFiltering(props.mesas, props.datos_mozos);
+    const { mesasParaMostrar } = useMesaFiltering(mesas, props.datos_mozos);
     const { codigoMozo, mozo } = useMozoCode(props.datos_mozos);
     const fechaHora = useDateTime();
 
@@ -44,7 +49,11 @@ function Index(props) {
 
     return (
         <Container className="position-relative" style={{ height: "98vh" }}>
-            <MesasGrid mesas={mesasParaMostrar} />
+            {cargandoMesas ? (
+                <LoadingState />
+            ) : (
+                <MesasGrid mesas={mesasParaMostrar} />
+            )}
             
             <BottomBar
                 inputRef={inputRef}
