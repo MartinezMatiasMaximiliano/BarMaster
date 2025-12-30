@@ -31,13 +31,13 @@ function Abm_Menu(props) {
     }, []);
 
     // Actualizar filas filtradas cuando cambien los datos originales
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasFiltradas(props.datos_menu || []);
         setFilasOrdenadas(props.datos_menu || []);
     }, [props.datos_menu]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 

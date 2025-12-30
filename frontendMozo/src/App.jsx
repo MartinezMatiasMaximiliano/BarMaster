@@ -45,6 +45,7 @@ import { BuscarTodosLosPedidos, BuscarUnPedido } from './API/APIPedidos'
 import { BuscarTodasLasReservas } from './API/APIReservas'
 import { BuscarTodosLosTipoPagos } from './API/APITipoPagos'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
+import { BuscarTodasLasMesas } from './API/APIMesas'
 import { CambiarEstadoItems } from './API/APIItems'
 import { useSelector, useDispatch } from 'react-redux'
 import { agregarItems as agregarItemsAPedidoActivo, crear as crearPedidosActivos, cambiarEstadoItems } from './redux/slices/pedidosActivosSlice'
@@ -304,7 +305,7 @@ function App() {
                             <Route path="/caja" element={<Control_Login><Caja /></Control_Login>} />
                             <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
                             <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
-                            <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={datos_mesas_abm} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
+                            <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                             <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
                             <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
                             <Route path="/abm_tipo_pago" element={<Control_Login><Abm_TipoPago recargarComponentes={recargarTipoPagos} datos_tipo_pagos={tipoPagos} titulo="Tipos de Pago" /></Control_Login>} />

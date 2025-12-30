@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -10,7 +10,7 @@ export default function Select(props) {
     const valorInicial = props.datoActual !== null && props.datoActual !== undefined && props.datoActual !== '' 
         ? props.datoActual 
         : '';
-    const [value, setValue] = React.useState(valorInicial);
+    const [value, setValue] = useState(valorInicial);
 
     const handleChange = (event) => {
         const nuevoValor = event.target.value;

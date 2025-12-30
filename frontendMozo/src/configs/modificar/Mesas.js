@@ -17,18 +17,25 @@ export const inicializarCampos = async () => {
       BuscarTodosLosPlanos()
     ]);
 
-    const mozos = dataMozos
-      .filter(m => m.datosPersonales.activo === true)
-      .map(m => ({
-        id: m.id,
-        nombre: `${m.datosPersonales.nombres} ${m.datosPersonales.apellido}`,
-      }));
+    console.log("Data mozos:", dataMozos);
+    console.log("Data planos:", dataPlanos);
 
-    const planos = dataPlanos
-      .map(p => ({
-        id: p.id,
-        nombre: p.nombre,
-      }));
+    // Verificar que los datos sean arrays válidos
+    const mozos = Array.isArray(dataMozos)
+      ? dataMozos
+          .filter(m => m && m.datosPersonales && m.datosPersonales.activo === true)
+          .map(m => ({
+            id: m.id,
+            nombre: `${m.datosPersonales.nombres} ${m.datosPersonales.apellido}`,
+          }))
+      : [];
+
+    const planos = Array.isArray(dataPlanos)
+      ? dataPlanos.map(p => ({
+          id: p.id,
+          nombre: p.nombre,
+        }))
+      : [];
 
     // Retornar una copia de los campos con las opciones cargadas
     return [

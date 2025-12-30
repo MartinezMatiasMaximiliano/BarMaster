@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -29,7 +29,7 @@ function getStyles(name, value, theme) {
 
 export default function Select_Multiple(props) {
     const theme = useTheme();
-    const [itemsActivos, setItemsActivos] = React.useState(props.itemsActivos);
+    const [itemsActivos, setItemsActivos] = useState(props.itemsActivos);
 
     const itemsTotales = props.campo.options;
 

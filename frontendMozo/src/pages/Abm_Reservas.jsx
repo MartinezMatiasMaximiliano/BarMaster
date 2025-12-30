@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Container } from 'react-bootstrap'
 import { CrearReserva, ModificarReserva, BorrarReserva } from "../API/APIReservas";
 import Tabla from "../components/Tabla/Tabla";
@@ -29,13 +29,13 @@ function Abm_Reservas(props) {
     const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_reservas || []);
 
     // Actualizar filas filtradas cuando cambien los datos originales
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasFiltradas(props.datos_reservas || []);
         setFilasOrdenadas(props.datos_reservas || []);
     }, [props.datos_reservas]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 

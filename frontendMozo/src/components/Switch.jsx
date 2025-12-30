@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { Switch as MUISwitch } from '@mui/material';
 
 export default function Switch(props) {
-    const [checked, setChecked] = React.useState(props.activo);
+    const [checked, setChecked] = useState(props.activo);
     const id = props.id;
 
     const handleChange = (event) => {

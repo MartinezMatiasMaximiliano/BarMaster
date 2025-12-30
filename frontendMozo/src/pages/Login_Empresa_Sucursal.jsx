@@ -39,11 +39,6 @@ const LoginEmpresaSucursal = () => {
             return false;
         }
 
-        if (!formData.username.includes('@')) {
-            setError('El formato de usuario debe ser: Empresa@empresa o Empresa@nombreSucursal');
-            return false;
-        }
-
         return true;
     };
 
@@ -52,7 +47,7 @@ const LoginEmpresaSucursal = () => {
      */
     const handleLoginSuccess = (response) => {
         const authType = response.auth_type;
-        // Extraer y guardar el tenant ID (parte antes del @)
+        // Extraer y guardar el tenant ID (nombre de empresa)
         const tenantId = authService.extractCompanyName(formData.username);
         
         // Guardar datos en localStorage
@@ -168,10 +163,10 @@ const LoginEmpresaSucursal = () => {
                         type="text"
                         value={formData.username}
                         onChange={handleInputChange('username')}
-                        placeholder="Ej: LaCafeteria@empresa o LaCafeteria@SucursalCentro"
+                        placeholder="Ej: LaCafeteria o LaCafeteria@SucursalCentro"
                         required
                         fullWidth
-                        helperText="Formato: Empresa@empresa o Empresa@nombreSucursal"
+                        helperText="Empresa: solo nombre | Sucursal: Empresa@nombreSucursal"
                         disabled={loading}
                         autoComplete="username"
                     />
@@ -220,10 +215,10 @@ const InfoBox = () => (
             Información:
         </Typography>
         <Typography variant="caption" display="block" color="text.secondary">
-            • Para acceder como Empresa, use: Empresa@empresa
+            • Para acceder como Empresa, use solo el nombre: LaCafeteria
         </Typography>
         <Typography variant="caption" display="block" color="text.secondary">
-            • Para acceder como Sucursal, use: Empresa@nombreSucursal
+            • Para acceder como Sucursal, use: LaCafeteria@nombreSucursal
         </Typography>
     </Box>
 );

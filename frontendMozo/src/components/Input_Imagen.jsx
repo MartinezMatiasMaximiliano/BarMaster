@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { Button, TextField } from "@mui/material";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 function Input_Imagen(props) {
-    const [fileName, setFileName] = React.useState('');
-    const fileInputRef = React.useRef(null);
+    const [fileName, setFileName] = useState('');
+    const fileInputRef = useRef(null);
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];

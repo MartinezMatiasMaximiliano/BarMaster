@@ -31,13 +31,13 @@ function Abm_Personas(props) {
     }, []);
 
     // Actualizar filas filtradas cuando cambien los datos originales
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasFiltradas(props.datos_personas || []);
         setFilasOrdenadas(props.datos_personas || []);
     }, [props.datos_personas]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 

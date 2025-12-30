@@ -6,7 +6,7 @@ import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
 import { useMesaState } from './useMesaState';
 import { useMesaLogic } from './useMesaLogic';
 
-export default function Mesa({ datos_mesa, estilo, variant, mozo }) {
+export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false }) {
     const {
         checkBoxSeleccionados,
         show,
@@ -49,11 +49,39 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo }) {
                     onClick={handleAbrirMesa}
                     disabled={!mozo}
                     prefix="Abrir"
+                    simpleStyle={simpleStyle}
                 />
             );
         }
 
-        // Mesa deshabilitada
+        // Si simpleStyle está activo, siempre usar MesaButton para mantener consistencia visual
+        if (simpleStyle) {
+            return (
+                <>
+                    <MesaButton
+                        numeroMesa={datos_mesa.numeroMesa}
+                        estilo={estilo}
+                        variant={variant}
+                        onClick={handleShow}
+                        simpleStyle={simpleStyle}
+                    />
+                    
+                    <MesaModal
+                        show={show}
+                        handleClose={handleClose}
+                        datos_mesa={datos_mesa}
+                        pedidoMesa={pedidoMesa}
+                        checkBoxSeleccionados={checkBoxSeleccionados}
+                        handleChangeCheckBox={handleChangeCheckBox}
+                        activarCancelarPedido={activarCancelarPedido}
+                        onCancelarPedidos={handleCancelarPedidos}
+                        onCerrarMesa={handleCerrarMesa}
+                    />
+                </>
+            );
+        }
+
+        // Mesa deshabilitada (solo cuando simpleStyle es false)
         if (variant !== "success") {
             return (
                 <Mesa_Deshabilitada 
@@ -72,6 +100,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo }) {
                     estilo={estilo}
                     variant={variant}
                     onClick={handleShow}
+                    simpleStyle={simpleStyle}
                 />
                 
                 <MesaModal

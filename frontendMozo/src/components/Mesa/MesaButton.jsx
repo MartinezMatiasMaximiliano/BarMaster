@@ -28,10 +28,35 @@ const colorMap = {
     'dark': 'default'
 };
 
-export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = false, prefix = "Mesa" }) => {
+export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = false, prefix = "Mesa", simpleStyle = false }) => {
     const muiVariant = variantMap[variant] || 'contained';
     const muiColor = colorMap[variant] || 'primary';
 
+    // Si simpleStyle es true, renderizar como botón simple sin iconos ni estilos personalizados
+    if (simpleStyle) {
+        return (
+            <Button 
+                variant={muiVariant}
+                color={muiColor}
+                onClick={onClick}
+                disabled={disabled}
+                sx={{
+                    width: '100%',
+                    height: '100%',
+                    minWidth: 0,
+                    minHeight: 0,
+                    padding: '4px 8px',
+                    fontSize: '0.75rem',
+                    textTransform: 'none',
+                    ...estilo,
+                }}
+            >
+                {prefix} {numeroMesa}
+            </Button>
+        );
+    }
+
+    // Estilo original con iconos
     return (
         <Button 
             variant={muiVariant}

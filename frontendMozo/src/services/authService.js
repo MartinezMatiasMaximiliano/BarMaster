@@ -3,10 +3,12 @@ import axios from 'axios';
 export const authService = {
 
     extractCompanyName: (username) => {
-        if (!username || !username.includes('@')) {
-            throw new Error('El formato de usuario debe ser: Empresa@empresa o Empresa@nombreSucursal');
+        if (!username) {
+            throw new Error('El nombre de usuario es requerido');
         }
-        return username.split('@')[0];
+        // Si tiene @, es sucursal: extraer la parte antes del @
+        // Si no tiene @, es empresa: devolver el username completo
+        return username.includes('@') ? username.split('@')[0] : username;
     },
 
     loginEmpresaSucursal: async (username, password) => {

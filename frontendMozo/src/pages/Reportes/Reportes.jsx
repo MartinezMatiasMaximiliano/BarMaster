@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Container, Typography, CircularProgress, Alert, Tabs, Tab } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
@@ -17,7 +17,7 @@ const Reportes = () => {
     const reportes = useReportes(filtros);
     const exportacion = useExportacion();
 
-    const [tabValue, setTabValue] = React.useState(0);
+    const [tabValue, setTabValue] = useState(0);
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);

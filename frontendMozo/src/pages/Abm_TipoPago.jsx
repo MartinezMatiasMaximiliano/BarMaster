@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Container } from 'react-bootstrap'
 import { CrearTipoPago, BorrarTipoPago } from "../API/APITipoPagos";
 import Tabla from "../components/Tabla/Tabla";
@@ -15,13 +15,13 @@ function Abm_TipoPago(props) {
     const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_tipo_pagos || []);
 
     // Actualizar filas filtradas cuando cambien los datos originales
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasFiltradas(props.datos_tipo_pagos || []);
         setFilasOrdenadas(props.datos_tipo_pagos || []);
     }, [props.datos_tipo_pagos]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 

@@ -8,8 +8,13 @@ export async function BuscarTodosLosPlanos() {
         const response = await axios.get(`${BASE_URL}ListaPlanosSucursal`, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
-        return error.response;
+        console.error("Error al buscar planos:", error);
+        // Si hay un error en la respuesta, lanzarlo para que se maneje en el componente
+        if (error.response) {
+            throw error;
+        }
+        // Si no hay respuesta, retornar array vacío
+        return [];
     }
 }
 

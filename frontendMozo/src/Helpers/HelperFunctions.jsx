@@ -155,7 +155,7 @@ export function MappearMesas(mesas) {
     return (
         mesas.map(mesa => ({
             id: mesa.id,
-            numero: mesa.numeroMesa, 
+            numero: mesa.nombre || mesa.numeroMesa || "", 
             codigoParaPedir: mesa.codigoParaPedir,
             nombreMozo: mesa.persona == null ? "Sin Mozo" : mesa.persona.nombres + ' ' + mesa.persona.apellido,
             idMozo: mesa.persona == null ? '' : mesa.persona.id,

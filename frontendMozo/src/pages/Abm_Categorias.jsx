@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Container } from 'react-bootstrap'
 import { CrearCategoria, BorrarCategoria, DesactivarCategoria, ActivarCategoria, ModificarCategoria } from "../API/APICategorias";
 import Tabla from "../components/Tabla/Tabla";
@@ -15,13 +15,13 @@ function Abm_Categorias(props) {
     const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_categorias || []);
 
     // Actualizar filas filtradas cuando cambien los datos originales
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasFiltradas(props.datos_categorias || []);
         setFilasOrdenadas(props.datos_categorias || []);
     }, [props.datos_categorias]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
-    React.useEffect(() => {
+    useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 

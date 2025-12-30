@@ -11,11 +11,16 @@ const camposBase = [
 export const inicializarCampos = async () => {
   try {
     const data = await BuscarTodosLosPlanos();
-    const planos = data
-      .map(p => ({
-        id: p.id,
-        nombre: p.nombre,
-      }));
+    
+    console.log("Data planos (agregar):", data);
+
+    // Verificar que los datos sean un array válido
+    const planos = Array.isArray(data)
+      ? data.map(p => ({
+          id: p.id,
+          nombre: p.nombre,
+        }))
+      : [];
 
     // Retornar una copia de los campos con las opciones cargadas
     return [

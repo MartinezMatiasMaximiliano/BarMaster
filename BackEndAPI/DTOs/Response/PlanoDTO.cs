@@ -8,4 +8,3 @@ namespace BackEndAPI.DTOs.Response
         public Guid IdSucursal { get; set; }
     }
 }
-

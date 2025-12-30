@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     FormControl,
@@ -127,7 +127,7 @@ function Ordenar({ filas, opcionesOrdenamiento = [], onOrdenar }) {
     };
 
     // Ordenar inicialmente cuando se monta el componente o cambian las filas
-    React.useEffect(() => {
+    useEffect(() => {
         if (columnaSeleccionada && opcionSeleccionada) {
             // Determinar dirección inicial según el tipo
             let direccionInicial = 'ascendente';
