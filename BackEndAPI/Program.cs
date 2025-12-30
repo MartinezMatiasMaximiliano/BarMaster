@@ -90,6 +90,8 @@ builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
 builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<ICajasRepository, CajasRepository>();    
+builder.Services.AddScoped<ICajasServices, CajasServices>();
 builder.Services.AddScoped<ICurrentDbContext, CurrentDbContext>();
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
