@@ -11,5 +11,6 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<Persona?> ActualizarPersona(Persona personaActualizada);
         Task<Persona?> EliminarPersona(Guid IdPersona);
         Task<bool> EsCodigoUnico(string codigoDeServicio);
+        Task<ICollection<Persona>> GetPersonasPorNombreRol(string nombreRol);
     }
 }
