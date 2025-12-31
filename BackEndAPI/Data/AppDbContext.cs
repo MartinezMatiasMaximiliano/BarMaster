@@ -20,6 +20,8 @@ namespace BackEndAPI.Data
         public DbSet<Sucursal> Sucursales => Set<Sucursal>();
         public DbSet<Mesa> Mesas => Set<Mesa>();
         public DbSet<Caja> Cajas => Set<Caja>();
+        public DbSet<MovimientoCaja> MovimientosCajas => Set<MovimientoCaja>();
+        public DbSet<TipoMovimientoCaja> TipoMovimientosCajas => Set<TipoMovimientoCaja>();
         public DbSet<Persona> Personas => Set<Persona>();
         public DbSet<Reserva> Reservas => Set<Reserva>();
         public DbSet<Visita> Visitas => Set<Visita>();
@@ -58,6 +60,25 @@ namespace BackEndAPI.Data
                new EstadoReserva { Id = 3, Nombre = "Cancelada" },
                new EstadoReserva { Id = 4, Nombre = "Completada" }
             );
+
+            modelBuilder.Entity<TipoMovimientoCaja>().HasData(
+                new TipoMovimientoCaja { Id = 1, Nombre = "Ingreso de Efectivo", EsIngreso = true ,EsEfectivo = true },
+                new TipoMovimientoCaja { Id = 2, Nombre = "Retiro de Efectivo", EsIngreso = false ,EsEfectivo = true },
+                new TipoMovimientoCaja { Id = 3, Nombre = "Cobro Cuenta Corriente Efectivo",EsIngreso = true, EsEfectivo = true },
+                new TipoMovimientoCaja { Id = 4, Nombre = "Cobro Cuenta Corriente Transferencia", EsIngreso = true, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 5, Nombre = "Cobro Cuenta Corriente Tarjeta De Credito/Debito", EsIngreso = true, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 6, Nombre = "Pago Proveedor Efectivo", EsIngreso = false, EsEfectivo = true },
+                new TipoMovimientoCaja { Id = 7, Nombre = "Pago Proveedor Transferencia", EsIngreso = false, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 8, Nombre = "Pago Proveedor Tarjeta De Credito/Debito", EsIngreso = false, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 9, Nombre = "Pago Sueldos Efectivo", EsIngreso = false, EsEfectivo = true },
+                new TipoMovimientoCaja { Id = 10, Nombre = "Pago Sueldos Transferencia", EsIngreso = false, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 11, Nombre = "Pago Sueldos Cuenta Corriente", EsIngreso = false, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 12, Nombre = "Pago Sueldos Tarjeta De Credito/Debito", EsIngreso = false, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 13, Nombre = "Gastos Efectivo", EsIngreso = false, EsEfectivo = true },
+                new TipoMovimientoCaja { Id = 14, Nombre = "Gastos Transferencia", EsIngreso = false, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 15, Nombre = "Gastos Tarjeta de Credito/Debito", EsIngreso = false, EsEfectivo = false },
+                new TipoMovimientoCaja { Id = 16, Nombre = "Gastos Cuenta Corriente", EsIngreso = false, EsEfectivo = false }
+                );
 
 
             modelBuilder.Entity<Empresa>()
@@ -224,6 +245,17 @@ namespace BackEndAPI.Data
             modelBuilder.Entity<Producto>()
                 .HasMany(p => p.Categorias)
                 .WithMany(c => c.Productos);
+
+            modelBuilder.Entity<Caja>()
+                .HasMany(c => c.MovimientosCaja)
+                .WithOne(mc => mc.Caja)
+                .HasForeignKey(mc => mc.IdCaja);
+
+            modelBuilder.Entity<MovimientoCaja>()
+                .HasOne(mc => mc.TipoMovimientoCaja)
+                .WithMany()
+                .HasForeignKey(mc => mc.IdTipoMovimientoCaja)
+                .OnDelete(DeleteBehavior.SetNull);
 
             base.OnModelCreating(modelBuilder);
 

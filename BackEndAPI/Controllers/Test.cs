@@ -36,7 +36,7 @@ namespace BackEndAPI.Controllers
         [HttpPost("/test")]
         public async Task<IActionResult> test([FromBody] CrearCajaDTO request)
         {
-            var resultado = await _cajasServices.CrearCaja(request);
+            //var resultado = await _cajasServices.CrearCaja(request);
             return Ok();
         }
 

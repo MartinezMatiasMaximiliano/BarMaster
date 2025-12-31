@@ -13,11 +13,11 @@ namespace BackEndAPI.Services
             _cajasRepository = cajasRepository;
         }
 
-        public async Task<Caja> CrearCaja(CrearCajaDTO request)
+        public async Task<Caja> CrearCaja(CrearCajaDTO request, Guid IdSucursal)
         {
             Caja nuevaCaja = new Caja
             {
-                IdSucursal = request.IdSucursal, 
+                IdSucursal = IdSucursal, 
                 MontoApertura = request.MontoApertura,
 
             };
@@ -29,5 +29,9 @@ namespace BackEndAPI.Services
             return _cajasRepository.BuscarCajaAbierta();
         }
 
+        public Task<Caja> CerrarCaja(Guid IdCaja)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
