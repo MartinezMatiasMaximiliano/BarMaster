@@ -35,6 +35,7 @@ namespace BackEndAPI.Repositories
         {
             await db.Productos.AddAsync(producto);
             await db.SaveChangesAsync();
+            producto.Opciones = new List<Opcion>();
             return producto;
         }
 

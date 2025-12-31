@@ -6,7 +6,7 @@ namespace BackEndAPI.Services.Interfaces
 {
     public interface IProductosServices
     {
-        Task<Producto?> CrearProducto(CrearProductoDTO producto);
+        Task<Producto?> CrearProducto(CrearProductoDTO producto, string pathImagen);
         Task<IEnumerable<Producto>> BuscarListaProductos();
         Task<Producto> BuscarProductoPorId(int id);
         Task ActualizarProducto(Producto producto);

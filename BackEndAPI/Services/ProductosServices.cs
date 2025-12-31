@@ -13,7 +13,7 @@ namespace BackEndAPI.Services
             _productosRepository = productosRepository;
         }
 
-        public async Task<Producto?> CrearProducto(CrearProductoDTO request)
+        public async Task<Producto?> CrearProducto(CrearProductoDTO request, string pathImagen)
         {
             var exitente = await _productosRepository.GetProductoPorNombre(request.Nombre);
             if (exitente != null)
@@ -23,39 +23,21 @@ namespace BackEndAPI.Services
 
             Producto nuevoProducto = new Producto
             {
+                IdMenu = request.IdMenu,
                 Codigo = request.Codigo,
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
                 Precio = request.Precio,
+                CostoProduccion = request.CostoProduccion,
                 Activo = request.Activo,
-                Opciones = request.Opciones.Select(o => new Opcion
+                PathImagen = pathImagen ?? "/uploads/ImagenesProductos/Placeholder.jpeg",
+                Opciones = request.Opciones?.Select(o => new Opcion
                 {
                     Nombre = o.Nombre,
-                   // PrecioExtra = o.PrecioExtra
-                }).ToList()
+                    PrecioExtra = 0 // Valor por defecto, ya que no viene en el DTO
+                }).ToList() ?? new List<Opcion>()
             };
 
-            //if (request.Imagen == null || request.Imagen.Length == 0)
-            //{
-            //    nuevoProducto.PathImagen = $"uploads/ImagenesProductos/Placeholder.jpeg";
-            //}
-            //else
-            //{
-            //    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/ImagenesProductos/");
-            //    if (!Directory.Exists(folderPath))
-            //    {
-            //        Directory.CreateDirectory(folderPath);
-            //    }
-
-            //    var fileExtension = Path.GetFileName(request.Imagen.FileName).Split('.').Last();
-            //    var filePath = Path.Combine(folderPath, $"{request.Nombre.Dehumanize()}.{fileExtension}");
-
-            //    using (var stream = new FileStream(filePath, FileMode.Create))
-            //    {
-            //        await request.Imagen.CopyToAsync(stream);
-            //    }
-            //    nuevoProducto.PathImagen = $"uploads/ImagenesProductos/{request.Nombre.Dehumanize()}.{fileExtension}";
-            //}
             return await _productosRepository.AddProducto(nuevoProducto);
         }
 

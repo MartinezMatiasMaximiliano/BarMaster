@@ -1,6 +1,7 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
+using BackEndAPI.Services.Global;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,40 +46,38 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody]CrearProductoDTO request)
+        public async Task<ActionResult> Post([FromForm]CrearProductoDTO request)
         {
             try
             {
-                
-                if (request == null)
+                // Procesar opciones desde el form data (necesario cuando hay archivo)
+                if (request.Opciones == null || request.Opciones.Count == 0)
                 {
-                    throw new Exception("Request nulo");
+                    request.Opciones = FormDataHelper.ProcesarOpcionesDesdeForm(Request.Form, request.Nombre);
                 }
 
-                var busqueda = await _productosServices.ProductoExiste(request.Nombre);
-
-                if (busqueda == true)
+                // Validar que el producto no exista
+                if (await _productosServices.ProductoExiste(request.Nombre))
                 {
-                    throw new Exception("El producto ya existe");
+                    return Conflict("El producto ya existe");
                 }
 
-                var producto = await _productosServices.CrearProducto(request);
+                // Procesar imagen y generar path
+                var pathImagen = await FileHelper.GuardarImagenProducto(request.Imagen, request.Nombre);
+
+                // Crear producto
+                var producto = await _productosServices.CrearProducto(request, pathImagen);
                 return Ok(producto);
             }
             catch (Exception ex)
             {
-                switch (ex.Message)
+                return ex.Message switch
                 {
-                    case "El producto ya existe":
-                        return Conflict("El producto ya existe");
-                    case "Request nulo":
-                        return BadRequest("Request nulo");
-                    default:
-                        return StatusCode(500, "Error interno del servidor");
-                }
-
+                    "El producto ya existe" => Conflict("El producto ya existe"),
+                    "Request nulo" => BadRequest("Request nulo"),
+                    _ => StatusCode(500, "Error interno del servidor")
+                };
             }
-
         }
         //{
         //    try
@@ -257,3 +256,4 @@ namespace BackEndAPI.Controllers
 //}
 
 #endregion
+
