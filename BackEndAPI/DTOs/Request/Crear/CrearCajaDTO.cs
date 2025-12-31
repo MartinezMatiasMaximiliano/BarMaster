@@ -2,7 +2,6 @@
 {
     public class CrearCajaDTO
     {
-        public Guid IdSucursal { get; set; }
         public decimal MontoApertura { get; set; }
     }
 }

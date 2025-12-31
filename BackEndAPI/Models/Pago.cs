@@ -8,9 +8,6 @@
         public decimal Monto { get; set; }
         public DateTime FechaHora { get; set; } = DateTime.UtcNow;
 
-
-        
-
         //navegacion
         public TipoPago TipoPago { get; set; } = null!;
         public Visita Visita { get; set; } = null!;

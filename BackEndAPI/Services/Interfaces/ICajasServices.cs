@@ -5,9 +5,10 @@ namespace BackEndAPI.Services.Interfaces
 {
     public interface ICajasServices
     {
-        Task<Caja> CrearCaja(CrearCajaDTO request);
+        Task<Caja> CrearCaja(CrearCajaDTO request,Guid IdSucursal);
 
         Task<Caja> BuscarCajaAbierta();
 
+        Task<Caja> CerrarCaja(Guid IdCaja);    
     }
 }
