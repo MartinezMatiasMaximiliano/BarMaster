@@ -18,7 +18,9 @@ namespace BackEndAPI.Repositories
 
         public async Task<IEnumerable<Producto>> GetAllProductosAsync()
         {
-            return await db.Productos.ToListAsync();
+            return await db.Productos
+                .Include(p => p.Categorias)
+                .ToListAsync();
         }
 
         public async Task<Producto?> GetProductoPorId(Guid id)

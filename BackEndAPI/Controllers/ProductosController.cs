@@ -4,6 +4,7 @@ using BackEndAPI.Services.Interfaces;
 using BackEndAPI.Services.Global;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace BackEndAPI.Controllers
 {
@@ -22,27 +23,29 @@ namespace BackEndAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ProductoDTO>>> Get()
         {
-            throw new NotImplementedException();
-            //try
-            //{
-            //    var busqueda = await _productosServices.GetAllProductosAsync();
-            //    var listaProductos = busqueda.Select(producto => new ProductoDTO
-            //    {
-            //        Id = producto.Id,
-            //        Nombre = producto.Nombre,
-            //        Descripcion = producto.Descripcion,
-            //        Precio = producto.Precio,
-            //        Activo = producto.Activo,
-            //        ImagenUrl = producto.PathImagen,
-            //        Categorias = producto.Categorias.Select(categoria => categoria.Activo != false? null: categoria.Nombre ).ToArray()
-            //    }).ToList();
+            try
+            {
+                var busqueda = await _productosServices.BuscarListaProductos();
+                var listaProductos = busqueda.Select(producto => new ProductoDTO
+                {
+                    Id = producto.Id,
+                    Nombre = producto.Nombre,
+                    Descripcion = producto.Descripcion ?? string.Empty,
+                    Precio = producto.Precio,
+                    Activo = producto.Activo,
+                    ImagenUrl = producto.PathImagen ?? string.Empty,
+                    Categorias = producto.Categorias?
+                        .Where(categoria => categoria != null && categoria.Activo)
+                        .Select(categoria => categoria.Nombre)
+                        .ToArray() ?? Array.Empty<string>()
+                }).ToList();
 
-            //    return Ok(listaProductos);
-            //}
-            //catch (Exception e)
-            //{
-            //    return StatusCode(500, "Internal server error catch: Get Productos - " + e.Message);
-            //}
+                return Ok(listaProductos);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new { message = "Internal server error catch: Get Productos - " + e.Message });
+            }
         }
 
         [HttpPost]
