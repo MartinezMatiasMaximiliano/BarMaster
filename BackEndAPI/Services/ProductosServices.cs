@@ -30,7 +30,7 @@ namespace BackEndAPI.Services
                 Precio = request.Precio,
                 CostoProduccion = request.CostoProduccion,
                 Activo = request.Activo,
-                PathImagen = pathImagen ?? "/uploads/ImagenesProductos/Placeholder.jpeg",
+                PathImagen = pathImagen ?? "uploads/ImagenesProductos/Placeholder.jpeg",
                 Opciones = request.Opciones?.Select(o => new Opcion
                 {
                     Nombre = o.Nombre,
