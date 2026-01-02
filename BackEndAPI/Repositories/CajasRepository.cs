@@ -27,7 +27,11 @@ namespace BackEndAPI.Repositories
         public async Task<Caja> BuscarCajaAbierta()
         {
             return await Db.Cajas.Where(c => c.FechaCierre == null).FirstOrDefaultAsync();
-        }   
+        }
 
+        public async Task<Caja?> GetCajaPorId(Guid id)
+        {
+            return await Db.Cajas.FirstOrDefaultAsync(c => c.Id == id);
+        }
     }
 }
