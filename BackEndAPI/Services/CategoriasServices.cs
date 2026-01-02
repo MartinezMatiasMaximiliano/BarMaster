@@ -96,5 +96,18 @@ namespace BackEndAPI.Services
             await _categoriasRepository.EliminarCategoria(categoriaAEliminar);
             return categoriaAEliminar;
         }
+
+        public async Task<Categoria?> ActivarDesactivarCategoria(Guid id)
+        {
+            var categoria = await _categoriasRepository.GetCategoriaPorId(id);
+            if (categoria == null)
+            {
+                throw new Exception("La categoria no existe");
+            }
+
+            categoria.Activo = !categoria.Activo;
+            await _categoriasRepository.ActualizarCategoria(categoria);
+            return categoria;
+        }
     }
 }

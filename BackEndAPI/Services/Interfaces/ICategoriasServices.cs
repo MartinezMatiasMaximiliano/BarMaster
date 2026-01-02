@@ -11,5 +11,6 @@ namespace BackEndAPI.Services.Interfaces
         Task<Categoria> BuscarCategoriaPorId(Guid id);
         Task<Categoria?> ModificarCategoria(Guid id, ModificarCategoriaDTO request);
         Task<Categoria?> EliminarCategoria(Guid id);
+        Task<Categoria?> ActivarDesactivarCategoria(Guid id);
     }
 }

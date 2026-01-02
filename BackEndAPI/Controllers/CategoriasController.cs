@@ -136,6 +136,33 @@ namespace BackEndAPI.Controllers
                 }
             }
         }
+
+        [HttpPatch("/Categorias/ActivarDesactivar")]
+        public async Task<IActionResult> ActivarDesactivarCategoria([FromBody] ActivarDesactivarCategoriaDTO request)
+        {
+            try
+            {
+                var categoria = await _CategoriasServices.ActivarDesactivarCategoria(request.Id);
+                var categoriaDTO = new CategoriaDTO
+                {
+                    Id = categoria.Id,
+                    Nombre = categoria.Nombre,
+                    Activo = categoria.Activo
+                };
+                string accion = categoria.Activo ? "activada" : "desactivada";
+                return Ok(new EntregaDTO(200, "MODIFIED", $"Categoría {accion} exitosamente"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "La categoria no existe":
+                        return NotFound(ex.Message);
+                    default:
+                        return StatusCode(500, "Error Interno de servidor");
+                }
+            }
+        }
     }
 }
  ////buscar todas las categorias
