@@ -8,7 +8,7 @@ namespace BackEndAPI.Services.Global
         {
             if (imagen == null || imagen.Length == 0)
             {
-                return "/uploads/ImagenesProductos/Placeholder.jpeg";
+                return "uploads/ImagenesProductos/Placeholder.jpeg";
             }
 
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/ImagenesProductos/");
@@ -29,7 +29,7 @@ namespace BackEndAPI.Services.Global
                 await imagen.CopyToAsync(stream);
             }
 
-            return $"/uploads/ImagenesProductos/{fileName}";
+            return $"uploads/ImagenesProductos/{fileName}";
         }
 
         private static string GenerarNombreArchivoUnico(string folderPath, string fileNameWithoutExtension, string fileExtension)
