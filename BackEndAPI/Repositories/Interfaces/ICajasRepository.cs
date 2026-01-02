@@ -6,5 +6,6 @@ namespace BackEndAPI.Repositories.Interfaces
     {
         Task<Caja> CrearCaja(Caja caja);
         Task<Caja> BuscarCajaAbierta();
+        Task<Caja?> GetCajaPorId(Guid id);
     }
 }

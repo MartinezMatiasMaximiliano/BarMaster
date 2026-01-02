@@ -92,6 +92,8 @@ builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<ICajasRepository, CajasRepository>();    
 builder.Services.AddScoped<ICajasServices, CajasServices>();
+builder.Services.AddScoped<IMovimientosCajaRepository, MovimientosCajaRepository>();
+builder.Services.AddScoped<IMovimientosCajaServices, MovimientosCajaServices>();
 builder.Services.AddScoped<ICurrentDbContext, CurrentDbContext>();
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
