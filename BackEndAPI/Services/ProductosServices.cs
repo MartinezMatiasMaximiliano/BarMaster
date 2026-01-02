@@ -53,7 +53,7 @@ namespace BackEndAPI.Services
                 Precio = producto.Precio,
                 Activo = producto.Activo,
                 PathImagen = producto.PathImagen,
-
+                Categorias = producto.Categorias.ToList()
             }).ToList();
 
             return listaProductos;
