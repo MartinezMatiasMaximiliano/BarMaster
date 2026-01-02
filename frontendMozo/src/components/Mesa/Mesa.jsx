@@ -34,7 +34,12 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     };
 
     const handleAbrirMesa = () => {
-        abrirMesa(datos_mesa.id, mozo.codigoDeServicio);
+        var request = {
+            idMesa: datos_mesa.id,
+            codigoServicioMozo: mozo.codigoDeServicio,
+            abrir: true,
+        }
+        abrirMesa(request);
     };
 
     // Renderizado condicional simplificado

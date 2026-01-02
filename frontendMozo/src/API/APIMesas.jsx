@@ -36,12 +36,19 @@ export async function CrearMesa(datos) {
     }
 }
 
-export async function AbrirMesa(Id, codigoMozo) {
+export async function AbrirMesa(request) {
     try {
-        const response = await axios.put(`${BASE_URL}${Id}/Abrir?codigoMozo=${codigoMozo}`, {}, authService.getAuthHeaders());
+        console.log("REQUEST EN API", request);
+        const response = await axios.patch(`${BASE_URL}AbrirCerrar`, request, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
+        if (error.response?.data?.error?.mensaje) {
+            alert(error.response.data.error.mensaje);
+        } else if (error.response?.data) {
+            alert(error.response.data);
+        }
+        throw error;
     }
 }
 

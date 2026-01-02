@@ -62,9 +62,16 @@ export const useMesaLogic = () => {
         }
     };
 
-    const abrirMesa = async (mesaId, codigoServicio) => {
+    const abrirMesa = async (request) => {
         try {
-            const response = await AbrirMesa(mesaId, codigoServicio);
+            // Asegurar que el objeto tenga los nombres correctos en PascalCase para el DTO
+            const requestDTO = {
+                IdMesa: request.idMesa,
+                CodigoServicioMozo: request.codigoServicioMozo,
+                Abrir: request.abrir,
+            };
+            
+            const response = await AbrirMesa(requestDTO);
             const { pedido: { id, fechaRealizado, idMesa, numeroMesa, activo, items } } = response;
             
             const datosPedido = { 

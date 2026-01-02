@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { authService } from '../services/authService'
+
 const BASE_URL = import.meta.env.VITE_BASE_URL + "Personas/"
 const REGISTER_URL = import.meta.env.VITE_BASE_URL + "Register/"
 const MOZOS_URL = import.meta.env.VITE_BASE_URL + "Mozos/"
@@ -6,7 +8,7 @@ const MOZOS_URL = import.meta.env.VITE_BASE_URL + "Mozos/"
 
 export async function BuscarTodosLosMozos() {
     try {
-        const response = await axios.get(MOZOS_URL);
+        const response = await axios.get(MOZOS_URL, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -15,7 +17,7 @@ export async function BuscarTodosLosMozos() {
 
 export async function BuscarTodasLasPersonas() {
     try {
-        const response = await axios.get(BASE_URL);
+        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -33,7 +35,7 @@ export async function RegistrarPersona(datos) {
             activo: true,
             idRol: datos.rol,
             contrasena: datos.dni
-        });
+        }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         alert(error.response.data.error.mensaje)
@@ -52,7 +54,7 @@ export async function RegistrarMozo(datos) {
             activo: true,
             idRol: -2,
             contrasena: datos.dni
-        });
+        }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -69,7 +71,7 @@ export async function ModificarPersona(datos) {
                 direccion: datos.direccion,
                 dni: datos.dni,
                 telefono: datos.telefono,
-            });
+            }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -84,7 +86,7 @@ export async function ModificarPassword(id,nuevoPassword,token) {
             {
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
+                    ...authService.getAuthHeaders().headers
                 }
             }
         );
@@ -101,7 +103,7 @@ export async function ModificarCodigoMozo(datos) {
         const response = await axios.put(BASE_URL + datos.id,
             {
                 codigoDeServicio : datos.nuevoCodigo
-            });
+            }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -110,7 +112,7 @@ export async function ModificarCodigoMozo(datos) {
 
 export async function ActivarPersona(Id) {
     try {
-        const response = await axios.put(BASE_URL + Id + "/true");
+        const response = await axios.put(BASE_URL + Id + "/true", {}, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -120,7 +122,7 @@ export async function ActivarPersona(Id) {
 
 export async function DesactivarPersona(Id) {
     try {
-        const response = await axios.put(BASE_URL + Id + "/false");
+        const response = await axios.put(BASE_URL + Id + "/false", {}, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response
@@ -130,7 +132,7 @@ export async function DesactivarPersona(Id) {
 
 export async function BorrarPersona(Id,Token) {
     try {
-        const response = await axios.delete(BASE_URL + Id, { headers: { Authorization: 'Bearer ' + Token } });
+        const response = await axios.delete(BASE_URL + Id, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         return error.response

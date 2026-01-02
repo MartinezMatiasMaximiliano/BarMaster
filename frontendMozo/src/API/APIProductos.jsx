@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { authService } from '../services/authService'
 const BASE_URL = import.meta.env.VITE_BASE_URL + "Productos/"
 import connection from '../connections/HubConnMozo'
 
@@ -15,7 +16,7 @@ class CrearProductoDTO {
 
 export async function BuscarTodosLosProductos() {
     try {
-        const response = await axios.get(BASE_URL);
+        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -24,7 +25,7 @@ export async function BuscarTodosLosProductos() {
 
 export async function BuscarUnProducto(Id) {
     try {
-        const response = await axios.get(BASE_URL + Id);
+        const response = await axios.get(BASE_URL + Id, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -37,7 +38,8 @@ export async function CrearProducto(datos) {
             BASE_URL,
             new CrearProductoDTO(datos.nombre, datos.descripcion, datos.precio, true, datos.categorias, datos.imagen), {
             headers: {
-                "Content-Type": "multipart/form-data"
+                "Content-Type": "multipart/form-data",
+                ...authService.getAuthHeaders().headers
             }
         });
         connection.send("RecargarMenu");
@@ -60,7 +62,8 @@ export async function ModificarProducto(datos) {
                 imagen: datos.imagen,
             }, {
                 headers: {
-                    "Content-Type": "multipart/form-data"
+                    "Content-Type": "multipart/form-data",
+                    ...authService.getAuthHeaders().headers
                 }
             });
         return response.data;
@@ -73,7 +76,8 @@ export async function ActivarProducto(Id) {
     try {
         const response = await axios.put(BASE_URL + Id, { activo: true }, {
             headers: {
-                "Content-Type": "multipart/form-data"
+                "Content-Type": "multipart/form-data",
+                ...authService.getAuthHeaders().headers
             }
         });
         connection.send("RecargarMenu")
@@ -87,7 +91,8 @@ export async function DesactivarProducto(Id) {
     try {
         const response = await axios.put(BASE_URL + Id, { activo: false }, {
             headers: {
-                "Content-Type": "multipart/form-data"
+                "Content-Type": "multipart/form-data",
+                ...authService.getAuthHeaders().headers
             }
         });
         connection.send("RecargarMenu")
@@ -100,7 +105,7 @@ export async function DesactivarProducto(Id) {
 
 export async function BorrarProducto(Id, Token) {
     try {
-        const response = await axios.delete(BASE_URL + Id, { headers: { Authorization: 'Bearer ' + Token } });
+        const response = await axios.delete(BASE_URL + Id, authService.getAuthHeaders());
         connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
