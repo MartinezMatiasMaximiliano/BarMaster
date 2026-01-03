@@ -40,6 +40,8 @@ import KitchenIcon from '@mui/icons-material/Kitchen';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 
 const menuConfig = {
     Encargado: {
@@ -59,8 +61,10 @@ const menuConfig = {
             { path: "/kds", label: "Vista de Cocina", icon: KitchenIcon },
             { path: "/distribucion_mesas", label: "Distribución de las Mesas", icon: AppsOutlinedIcon },
         ],
+        "Caja": [
+            { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
+        ],
         "Finanzas": [
-            { path: "/caja", label: "Caja", icon: PointOfSaleOutlinedIcon },
             { path: "/graficas", label: "Graficas", icon: QueryStatsOutlinedIcon },
             { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
             { path: "/reporte_ventas", label: "Reporte Ventas", icon: AssessmentOutlinedIcon },
@@ -91,8 +95,10 @@ const menuConfig = {
             { path: "/reservas", label: "Reservas", icon: EventNoteOutlinedIcon },
             { path: "/distribucion_mesas", label: "Distribución de las Mesas", icon: AppsOutlinedIcon },
         ],
+        "Caja": [
+            { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
+        ],
         "Finanzas": [
-            { path: "/caja", label: "Caja", icon: PointOfSaleOutlinedIcon },
             { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
             { path: "/reporte_ventas", label: "Reporte Ventas", icon: AssessmentOutlinedIcon },
             { path: "/reporte_productos", label: "Reporte Productos", icon: AssessmentOutlinedIcon },
@@ -123,6 +129,7 @@ function NavBar_Botones(props) {
             "Gestión": BusinessOutlinedIcon,
             "Operaciones": WorkOutlineOutlinedIcon,
             "Finanzas": AttachMoneyOutlinedIcon,
+            "Caja": AccountBalanceWalletOutlinedIcon,
             "Configuración": SettingsOutlinedIcon,
         };
         return iconMap[folderName] || SettingsOutlinedIcon;

@@ -33,20 +33,20 @@ export const FormularioCierre = ({ formCierre, diferencia, guardando, onChange, 
                             type="date"
                             name="fecha"
                             value={formCierre.fecha}
-                            onChange={onChange}
                             fullWidth
                             InputLabelProps={{ shrink: true }}
-                            required
+                            disabled
+                            helperText="Se toma automáticamente la fecha actual"
                         />
                         <TextField
                             label="Hora de cierre"
                             type="time"
                             name="hora"
                             value={formCierre.hora}
-                            onChange={onChange}
                             fullWidth
                             InputLabelProps={{ shrink: true }}
-                            required
+                            disabled
+                            helperText="Se toma automáticamente la hora actual"
                         />
                         <TextField
                             label="Monto final real"

@@ -27,8 +27,15 @@ export const useCaja = () => {
             ]);
 
             if (caja.status === 'fulfilled') {
-                setCajaActiva(caja.value ?? null);
+                const cajaObtenida = caja.value ?? null;
+                setCajaActiva(cajaObtenida);
                 setFormCierre((prev) => ({ ...prev, ...buildTimestampDefaults() }));
+                
+                // Si hay una caja activa, cargar sus movimientos para calcular el balance
+                if (cajaObtenida?.id) {
+                    // Pasar el monto inicial directamente para evitar problemas de timing con el estado
+                    cargarMovimientos(cajaObtenida.id, cajaObtenida.montoInicial);
+                }
             } else {
                 throw caja.reason;
             }
@@ -44,7 +51,35 @@ export const useCaja = () => {
         }
     };
 
-    const cargarMovimientos = async (idCaja) => {
+    // Función para calcular los saldos de los movimientos basado en esEfectivo y esIngreso
+    const calcularSaldosMovimientos = (movimientos, montoInicial) => {
+        let saldoAcumulado = montoInicial;
+        
+        // Ordenar movimientos por fecha y hora ascendente (más antiguos primero) para calcular saldo
+        const movimientosOrdenados = [...movimientos].sort((a, b) => {
+            const fechaA = new Date(`${a.fecha}T${a.hora}`);
+            const fechaB = new Date(`${b.fecha}T${b.hora}`);
+            return fechaA - fechaB;
+        });
+        
+        // Calcular saldos
+        const movimientosConSaldo = movimientosOrdenados.map(mov => {
+            // Solo los movimientos con esEfectivo = true impactan en el balance
+            if (mov.esEfectivo) {
+                if (mov.esIngreso) {
+                    saldoAcumulado += mov.monto;
+                } else {
+                    saldoAcumulado -= mov.monto;
+                }
+            }
+            return { ...mov, saldo: saldoAcumulado };
+        });
+        
+        // Invertir el orden para mostrar del más nuevo al más antiguo (como vienen del backend)
+        return movimientosConSaldo.reverse();
+    };
+
+    const cargarMovimientos = async (idCaja, montoInicialOverride = null) => {
         const cajaId = idCaja || cajaActiva?.id || cajaSeleccionada?.id;
         if (!cajaId) return;
         
@@ -52,7 +87,12 @@ export const useCaja = () => {
         setError('');
         try {
             const data = await ObtenerMovimientosCaja(cajaId);
-            setMovimientos(data ?? []);
+            const cajaActual = cajaSeleccionada || cajaActiva;
+            const montoInicial = montoInicialOverride ?? cajaActual?.montoInicial ?? 0;
+            
+            // Calcular saldos basados en movimientos con esEfectivo = true
+            const movimientosConSaldo = calcularSaldosMovimientos(data ?? [], montoInicial);
+            setMovimientos(movimientosConSaldo);
         } catch (err) {
             setError(obtenerMensajeError(err, 'No pudimos cargar los movimientos.'));
             setMovimientos([]);
@@ -94,10 +134,6 @@ export const useCaja = () => {
     };
 
     const validarCierre = () => {
-        if (!formCierre.fecha || !formCierre.hora) {
-            setError('La fecha y hora de cierre son obligatorias.');
-            return false;
-        }
         if (formCierre.montoFinal === '' || Number.isNaN(Number(formCierre.montoFinal))) {
             setError('Debes indicar el monto final real.');
             return false;
@@ -143,13 +179,16 @@ export const useCaja = () => {
 
         setGuardando(true);
         try {
-            const payload = {
-                fechaCierre: formCierre.fecha,
-                horaCierre: formCierre.hora,
+            // Usar siempre la fecha y hora actual al cerrar la caja
+            const timestampActual = buildTimestampDefaults();
+            
+            // El endpoint solo necesita el ID de la caja, no el payload completo
+            await CerrarCaja(cajaActiva?.id, {
+                fechaCierre: timestampActual.fecha,
+                horaCierre: timestampActual.hora,
                 montoFinal: Number(formCierre.montoFinal),
                 observaciones: formCierre.observaciones
-            };
-            await CerrarCaja(cajaActiva?.id, payload);
+            });
             setMensaje('La caja se cerró correctamente.');
             setCajaActiva(null);
             setFormApertura(initialApertura());
@@ -162,19 +201,52 @@ export const useCaja = () => {
         }
     };
 
+    // Calcular el balance actual basado en movimientos con esEfectivo = true
+    const balanceActual = useMemo(() => {
+        if (!cajaActiva && !cajaSeleccionada) {
+            return 0;
+        }
+        
+        const cajaActual = cajaSeleccionada || cajaActiva;
+        const montoInicial = cajaActual?.montoInicial || 0;
+        
+        if (movimientos.length === 0) {
+            return montoInicial;
+        }
+        
+        // El balance es el saldo del último movimiento (más reciente) después de invertir
+        // Como los movimientos ya vienen con saldo calculado, tomamos el primero (más reciente)
+        const movimientoMasReciente = movimientos[0];
+        return movimientoMasReciente?.saldo ?? montoInicial;
+    }, [cajaActiva, cajaSeleccionada, movimientos]);
+
     const diferencia = useMemo(() => {
         if (!cajaActiva) {
             return 0;
         }
-        const esperado =
-            Number(cajaActiva?.montoEsperado ?? cajaActiva?.totalEsperado ?? cajaActiva?.montoInicial ?? 0);
+        const esperado = balanceActual;
         const final = Number(formCierre.montoFinal || 0);
         return final - esperado;
-    }, [cajaActiva, formCierre.montoFinal]);
+    }, [cajaActiva, formCierre.montoFinal, balanceActual]);
 
     useEffect(() => {
         cargarDatos();
     }, []);
+
+    // Actualizar fecha y hora del formulario de cierre cada minuto cuando hay caja activa
+    useEffect(() => {
+        if (!cajaActiva) return;
+
+        // Actualizar inmediatamente
+        setFormCierre((prev) => ({ ...prev, ...buildTimestampDefaults() }));
+
+        // Actualizar cada minuto
+        const interval = setInterval(() => {
+            setFormCierre((prev) => ({ ...prev, ...buildTimestampDefaults() }));
+        }, 60000); // 60000 ms = 1 minuto
+
+        return () => clearInterval(interval);
+    }, [cajaActiva]);
 
     useEffect(() => {
         if (tabValue === 1) {
@@ -206,6 +278,7 @@ export const useCaja = () => {
         formApertura,
         formCierre,
         diferencia,
+        balanceActual,
         // Setters
         setCajaSeleccionada,
         setTabValue,

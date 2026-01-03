@@ -157,9 +157,15 @@ export const Movimientos = ({
                                             <Typography
                                                 variant="body2"
                                                 fontWeight={600}
-                                                color={movimiento.tipo === 'apertura' ? 'primary.main' : 'success.main'}
+                                                color={
+                                                    movimiento.esEfectivo
+                                                        ? movimiento.esIngreso || movimiento.tipo === 'apertura'
+                                                            ? 'success.main'
+                                                            : 'error.main'
+                                                        : 'text.secondary'
+                                                }
                                             >
-                                                {movimiento.tipo === 'apertura' ? '+' : '+'}
+                                                {movimiento.esIngreso || movimiento.tipo === 'apertura' ? '+' : '-'}
                                                 {currencyFormatter.format(movimiento.monto ?? 0)}
                                             </Typography>
                                         </TableCell>
