@@ -1,4 +1,5 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -105,11 +106,11 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPatch("/Cajas/Cerrar")]
-        public async Task<IActionResult> CerrarCaja([FromBody] Guid IdCaja)
+        public async Task<IActionResult> CerrarCaja([FromBody] CerrarCajaDTO request)
         {
             try
             {
-                var result = await _cajasServices.CerrarCaja(IdCaja);
+                var result = await _cajasServices.CerrarCaja(request.IdCaja, request.MontoCierre);
                 return Ok(result);
             }
             catch (Exception ex)
