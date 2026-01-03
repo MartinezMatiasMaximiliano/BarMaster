@@ -58,6 +58,18 @@ namespace BackEndAPI.Services
             return movimientoCaja;
         }
 
+        public async Task<IEnumerable<MovimientoCaja>> BuscarMovimientosCajaPorCaja(Guid idCaja)
+        {
+            // Validar que la caja existe
+            var caja = await _cajasRepository.GetCajaPorId(idCaja);
+            if (caja == null)
+            {
+                throw new Exception("La caja no existe");
+            }
+
+            return await _movimientosCajaRepository.GetMovimientosCajaPorCaja(idCaja);
+        }
+
         public async Task<MovimientoCaja?> EliminarMovimientoCaja(Guid id)
         {
             var movimientoCajaAEliminar = await _movimientosCajaRepository.GetMovimientoCajaPorId(id);

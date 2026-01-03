@@ -40,6 +40,16 @@ namespace BackEndAPI.Repositories
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
+        public async Task<IEnumerable<MovimientoCaja>> GetMovimientosCajaPorCaja(Guid idCaja)
+        {
+            return await db.MovimientosCajas
+                .Include(m => m.TipoMovimientoCaja)
+                .Include(m => m.Caja)
+                .Where(m => m.IdCaja == idCaja)
+                .OrderByDescending(m => m.FechaMovimiento)
+                .ToListAsync();
+        }
+
         public async Task<MovimientoCaja?> ActualizarMovimientoCaja(MovimientoCaja movimientoCaja)
         {
             db.Entry(movimientoCaja).State = EntityState.Modified;
