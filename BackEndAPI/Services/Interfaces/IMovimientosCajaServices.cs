@@ -8,6 +8,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<MovimientoCaja> CrearMovimientoCaja(CrearMovimientoCajaDTO request);
         Task<IEnumerable<MovimientoCaja>> BuscarListaMovimientosCaja();
         Task<MovimientoCaja> BuscarMovimientoCajaPorId(Guid id);
+        Task<IEnumerable<MovimientoCaja>> BuscarMovimientosCajaPorCaja(Guid idCaja);
         Task<MovimientoCaja?> EliminarMovimientoCaja(Guid id);
     }
 }

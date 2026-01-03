@@ -31,7 +31,9 @@ namespace BackEndAPI.Controllers
                     TipoMovimientoCaja = new TipoMovimientoCajaDTO
                     {
                         Id = movimiento.IdTipoMovimientoCaja,
-                        Nombre = movimiento.TipoMovimientoCaja?.Nombre ?? string.Empty
+                        Nombre = movimiento.TipoMovimientoCaja?.Nombre ?? string.Empty,
+                        EsIngreso = movimiento.TipoMovimientoCaja?.EsIngreso ?? false,
+                        EsEfectivo = movimiento.TipoMovimientoCaja?.EsEfectivo ?? false
                     },
                     IdCaja = movimiento.IdCaja,
                     Monto = movimiento.Monto,
@@ -59,7 +61,9 @@ namespace BackEndAPI.Controllers
                     TipoMovimientoCaja = new TipoMovimientoCajaDTO
                     {
                         Id = movimientoCaja.IdTipoMovimientoCaja,
-                        Nombre = movimientoCaja.TipoMovimientoCaja?.Nombre ?? string.Empty
+                        Nombre = movimientoCaja.TipoMovimientoCaja?.Nombre ?? string.Empty,
+                        EsIngreso = movimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
+                        EsEfectivo = movimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
                     },
                     IdCaja = movimientoCaja.IdCaja,
                     Monto = movimientoCaja.Monto,
@@ -80,6 +84,42 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpGet("/MovimientosCaja/Caja/{idCaja}")]
+        public async Task<IActionResult> GetMovimientoCajaPorCaja(Guid idCaja)
+        {
+            try
+            {
+                var movimientosCaja = await _movimientosCajaServices.BuscarMovimientosCajaPorCaja(idCaja);
+                var listaMovimientosCaja = movimientosCaja.Select(movimiento => new MovimientoCajaDTO
+                {
+                    Id = movimiento.Id,
+                    TipoMovimientoCaja = new TipoMovimientoCajaDTO
+                    {
+                        Id = movimiento.IdTipoMovimientoCaja,
+                        Nombre = movimiento.TipoMovimientoCaja?.Nombre ?? string.Empty,
+                        EsIngreso = movimiento.TipoMovimientoCaja?.EsIngreso ?? false,
+                        EsEfectivo = movimiento.TipoMovimientoCaja?.EsEfectivo ?? false
+                    },
+                    IdCaja = movimiento.IdCaja,
+                    Monto = movimiento.Monto,
+                    Descripcion = movimiento.Descripcion,
+                    FechaMovimiento = movimiento.FechaMovimiento
+                }).ToList();
+
+                return Ok(listaMovimientosCaja);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "La caja no existe":
+                        return NotFound(new { message = ex.Message });
+                    default:
+                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+                }
+            }
+        }
+
         [HttpPost("/MovimientosCaja")]
         public async Task<IActionResult> CrearMovimientoCaja([FromBody] CrearMovimientoCajaDTO request)
         {
@@ -94,7 +134,9 @@ namespace BackEndAPI.Controllers
                     TipoMovimientoCaja = new TipoMovimientoCajaDTO
                     {
                         Id = movimientoCajaCompleto.IdTipoMovimientoCaja,
-                        Nombre = movimientoCajaCompleto.TipoMovimientoCaja?.Nombre ?? string.Empty
+                        Nombre = movimientoCajaCompleto.TipoMovimientoCaja?.Nombre ?? string.Empty,
+                        EsIngreso = movimientoCajaCompleto.TipoMovimientoCaja?.EsIngreso ?? false,
+                        EsEfectivo = movimientoCajaCompleto.TipoMovimientoCaja?.EsEfectivo ?? false
                     },
                     IdCaja = movimientoCajaCompleto.IdCaja,
                     Monto = movimientoCajaCompleto.Monto,
