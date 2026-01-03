@@ -75,7 +75,7 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPost("/Caja")]
+        [HttpPost("/Cajas/Abrir")]
         public async Task<IActionResult> AbrirCaja([FromBody] CrearCajaDTO request)
         {
             try
@@ -104,7 +104,7 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPatch("/Caja")]
+        [HttpPatch("/Cajas/Cerrar")]
         public async Task<IActionResult> CerrarCaja([FromBody] Guid IdCaja)
         {
             try

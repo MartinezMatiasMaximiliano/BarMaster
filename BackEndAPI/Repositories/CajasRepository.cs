@@ -38,5 +38,12 @@ namespace BackEndAPI.Repositories
         {
             return await Db.Cajas.ToListAsync();
         }
+
+        public async Task<Caja> ActualizarCaja(Caja caja)
+        {
+            Db.Cajas.Update(caja);
+            await Db.SaveChangesAsync();
+            return caja;
+        }
     }
 }

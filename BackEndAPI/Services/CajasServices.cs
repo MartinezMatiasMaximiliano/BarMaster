@@ -29,9 +29,21 @@ namespace BackEndAPI.Services
             return _cajasRepository.BuscarCajaAbierta();
         }
 
-        public Task<Caja> CerrarCaja(Guid IdCaja)
+        public async Task<Caja> CerrarCaja(Guid IdCaja)
         {
-            throw new NotImplementedException();
+            var caja = await _cajasRepository.GetCajaPorId(IdCaja);
+            if (caja == null)
+            {
+                throw new Exception("Caja no encontrada");
+            }
+
+            if (caja.FechaCierre != null)
+            {
+                throw new Exception("La caja ya está cerrada");
+            }
+
+            caja.FechaCierre = DateTime.UtcNow;
+            return await _cajasRepository.ActualizarCaja(caja);
         }
 
         public async Task<List<Caja>> BuscarListaCajas()
