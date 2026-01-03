@@ -33,5 +33,20 @@ namespace BackEndAPI.Services
         {
             throw new NotImplementedException();
         }
+
+        public async Task<List<Caja>> BuscarListaCajas()
+        {
+            return await _cajasRepository.BuscarListaCajas();
+        }
+
+        public async Task<Caja> BuscarCajaPorId(Guid id)
+        {
+            var caja = await _cajasRepository.GetCajaPorId(id);
+            if (caja == null)
+            {
+                throw new Exception("Caja no encontrada");
+            }
+            return caja;
+        }
     }
 }

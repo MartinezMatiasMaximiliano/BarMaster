@@ -1,9 +1,11 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Configuration;
+using System.Linq;
 
 namespace BackEndAPI.Controllers
 {
@@ -18,17 +20,60 @@ namespace BackEndAPI.Controllers
             _cajasServices = cajasServices;
         }
 
-        //public async Task<IActionResult> GetCajas()
-        //{
-        //    var result = await _cajasServices.GetCajas();
-        //    return Ok();
-        //}
+        [HttpGet("/Cajas")]
+        public async Task<IActionResult> GetListaCajas()
+        {
+            try
+            {
+                var cajas = await _cajasServices.BuscarListaCajas();
+                var listaCajas = cajas.Select(caja => new CajaDTO
+                {
+                    Id = caja.Id,
+                    IdSucursal = caja.IdSucursal,
+                    FechaApertura = caja.FechaApertura,
+                    FechaCierre = caja.FechaCierre,
+                    MontoApertura = caja.MontoApertura,
+                    MontoCierre = caja.MontoCierre,
+                    Diferencia = caja.Diferencia
+                }).ToList();
 
-        //public async Task<IActionResult> GetCajaById(int id)
-        //{
-        //    var result = await _cajasServices.GetCajaById(id);
-        //    return Ok(result);
-        //}
+                return Ok(listaCajas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+            }
+        }
+
+        [HttpGet("/Cajas/{id}")]
+        public async Task<IActionResult> GetCajaPorId(Guid id)
+        {
+            try
+            {
+                var caja = await _cajasServices.BuscarCajaPorId(id);
+                var cajaDTO = new CajaDTO
+                {
+                    Id = caja.Id,
+                    IdSucursal = caja.IdSucursal,
+                    FechaApertura = caja.FechaApertura,
+                    FechaCierre = caja.FechaCierre,
+                    MontoApertura = caja.MontoApertura,
+                    MontoCierre = caja.MontoCierre,
+                    Diferencia = caja.Diferencia
+                };
+                return Ok(cajaDTO);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Caja no encontrada":
+                        return NotFound(new { message = ex.Message });
+                    default:
+                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+                }
+            }
+        }
 
         [HttpPost("/Caja")]
         public async Task<IActionResult> AbrirCaja([FromBody] CrearCajaDTO request)

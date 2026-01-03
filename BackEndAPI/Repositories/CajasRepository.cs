@@ -33,5 +33,10 @@ namespace BackEndAPI.Repositories
         {
             return await Db.Cajas.FirstOrDefaultAsync(c => c.Id == id);
         }
+
+        public async Task<List<Caja>> BuscarListaCajas()
+        {
+            return await Db.Cajas.ToListAsync();
+        }
     }
 }
