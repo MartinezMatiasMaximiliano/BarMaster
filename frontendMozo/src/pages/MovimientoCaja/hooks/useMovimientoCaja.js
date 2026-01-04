@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CrearMovimientoCaja } from '../../../API/APIMovimientosCaja';
+import { CrearMovimientoCaja, ObtenerTiposMovimientoCaja } from '../../../API/APIMovimientosCaja';
 import { ObtenerCajaActiva } from '../../../API/APICaja';
 import { obtenerMensajeError } from '../../Caja/utils/constants';
 
@@ -12,26 +12,33 @@ const initialFormData = {
 export const useMovimientoCaja = () => {
     const [formData, setFormData] = useState(initialFormData);
     const [cajaActiva, setCajaActiva] = useState(null);
+    const [tiposMovimiento, setTiposMovimiento] = useState([]);
     const [loading, setLoading] = useState(true);
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
     const [mensaje, setMensaje] = useState('');
 
     useEffect(() => {
-        cargarCajaActiva();
+        cargarDatos();
     }, []);
 
-    const cargarCajaActiva = async () => {
+    const cargarDatos = async () => {
         setLoading(true);
         setError('');
         try {
-            const caja = await ObtenerCajaActiva();
+            const [caja, tipos] = await Promise.all([
+                ObtenerCajaActiva(),
+                ObtenerTiposMovimientoCaja()
+            ]);
+            
             setCajaActiva(caja);
+            setTiposMovimiento(tipos);
+            
             if (!caja) {
                 setError('No hay una caja abierta. Debes abrir una caja primero desde el Arqueo de Caja.');
             }
         } catch (err) {
-            setError(obtenerMensajeError(err, 'No pudimos verificar el estado de la caja.'));
+            setError(obtenerMensajeError(err, 'No pudimos cargar los datos.'));
         } finally {
             setLoading(false);
         }
@@ -96,6 +103,7 @@ export const useMovimientoCaja = () => {
         // Estados
         formData,
         cajaActiva,
+        tiposMovimiento,
         loading,
         guardando,
         error,
@@ -103,7 +111,7 @@ export const useMovimientoCaja = () => {
         // Funciones
         handleChange,
         handleSubmit,
-        cargarCajaActiva,
+        cargarDatos,
         limpiarMensajes
     };
 };

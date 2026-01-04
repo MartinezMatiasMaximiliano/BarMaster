@@ -46,18 +46,19 @@ function transformarCaja(caja) {
 
 export async function ObtenerCajaActiva() {
     try {
-        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
-        const cajas = response.data || [];
+        const response = await axios.get(`${BASE_URL}/Activa`, authService.getAuthHeaders());
         
-        // Buscar la caja abierta (sin fecha de cierre)
-        const cajaAbierta = cajas.find(caja => !(caja.fechaCierre || caja.FechaCierre));
-        
-        if (!cajaAbierta) {
+        // Si no hay caja activa, el endpoint retorna 404
+        if (response.status === 404) {
             return null;
         }
         
-        return transformarCaja(cajaAbierta);
+        return transformarCaja(response.data);
     } catch (error) {
+        // Si el error es 404, significa que no hay caja activa
+        if (error.response?.status === 404) {
+            return null;
+        }
         console.error('Error al obtener caja activa:', error);
         throw error;
     }

@@ -9,7 +9,7 @@ import Filtros from "../components/Filtros/Filtros";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 import { Campos } from "../configs/agregar/Reservas"
-import { formatearFecha } from "../Helpers/HelperFunctions";
+import { formatearFechaCompleta } from "../Helpers/HelperFunctions";
 import { Chip } from "@mui/material";
 
 // Diccionario de colores para cada IdEstado
@@ -49,7 +49,7 @@ function Abm_Reservas(props) {
         {
             key: "fechaHora",
             label: "Fecha y Hora",
-            render: (fila) => formatearFecha(fila.fechaHora)
+            render: (fila) => formatearFechaCompleta(fila.fechaHora)
         },
         { key: "nombreReserva", label: "Nombre de Reserva" },
         { 

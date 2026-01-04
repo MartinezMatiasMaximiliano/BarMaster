@@ -39,13 +39,45 @@ export function formatearFecha(fechaISO) {
     return `${dia}/${mes}/${anio} ${horas}:${minutos}`;
 }
 
-export function formatearFechaCompleta(fecha) {
-    return fecha.toLocaleDateString('es-AR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+// Función para formatear fecha en el formato: "Lunes 6 de Enero 16:40hs"
+// Acepta:
+// - Un string ISO (ej: "2024-01-06T16:40:00")
+// - Un objeto Date
+// - fecha y hora por separado (fecha: "2024-01-06", hora: "16:40")
+export function formatearFechaCompleta(fecha, hora) {
+    let fechaObj;
+    
+    // Si se pasan fecha y hora por separado (caso de Caja)
+    if (hora !== undefined && typeof fecha === 'string' && !fecha.includes('T')) {
+        fechaObj = new Date(`${fecha}T${hora || '00:00'}`);
+    } 
+    // Si es un string ISO o un objeto Date (caso de Reservas)
+    else {
+        fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
+    }
+    
+    if (!fechaObj || isNaN(fechaObj.getTime())) {
+        return fecha || '';
+    }
+    
+    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
+    const diaSemana = diasSemana[fechaObj.getDay()];
+    const dia = fechaObj.getDate();
+    const mes = meses[fechaObj.getMonth()];
+    
+    // Si se pasó hora por separado, usarla; sino extraer de fechaObj
+    let horaFormateada;
+    if (hora !== undefined && typeof fecha === 'string' && !fecha.includes('T')) {
+        horaFormateada = hora || '00:00';
+    } else {
+        const horas = String(fechaObj.getHours()).padStart(2, '0');
+        const minutos = String(fechaObj.getMinutes()).padStart(2, '0');
+        horaFormateada = `${horas}:${minutos}`;
+    }
+    
+    return `${diaSemana} ${dia} de ${mes} ${horaFormateada}hs`;
 }
 
 export function formatearHoraCompleta(fecha) {
@@ -100,14 +132,14 @@ export function MappearPersonas(personas) {
     return (
         personas.map(persona => ({
             id: persona.id,
-            nombre: persona.datosPersonales.nombres,
-            apellido: persona.datosPersonales.apellido,
-            dni: persona.datosPersonales.dni,
-            direccion: persona.datosPersonales.direccion,
-            telefono: persona.datosPersonales.telefono,
-            rol: persona.rol.id,
-            rolNombre: persona.rol.nombre,
-            activo: persona.datosPersonales.activo
+            nombre: persona.nombres,
+            apellido: persona.apellido,
+            dni: persona.dni,
+            direccion: persona.direccion,
+            telefono: persona.telefono,
+            rol: persona.rol?.id || persona.idRol,
+            rolNombre: persona.rol?.nombre || '',
+            activo: persona.activo
         }))
     )
 }

@@ -3,12 +3,12 @@ import { Alert, Box, CircularProgress, Container, Stack } from '@mui/material';
 import { useMovimientoCaja } from './hooks/useMovimientoCaja';
 import { FormularioMovimiento } from './components/FormularioMovimiento';
 import { Header } from './components/Header';
-import { TIPOS_MOVIMIENTO_CAJA } from '../../API/APIMovimientosCaja';
 
 function MovimientoCaja() {
     const {
         formData,
         cajaActiva,
+        tiposMovimiento,
         loading,
         guardando,
         error,
@@ -18,7 +18,7 @@ function MovimientoCaja() {
         limpiarMensajes
     } = useMovimientoCaja();
 
-    const tipoSeleccionado = TIPOS_MOVIMIENTO_CAJA.find(
+    const tipoSeleccionado = tiposMovimiento.find(
         (t) => t.id === Number(formData.idTipoMovimientoCaja)
     );
 
@@ -55,6 +55,7 @@ function MovimientoCaja() {
                     <FormularioMovimiento
                         formData={formData}
                         cajaActiva={cajaActiva}
+                        tiposMovimiento={tiposMovimiento}
                         guardando={guardando}
                         tipoSeleccionado={tipoSeleccionado}
                         onChange={handleChange}

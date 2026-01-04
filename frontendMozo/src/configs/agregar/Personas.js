@@ -13,9 +13,19 @@ const camposBase = [
 export const inicializarCampos = async () => {
   try {
     const data = await BuscarTodosLosRoles();
+    
+    // Verificar que data sea un array
+    if (!Array.isArray(data)) {
+      console.error("Los datos de roles no son un array:", data);
+      return camposBase;
+    }
+    
     const roles = data
       .filter(r => r.activo === true || r.activo === undefined)
-      .map(r => ({ id: r.id, nombre: r.nombre }));
+      .map(r => ({ 
+        id: r.id || r.Id, 
+        nombre: r.nombre || r.Nombre 
+      }));
 
     // Retornar una copia de los campos con las opciones cargadas
     return camposBase.map((campo, index) => 

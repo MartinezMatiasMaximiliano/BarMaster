@@ -30,21 +30,6 @@ export const obtenerMensajeError = (err, fallback) =>
     err?.message ||
     fallback;
 
-// Función para formatear fecha en el formato: "Sábado 3 de Enero 16:40hs"
-export const formatearFechaCompleta = (fecha, hora) => {
-    if (!fecha) return '';
-    
-    const fechaObj = new Date(`${fecha}T${hora || '00:00'}`);
-    if (isNaN(fechaObj.getTime())) return fecha;
-    
-    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    
-    const diaSemana = diasSemana[fechaObj.getDay()];
-    const dia = fechaObj.getDate();
-    const mes = meses[fechaObj.getMonth()];
-    const horaFormateada = hora || '00:00';
-    
-    return `${diaSemana} ${dia} de ${mes} ${horaFormateada}hs`;
-};
+// Re-exportar la función compartida desde HelperFunctions
+export { formatearFechaCompleta } from '../../../Helpers/HelperFunctions';
 

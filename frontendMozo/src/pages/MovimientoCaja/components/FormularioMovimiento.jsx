@@ -16,12 +16,12 @@ import {
     TextField
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { TIPOS_MOVIMIENTO_CAJA } from '../../../API/APIMovimientosCaja';
 import { InfoTipoMovimiento } from './InfoTipoMovimiento';
 
 export const FormularioMovimiento = ({
     formData,
     cajaActiva,
+    tiposMovimiento,
     guardando,
     tipoSeleccionado,
     onChange,
@@ -56,7 +56,7 @@ export const FormularioMovimiento = ({
                                 onChange={onChange}
                                 label="Tipo de Movimiento"
                             >
-                                {TIPOS_MOVIMIENTO_CAJA.map((tipo) => (
+                                {tiposMovimiento.map((tipo) => (
                                     <MenuItem key={tipo.id} value={tipo.id}>
                                         {tipo.nombre}
                                     </MenuItem>

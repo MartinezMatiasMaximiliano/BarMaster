@@ -1,12 +1,15 @@
 import axios from 'axios'
+import { authService } from '../services/authService'
+
 const BASE_URL = import.meta.env.VITE_BASE_URL + "Roles/"
 
 export async function BuscarTodosLosRoles() {
     try {
-        const response = await axios.get(BASE_URL);
+        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error al buscar roles:", error);
+        throw error;
     }
 }
 
