@@ -22,7 +22,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LocalDiningIcon from '@mui/icons-material/LocalDining';
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
-import { currencyFormatter } from '../utils/constants';
+import { currencyFormatter, formatearFechaCompleta } from '../utils/constants';
 
 export const Movimientos = ({
     cajaActiva,
@@ -58,8 +58,8 @@ export const Movimientos = ({
                 title={esCajaCerrada ? "Movimientos de caja cerrada" : "Movimientos de la caja activa"}
                 subheader={
                     esCajaCerrada
-                        ? `Caja cerrada: ${fechaInicio} ${horaInicio} - ${fechaFin} ${horaFin}`
-                        : `Registro completo de transacciones desde ${fechaInicio} ${horaInicio}`
+                        ? `Caja cerrada: ${formatearFechaCompleta(fechaInicio, horaInicio)} - ${formatearFechaCompleta(fechaFin, horaFin)}`
+                        : `Registro completo de transacciones desde ${formatearFechaCompleta(fechaInicio, horaInicio)}`
                 }
                 avatar={<ReceiptIcon color="action" />}
                 action={
@@ -116,10 +116,7 @@ export const Movimientos = ({
                                     <TableRow key={movimiento.id} hover>
                                         <TableCell>
                                             <Typography variant="body2">
-                                                {movimiento.fecha}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                                {movimiento.hora}
+                                                {formatearFechaCompleta(movimiento.fecha, movimiento.hora)}
                                             </Typography>
                                         </TableCell>
                                         <TableCell>

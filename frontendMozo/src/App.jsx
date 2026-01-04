@@ -21,6 +21,7 @@ import TakeAway from './pages/TakeAway'
 import Abm_Reservas from './pages/Abm_Reservas'
 import Abm_Planos from './pages/Abm_Planos'
 import Caja from './pages/Caja/Caja'
+import MovimientoCaja from './pages/MovimientoCaja/MovimientoCaja'
 import KDS from './pages/KDS/KDS'
 import Mi_Plan from './pages/Mi_Plan'
 import Reportes from './pages/Reportes/Reportes'
@@ -303,6 +304,7 @@ function App() {
                             <Route path="/sistema_sucursal" element={<Index mesas={mesas} datos_mozos={datos_mozos_listado} />} />
                             <Route path="/Index2" element={<Index2 mesas={mesas} datos_mozos={datos_mozos_listado} />} />
                             <Route path="/caja" element={<Control_Login><Caja /></Control_Login>} />
+                            <Route path="/movimiento_caja" element={<Control_Login><MovimientoCaja /></Control_Login>} />
                             <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
                             <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
                             <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />

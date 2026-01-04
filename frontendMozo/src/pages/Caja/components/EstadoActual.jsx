@@ -36,7 +36,7 @@ export const EstadoActual = ({ cajaActiva, balanceActual, onRecargar }) => {
             <CardContent>
                 <Stack direction="row" spacing={2} alignItems="center">
                     <Chip
-                        color={cajaActiva ? 'success' : 'default'}
+                        color={cajaActiva ? 'success' : 'error'}
                         label={cajaActiva ? 'Caja abierta' : 'Caja cerrada'}
                     />
                     {cajaActiva && (

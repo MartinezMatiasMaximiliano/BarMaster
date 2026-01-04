@@ -82,21 +82,19 @@ export async function AbrirCaja(datos) {
 
 export async function CerrarCaja(idCaja, datos) {
     try {
-        // El endpoint PATCH /Cajas/Cerrar espera solo el Guid de la caja en el body
+        // El endpoint PATCH /Cajas/Cerrar espera un objeto con IdCaja y MontoCierre
         // Asegurar que idCaja sea un string válido
         const idCajaString = typeof idCaja === 'string' ? idCaja : idCaja.toString();
         
-        // Enviar el Guid como string en el body
+        const payload = {
+            idCaja: idCajaString,
+            montoCierre: Number(datos.montoFinal) || 0
+        };
+        
         const response = await axios.patch(
             `${BASE_URL}/Cerrar`,
-            idCajaString,
-            {
-                ...authService.getAuthHeaders(),
-                headers: {
-                    ...authService.getAuthHeaders().headers,
-                    'Content-Type': 'application/json'
-                }
-            }
+            payload,
+            authService.getAuthHeaders()
         );
         
         return response.data;
@@ -120,10 +118,16 @@ export async function ObtenerHistorialCaja(params = {}) {
             .filter(caja => caja.fechaCierre || caja.FechaCierre)
             .map(caja => transformarCaja(caja))
             .sort((a, b) => {
-                // Ordenar por fecha de cierre descendente
-                const fechaA = new Date(b.fechaCierre || b.fechaApertura);
-                const fechaB = new Date(a.fechaCierre || a.fechaApertura);
-                return fechaA - fechaB;
+                // Ordenar por fecha y hora de cierre descendente (más nuevos primero)
+                // Si no hay fecha de cierre, usar fecha de apertura como fallback
+                const fechaCierreA = a.fechaCierre ? `${a.fechaCierre}T${a.horaCierre || '00:00'}` : a.fechaApertura;
+                const fechaCierreB = b.fechaCierre ? `${b.fechaCierre}T${b.horaCierre || '00:00'}` : b.fechaApertura;
+                
+                const fechaA = new Date(fechaCierreA);
+                const fechaB = new Date(fechaCierreB);
+                
+                // Orden descendente: más reciente primero
+                return fechaB - fechaA;
             });
         
         // Aplicar límite si se especifica

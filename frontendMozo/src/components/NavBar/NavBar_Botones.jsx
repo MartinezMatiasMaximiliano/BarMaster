@@ -42,6 +42,7 @@ import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
+import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 
 const menuConfig = {
     Encargado: {
@@ -63,6 +64,7 @@ const menuConfig = {
         ],
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
+            { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
         ],
         "Finanzas": [
             { path: "/graficas", label: "Graficas", icon: QueryStatsOutlinedIcon },
@@ -97,6 +99,7 @@ const menuConfig = {
         ],
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
+            { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
         ],
         "Finanzas": [
             { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },

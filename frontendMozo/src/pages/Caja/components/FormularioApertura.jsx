@@ -34,20 +34,20 @@ export const FormularioApertura = ({ formApertura, guardando, onChange, onSubmit
                             type="date"
                             name="fecha"
                             value={formApertura.fecha}
-                            onChange={onChange}
                             fullWidth
                             InputLabelProps={{ shrink: true }}
-                            required
+                            disabled
+                            helperText="Se toma automáticamente la fecha actual"
                         />
                         <TextField
                             label="Hora de apertura"
                             type="time"
                             name="hora"
                             value={formApertura.hora}
-                            onChange={onChange}
                             fullWidth
                             InputLabelProps={{ shrink: true }}
-                            required
+                            disabled
+                            helperText="Se toma automáticamente la hora actual"
                         />
                         <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
                             <TextField

@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { currencyFormatter } from '../utils/constants';
+import { currencyFormatter, formatearFechaCompleta } from '../utils/constants';
 
 export const Historial = ({ historial, loadingHistorial, cajaSeleccionada, onRefresh, onClickArqueo }) => {
     return (
@@ -68,17 +68,15 @@ export const Historial = ({ historial, loadingHistorial, cajaSeleccionada, onRef
                                         }
                                     }}
                                 >
-                                    {estaSeleccionada && (
-                                        <Chip
-                                            size="small"
-                                            label="Ver movimientos"
-                                            color="primary"
-                                            sx={{ position: 'absolute', top: 8, right: 8 }}
-                                        />
-                                    )}
+                                    <Chip
+                                        size="small"
+                                        label="Ver movimientos"
+                                        color={estaSeleccionada ? "primary" : "default"}
+                                        variant={estaSeleccionada ? "filled" : "outlined"}
+                                        sx={{ position: 'absolute', top: 8, right: 8 }}
+                                    />
                                     <Typography variant="subtitle2">
-                                        {item.fechaApertura} {item.horaApertura} - {item.fechaCierre}{' '}
-                                        {item.horaCierre}
+                                        {formatearFechaCompleta(item.fechaApertura, item.horaApertura)} - {formatearFechaCompleta(item.fechaCierre, item.horaCierre)}
                                     </Typography>
                                     <Stack direction="row" spacing={1} alignItems="center" mt={0.5}>
                                         <Typography variant="body2" color="text.secondary">

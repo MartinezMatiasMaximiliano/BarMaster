@@ -122,10 +122,6 @@ export const useCaja = () => {
     };
 
     const validarApertura = () => {
-        if (!formApertura.fecha || !formApertura.hora) {
-            setError('La fecha y hora de apertura son obligatorias.');
-            return false;
-        }
         if (!formApertura.montoInicial || Number(formApertura.montoInicial) < 0) {
             setError('El monto inicial debe ser un número positivo.');
             return false;
@@ -152,9 +148,12 @@ export const useCaja = () => {
 
         setGuardando(true);
         try {
+            // Usar siempre la fecha y hora actual al abrir la caja
+            const timestampActual = buildTimestampDefaults();
+            
             const payload = {
-                fechaApertura: formApertura.fecha,
-                horaApertura: formApertura.hora,
+                fechaApertura: timestampActual.fecha,
+                horaApertura: timestampActual.hora,
                 montoInicial: Number(formApertura.montoInicial)
             };
             const caja = await AbrirCaja(payload);
@@ -232,6 +231,21 @@ export const useCaja = () => {
     useEffect(() => {
         cargarDatos();
     }, []);
+
+    // Actualizar fecha y hora del formulario de apertura cada minuto cuando NO hay caja activa
+    useEffect(() => {
+        if (cajaActiva) return;
+
+        // Actualizar inmediatamente
+        setFormApertura((prev) => ({ ...prev, ...buildTimestampDefaults() }));
+
+        // Actualizar cada minuto
+        const interval = setInterval(() => {
+            setFormApertura((prev) => ({ ...prev, ...buildTimestampDefaults() }));
+        }, 60000); // 60000 ms = 1 minuto
+
+        return () => clearInterval(interval);
+    }, [cajaActiva]);
 
     // Actualizar fecha y hora del formulario de cierre cada minuto cuando hay caja activa
     useEffect(() => {
