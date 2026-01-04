@@ -46,6 +46,37 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpGet("/Cajas/Activa")]
+        public async Task<IActionResult> GetCajaActiva()
+        {
+            try
+            {
+                var caja = await _cajasServices.BuscarCajaAbierta();
+                
+                if (caja == null)
+                {
+                    return NotFound(new { message = "No hay una caja abierta" });
+                }
+
+                var cajaDTO = new CajaDTO
+                {
+                    Id = caja.Id,
+                    IdSucursal = caja.IdSucursal,
+                    FechaApertura = caja.FechaApertura,
+                    FechaCierre = caja.FechaCierre,
+                    MontoApertura = caja.MontoApertura,
+                    MontoCierre = caja.MontoCierre,
+                    Diferencia = caja.Diferencia
+                };
+                
+                return Ok(cajaDTO);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+            }
+        }
+
         [HttpGet("/Cajas/{id}")]
         public async Task<IActionResult> GetCajaPorId(Guid id)
         {
