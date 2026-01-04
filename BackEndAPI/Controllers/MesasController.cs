@@ -82,9 +82,20 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var mesaActualizada = await _mesasServices.AbrirCerrarMesa(request);
+                var Visita = await _mesasServices.AbrirCerrarMesa(request);
                 string accion = request.Abrir ? "abrir" : "cerrar";
-                return Ok(new EntregaDTO(200, "MODIFIED", $"Mesa {accion} exitosamente, Id:{mesaActualizada.Id}"));
+                
+                var response = new VisitaDTO
+                {
+                    Id = Visita.Id,
+                    IdCaja = Visita.IdCaja,
+                    IdMesa = Visita.IdMesa,
+                    IdMozo = Visita.IdMozo ?? Guid.Empty,
+                    FechaHora = Visita.FechaHora,
+                    Estado = Visita.Estado
+                };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -92,6 +103,8 @@ namespace BackEndAPI.Controllers
                 {
                     case "No se encontró un mozo con ese codigo de servicio":
                         return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    case "No hay una caja abierta para asignar la visita":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "No se encontró la mesa con el Id especificado":
                         return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     case "La mesa ya está en el estado solicitado":
