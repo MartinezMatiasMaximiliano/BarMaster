@@ -13,12 +13,14 @@ namespace BackEndAPI.Services
     {
         private readonly IMesasRepository _mesasRepository;
         private readonly IPersonasRepository _personasRepository;
+        private readonly ICajasRepository _CajasRepository;
         private readonly IVisitasRepository _visitasRepository;
-        public MesasServices(IMesasRepository mesasRepository, IPersonasRepository personasRepository, IVisitasRepository visitasRepository)
+        public MesasServices(IMesasRepository mesasRepository, IPersonasRepository personasRepository, IVisitasRepository visitasRepository, ICajasRepository cajasRepository)
         {
             _mesasRepository = mesasRepository;
             _personasRepository = personasRepository;
             _visitasRepository = visitasRepository;
+            _CajasRepository = cajasRepository;
         }
 
         public async Task<Mesa?> CrearMesa(CrearMesaDTO request)
@@ -93,9 +95,17 @@ namespace BackEndAPI.Services
                     throw new Exception("No se encontró un mozo con ese codigo de servicio");
                 }
 
+                var CajaAbierta = await _CajasRepository.BuscarCajaAbierta();
+
+                if (CajaAbierta == null)
+                {
+                    throw new Exception("No hay una caja abierta para asignar la visita");
+                }
+
+
                 var Visita = new Visita()
                 {
-                    //IdCaja = request.IdMesa,
+                    IdCaja = CajaAbierta.Id,
                     IdMozo = mozoBuscado.Id,
                     IdMesa = buscarMesa.Id,
                     FechaHora = DateTime.UtcNow,
