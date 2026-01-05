@@ -42,6 +42,7 @@ import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
+import HistoryIcon from '@mui/icons-material/History';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 
 const menuConfig = {
@@ -64,6 +65,7 @@ const menuConfig = {
         ],
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
+            { path: "/historial_caja", label: "Historial", icon: HistoryIcon },
             { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
         ],
         "Finanzas": [
@@ -99,6 +101,7 @@ const menuConfig = {
         ],
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
+            { path: "/historial_caja", label: "Historial", icon: HistoryIcon },
             { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
         ],
         "Finanzas": [

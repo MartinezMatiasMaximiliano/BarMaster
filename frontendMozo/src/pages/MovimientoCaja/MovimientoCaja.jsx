@@ -13,6 +13,8 @@ function MovimientoCaja() {
         guardando,
         error,
         mensaje,
+        errorMonto,
+        balanceActual,
         handleChange,
         handleSubmit,
         limpiarMensajes
@@ -58,6 +60,8 @@ function MovimientoCaja() {
                         tiposMovimiento={tiposMovimiento}
                         guardando={guardando}
                         tipoSeleccionado={tipoSeleccionado}
+                        errorMonto={errorMonto}
+                        balanceActual={balanceActual}
                         onChange={handleChange}
                         onSubmit={handleSubmit}
                     />

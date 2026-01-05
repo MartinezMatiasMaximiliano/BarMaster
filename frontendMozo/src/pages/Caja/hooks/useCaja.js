@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AbrirCaja, CerrarCaja, ObtenerCajaActiva, ObtenerHistorialCaja, ObtenerMovimientosCaja } from '../../../API/APICaja';
+import { AbrirCaja, CerrarCaja, ObtenerCajaActiva, ObtenerMovimientosCaja } from '../../../API/APICaja';
 import { buildTimestampDefaults, initialApertura, initialCierre, obtenerMensajeError } from '../utils/constants';
 
 export const useCaja = () => {
     const [cajaActiva, setCajaActiva] = useState(null);
-    const [historial, setHistorial] = useState([]);
     const [movimientos, setMovimientos] = useState([]);
-    const [cajaSeleccionada, setCajaSeleccionada] = useState(null);
+    const [movimientosCajaActiva, setMovimientosCajaActiva] = useState([]);
     const [loadingCaja, setLoadingCaja] = useState(true);
-    const [loadingHistorial, setLoadingHistorial] = useState(false);
     const [loadingMovimientos, setLoadingMovimientos] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
@@ -21,27 +19,14 @@ export const useCaja = () => {
         setLoadingCaja(true);
         setError('');
         try {
-            const [caja, itemsHistorial] = await Promise.allSettled([
-                ObtenerCajaActiva(),
-                ObtenerHistorialCaja({ limite: 5 })
-            ]);
-
-            if (caja.status === 'fulfilled') {
-                const cajaObtenida = caja.value ?? null;
-                setCajaActiva(cajaObtenida);
-                setFormCierre((prev) => ({ ...prev, ...buildTimestampDefaults() }));
-                
-                // Si hay una caja activa, cargar sus movimientos para calcular el balance
-                if (cajaObtenida?.id) {
-                    // Pasar el monto inicial directamente para evitar problemas de timing con el estado
-                    cargarMovimientos(cajaObtenida.id, cajaObtenida.montoInicial);
-                }
-            } else {
-                throw caja.reason;
-            }
-
-            if (itemsHistorial.status === 'fulfilled') {
-                setHistorial(itemsHistorial.value ?? []);
+            const caja = await ObtenerCajaActiva();
+            setCajaActiva(caja);
+            setFormCierre((prev) => ({ ...prev, ...buildTimestampDefaults() }));
+            
+            // Si hay una caja activa, cargar sus movimientos para calcular el balance
+            if (caja?.id) {
+                // Pasar el monto inicial directamente para evitar problemas de timing con el estado
+                cargarMovimientosCajaActiva(caja.id, caja.montoInicial);
             }
         } catch (err) {
             setCajaActiva(null);
@@ -79,6 +64,23 @@ export const useCaja = () => {
         return movimientosConSaldo.reverse();
     };
 
+    // Función para cargar movimientos de la caja activa (para calcular balance)
+    const cargarMovimientosCajaActiva = async (idCaja, montoInicialOverride = null) => {
+        if (!idCaja) return;
+        
+        try {
+            const data = await ObtenerMovimientosCaja(idCaja);
+            const montoInicial = montoInicialOverride ?? cajaActiva?.montoInicial ?? 0;
+            
+            // Calcular saldos basados en movimientos con esEfectivo = true
+            const movimientosConSaldo = calcularSaldosMovimientos(data ?? [], montoInicial);
+            setMovimientosCajaActiva(movimientosConSaldo);
+        } catch (err) {
+            console.error('Error al cargar movimientos de caja activa:', err);
+            setMovimientosCajaActiva([]);
+        }
+    };
+
     const cargarMovimientos = async (idCaja, montoInicialOverride = null) => {
         const cajaId = idCaja || cajaActiva?.id || cajaSeleccionada?.id;
         if (!cajaId) return;
@@ -93,6 +95,11 @@ export const useCaja = () => {
             // Calcular saldos basados en movimientos con esEfectivo = true
             const movimientosConSaldo = calcularSaldosMovimientos(data ?? [], montoInicial);
             setMovimientos(movimientosConSaldo);
+            
+            // Si es la caja activa, también actualizar movimientosCajaActiva
+            if (cajaId === cajaActiva?.id) {
+                setMovimientosCajaActiva(movimientosConSaldo);
+            }
         } catch (err) {
             setError(obtenerMensajeError(err, 'No pudimos cargar los movimientos.'));
             setMovimientos([]);
@@ -101,20 +108,6 @@ export const useCaja = () => {
         }
     };
 
-    const handleClickArqueo = (arqueo) => {
-        if (cajaSeleccionada?.id === arqueo.id) {
-            setCajaSeleccionada(null);
-            if (cajaActiva?.id) {
-                setTabValue(1);
-                cargarMovimientos(cajaActiva.id);
-            } else {
-                setTabValue(0);
-            }
-        } else {
-            setCajaSeleccionada(arqueo);
-            setTabValue(1);
-        }
-    };
 
     const handleChange = (setter) => (event) => {
         const { name, value } = event.target;
@@ -201,23 +194,23 @@ export const useCaja = () => {
     };
 
     // Calcular el balance actual basado en movimientos con esEfectivo = true
+    // Solo para la caja activa, usando movimientosCajaActiva (no afectado por caja seleccionada)
     const balanceActual = useMemo(() => {
-        if (!cajaActiva && !cajaSeleccionada) {
+        if (!cajaActiva) {
             return 0;
         }
         
-        const cajaActual = cajaSeleccionada || cajaActiva;
-        const montoInicial = cajaActual?.montoInicial || 0;
+        const montoInicial = cajaActiva?.montoInicial || 0;
         
-        if (movimientos.length === 0) {
+        if (movimientosCajaActiva.length === 0) {
             return montoInicial;
         }
         
         // El balance es el saldo del último movimiento (más reciente) después de invertir
         // Como los movimientos ya vienen con saldo calculado, tomamos el primero (más reciente)
-        const movimientoMasReciente = movimientos[0];
+        const movimientoMasReciente = movimientosCajaActiva[0];
         return movimientoMasReciente?.saldo ?? montoInicial;
-    }, [cajaActiva, cajaSeleccionada, movimientos]);
+    }, [cajaActiva, movimientosCajaActiva]);
 
     const diferencia = useMemo(() => {
         if (!cajaActiva) {
@@ -263,27 +256,25 @@ export const useCaja = () => {
     }, [cajaActiva]);
 
     useEffect(() => {
-        if (tabValue === 1) {
-            if (cajaSeleccionada?.id) {
-                cargarMovimientos(cajaSeleccionada.id);
-            } else if (cajaActiva?.id) {
-                cargarMovimientos(cajaActiva.id);
-            }
-        } else if (tabValue === 0) {
-            if (!cajaActiva && cajaSeleccionada) {
-                setCajaSeleccionada(null);
-            }
+        if (tabValue === 1 && cajaActiva?.id) {
+            cargarMovimientos(cajaActiva.id);
         }
-    }, [cajaActiva?.id, cajaSeleccionada?.id, tabValue]);
+    }, [cajaActiva?.id, tabValue]);
+
+    // Mantener movimientosCajaActiva actualizados cuando cambia la caja activa
+    useEffect(() => {
+        if (cajaActiva?.id) {
+            cargarMovimientosCajaActiva(cajaActiva.id, cajaActiva.montoInicial);
+        } else {
+            setMovimientosCajaActiva([]);
+        }
+    }, [cajaActiva?.id]);
 
     return {
         // Estados
         cajaActiva,
-        historial,
         movimientos,
-        cajaSeleccionada,
         loadingCaja,
-        loadingHistorial,
         loadingMovimientos,
         guardando,
         error,
@@ -294,16 +285,12 @@ export const useCaja = () => {
         diferencia,
         balanceActual,
         // Setters
-        setCajaSeleccionada,
         setTabValue,
         setError,
         setMensaje,
-        setLoadingHistorial,
-        setHistorial,
         // Funciones
         cargarDatos,
         cargarMovimientos,
-        handleClickArqueo,
         handleChange,
         onAbrirCaja,
         onCerrarCaja,

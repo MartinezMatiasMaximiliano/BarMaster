@@ -24,9 +24,18 @@ export const FormularioMovimiento = ({
     tiposMovimiento,
     guardando,
     tipoSeleccionado,
+    errorMonto,
+    balanceActual,
     onChange,
     onSubmit
 }) => {
+    // Determinar si es un egreso de efectivo
+    const esEgresoEfectivo = tipoSeleccionado?.esEfectivo && !tipoSeleccionado?.esIngreso;
+    
+    // Helper text dinámico para el campo de monto
+    const helperTextMonto = esEgresoEfectivo && balanceActual !== undefined
+        ? `Balance disponible: ${balanceActual.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}`
+        : 'El monto debe ser mayor a 0';
     return (
         <Card variant="outlined">
             <CardHeader
@@ -75,8 +84,13 @@ export const FormularioMovimiento = ({
                             fullWidth
                             required
                             disabled={!cajaActiva}
-                            inputProps={{ min: 0.01, step: '0.01' }}
-                            helperText="El monto debe ser mayor a 0"
+                            error={!!errorMonto}
+                            inputProps={{ 
+                                min: 0.01, 
+                                step: '0.01',
+                                max: esEgresoEfectivo ? balanceActual : undefined
+                            }}
+                            helperText={errorMonto || helperTextMonto}
                         />
 
                         <TextField

@@ -115,21 +115,58 @@ export async function ObtenerHistorialCaja(params = {}) {
         const cajas = response.data || [];
         
         // Filtrar solo las cajas cerradas (con fecha de cierre)
-        const cajasCerradas = cajas
-            .filter(caja => caja.fechaCierre || caja.FechaCierre)
-            .map(caja => transformarCaja(caja))
-            .sort((a, b) => {
-                // Ordenar por fecha y hora de cierre descendente (más nuevos primero)
-                // Si no hay fecha de cierre, usar fecha de apertura como fallback
-                const fechaCierreA = a.fechaCierre ? `${a.fechaCierre}T${a.horaCierre || '00:00'}` : a.fechaApertura;
-                const fechaCierreB = b.fechaCierre ? `${b.fechaCierre}T${b.horaCierre || '00:00'}` : b.fechaApertura;
+        const cajasFiltradas = cajas.filter(caja => caja.fechaCierre || caja.FechaCierre);
+        
+        // Para cada caja cerrada, calcular el monto esperado basado en los movimientos
+        const cajasConDiferencia = await Promise.all(
+            cajasFiltradas.map(async (caja) => {
+                const cajaTransformada = transformarCaja(caja);
                 
-                const fechaA = new Date(fechaCierreA);
-                const fechaB = new Date(fechaCierreB);
-                
-                // Orden descendente: más reciente primero
-                return fechaB - fechaA;
-            });
+                // Obtener los movimientos de esta caja para calcular el monto esperado
+                try {
+                    const movimientos = await ObtenerMovimientosCaja(cajaTransformada.id);
+                    
+                    // Calcular monto esperado: monto inicial + suma de movimientos de efectivo
+                    let montoEsperado = cajaTransformada.montoInicial || 0;
+                    
+                    movimientos.forEach(mov => {
+                        if (mov.esEfectivo) {
+                            if (mov.esIngreso) {
+                                montoEsperado += mov.monto;
+                            } else {
+                                montoEsperado -= mov.monto;
+                            }
+                        }
+                    });
+                    
+                    // Calcular diferencia correcta: MontoFinal - MontoEsperado
+                    const montoFinal = cajaTransformada.montoFinal || 0;
+                    const diferencia = montoFinal - montoEsperado;
+                    
+                    return {
+                        ...cajaTransformada,
+                        montoEsperado: montoEsperado,
+                        diferencia: diferencia
+                    };
+                } catch (error) {
+                    // Si hay error al obtener movimientos, usar la diferencia del backend
+                    console.warn(`Error al obtener movimientos para caja ${cajaTransformada.id}:`, error);
+                    return cajaTransformada;
+                }
+            })
+        );
+        
+        // Ordenar por fecha y hora de cierre descendente (más nuevos primero)
+        const cajasCerradas = cajasConDiferencia.sort((a, b) => {
+            const fechaCierreA = a.fechaCierre ? `${a.fechaCierre}T${a.horaCierre || '00:00'}` : a.fechaApertura;
+            const fechaCierreB = b.fechaCierre ? `${b.fechaCierre}T${b.horaCierre || '00:00'}` : b.fechaApertura;
+            
+            const fechaA = new Date(fechaCierreA);
+            const fechaB = new Date(fechaCierreB);
+            
+            // Orden descendente: más reciente primero
+            return fechaB - fechaA;
+        });
         
         // Aplicar límite si se especifica
         const limite = params.limite || 10;

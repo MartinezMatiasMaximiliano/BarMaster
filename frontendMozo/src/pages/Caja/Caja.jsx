@@ -15,20 +15,14 @@ import { useCaja } from './hooks/useCaja';
 import { EstadoActual } from './components/EstadoActual';
 import { FormularioApertura } from './components/FormularioApertura';
 import { FormularioCierre } from './components/FormularioCierre';
-import { Historial } from './components/Historial';
 import { Movimientos } from './components/Movimientos';
-import { ObtenerHistorialCaja } from '../../API/APICaja';
-import { obtenerMensajeError } from './utils/constants';
 import { LoadingWrapper } from '../../components/common/LoadingWrapper';
 
 function Caja() {
     const {
         cajaActiva,
-        historial,
         movimientos,
-        cajaSeleccionada,
         loadingCaja,
-        loadingHistorial,
         loadingMovimientos,
         guardando,
         error,
@@ -38,41 +32,17 @@ function Caja() {
         formCierre,
         diferencia,
         balanceActual,
-        setCajaSeleccionada,
         setTabValue,
         setError,
         setMensaje,
-        setLoadingHistorial,
-        setHistorial,
         cargarDatos,
         cargarMovimientos,
-        handleClickArqueo,
         handleChange,
         onAbrirCaja,
         onCerrarCaja,
         setFormApertura,
         setFormCierre
     } = useCaja();
-
-    const handleRefreshHistorial = async () => {
-        setLoadingHistorial(true);
-        try {
-            const data = await ObtenerHistorialCaja({ limite: 5 });
-            setHistorial(data ?? []);
-        } catch (err) {
-            setError(obtenerMensajeError(err, 'No pudimos cargar el historial.'));
-        } finally {
-            setLoadingHistorial(false);
-        }
-    };
-
-    const handleVolverACajaActiva = () => {
-        setCajaSeleccionada(null);
-        setTabValue(1); // Asegurar que estamos en la pestaña de Movimientos
-        if (cajaActiva?.id) {
-            cargarMovimientos(cajaActiva.id);
-        }
-    };
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
@@ -114,7 +84,7 @@ function Caja() {
                                     label="Movimientos" 
                                     icon={<ReceiptIcon />} 
                                     iconPosition="start"
-                                    disabled={!cajaActiva && !cajaSeleccionada}
+                                    disabled={!cajaActiva}
                                 />
                             </Tabs>
                             <Box sx={{ p: 3 }}>
@@ -136,23 +106,16 @@ function Caja() {
                                                 onSubmit={onAbrirCaja}
                                             />
                                         )}
-                                        <Historial
-                                            historial={historial}
-                                            loadingHistorial={loadingHistorial}
-                                            cajaSeleccionada={cajaSeleccionada}
-                                            onRefresh={handleRefreshHistorial}
-                                            onClickArqueo={handleClickArqueo}
-                                        />
                                     </Stack>
                                 )}
                                 {tabValue === 1 && (
                                     <Movimientos
                                         cajaActiva={cajaActiva}
-                                        cajaSeleccionada={cajaSeleccionada}
+                                        cajaSeleccionada={null}
                                         movimientos={movimientos}
                                         loadingMovimientos={loadingMovimientos}
-                                        onRecargar={() => cargarMovimientos(cajaSeleccionada?.id || cajaActiva?.id)}
-                                        onVolverACajaActiva={handleVolverACajaActiva}
+                                        onRecargar={() => cargarMovimientos(cajaActiva?.id)}
+                                        onVolverACajaActiva={null}
                                     />
                                 )}
                             </Box>
