@@ -14,7 +14,7 @@ import {
     ActivarPersona,
     ModificarPersona
 } from "../API/APIPersonas";
-import { Campos, inicializarCampos } from "../configs/agregar/Personas"
+import { Campos, inicializarCampos } from "../configs/agregar/Personas";
 
 function Abm_Personas(props) {
     const [campos, setCampos] = useState(Campos);

@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { AbrirCaja, CerrarCaja, ObtenerCajaActiva, ObtenerMovimientosCaja } from '../../../API/APICaja';
 import { buildTimestampDefaults, initialApertura, initialCierre, obtenerMensajeError } from '../utils/constants';
+import { setCajaActiva as setCajaActivaGlobal } from '../../../redux/slices/cajaActivaSlice';
 
 export const useCaja = () => {
+    const dispatch = useDispatch();
     const [cajaActiva, setCajaActiva] = useState(null);
     const [movimientos, setMovimientos] = useState([]);
     const [movimientosCajaActiva, setMovimientosCajaActiva] = useState([]);
@@ -23,6 +26,9 @@ export const useCaja = () => {
             setCajaActiva(caja);
             setFormCierre((prev) => ({ ...prev, ...buildTimestampDefaults() }));
             
+            // Actualizar estado global de caja activa
+            dispatch(setCajaActivaGlobal(!!caja?.id));
+            
             // Si hay una caja activa, cargar sus movimientos para calcular el balance
             if (caja?.id) {
                 // Pasar el monto inicial directamente para evitar problemas de timing con el estado
@@ -30,6 +36,7 @@ export const useCaja = () => {
             }
         } catch (err) {
             setCajaActiva(null);
+            dispatch(setCajaActivaGlobal(false)); // Actualizar estado global
             setError(obtenerMensajeError(err, 'No pudimos obtener el estado de la caja.'));
         } finally {
             setLoadingCaja(false);
@@ -82,15 +89,14 @@ export const useCaja = () => {
     };
 
     const cargarMovimientos = async (idCaja, montoInicialOverride = null) => {
-        const cajaId = idCaja || cajaActiva?.id || cajaSeleccionada?.id;
+        const cajaId = idCaja || cajaActiva?.id;
         if (!cajaId) return;
         
         setLoadingMovimientos(true);
         setError('');
         try {
             const data = await ObtenerMovimientosCaja(cajaId);
-            const cajaActual = cajaSeleccionada || cajaActiva;
-            const montoInicial = montoInicialOverride ?? cajaActual?.montoInicial ?? 0;
+            const montoInicial = montoInicialOverride ?? cajaActiva?.montoInicial ?? 0;
             
             // Calcular saldos basados en movimientos con esEfectivo = true
             const movimientosConSaldo = calcularSaldosMovimientos(data ?? [], montoInicial);
@@ -143,7 +149,7 @@ export const useCaja = () => {
         try {
             // Usar siempre la fecha y hora actual al abrir la caja
             const timestampActual = buildTimestampDefaults();
-            
+
             const payload = {
                 fechaApertura: timestampActual.fecha,
                 horaApertura: timestampActual.hora,
@@ -151,6 +157,7 @@ export const useCaja = () => {
             };
             const caja = await AbrirCaja(payload);
             setCajaActiva(caja);
+            dispatch(setCajaActivaGlobal(true)); // Actualizar estado global
             setFormCierre(initialCierre());
             setMensaje('La caja se abrió correctamente.');
         } catch (err) {
@@ -183,6 +190,7 @@ export const useCaja = () => {
             });
             setMensaje('La caja se cerró correctamente.');
             setCajaActiva(null);
+            dispatch(setCajaActivaGlobal(false)); // Actualizar estado global
             setFormApertura(initialApertura());
             setFormCierre(initialCierre());
             await cargarDatos();

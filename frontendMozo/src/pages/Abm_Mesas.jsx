@@ -173,6 +173,7 @@ function Abm_Mesas(props) {
                 filas={filasAMostrar}
                 columnas={columnasConGrupos}
                 onRefresh={props.recargarComponentes}
+                mostrarExportacion={false}
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}

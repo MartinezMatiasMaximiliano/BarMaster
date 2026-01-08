@@ -14,7 +14,13 @@ export default function Mesa_Deshabilitada(props) {
         setShow(false);
     }
 
-    const handleShow = () => setShow(true);
+    const handleShow = () => {
+        // No permitir abrir modal si no hay caja activa
+        if (props.deshabilitadaPorCaja) {
+            return;
+        }
+        setShow(true);
+    };
 
     function formatearFecha(fecha) {
         const date = new Date(fecha);
@@ -30,7 +36,13 @@ export default function Mesa_Deshabilitada(props) {
 
     const modal = (
         <>
-            <Button className="boton-mesa mx-2" style={props.estilo} onClick={handleShow} variant={props.variant}>
+            <Button 
+                className="boton-mesa mx-2" 
+                style={props.estilo} 
+                onClick={handleShow} 
+                variant={props.variant}
+                disabled={props.deshabilitadaPorCaja}
+            >
                 <FontAwesomeIcon icon={faBurger} />
                 <p>Mesa {props.datos_mesa.numeroMesa}</p>
             </Button>

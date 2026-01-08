@@ -1,10 +1,11 @@
 import { Box, Typography, IconButton, Tooltip } from "@mui/material";
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { BotonesExportacion } from './BotonesExportacion';
 
 /**
  * Componente para el header de la tabla
  */
-export default function TablaHeader({ titulo, renderAgregar, onRefresh }) {
+export default function TablaHeader({ titulo, renderAgregar, onRefresh, onExportarPDF, onExportarExcel, deshabilitarExportacion }) {
     return (
         <Box
             sx={{
@@ -22,7 +23,14 @@ export default function TablaHeader({ titulo, renderAgregar, onRefresh }) {
                     {titulo}
                 </Typography>
             </Box>
-            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                {(onExportarPDF || onExportarExcel) && (
+                    <BotonesExportacion
+                        onExportarPDF={onExportarPDF}
+                        onExportarExcel={onExportarExcel}
+                        deshabilitado={deshabilitarExportacion}
+                    />
+                )}
                 {typeof onRefresh === "function" && (
                     <Tooltip title="Recargar">
                         <IconButton onClick={onRefresh} size="small">

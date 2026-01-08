@@ -27,6 +27,8 @@ import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
 import { currencyFormatter, formatearFechaCompleta } from '../utils/constants';
 import { usePaginacion } from '../../../components/Tabla/usePaginacion';
 import TablaPaginacion from '../../../components/Tabla/TablaPaginacion';
+import { useExportacionTabla } from '../../../hooks/useExportacionTabla';
+import { BotonesExportacion } from '../../../components/Tabla/BotonesExportacion';
 
 export const Movimientos = ({
     cajaActiva,
@@ -112,6 +114,72 @@ export const Movimientos = ({
         rowsPerPage: rowsPerPageValue
     } = usePaginacion(todasLasFilas, rowsPerPage, true);
 
+    // Configurar exportación
+    const columnasExportacion = [
+        { key: 'fecha', label: 'Fecha/Hora', formatter: (val, fila) => formatearFechaCompleta(fila.fecha, fila.hora) },
+        { 
+            key: 'tipo', 
+            label: 'Tipo', 
+            formatter: (val, fila) => {
+                const esApertura = fila.id === 'apertura' || fila.esApertura;
+                return esApertura ? 'Apertura' : fila.tipo === 'venta' ? 'Venta' : fila.tipo || 'Movimiento';
+            }
+        },
+        { 
+            key: 'descripcion', 
+            label: 'Descripción', 
+            formatter: (val, fila) => {
+                const esApertura = fila.id === 'apertura' || fila.esApertura;
+                if (esApertura) return 'Caja abierta';
+                let desc = fila.descripcion || '';
+                if (fila.mesa) desc = `Mesa ${fila.mesa} - ${desc}`;
+                return desc;
+            }
+        },
+        { 
+            key: 'monto', 
+            label: 'Monto', 
+            formatter: (val, fila) => {
+                const esApertura = fila.id === 'apertura' || fila.esApertura;
+                const signo = fila.esIngreso || esApertura ? '+' : '-';
+                return `${signo}${currencyFormatter.format(fila.monto ?? 0)}`;
+            }
+        },
+        { key: 'saldo', label: 'Saldo', formatter: (val) => currencyFormatter.format(val ?? 0) }
+    ];
+
+    const infoAdicional = [
+        { label: 'Período', value: esCajaCerrada
+            ? `${formatearFechaCompleta(fechaInicio, horaInicio)} - ${formatearFechaCompleta(fechaFin, horaFin)}`
+            : `Desde ${formatearFechaCompleta(fechaInicio, horaInicio)}`
+        },
+        { label: 'Monto Inicial', value: currencyFormatter.format(cajaActual.montoInicial ?? 0) }
+    ];
+
+    if (esCajaCerrada && cajaActual.montoFinal !== null && cajaActual.montoFinal !== undefined) {
+        infoAdicional.push({ label: 'Monto Final', value: currencyFormatter.format(cajaActual.montoFinal) });
+        if (diferenciaCaja !== null && diferenciaCaja !== undefined) {
+            if (diferenciaCaja > 0) {
+                infoAdicional.push({ label: 'Sobrante', value: currencyFormatter.format(diferenciaCaja) });
+            } else if (diferenciaCaja < 0) {
+                infoAdicional.push({ label: 'Faltante', value: currencyFormatter.format(Math.abs(diferenciaCaja)) });
+            } else {
+                infoAdicional.push({ label: 'Diferencia', value: 'Sin diferencia' });
+            }
+        }
+    }
+
+    const { handleExportarPDF, handleExportarExcel } = useExportacionTabla({
+        datos: todasLasFilas,
+        columnas: columnasExportacion,
+        titulo: 'Movimientos de Caja',
+        subtitulo: esCajaCerrada ? 'Caja Cerrada' : 'Caja Activa',
+        infoAdicional,
+        nombreArchivo: esCajaCerrada
+            ? `Movimientos_Caja_${fechaFin || fechaInicio}_${new Date().toISOString().split('T')[0]}`
+            : `Movimientos_Caja_Activa_${new Date().toISOString().split('T')[0]}`
+    });
+
     return (
         <Card variant="outlined">
             <CardHeader
@@ -123,7 +191,12 @@ export const Movimientos = ({
                 }
                 avatar={<ReceiptIcon color="action" />}
                 action={
-                    <Stack direction="row" spacing={1}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <BotonesExportacion
+                            onExportarPDF={handleExportarPDF}
+                            onExportarExcel={handleExportarExcel}
+                            deshabilitado={loadingMovimientos || todasLasFilas.length === 0}
+                        />
                         {cajaSeleccionada && cajaActiva && onVolverACajaActiva && (
                             <Tooltip title="Ver caja activa">
                                 <Button

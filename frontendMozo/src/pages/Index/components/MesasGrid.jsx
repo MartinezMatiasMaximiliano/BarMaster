@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const MesasGrid = ({ mesas }) => {
+export const MesasGrid = ({ mesas, hayCajaActiva }) => {
     if (!Array.isArray(mesas) || mesas.length === 0) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>

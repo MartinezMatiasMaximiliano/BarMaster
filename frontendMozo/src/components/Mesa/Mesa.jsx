@@ -6,7 +6,7 @@ import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
 import { useMesaState } from './useMesaState';
 import { useMesaLogic } from './useMesaLogic';
 
-export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false }) {
+export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true }) {
     const {
         checkBoxSeleccionados,
         show,
@@ -34,12 +34,24 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     };
 
     const handleAbrirMesa = () => {
+        // No permitir abrir mesa si no hay caja activa
+        if (!hayCajaActiva) {
+            return;
+        }
         var request = {
             idMesa: datos_mesa.id,
             codigoServicioMozo: mozo.codigoDeServicio,
             abrir: true,
         }
         abrirMesa(request);
+    };
+
+    // Wrapper para handleShow que verifica si hay caja activa
+    const handleShowConValidacion = () => {
+        if (!hayCajaActiva) {
+            return;
+        }
+        handleShow();
     };
 
     // Renderizado condicional simplificado
@@ -52,7 +64,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                     estilo={estilo}
                     variant="secondary"
                     onClick={handleAbrirMesa}
-                    disabled={!mozo}
+                    disabled={!mozo || !hayCajaActiva}
                     prefix="Abrir"
                     simpleStyle={simpleStyle}
                 />
@@ -67,8 +79,9 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                         numeroMesa={datos_mesa.numeroMesa}
                         estilo={estilo}
                         variant={variant}
-                        onClick={handleShow}
+                        onClick={handleShowConValidacion}
                         simpleStyle={simpleStyle}
+                        disabled={!hayCajaActiva}
                     />
                     
                     <MesaModal
@@ -93,6 +106,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                     pedidoMesa={pedidoMesa} 
                     estilo={estilo}  
                     datos_mesa={datos_mesa}
+                    deshabilitadaPorCaja={!hayCajaActiva}
                 />
             );
         }
@@ -104,8 +118,9 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                     numeroMesa={datos_mesa.numeroMesa}
                     estilo={estilo}
                     variant={variant}
-                    onClick={handleShow}
+                    onClick={handleShowConValidacion}
                     simpleStyle={simpleStyle}
+                    disabled={!hayCajaActiva}
                 />
                 
                 <MesaModal
