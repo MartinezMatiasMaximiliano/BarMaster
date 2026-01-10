@@ -15,7 +15,6 @@ import CloseIcon from '@mui/icons-material/Close';
 function Modal_Eliminar(props) {
 
     const idFila = props.id;
-    const userToken = localStorage.getItem('token');
 
     const [show, setShow] = useState(false);
 
@@ -23,7 +22,7 @@ function Modal_Eliminar(props) {
     const handleShow = () => setShow(true);
 
     const handleSave = async () => {
-        await props.eliminar(idFila, userToken);
+        await props.eliminar(idFila);
 
         // Cerrar el modal después de guardar
         handleClose();

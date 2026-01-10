@@ -6,7 +6,17 @@ const BASE_URL = import.meta.env.VITE_BASE_URL + "Roles/"
 export async function BuscarTodosLosRoles() {
     try {
         const response = await axios.get(BASE_URL, authService.getAuthHeaders());
-        return response.data;
+        // Verificar si la respuesta es un array directamente o está dentro de un objeto
+        const data = response.data;
+        if (Array.isArray(data)) {
+            return data;
+        }
+        // Si viene en un formato diferente, intentar extraer el array
+        if (data && Array.isArray(data.data)) {
+            return data.data;
+        }
+        console.warn("Formato de respuesta inesperado para roles:", data);
+        return Array.isArray(data) ? data : [];
     } catch (error) {
         console.error("Error al buscar roles:", error);
         throw error;

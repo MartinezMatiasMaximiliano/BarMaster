@@ -64,38 +64,30 @@ export async function ModificarCategoria(datos) {
     }
 }
 
-export async function ActivarCategoria(Id) {
+export async function ActivarDesactivarCategoria(Id) {
     try {
-        const response = await axios.put(`${BASE_URL}/${Id}`, { 
-            Activo: true 
+        const response = await axios.patch(`${BASE_URL}/ActivarDesactivar`, { 
+            Id: Id 
         }, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
         if (error.response?.data) {
             const errorMessage = typeof error.response.data === 'string' 
                 ? error.response.data 
-                : error.response.data.error?.mensaje || "Error al activar la categoría";
+                : error.response.data.error?.mensaje || "Error al activar/desactivar la categoría";
             alert(errorMessage);
         }
         return error.response;
     }
 }
 
+// Funciones legacy - mantener para compatibilidad pero usar ActivarDesactivarCategoria
+export async function ActivarCategoria(Id) {
+    return await ActivarDesactivarCategoria(Id);
+}
+
 export async function DesactivarCategoria(Id) {
-    try {
-        const response = await axios.put(`${BASE_URL}/${Id}`, { 
-            Activo: false 
-        }, authService.getAuthHeaders());
-        return response.data;
-    } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string' 
-                ? error.response.data 
-                : error.response.data.error?.mensaje || "Error al desactivar la categoría";
-            alert(errorMessage);
-        }
-        return error.response;
-    }
+    return await ActivarDesactivarCategoria(Id);
 }
 
 export async function BorrarCategoria(Id, Token) {

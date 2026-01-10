@@ -20,6 +20,12 @@ export const inicializarCampos = async () => {
       return camposBase;
     }
     
+    // Si el array está vacío, retornar campos base
+    if (data.length === 0) {
+      console.warn("No se encontraron roles");
+      return camposBase;
+    }
+    
     const roles = data
       .filter(r => r.activo === true || r.activo === undefined)
       .map(r => ({ 
@@ -27,10 +33,19 @@ export const inicializarCampos = async () => {
         nombre: r.nombre || r.Nombre 
       }));
 
+    // Si no hay roles activos, retornar campos base
+    if (roles.length === 0) {
+      console.warn("No se encontraron roles activos");
+      return camposBase;
+    }
+
     // Retornar una copia de los campos con las opciones cargadas
-    return camposBase.map((campo, index) => 
+    const camposActualizados = camposBase.map((campo, index) => 
       index === 5 ? { ...campo, options: roles } : campo
     );
+    
+    console.log("Roles cargados correctamente:", roles.length);
+    return camposActualizados;
   } catch (error) {
     console.error("Error al cargar roles:", error);
     return camposBase;
