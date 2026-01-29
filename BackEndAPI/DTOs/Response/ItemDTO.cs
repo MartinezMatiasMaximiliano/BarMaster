@@ -8,6 +8,6 @@ namespace BackEndAPI.DTOs.Response
         public string Nombre { get; set; }
         public string Indicaciones { get; set; }
         public decimal Precio { get; set; }
-        public Estado Estado { get; set; }
+        public bool EstadoPagado { get; set; }
     }
 }

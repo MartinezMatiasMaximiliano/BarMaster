@@ -8,8 +8,7 @@
         public string NombreProducto { get; set; } = null!;
         public string? Detalles { get; set; }
         public decimal PrecioDelMomento { get; set; }
-        public int Cantidad { get; set; }
-        public decimal PrecioTotal { get; set; }
+        public bool EstadoPagado { get; set; } = false;
 
 
         //navegacion
