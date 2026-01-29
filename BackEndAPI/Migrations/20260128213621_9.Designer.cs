@@ -3,6 +3,7 @@ using System;
 using BackEndAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260128213621_9")]
+    partial class _9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -512,11 +515,11 @@ namespace BackEndAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Detalles")
                         .HasColumnType("text");
-
-                    b.Property<bool>("EstadoPagado")
-                        .HasColumnType("boolean");
 
                     b.Property<Guid?>("IdProducto")
                         .HasColumnType("uuid");
@@ -529,6 +532,9 @@ namespace BackEndAPI.Migrations
                         .HasColumnType("text");
 
                     b.Property<decimal>("PrecioDelMomento")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PrecioTotal")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");

@@ -126,32 +126,29 @@ namespace BackEndAPI.Controllers
             try
             {
                 var nuevoMovimientoCaja = await _movimientosCajaServices.CrearMovimientoCaja(request);
-                // Recargar con relaciones para obtener el nombre del tipo
-                var movimientoCajaCompleto = await _movimientosCajaServices.BuscarMovimientoCajaPorId(nuevoMovimientoCaja.Id);
-                var movimientoCajaDTO = new MovimientoCajaDTO
+               
+                var response = new MovimientoCajaDTO
                 {
-                    Id = movimientoCajaCompleto.Id,
+                    Id = nuevoMovimientoCaja.Id,
                     TipoMovimientoCaja = new TipoMovimientoCajaDTO
                     {
-                        Id = movimientoCajaCompleto.IdTipoMovimientoCaja,
-                        Nombre = movimientoCajaCompleto.TipoMovimientoCaja?.Nombre ?? string.Empty,
-                        EsIngreso = movimientoCajaCompleto.TipoMovimientoCaja?.EsIngreso ?? false,
-                        EsEfectivo = movimientoCajaCompleto.TipoMovimientoCaja?.EsEfectivo ?? false
+                        Id = nuevoMovimientoCaja.IdTipoMovimientoCaja,
+                        Nombre = nuevoMovimientoCaja.TipoMovimientoCaja?.Nombre ?? string.Empty,
+                        EsIngreso = nuevoMovimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
+                        EsEfectivo = nuevoMovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
                     },
-                    IdCaja = movimientoCajaCompleto.IdCaja,
-                    Monto = movimientoCajaCompleto.Monto,
-                    Descripcion = movimientoCajaCompleto.Descripcion,
-                    FechaMovimiento = movimientoCajaCompleto.FechaMovimiento
+                    IdCaja = nuevoMovimientoCaja.IdCaja,
+                    Monto = nuevoMovimientoCaja.Monto,
+                    Descripcion = nuevoMovimientoCaja.Descripcion,
+                    FechaMovimiento = nuevoMovimientoCaja.FechaMovimiento
                 };
-                return Ok(movimientoCajaDTO);
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 switch (ex.Message)
                 {
                     case "La caja no existe":
-                        return BadRequest(ex.Message);
-                    case "El monto debe ser mayor a 0":
                         return BadRequest(ex.Message);
                     default:
                         return StatusCode(500, "Error Interno de servidor");

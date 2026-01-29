@@ -9,7 +9,7 @@ namespace BackEndAPI.Services.Interfaces
 
         Task<Caja> BuscarCajaAbierta();
 
-        Task<Caja> CerrarCaja(Guid IdCaja, decimal MontoCierre);
+        Task<Caja> CerrarCaja(Guid IdCaja);
         
         Task<List<Caja>> BuscarListaCajas();
         

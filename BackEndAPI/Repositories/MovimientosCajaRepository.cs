@@ -17,11 +17,25 @@ namespace BackEndAPI.Repositories
             db = _currentDbContext.Db;
         }
 
-        public async Task<MovimientoCaja> CrearMovimientoCaja(MovimientoCaja movimientoCaja)
+        public async Task<MovimientoCaja> CrearMovimientoCaja(MovimientoCaja movimientoCaja, Caja caja)
         {
-            await db.MovimientosCajas.AddAsync(movimientoCaja);
-            await db.SaveChangesAsync();
-            return movimientoCaja;
+            var transaccion = await db.Database.BeginTransactionAsync();
+            try
+            {
+                await db.MovimientosCajas.AddAsync(movimientoCaja);
+
+                db.Entry(caja).State = EntityState.Modified;
+
+                await db.SaveChangesAsync();
+                await transaccion.CommitAsync();
+                return movimientoCaja;
+
+            }
+            catch (Exception ex)
+            {
+                await transaccion.RollbackAsync();
+                throw new Exception("Error al crear el movimiento de caja");
+            }
         }
 
         public async Task<IEnumerable<MovimientoCaja>> GetAllMovimientosCaja()
@@ -63,6 +77,8 @@ namespace BackEndAPI.Repositories
             await db.SaveChangesAsync();
             return movimientoCaja;
         }
+
+
     }
 }
 
