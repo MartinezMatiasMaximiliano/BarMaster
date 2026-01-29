@@ -7,9 +7,9 @@
         public Guid? IdProducto { get; set; }
         public string NombreProducto { get; set; } = null!;
         public string? Detalles { get; set; }
-        public double PrecioDelMomento { get; set; }
+        public decimal PrecioDelMomento { get; set; }
         public int Cantidad { get; set; }
-        public double PrecioTotal { get; set; }
+        public decimal PrecioTotal { get; set; }
 
 
         //navegacion

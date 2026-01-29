@@ -8,6 +8,7 @@
         public DateTime FechaApertura { get; set; } = DateTime.UtcNow;
         public DateTime? FechaCierre { get; set; }
         public decimal MontoApertura { get; set; }
+        public decimal MontoActual {  get; set; } 
         public decimal? MontoCierre { get; set; }
         public decimal? Diferencia { get; set; }
 
@@ -17,15 +18,15 @@
         public ICollection<Visita> Visitas { get; set; } = new List<Visita>();
         public ICollection<MovimientoCaja> MovimientosCaja { get; set; } = new List<MovimientoCaja>();
 
-        public double CalcularDiferencia()
+        public decimal CalcularDiferencia()
         {
             if (MontoCierre.HasValue)
             {
-                return (double)(MontoCierre.Value - MontoApertura);
+                return (decimal)(MontoCierre.Value - MontoApertura);
             }
             return 0;
         }
-    public double CalcularTotalMovimientos()
+    public decimal CalcularTotalMovimientos()
         {
 
 

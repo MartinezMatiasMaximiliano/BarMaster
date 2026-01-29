@@ -66,6 +66,7 @@ namespace BackEndAPI.Controllers
                     FechaCierre = caja.FechaCierre,
                     MontoApertura = caja.MontoApertura,
                     MontoCierre = caja.MontoCierre,
+                    MontoActual = caja.MontoActual,
                     Diferencia = caja.Diferencia
                 };
                 
@@ -141,7 +142,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var result = await _cajasServices.CerrarCaja(request.IdCaja, request.MontoCierre);
+                var result = await _cajasServices.CerrarCaja(request.IdCaja);
                 return Ok(result);
             }
             catch (Exception ex)

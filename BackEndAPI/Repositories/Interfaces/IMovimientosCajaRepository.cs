@@ -4,7 +4,7 @@ namespace BackEndAPI.Repositories.Interfaces
 {
     public interface IMovimientosCajaRepository
     {
-        Task<MovimientoCaja> CrearMovimientoCaja(MovimientoCaja movimientoCaja);
+        Task<MovimientoCaja> CrearMovimientoCaja(MovimientoCaja movimientoCaja,Caja caja);
         Task<IEnumerable<MovimientoCaja>> GetAllMovimientosCaja();
         Task<MovimientoCaja?> GetMovimientoCajaPorId(Guid id);
         Task<IEnumerable<MovimientoCaja>> GetMovimientosCajaPorCaja(Guid idCaja);

@@ -7,6 +7,7 @@ namespace BackEndAPI.DTOs.Response
         public DateTime FechaApertura { get; set; }
         public DateTime? FechaCierre { get; set; }
         public decimal MontoApertura { get; set; }
+        public decimal MontoActual { get; set; }
         public decimal? MontoCierre { get; set; }
         public decimal? Diferencia { get; set; }
     }

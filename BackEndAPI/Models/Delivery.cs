@@ -13,7 +13,7 @@
         public string Direccion { get; set; } = null!;  
         public string? Indicaciones { get; set; } 
         public string Telefono { get; set; } = null!;
-        public double PrecioTotal { get; set; }
+        public decimal PrecioTotal { get; set; }
         public bool Entregado { get; set; }
         
 
@@ -25,7 +25,7 @@
         public TipoEnvio TipoEnvio { get; set; }
 
 
-        public double CalcularTotal()
+        public decimal CalcularTotal()
         {
             throw new NotImplementedException();        }
 
