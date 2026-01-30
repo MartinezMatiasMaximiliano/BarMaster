@@ -9,7 +9,7 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<ICollection<Persona>> GetAllPersonas();
         Task<Persona?> GetPersonaPorCodigoDeServicio(string codigoDeServicio);
         Task<Persona?> ActualizarPersona(Persona personaActualizada);
-        Task<Persona?> EliminarPersona(Guid IdPersona);
+        Task<Persona?> EliminarPersona(Persona Persona);
         Task<bool> EsCodigoUnico(string codigoDeServicio);
         Task<ICollection<Persona>> GetPersonasPorNombreRol(string nombreRol);
     }

@@ -114,14 +114,14 @@ namespace BackEndAPI.Services
             await _personasRepository.ActualizarPersona(persona);
             return persona;
         }
-        public Task<Persona?> EliminarPersona(Guid IdPersona)
+        public async Task<Persona?> EliminarPersona(Guid IdPersona)
         {
-            var persona =  _personasRepository.GetPersonaPorId(IdPersona);
+            var persona =  await _personasRepository.GetPersonaPorId(IdPersona);
             if (persona == null)
             {
                 throw new Exception("Persona no identificada");
             }
-            return _personasRepository.EliminarPersona(IdPersona);
+            return await _personasRepository.EliminarPersona(persona);
         }
         public async Task<ICollection<Persona>> BuscarMozos()
         {
