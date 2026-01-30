@@ -4,13 +4,15 @@ const BASE_URL = import.meta.env.VITE_BASE_URL + "Productos/"
 import connection from '../connections/HubConnMozo'
 
 class CrearProductoDTO {
-    constructor(nombre, descripcion, precio, activo, categorias, imagen) {
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.precio = precio;
-        this.activo = activo;
-        this.categorias = categorias;
-        this.imagen = imagen;
+    constructor(nombre, descripcion, precio, activo, categorias, imagen, codigo, costoProduccion) {
+        this.Codigo = codigo;
+        this.Nombre = nombre;
+        this.Descripcion = descripcion;
+        this.Precio = precio;
+        this.CostoProduccion = costoProduccion || 0;
+        this.Activo = activo;
+        this.Imagen = imagen;
+        // Las categorías y opciones se manejan por separado en el backend
     }
 }
 
@@ -36,7 +38,16 @@ export async function CrearProducto(datos) {
     try {
         const response = await axios.post(
             BASE_URL,
-            new CrearProductoDTO(datos.nombre, datos.descripcion, datos.precio, true, datos.categorias, datos.imagen), {
+            new CrearProductoDTO(
+                datos.nombre, 
+                datos.descripcion, 
+                datos.precio, 
+                true, 
+                datos.categorias, 
+                datos.imagen,
+                datos.codigo,
+                datos.costoProduccion || 0,
+            ), {
             headers: {
                 "Content-Type": "multipart/form-data",
                 ...authService.getAuthHeaders().headers

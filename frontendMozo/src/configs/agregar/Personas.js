@@ -1,5 +1,3 @@
-import { BuscarTodosLosRoles } from "../../API/APIRoles";
-
 const camposBase = [
   { name: "nombre", label: "Nombre", type: "text" },
   { name: "apellido", label: "Apellido", type: "text" },
@@ -9,24 +7,20 @@ const camposBase = [
   { name: "rol", label: "Rol", type: "select", options: [] },
 ];
 
-// Función para inicializar los campos con los datos de roles
-export const inicializarCampos = async () => {
+// Función para inicializar los campos con los datos de roles recibidos como parámetro
+export const inicializarCampos = (rolesData) => {
   try {
-    const data = await BuscarTodosLosRoles();
-    
-    // Verificar que data sea un array
-    if (!Array.isArray(data)) {
-      console.error("Los datos de roles no son un array:", data);
-      return camposBase;
+    // Verificar que rolesData sea un array
+    if (!Array.isArray(rolesData)) {
+      return [...camposBase];
     }
     
     // Si el array está vacío, retornar campos base
-    if (data.length === 0) {
-      console.warn("No se encontraron roles");
-      return camposBase;
+    if (rolesData.length === 0) {
+      return [...camposBase];
     }
     
-    const roles = data
+    const roles = rolesData
       .filter(r => r.activo === true || r.activo === undefined)
       .map(r => ({ 
         id: r.id || r.Id, 
@@ -35,20 +29,20 @@ export const inicializarCampos = async () => {
 
     // Si no hay roles activos, retornar campos base
     if (roles.length === 0) {
-      console.warn("No se encontraron roles activos");
-      return camposBase;
+      return [...camposBase];
     }
 
-    // Retornar una copia de los campos con las opciones cargadas
-    const camposActualizados = camposBase.map((campo, index) => 
-      index === 5 ? { ...campo, options: roles } : campo
-    );
+    // Retornar una copia profunda de los campos con las opciones cargadas
+    const camposActualizados = camposBase.map((campo) => {
+      if (campo.name === 'rol') {
+        return { ...campo, options: roles };
+      }
+      return { ...campo };
+    });
     
-    console.log("Roles cargados correctamente:", roles.length);
     return camposActualizados;
   } catch (error) {
-    console.error("Error al cargar roles:", error);
-    return camposBase;
+    return [...camposBase];
   }
 };
 

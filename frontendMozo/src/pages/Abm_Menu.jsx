@@ -51,6 +51,7 @@ function Abm_Menu(props) {
 
     const columnas = [
         { key: "imagen", label: "", type: "image", align: "right" },
+        { key: "codigo", label: "Código", align: "right" },
         { key: "nombre", label: "Nombre", align: "right" },
         { key: "precio", label: "Precio", align: "right" },
         { key: "descripcion", label: "Descripción", align: "right" },
@@ -83,7 +84,7 @@ function Abm_Menu(props) {
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
-                        columnas={["Imagen", "Nombre", "Precio", "Descripción", "Categorias"]}
+                        columnas={["Imagen", "Código", "Nombre", "Precio", "Costo Producción", "Descripción", "Categorias"]}
                         agregar={api.crear}
                         campos={campos}
                     >
@@ -94,6 +95,7 @@ function Abm_Menu(props) {
                     <Ordenar
                         filas={filasFiltradas}
                         opcionesOrdenamiento={[
+                            { label: 'Código', campo: 'codigo', tipoOrden: 'texto' },
                             { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
                             { label: 'Precio', campo: 'precio', tipoOrden: 'numero' }
                         ]}
@@ -105,6 +107,7 @@ function Abm_Menu(props) {
                         filas={props.datos_menu || []}
                         columnas={columnas}
                         configuracionFiltros={{
+                            codigo: { tipo: 'text' },
                             nombre: { tipo: 'text' },
                             precio: { tipo: 'number' },
                             descripcion: { tipo: 'text' },

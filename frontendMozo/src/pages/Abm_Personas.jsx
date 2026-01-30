@@ -17,18 +17,15 @@ import {
 import { Campos, inicializarCampos } from "../configs/agregar/Personas";
 
 function Abm_Personas(props) {
-    const [campos, setCampos] = useState(Campos);
+    const [campos, setCampos] = useState([]);
     const [filasFiltradas, setFilasFiltradas] = useState(props.datos_personas || []);
     const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_personas || []);
 
-    // Inicializar campos solo cuando el componente se monte y haya token
+    // Inicializar campos cuando cambien los datos_select (roles)
     useEffect(() => {
-        if (localStorage.getItem('token')) {
-            inicializarCampos().then(camposInicializados => {
-                setCampos(camposInicializados);
-            });
-        }
-    }, []);
+        const camposInicializados = inicializarCampos(props.datos_select || []);
+        setCampos(camposInicializados);
+    }, [props.datos_select]);
 
     // Actualizar filas filtradas cuando cambien los datos originales
     useEffect(() => {

@@ -2,8 +2,10 @@ import { BuscarTodasLasCategorias } from "../../API/APICategorias";
 
 const camposBase = [
   { name: "imagen", label: "Imagen", type: "image" },
+  { name: "codigo", label: "Código", type: "text" },
   { name: "nombre", label: "Nombre", type: "text" },
   { name: "precio", label: "Precio", type: "text" },
+  { name: "costoProduccion", label: "Costo de Producción", type: "text" },
   { name: "descripcion", label: "Descripción", type: "text" },
   { name: "categorias", label: "Categorías", type: "select_multiple", options: [] },
 ];
@@ -18,7 +20,7 @@ export const inicializarCampos = async () => {
 
     // Retornar una copia de los campos con las opciones cargadas
     return camposBase.map((campo, index) => 
-      index === 4 ? { ...campo, options: categorias } : campo
+      index === 6 ? { ...campo, options: categorias } : campo
     );
   } catch (error) {
     console.error("Error al cargar categorías:", error);
