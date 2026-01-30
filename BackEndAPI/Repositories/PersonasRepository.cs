@@ -50,9 +50,9 @@ namespace BackEndAPI.Repositories
             await db.SaveChangesAsync();
             return personaActualizada;
         }
-        public async Task<Persona?> EliminarPersona(Guid IdPersona)
+        public async Task<Persona?> EliminarPersona(Persona persona)
         {
-            db.Personas.Remove(new Persona { Id = IdPersona });
+            db.Personas.Remove(persona);
             await db.SaveChangesAsync();
             return null;
 
