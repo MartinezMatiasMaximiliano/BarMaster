@@ -91,6 +91,8 @@ builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<IMenuRepository, MenuRepository>();
+builder.Services.AddScoped<IPagosRepository, PagosRepository>();
+builder.Services.AddScoped<IPagosServices, PagosServices>();
 builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
 builder.Services.AddScoped<IVisitasServices, VisitasServices>();    
 builder.Services.AddScoped<IMenuServices, MenuServices>();

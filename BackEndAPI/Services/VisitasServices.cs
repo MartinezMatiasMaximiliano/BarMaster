@@ -74,32 +74,7 @@ namespace BackEndAPI.Services
             }
         }
 
-        public async Task<Visita> PagarProductos(ICollection<int> ListaIds, Guid idVisita)
-        {
-            if (ListaIds == null || ListaIds.Count <= 0)
-            {
-                throw new Exception("Lista de ids vacia");
-            }
-            if (idVisita == Guid.Empty)
-            {
-                throw new Exception("IdVisita vacio");
-            }
-            var visita = await _visitasRepository.BuscarVisitaPorId(idVisita);
-            if (visita == null)
-            {
-                throw new Exception("Visita no encontrada");
-            }
-
-            foreach (var id in ListaIds)
-            {
-                var productoPorVisita = visita.Productos.FirstOrDefault(p => p.Id == id);
-                if (productoPorVisita != null)
-                {
-                    productoPorVisita.EstadoPagado = true;
-                }
-            }
-            return await _visitasRepository.ModificarVisita(visita);
-        }
+        
     }
 }
 
