@@ -62,7 +62,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost("/AgregarProductoAVisita")]
-        public async Task<IActionResult> AgregarproductosAVisita([FromBody] ICollection<AgregarProductoAVisita> listaProductos, Guid IdVisita)
+        public async Task<IActionResult> AgregarproductosAVisita([FromBody] ICollection<AgregarProductoAVisita> listaProductos, [FromQuery]Guid IdVisita)
         {
             try
             {
@@ -78,39 +78,6 @@ namespace BackEndAPI.Controllers
 
                 }
 
-            }
-        }
-
-        [HttpPost("/PagarItems")]
-        public async Task<IActionResult> PagarItemsDeVisita([FromBody] ICollection<int> listaIdsItems, Guid IdVisita)
-        {
-            //TODO: terminar esta funcion, se necesita continuar con el proceso de pagar items, todo o por separado
-            try
-            {
-                var visitaActualizada = await _visitasServices.PagarProductos(listaIdsItems, IdVisita);
-                var Response = new VisitaResponseDTO
-                {
-                    Id = visitaActualizada.Id,
-                    FechaHora = visitaActualizada.FechaHora,
-                    Estado = visitaActualizada.Estado,
-                    ProductosConsumidos = visitaActualizada.Productos.Select(item => new ItemDTO
-                    {
-                        Id = item.Id,
-                        Nombre = item.NombreProducto,
-                        Indicaciones = item.Detalles,
-                        Precio = item.PrecioDelMomento,
-                        EstadoPagado = item.EstadoPagado,
-                    }).ToList(),
-                };
-                return Ok(Response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    default:
-                        return StatusCode(500, "Internal server error catch: Pagar items de visita - " + ex.Message);
-                }
             }
         }
     }

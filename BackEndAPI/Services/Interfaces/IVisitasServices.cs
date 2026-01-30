@@ -7,6 +7,6 @@ namespace BackEndAPI.Services.Interfaces
     {
         Task<Visita> BuscarVisitaPorId(Guid IdVisita);
         Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> ListaProductos,Guid IdVisita);
-        Task<Visita> PagarProductos(ICollection<int> ListaIds, Guid idVisita);
+        
     }
 }
