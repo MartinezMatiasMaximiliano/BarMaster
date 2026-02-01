@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
@@ -128,6 +128,7 @@ namespace BackEndAPI.Controllers
                     Id = mesa.Id,
                     Nombre = mesa.Nombre,
                     Capacidad = mesa.Capacidad,
+                    CodigoParaPedir = mesa.CodigoParaPedir,
                     x = mesa.x,
                     y = mesa.y,
                     w = mesa.w,
@@ -146,6 +147,29 @@ namespace BackEndAPI.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", ex.Message));
+            }
+        }
+
+        [HttpDelete("/Mesa")]
+        public async Task<IActionResult> EliminarMesa([FromQuery] Guid IdMesa)
+        {
+            try
+            {
+                var resultado = await _mesasServices.EliminarMesa(IdMesa);
+                
+                return Ok(new EntregaDTO(200, "DELETED", "Mesa eliminada exitosamente"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Mesa no encontrada":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    case "No se puede eliminar una mesa con visitas activas":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", ex.Message));
+                }
             }
         }
     }

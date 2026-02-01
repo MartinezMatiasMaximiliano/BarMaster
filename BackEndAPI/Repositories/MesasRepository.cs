@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
@@ -48,6 +48,13 @@ namespace BackEndAPI.Repositories
             return await db.Mesas
                 .Include(m => m.Plano)
                 .ToListAsync();
+        }
+
+        public async Task<bool> EliminarMesa(Mesa mesa)
+        {
+            db.Mesas.Remove(mesa);
+            await db.SaveChangesAsync();
+            return true;
         }
     }
 }
