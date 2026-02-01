@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
@@ -163,6 +163,26 @@ namespace BackEndAPI.Services
         public async Task<IEnumerable<Mesa>> ObtenerTodasLasMesas()
         {
             return await _mesasRepository.ObtenerTodasLasMesas();
+        }
+
+        public async Task<bool> EliminarMesa(Guid IdMesa)
+        {
+            var mesaAEliminar = await _mesasRepository.ObtenerMesaPorId(IdMesa);
+            
+            if (mesaAEliminar == null)
+            {
+                throw new Exception("Mesa no encontrada");
+            }
+
+            // Verificar si la mesa está actualmente abierta (tiene código para pedir)
+            if (!string.IsNullOrEmpty(mesaAEliminar.CodigoParaPedir))
+            {
+                throw new Exception("No se puede eliminar una mesa con visitas activas");
+            }
+
+            var mesaEliminada = await _mesasRepository.EliminarMesa(mesaAEliminar);
+
+            return mesaEliminada;
         }
     }
 }

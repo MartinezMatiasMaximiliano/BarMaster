@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Models;
+using BackEndAPI.Models;
 
 namespace BackEndAPI.Repositories.Interfaces
 {
@@ -9,5 +9,6 @@ namespace BackEndAPI.Repositories.Interfaces
         public Task<Mesa?> CrearMesa(Mesa nuevaMesa);
         public Task<Mesa?> ModificarMesa(Mesa mesaActualizada);
         public Task<IEnumerable<Mesa>> ObtenerTodasLasMesas();
+        public Task<bool> EliminarMesa(Mesa mesa);
     }
 }
