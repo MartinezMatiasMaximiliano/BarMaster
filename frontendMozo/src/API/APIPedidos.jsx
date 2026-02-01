@@ -1,6 +1,11 @@
 import axios from 'axios'
 const BASE_URL = import.meta.env.VITE_BASE_URL
 
+// TODO: Este archivo está deprecado. El endpoint "Pedidos" ya no existe.
+// Ahora se usa el endpoint "Visitas". Ver APIVisitas.jsx
+// Las funciones que quedan aquí todavía se usan en otros componentes
+// pero probablemente necesiten ser actualizadas o eliminadas.
+
 class ItemDTO {
     constructor(id, Indicaciones,) {
         this.Id = id;
@@ -8,24 +13,7 @@ class ItemDTO {
     }
 }
 
-export async function BuscarTodosLosPedidos() {
-    try {
-        const response = await axios.get(BASE_URL + 'Pedidos');
-        return response.data;
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-export async function BuscarUnPedido(PedidoId) {
-    try {
-        const response = await axios.get(`${BASE_URL}Pedidos/${PedidoId}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
+// TODO: Verificar si esta función todavía se usa y actualizar al nuevo endpoint si es necesario
 export async function PostItems(ListaPedidos, numeroMesa) {
     try {
         const ListaItemsDTO = ListaPedidos.map(item => new ItemDTO(item.id, item.indicaciones));
@@ -38,25 +26,7 @@ export async function PostItems(ListaPedidos, numeroMesa) {
     }
 }
 
-export function PagarMesa(IdPedido) {
-    axios.put(`${BASE_URL}Pagar/${IdPedido}`).then(function (response) {
-        return (response);
-    }).catch(function (error) {
-        return (error);
-    })
-}
-
-export function ProcesarPedidos(estado, ticket) {
-    axios.put(`${BASE_URL}Items/${estado}`, ticket)
-        .then(function (response) {
-            return (response);
-        })
-        .catch(function (error) {
-            return (error);
-        })
-}
-
-
+// TODO: Verificar si esta función todavía se usa y actualizar al nuevo endpoint si es necesario
 export async function GenerarTicketPDF(NumeroMesa,ListaItems) {
     try {
         const response = await axios.post(`${BASE_URL}Pedidos/GenerarTicketPDF`, { NumeroMesa: NumeroMesa,ListaItems:ListaItems }, {

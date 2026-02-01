@@ -26,9 +26,18 @@ import {
 } from "../../../styles/buttonStyles";
 
 function Modal_Editar(props) {
-    const [show, setShow] = useState(false);
+    // Si se reciben show y onClose como props, usarlas (modo controlado)
+    // Si no, usar estado interno (modo no controlado - retrocompatibilidad)
+    const isControlled = props.show !== undefined && props.onClose !== undefined;
+    const [showInterno, setShowInterno] = useState(false);
+    
+    const show = isControlled ? props.show : showInterno;
+    const setShow = isControlled ? props.onClose : setShowInterno;
 
     const { id, activo } = props.fila;
+
+    console.log('Modal_Editar props:', props);
+    console.log('Modal_Editar campos:', props.campos);
 
     // Inicializar editValues con los valores de la fila
     const getInitialValues = () => {
@@ -38,7 +47,16 @@ function Modal_Editar(props) {
 
     const [editValues, setEditValues] = useState(() => getInitialValues());
 
-    const handleShow = () => setShow(true);
+    const handleShow = () => {
+        console.log('🔵 Abriendo modal de editar');
+        console.log('🔵 Show actual:', show);
+        console.log('🔵 Campos:', props.campos);
+        console.log('🔵 Fila:', props.fila);
+        if (!isControlled) {
+            setShowInterno(true);
+        }
+        console.log('🔵 Show después de setShow:', true);
+    };
 
     // Solo resetear valores cuando el modal se abre, no en cada render
     useEffect(() => {
@@ -54,12 +72,22 @@ function Modal_Editar(props) {
             setEditValues,
             modificar: props.modificar,
             recargarComponentes: props.recargarComponentes,
-            handleClose: () => setShow(false),
+            handleClose: () => {
+                if (isControlled) {
+                    props.onClose();
+                } else {
+                    setShowInterno(false);
+                }
+            },
         });
 
     const handleClose = () => {
         setErrors({});
-        setShow(false);
+        if (isControlled) {
+            props.onClose();
+        } else {
+            setShowInterno(false);
+        }
     };
 
     const renderizados = Renderizados(props, handleChange);
@@ -67,21 +95,27 @@ function Modal_Editar(props) {
 
     return (
         <>
-            <IconButton
-                color="primary"
-                onClick={handleShow}
-                disabled={props.disabled}
-                size="small"
-            >
-                <EditIcon fontSize="small" />
-            </IconButton>
+            {!isControlled && (
+                <IconButton
+                    color="primary"
+                    onClick={handleShow}
+                    disabled={props.disabled}
+                    size="small"
+                >
+                    <EditIcon fontSize="small" />
+                </IconButton>
+            )}
 
             <Dialog 
+                key={`dialog-${id}`}
                 open={show} 
                 onClose={handleClose}
                 maxWidth="sm"
                 fullWidth
                 disableEnforceFocus
+                disableRestoreFocus
+                disableAutoFocus
+                keepMounted={false}
                 PaperProps={{
                     sx: {
                         borderRadius: 3,

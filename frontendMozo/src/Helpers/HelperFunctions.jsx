@@ -103,16 +103,17 @@ export function GetChipNombreCompleto(Nombre, Apellido) {
     return ChipNombreCompleto;
 }
 
-export function MappearPedidos(pedidos) {
-    return pedidos.flatMap(pedido =>
-        pedido.items.map(item => ({
-            fecha: pedido.fechaRealizado,
-            indicaciones: item.indicaciones,
-            mesa: pedido.numeroMesa,
-            precio: item.precio,
-            nombre: item.nombre
-        }))
-    );
+export function MappearPedidos(visitas) {
+    return visitas.flatMap(visita => {
+        const productos = visita.productos || [];
+        return productos.map(producto => ({
+            fecha: visita.fechaHora || visita.fechaRealizado,
+            indicaciones: producto.indicaciones,
+            mesa: visita.mesa?.numero || visita.numeroMesa,
+            precio: producto.precio,
+            nombre: producto.nombre
+        }));
+    });
 }
 
 export function MappearReservas(reservas) {
@@ -192,7 +193,7 @@ export function MappearMesas(mesas) {
             nombreMozo: mesa.persona == null ? "Sin Mozo" : mesa.persona.nombres + ' ' + mesa.persona.apellido,
             idMozo: mesa.persona == null ? '' : mesa.persona.id,
             idPlano: mesa.plano?.id || mesa.idPlano || null,
-            nombrePlano: mesa.plano?.nombre || null,
+            nombrePlano: mesa.plano?.nombre || mesa.nombrePlano || null,
         }))
     )
 }

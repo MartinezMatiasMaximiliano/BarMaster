@@ -5,15 +5,15 @@ import { useSelector } from 'react-redux';
 export const useMesaState = (numeroMesa) => {
     const [checkBoxSeleccionados, setCheckBoxSeleccionados] = useState([]);
     const [show, setShow] = useState(false);
-    const pedidosActivos = useSelector((state) => state.pedidosActivos.value);
-    const [pedidoMesa, setPedidoMesa] = useState(
-        pedidosActivos.find(pedido => pedido.numeroMesa === numeroMesa)
+    const visitasActivas = useSelector((state) => state.visitasActivas.value);
+    const [visitaMesa, setVisitaMesa] = useState(
+        visitasActivas.find(visita => visita.mesa?.numero === numeroMesa)
     );
 
-    // Sincronizar pedidoMesa cuando cambia pedidosActivos
+    // Sincronizar visitaMesa cuando cambia visitasActivas
     useEffect(() => {
-        setPedidoMesa(pedidosActivos.find(pedido => pedido.numeroMesa === numeroMesa));
-    }, [pedidosActivos, numeroMesa]);
+        setVisitaMesa(visitasActivas.find(visita => visita.mesa?.numero === numeroMesa));
+    }, [visitasActivas, numeroMesa]);
 
     const handleShow = () => setShow(true);
     
@@ -35,7 +35,8 @@ export const useMesaState = (numeroMesa) => {
     return {
         checkBoxSeleccionados,
         show,
-        pedidoMesa,
+        visitaMesa,
+        productos: visitaMesa?.productos || [],
         activarCancelarPedido,
         handleShow,
         handleClose,

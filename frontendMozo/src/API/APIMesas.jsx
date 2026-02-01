@@ -36,7 +36,7 @@ export async function CrearMesa(datos) {
     }
 }
 
-export async function AbrirMesa(request) {
+export async function AbrirCerrarMesa(request) {
     try {
         console.log("REQUEST EN API", request);
         const response = await axios.patch(`${BASE_URL}AbrirCerrar`, request, authService.getAuthHeaders());
@@ -49,15 +49,6 @@ export async function AbrirMesa(request) {
             alert(error.response.data);
         }
         throw error;
-    }
-}
-
-export async function CerrarMesa(Id) {
-    try {
-        const response = await axios.put(`${BASE_URL}${Id}/Cerrar?codigoMozo=null`, {}, authService.getAuthHeaders());
-        return response.data;
-    } catch (error) {
-        console.error("Error:", error);
     }
 }
 

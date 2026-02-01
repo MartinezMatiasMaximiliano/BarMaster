@@ -9,8 +9,8 @@ export const formatearFecha = (fecha) => {
     return `${horas}:${minutos}`;
 };
 
-export const calcularTotalPrecio = (items = []) => {
-    return items.reduce((acumulador, item) => 
-        acumulador + parseFloat(item.precio), 0
+export const calcularTotalPrecio = (productos = []) => {
+    return productos.reduce((acumulador, producto) => 
+        acumulador + parseFloat(producto.precio || producto.precioDelMomento || 0), 0
     );
 };

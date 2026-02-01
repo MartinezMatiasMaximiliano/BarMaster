@@ -43,14 +43,14 @@ import { BuscarTodasLasCategorias } from './API/APICategorias';
 import { BuscarTodosLosMozos } from './API/APIPersonas'
 import { BuscarTodasLasPersonas } from './API/APIPersonas'
 import { BuscarTodosLosRoles } from './API/APIRoles'
-import { BuscarTodosLosPedidos, BuscarUnPedido } from './API/APIPedidos'
+import { BuscarTodasLasVisitas, BuscarVisitaPorId } from './API/APIVisitas'
 import { BuscarTodasLasReservas } from './API/APIReservas'
 import { BuscarTodosLosTipoPagos } from './API/APITipoPagos'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { CambiarEstadoItems } from './API/APIItems'
 import { useSelector, useDispatch } from 'react-redux'
-import { agregarItems as agregarItemsAPedidoActivo, crear as crearPedidosActivos, cambiarEstadoItems } from './redux/slices/pedidosActivosSlice'
+import { agregarProductos, crear as crearVisitasActivas, cambiarEstadoPagadoProductos } from './redux/slices/visitasActivasSlice'
 import { agregar as agregarNotificaciones } from './redux/slices/notificacionesSlice'
 import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
@@ -79,7 +79,7 @@ function App() {
     });
 
     // States que usan redux
-    const pedidosActivos = useSelector((state) => state.pedidosActivos.value); 
+    const visitasActivas = useSelector((state) => state.visitasActivas.value); 
     const notificaciones = useSelector((state) => state.notificaciones.value); 
 
     // States que se llenan con llamados a la DB y su valor es constante
@@ -89,7 +89,7 @@ function App() {
     const [menu, SetMenu] = useState([])
     const [personas, SetPersonas] = useState([])
     const [roles, SetRoles] = useState([])
-    const [pedidos, SetPedidos] = useState([])
+    const [visitas, SetVisitas] = useState([])
     const [reservas, SetReservas] = useState([])
     const [tipoPagos, SetTipoPagos] = useState([])
     const [planos, SetPlanos] = useState([])
@@ -112,9 +112,9 @@ function App() {
                 BuscarTodosLosRoles()
                     .then(data => SetRoles(Array.isArray(data) ? data : []))
                     .catch(() => SetRoles([]));
-                BuscarTodosLosPedidos()
-                    .then(data => SetPedidos(Array.isArray(data) ? data : []))
-                    .catch(() => SetPedidos([]));
+                BuscarTodasLasVisitas()
+                    .then(data => SetVisitas(Array.isArray(data) ? data : []))
+                    .catch(() => SetVisitas([]));
                 BuscarTodasLasCategorias()
                     .then(data => SetCategorias(Array.isArray(data) ? data : []))
                     .catch(() => SetCategorias([]));    
@@ -134,7 +134,7 @@ function App() {
                 SetMenu([]);
                 SetPersonas([]);
                 SetRoles([]);
-                SetPedidos([]);
+                SetVisitas([]);
                 SetCategorias([]);
                 SetReservas([]);
                 SetTipoPagos([]);
@@ -152,10 +152,22 @@ function App() {
     })
 
     useEffect(() => {
-        if (pedidos.length > 0) {
-            dispatch(crearPedidosActivos(pedidos.filter(pedido => pedido.activo)));
+        if (visitas.length > 0) {
+            // Filtrar visitas activas/pendientes
+            const visitasPendientes = visitas.filter(v => 
+                v.estado === 'Pendiente' || v.estado === 'activo'
+            );
+            
+            // Asegurar que cada visita tenga la estructura correcta
+            const visitasConEstructura = visitasPendientes.map(v => ({
+                ...v,
+                mesa: v.mesa || {},
+                productos: v.productos || v.ProductosConsumidos || []
+            }));
+            
+            dispatch(crearVisitasActivas(visitasConEstructura));
         }
-    }, [pedidos]);
+    }, [visitas]);
 
     async function recargarMesas() {
         await BuscarTodasLasMesas().then(data => SetMesas(data));
@@ -194,42 +206,43 @@ function App() {
         await BuscarTodosLosPlanos().then(data => SetPlanos(data));
     }
 
-    async function pagarTotal(IdPedido) {
+    async function pagarTotal(IdVisita) {
 
-        const pedido = await BuscarUnPedido(IdPedido);
+        const visita = await BuscarVisitaPorId(IdVisita);
 
-        if (pedido) {
-            const ListaItems = pedido.items.filter(item => item.estado === 0).map(item => item.id);
+        if (visita) {
+            const ListaProductosPendientes = visita.productos?.filter(p => !p.estadoPagado).map(p => p.id) || [];
 
-            // Hacer la actualización en la base de datos
-            CambiarEstadoItems(ListaItems, "Procesando");
+            if (ListaProductosPendientes.length > 0) {
+                // Hacer la actualización en la base de datos
+                CambiarEstadoItems(ListaProductosPendientes, "Procesando");
 
-            // Agrego el ticket
-            dispatch(agregarTicket(ListaItems));
+                // Agrego el ticket
+                dispatch(agregarTicket(ListaProductosPendientes));
 
-            // Actualizar el estado en Redux
-            dispatch(cambiarEstadoItems({ idsItems: ListaItems, estadoNuevo: 1 }));
+                // Actualizar el estado en Redux - marcar como pagado
+                dispatch(cambiarEstadoPagadoProductos({ idsProductos: ListaProductosPendientes, pagado: true }));
+            }
         }
     }
 
-    function pagarSeparado(ArrayIdsItems) {
+    function pagarSeparado(ArrayIdsProductos) {
         // Hago los cambios en la DB
-        CambiarEstadoItems(ArrayIdsItems, "Procesando");
+        CambiarEstadoItems(ArrayIdsProductos, "Procesando");
 
         // Agrego el ticket
+        dispatch(agregarTicket(ArrayIdsProductos));
 
-        dispatch(agregarTicket(ArrayIdsItems));
-
-        // Actualizo el estado
-        dispatch(cambiarEstadoItems({ idsItems: ArrayIdsItems, estadoNuevo: 1 }));
+        // Actualizo el estado - marcar como pagado
+        dispatch(cambiarEstadoPagadoProductos({ idsProductos: ArrayIdsProductos, pagado: true }));
     };
 
     async function AgregarItemsAPedido(Pedido, numeroMesa) {
 
         try {
-            const items = await PostItems(Pedido, numeroMesa);
-            const nuevoItems = items.map(({ pedidoId, ...resto }) => resto);
-            dispatch(agregarItemsAPedidoActivo({ items: nuevoItems, numeroMesa: numeroMesa }));
+            const productosCreados = await PostItems(Pedido, numeroMesa);
+            const productosLimpios = productosCreados.map(({ pedidoId, ...resto }) => resto);
+            dispatch(agregarProductos({ productos: productosLimpios, numeroMesa: numeroMesa }));
             sendRecargarTicket(numeroMesa);
         } catch (error) {
         }
@@ -240,7 +253,7 @@ function App() {
     const datos_mesas_abm = MappearMesas(mesas || [])
     const datos_menu_abm = MappearMenu(menu || [])
     const Notificaciones = MappearNotificaciones(notificaciones || [])
-    const datos_pedidos = MappearPedidos(pedidos || [])
+    const datos_pedidos = MappearPedidos(visitas || [])
     const datos_reservas = MappearReservas(reservas || [])
     const datos_planos_abm = MappearPlanos(planos || [])
 

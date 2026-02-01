@@ -10,7 +10,8 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     const {
         checkBoxSeleccionados,
         show,
-        pedidoMesa,
+        visitaMesa,
+        productos,
         activarCancelarPedido,
         handleShow,
         handleClose,
@@ -21,16 +22,16 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic();
 
     // Handlers con contexto
-    const handleCancelarPedidos = (idCheckboxs) => {
+    const handleCancelarPedidos = (idsProductos) => {
         cancelarPedidos(
-            idCheckboxs, 
+            idsProductos, 
             datos_mesa.numeroMesa,
             () => setCheckBoxSeleccionados([])
         );
     };
 
     const handleCerrarMesa = (mesaId) => {
-        cerrarMesa(mesaId, datos_mesa.numeroMesa, pedidoMesa?.items || []);
+        cerrarMesa(mesaId, datos_mesa.numeroMesa, productos);
     };
 
     const handleAbrirMesa = () => {
@@ -40,6 +41,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         }
         var request = {
             idMesa: datos_mesa.id,
+            numeroMesa: datos_mesa.numeroMesa, // Necesario para crear la visita en Redux
             codigoServicioMozo: mozo.codigoDeServicio,
             abrir: true,
         }
@@ -53,6 +55,8 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         }
         handleShow();
     };
+
+    console.log("DATOS_MESA:", datos_mesa);
 
     // Renderizado condicional simplificado
     const renderMesa = () => {
@@ -88,7 +92,8 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                         show={show}
                         handleClose={handleClose}
                         datos_mesa={datos_mesa}
-                        pedidoMesa={pedidoMesa}
+                        visitaMesa={visitaMesa}
+                        productos={productos}
                         checkBoxSeleccionados={checkBoxSeleccionados}
                         handleChangeCheckBox={handleChangeCheckBox}
                         activarCancelarPedido={activarCancelarPedido}
@@ -103,7 +108,8 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         if (variant !== "success") {
             return (
                 <Mesa_Deshabilitada 
-                    pedidoMesa={pedidoMesa} 
+                    visitaMesa={visitaMesa}
+                    productos={productos}
                     estilo={estilo}  
                     datos_mesa={datos_mesa}
                     deshabilitadaPorCaja={!hayCajaActiva}
@@ -127,7 +133,8 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                     show={show}
                     handleClose={handleClose}
                     datos_mesa={datos_mesa}
-                    pedidoMesa={pedidoMesa}
+                    visitaMesa={visitaMesa}
+                    productos={productos}
                     checkBoxSeleccionados={checkBoxSeleccionados}
                     handleChangeCheckBox={handleChangeCheckBox}
                     activarCancelarPedido={activarCancelarPedido}

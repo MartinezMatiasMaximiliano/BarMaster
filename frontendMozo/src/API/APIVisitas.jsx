@@ -237,3 +237,19 @@ export async function BuscarTodosLosTipoPagos() {
     }
 }
 
+export async function BuscarVisitaPorId(idVisita) {
+    try {
+        // TODO: Descomentar cuando esté lista la API real
+        const response = await axios.get(`${BASE_URL}Visitas/${idVisita}`);
+        return response.data;
+
+        // DATOS DE PRUEBA
+        // await delay(200);
+        // const visita = datosPrueba.visitas.find(v => v.id === idVisita);
+        // if (!visita) return null;
+        // return unirDatosRelacionados([visita], datosPrueba)[0];
+    } catch (error) {
+        console.error('Error al obtener visita por ID:', error);
+        return null;
+    }
+}

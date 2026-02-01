@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { CambiarEstadoItems } from '../../../../API/APIItems';
 import { GenerarTicketPDF } from '../../../../API/APIPedidos';
-import { cambiarEstadoItems as CambiarEstadoItemsState } from '../../../../redux/slices/pedidosActivosSlice';
+import { cambiarEstadoPagadoProductos } from '../../../../redux/slices/visitasActivasSlice';
 import { eliminar as eliminarTicket } from '../../../../redux/slices/ticketSlice';
 import connection from '../../../../connections/HubConnMozo';
 
@@ -14,8 +14,8 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
     const dispatch = useDispatch();
 
     // Selector optimizado con shallowEqual para evitar re-renders innecesarios
-    const pedidosActivos = useSelector(
-        (state) => state.pedidosActivos.value,
+    const visitasActivas = useSelector(
+        (state) => state.visitasActivas.value,
         shallowEqual
     );
 
@@ -23,30 +23,32 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
     const [show, setShow] = useState(false);
     const [tabValue, setTabValue] = useState(0);
 
-    // Filtrar pedidos de la mesa actual
-    const pedidosMesa = useMemo(() => {
-        if (!pedidosActivos || pedidosActivos.length === 0) return [];
-        return pedidosActivos.filter(pedido => pedido.numeroMesa === datosMesa.numeroMesa);
-    }, [pedidosActivos, datosMesa.numeroMesa]);
+    // Filtrar visitas de la mesa actual
+    const visitasMesa = useMemo(() => {
+        if (!visitasActivas || visitasActivas.length === 0) return [];
+        return visitasActivas.filter(visita => visita.mesa?.numero === datosMesa.numeroMesa);
+    }, [visitasActivas, datosMesa.numeroMesa]);
 
-    // Calcular items disponibles para pagar
-    const itemsAPagar = useMemo(() => {
-        if (!pedidosMesa[0]?.items) return [];
-        return pedidosMesa[0].items
-            .filter(item => item.estado !== 2)
-            .map(item => item.id);
-    }, [pedidosMesa]);
+    // Calcular productos disponibles para pagar (no pagados)
+    const productosAPagar = useMemo(() => {
+        if (!visitasMesa[0]?.productos) return [];
+        return visitasMesa[0].productos
+            .filter(producto => !producto.estadoPagado)
+            .map(producto => producto.id);
+    }, [visitasMesa]);
 
-    // Calcular total de pedidos
+    // Calcular total de productos pendientes
     const totalPedidos = useMemo(() => {
-        if (!pedidosMesa[0]?.items) return 0;
-        return pedidosMesa[0].items.reduce((acc, item) => acc + (item.precio || 0), 0);
-    }, [pedidosMesa]);
+        if (!visitasMesa[0]?.productos) return 0;
+        return visitasMesa[0].productos
+            .filter(producto => !producto.estadoPagado)
+            .reduce((acc, producto) => acc + (producto.precio || producto.precioDelMomento || 0), 0);
+    }, [visitasMesa]);
 
-    // Calcular cantidad de items
+    // Calcular cantidad de productos
     const cantidadItems = useMemo(() => {
-        return pedidosMesa[0]?.items?.length ?? 0;
-    }, [pedidosMesa]);
+        return visitasMesa[0]?.productos?.length ?? 0;
+    }, [visitasMesa]);
 
     // Formateador de moneda
     const currencyFormatter = useMemo(
@@ -84,8 +86,8 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
         // Enviar mensaje al cliente para actualizar su cuenta
         connection.send("RecargarTicket", datosMesa.numeroMesa);
 
-        // Actualizar el estado de pedidosActivos en Redux
-        dispatch(CambiarEstadoItemsState({ idsItems: arregloIds, estadoNuevo: 2 }));
+        // Actualizar el estado de visitasActivas en Redux - marcar productos como pagados
+        dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true }));
 
         // Actualizar el estado de ticket en Redux
         dispatch(eliminarTicket(arregloIds));
@@ -100,8 +102,8 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
         // Estado
         show,
         tabValue,
-        pedidosMesa,
-        itemsAPagar,
+        visitasMesa,
+        productosAPagar,
         totalPedidos,
         cantidadItems,
         currencyFormatter,

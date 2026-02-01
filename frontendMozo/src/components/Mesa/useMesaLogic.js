@@ -2,12 +2,12 @@
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { 
-    cambiarEstadoItemsPorMesa, 
-    eliminarItems as eliminarItemsDePedido, 
-    agregarPedido 
-} from '../../redux/slices/pedidosActivosSlice';
+    cambiarEstadoPagadoPorMesa, 
+    eliminarProductos, 
+    agregarVisita 
+} from '../../redux/slices/visitasActivasSlice';
 import { EliminarItems } from '../../API/APIItems';
-import { AbrirMesa, CerrarMesa } from '../../API/APIMesas';
+import { AbrirCerrarMesa } from '../../API/APIMesas';
 import { GenerarTicketPDF } from '../../API/APIPedidos';
 import connection from '../../connections/HubConnMozo';
 
@@ -15,42 +15,46 @@ export const useMesaLogic = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const obtenerIdItemsPendientes = (items) => {
-        return items
-            .filter(item => item.estado === 0 || item.estado === 1)
-            .map(item => item.id);
+    const obtenerIdProductosPendientes = (productos) => {
+        return productos
+            .filter(producto => !producto.estadoPagado)
+            .map(producto => producto.id);
     };
 
-    const cancelarPedidos = async (idCheckboxs, numeroMesa, onSuccess) => {
+    const cancelarPedidos = async (idsProductos, numeroMesa, onSuccess) => {
         try {
-            await EliminarItems(idCheckboxs, numeroMesa);
-            dispatch(eliminarItemsDePedido({ 
+            await EliminarItems(idsProductos, numeroMesa);
+            dispatch(eliminarProductos({ 
                 numeroMesa, 
-                idsItems: idCheckboxs 
+                idsProductos 
             }));
             onSuccess?.();
         } catch (error) {
-            console.error('Error al cancelar pedidos:', error);
+            console.error('Error al cancelar productos:', error);
         }
     };
 
-    const cerrarMesa = async (mesaId, numeroMesa, items) => {
+    const cerrarMesa = async (mesaId, numeroMesa, productos) => {
         try {
-            const itemsPendientes = obtenerIdItemsPendientes(items);
+            const productosPendientes = obtenerIdProductosPendientes(productos);
             
-            // Generar factura si hay items pendientes
-            if (itemsPendientes.length > 0) {
-                await GenerarTicketPDF(numeroMesa, itemsPendientes);
+            // Generar factura si hay productos pendientes
+            if (productosPendientes.length > 0) {
+                await GenerarTicketPDF(numeroMesa, productosPendientes);
             }
 
-            // Actualizar estado
-            dispatch(cambiarEstadoItemsPorMesa({ 
+            // Marcar todos los productos como pagados
+            dispatch(cambiarEstadoPagadoPorMesa({ 
                 numeroMesa, 
-                estadoNuevo: 2 
+                pagado: true 
             }));
 
-            // Cerrar mesa en DB
-            await CerrarMesa(mesaId);
+            // Cerrar mesa en DB usando el endpoint correcto AbrirCerrar con Abrir: false
+            const requestDTO = {
+                IdMesa: mesaId,
+                Abrir: false
+            };
+            await AbrirCerrarMesa(requestDTO); // Usa el mismo endpoint AbrirCerrar
 
             // Notificar al cliente
             connection.send("MesaCerrada", numeroMesa);
@@ -71,19 +75,31 @@ export const useMesaLogic = () => {
                 Abrir: request.abrir,
             };
             
-            const response = await AbrirMesa(requestDTO);
-            const { pedido: { id, fechaRealizado, idMesa, numeroMesa, activo, items } } = response;
+            const response = await AbrirCerrarMesa(requestDTO);
             
-            const datosPedido = { 
-                id, 
-                fechaRealizado, 
-                idMesa, 
-                numeroMesa, 
-                activo, 
-                items 
+            // El backend ahora devuelve VisitaDTO directamente
+            // VisitaDTO: { Id, IdCaja, IdMesa, IdMozo, FechaHora, Estado }
+            
+            // Necesitamos obtener el número de mesa del request original
+            // ya que el backend no lo devuelve en VisitaDTO
+            const numeroMesa = request.numeroMesa;
+            
+            // Adaptar respuesta del backend al formato de visita para Redux
+            const datosVisita = {
+                id: response.id,
+                fechaHora: response.fechaHora,
+                idMesa: response.idMesa,
+                idCaja: response.idCaja,
+                idMozo: response.idMozo,
+                estado: response.estado,
+                mesa: {
+                    id: response.idMesa,
+                    numero: numeroMesa // Lo obtenemos del request
+                },
+                productos: [] // Una mesa recién abierta no tiene productos
             };
             
-            dispatch(agregarPedido(datosPedido));
+            dispatch(agregarVisita(datosVisita));
             navigate('/?=' + Date.now());
         } catch (error) {
             console.error('Error al abrir mesa:', error);

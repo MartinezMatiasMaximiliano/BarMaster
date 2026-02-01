@@ -1,20 +1,20 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
-import { cambiarEstadoItems } from '../../../redux/slices/pedidosActivosSlice';
+import { cambiarEstadoPreparacion } from '../../../redux/slices/visitasActivasSlice';
 import { CambiarEstadoItems } from '../../../API/APIItems';
 import connection from '../../../connections/HubConnMozo';
 import datosPruebaKDS from '../utils/datosPruebaKDS.json';
 
 /**
  * Hook personalizado para manejar la lógica del KDS (Kitchen Display System)
- * Gestiona pedidos, estados, filtros y actualizaciones en tiempo real
+ * Gestiona visitas, estados, filtros y actualizaciones en tiempo real
  */
 export const useKDS = () => {
     const dispatch = useDispatch();
 
-    // Obtener pedidos activos de Redux
-    const pedidosActivosRedux = useSelector(
-        (state) => state.pedidosActivos.value,
+    // Obtener visitas activas de Redux
+    const visitasActivasRedux = useSelector(
+        (state) => state.visitasActivas.value,
         shallowEqual
     );
 
@@ -22,24 +22,24 @@ export const useKDS = () => {
     const [datosPruebaModificados, setDatosPruebaModificados] = useState(null);
 
     // Usar datos de prueba si Redux está vacío (para desarrollo/demo)
-    const pedidosActivos = useMemo(() => {
+    const visitasActivas = useMemo(() => {
         // Si hay datos en Redux, usarlos; si no, usar datos de prueba (modificados o originales)
-        if (pedidosActivosRedux && pedidosActivosRedux.length > 0) {
-            return pedidosActivosRedux;
+        if (visitasActivasRedux && visitasActivasRedux.length > 0) {
+            return visitasActivasRedux;
         }
         // Si hay datos de prueba modificados, usarlos; si no, usar los originales
         return datosPruebaModificados || datosPruebaKDS;
-    }, [pedidosActivosRedux, datosPruebaModificados]);
+    }, [visitasActivasRedux, datosPruebaModificados]);
 
     // Inicializar datos de prueba modificados cuando se cargan por primera vez
     useEffect(() => {
-        if (!pedidosActivosRedux || pedidosActivosRedux.length === 0) {
+        if (!visitasActivasRedux || visitasActivasRedux.length === 0) {
             if (!datosPruebaModificados) {
                 // Hacer una copia profunda de los datos de prueba
                 setDatosPruebaModificados(JSON.parse(JSON.stringify(datosPruebaKDS)));
             }
         }
-    }, [pedidosActivosRedux, datosPruebaModificados]);
+    }, [visitasActivasRedux, datosPruebaModificados]);
 
     // Estados locales
     const [filtroEstado, setFiltroEstado] = useState(['todos']); // Array de filtros seleccionados: ['todos'], ['pendiente'], ['en_preparacion'], ['listo'], o combinaciones
@@ -50,26 +50,27 @@ export const useKDS = () => {
     // Estado para notificaciones de acciones reversibles
     const [notificacion, setNotificacion] = useState(null);
 
-    // Transformar pedidos activos en items individuales para el KDS
+    // Transformar visitas activas en productos individuales para el KDS
     const itemsKDS = useMemo(() => {
         const items = [];
 
-        pedidosActivos.forEach(pedido => {
-            pedido.items?.forEach(item => {
-                // Mostrar items que no estén pagados
-                // En Redux: estado 0 = pendiente, 1 = en preparación, 2 = listo (pero no pagado aún)
-                // Los items pagados no aparecen en pedidosActivos, así que todos los que están aquí son válidos para el KDS
-                // Para el KDS: 0 = pendiente, 1 = en preparación, 2 = listo (aún no pagado)
-                items.push({
-                    id: item.id,
-                    nombre: item.nombre,
-                    indicaciones: item.indicaciones || '',
-                    cantidad: item.cantidad || 1,
-                    fechaHora: pedido.fechaRealizado || new Date().toISOString(),
-                    numeroMesa: pedido.numeroMesa,
-                    estado: item.estado || 0, // 0: pendiente, 1: en preparación, 2: listo
-                    precio: item.precio
-                });
+        visitasActivas.forEach(visita => {
+            const productos = visita.productos || [];
+            
+            productos.forEach(producto => {
+                // Mostrar solo productos que no estén pagados
+                if (!producto.estadoPagado) {
+                    items.push({
+                        id: producto.id,
+                        nombre: producto.nombre || producto.nombreProducto,
+                        indicaciones: producto.indicaciones || producto.detalles || '',
+                        cantidad: producto.cantidad || 1,
+                        fechaHora: visita.fechaHora || new Date().toISOString(),
+                        numeroMesa: visita.mesa?.numero,
+                        estado: producto.estadoPreparacion ?? 0, // 0: pendiente, 1: en preparación, 2: listo
+                        precio: producto.precio || producto.precioDelMomento
+                    });
+                }
             });
         });
 
@@ -106,7 +107,7 @@ export const useKDS = () => {
                     return fechaA_antiguo - fechaB_antiguo;
             }
         });
-    }, [pedidosActivos, ordenamiento]);
+    }, [visitasActivas, ordenamiento]);
 
     // Filtrar items según el estado seleccionado
     const itemsFiltrados = useMemo(() => {
@@ -162,24 +163,24 @@ export const useKDS = () => {
         return item ? item.estado : null;
     }, [itemsKDS]);
 
-    // Marcar item como "En preparación"
-    const marcarEnPreparacion = useCallback(async (itemId) => {
+    // Marcar producto como "En preparación"
+    const marcarEnPreparacion = useCallback(async (productoId) => {
         try {
-            const estadoAnterior = obtenerEstadoAnterior(itemId);
+            const estadoAnterior = obtenerEstadoAnterior(productoId);
             
             // Si hay datos en Redux, actualizar en la base de datos y Redux
-            if (pedidosActivosRedux && pedidosActivosRedux.length > 0) {
-                await CambiarEstadoItems([itemId], "Procesando");
-                dispatch(cambiarEstadoItems({ idsItems: [itemId], estadoNuevo: 1 }));
+            if (visitasActivasRedux && visitasActivasRedux.length > 0) {
+                await CambiarEstadoItems([productoId], "Procesando");
+                dispatch(cambiarEstadoPreparacion({ idsProductos: [productoId], estadoNuevo: 1 }));
             } else {
                 // Si estamos usando datos de prueba, actualizar el estado local
                 setDatosPruebaModificados(prev => {
                     if (!prev) return prev;
                     const nuevosDatos = JSON.parse(JSON.stringify(prev));
-                    nuevosDatos.forEach(pedido => {
-                        pedido.items?.forEach(item => {
-                            if (item.id === itemId) {
-                                item.estado = 1;
+                    nuevosDatos.forEach(visita => {
+                        visita.productos?.forEach(producto => {
+                            if (producto.id === productoId) {
+                                producto.estadoPreparacion = 1;
                             }
                         });
                     });
@@ -189,7 +190,7 @@ export const useKDS = () => {
             
             // Mostrar notificación con opción de revertir
             setNotificacion({
-                itemId,
+                itemId: productoId,
                 estadoAnterior,
                 estadoNuevo: 1,
                 mensaje: 'Pedido marcado como "En Preparación"',
@@ -199,26 +200,26 @@ export const useKDS = () => {
             console.error('Error al marcar como en preparación:', error);
             alert('Error al actualizar el estado del pedido');
         }
-    }, [dispatch, pedidosActivosRedux, obtenerEstadoAnterior]);
+    }, [dispatch, visitasActivasRedux, obtenerEstadoAnterior]);
 
-    // Marcar item como "Listo"
-    const marcarListo = useCallback(async (itemId) => {
+    // Marcar producto como "Listo"
+    const marcarListo = useCallback(async (productoId) => {
         try {
-            const estadoAnterior = obtenerEstadoAnterior(itemId);
+            const estadoAnterior = obtenerEstadoAnterior(productoId);
             
             // Si hay datos en Redux, actualizar en la base de datos y Redux
-            if (pedidosActivosRedux && pedidosActivosRedux.length > 0) {
-                await CambiarEstadoItems([itemId], "Listo");
-                dispatch(cambiarEstadoItems({ idsItems: [itemId], estadoNuevo: 2 }));
+            if (visitasActivasRedux && visitasActivasRedux.length > 0) {
+                await CambiarEstadoItems([productoId], "Listo");
+                dispatch(cambiarEstadoPreparacion({ idsProductos: [productoId], estadoNuevo: 2 }));
             } else {
                 // Si estamos usando datos de prueba, actualizar el estado local
                 setDatosPruebaModificados(prev => {
                     if (!prev) return prev;
                     const nuevosDatos = JSON.parse(JSON.stringify(prev));
-                    nuevosDatos.forEach(pedido => {
-                        pedido.items?.forEach(item => {
-                            if (item.id === itemId) {
-                                item.estado = 2;
+                    nuevosDatos.forEach(visita => {
+                        visita.productos?.forEach(producto => {
+                            if (producto.id === productoId) {
+                                producto.estadoPreparacion = 2;
                             }
                         });
                     });
@@ -228,7 +229,7 @@ export const useKDS = () => {
             
             // Mostrar notificación con opción de revertir
             setNotificacion({
-                itemId,
+                itemId: productoId,
                 estadoAnterior,
                 estadoNuevo: 2,
                 mensaje: 'Pedido marcado como "Listo"',
@@ -238,7 +239,7 @@ export const useKDS = () => {
             console.error('Error al marcar como listo:', error);
             alert('Error al actualizar el estado del pedido');
         }
-    }, [dispatch, pedidosActivosRedux, obtenerEstadoAnterior]);
+    }, [dispatch, visitasActivasRedux, obtenerEstadoAnterior]);
 
     // Revertir acción (volver al estado anterior)
     const revertirAccion = useCallback(async (notificacion) => {
@@ -246,23 +247,23 @@ export const useKDS = () => {
             const { itemId, estadoAnterior } = notificacion;
             
             // Si hay datos en Redux, actualizar en la base de datos y Redux
-            if (pedidosActivosRedux && pedidosActivosRedux.length > 0) {
+            if (visitasActivasRedux && visitasActivasRedux.length > 0) {
                 // Determinar el estado de texto según el estado anterior
                 let estadoTexto = "Pendiente";
                 if (estadoAnterior === 1) estadoTexto = "Procesando";
                 else if (estadoAnterior === 2) estadoTexto = "Listo";
                 
                 await CambiarEstadoItems([itemId], estadoTexto);
-                dispatch(cambiarEstadoItems({ idsItems: [itemId], estadoNuevo: estadoAnterior }));
+                dispatch(cambiarEstadoPreparacion({ idsProductos: [itemId], estadoNuevo: estadoAnterior }));
             } else {
                 // Si estamos usando datos de prueba, actualizar el estado local
                 setDatosPruebaModificados(prev => {
                     if (!prev) return prev;
                     const nuevosDatos = JSON.parse(JSON.stringify(prev));
-                    nuevosDatos.forEach(pedido => {
-                        pedido.items?.forEach(item => {
-                            if (item.id === itemId) {
-                                item.estado = estadoAnterior;
+                    nuevosDatos.forEach(visita => {
+                        visita.productos?.forEach(producto => {
+                            if (producto.id === itemId) {
+                                producto.estadoPreparacion = estadoAnterior;
                             }
                         });
                     });
@@ -276,18 +277,18 @@ export const useKDS = () => {
             console.error('Error al revertir acción:', error);
             alert('Error al revertir la acción');
         }
-    }, [dispatch, pedidosActivosRedux]);
+    }, [dispatch, visitasActivasRedux]);
 
-    // Marcar múltiples items como listos
-    const marcarMultiplesListos = useCallback(async (itemIds) => {
+    // Marcar múltiples productos como listos
+    const marcarMultiplesListos = useCallback(async (productosIds) => {
         try {
             // Actualizar en la base de datos
-            await CambiarEstadoItems(itemIds, "Listo");
+            await CambiarEstadoItems(productosIds, "Listo");
             
             // Actualizar en Redux
-            dispatch(cambiarEstadoItems({ idsItems: itemIds, estadoNuevo: 2 }));
+            dispatch(cambiarEstadoPreparacion({ idsProductos: productosIds, estadoNuevo: 2 }));
         } catch (error) {
-            console.error('Error al marcar múltiples items como listos:', error);
+            console.error('Error al marcar múltiples productos como listos:', error);
             alert('Error al actualizar los estados de los pedidos');
         }
     }, [dispatch]);

@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { BuscarTodosLosProductos } from '../../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
 import { PostItems } from '../../../../API/APIPedidos';
-import { agregarItems as agregarItemsAPedidoActivo } from '../../../../redux/slices/pedidosActivosSlice';
+import { agregarProductos } from '../../../../redux/slices/visitasActivasSlice';
 import connection from '../../../../connections/HubConnMozo';
 
 export const useAgregarPedidos = (open, numeroMesa, onClose) => {
@@ -126,12 +126,12 @@ export const useAgregarPedidos = (open, numeroMesa, onClose) => {
                 }
             });
 
-            const itemsCreados = await PostItems(itemsParaEnviar, numeroMesa);
+            const productosCreados = await PostItems(itemsParaEnviar, numeroMesa);
             
-            if (itemsCreados && itemsCreados.length > 0) {
-                const nuevoItems = itemsCreados.map(({ pedidoId, ...resto }) => resto);
-                dispatch(agregarItemsAPedidoActivo({ 
-                    items: nuevoItems, 
+            if (productosCreados && productosCreados.length > 0) {
+                const productosLimpios = productosCreados.map(({ pedidoId, ...resto }) => resto);
+                dispatch(agregarProductos({ 
+                    productos: productosLimpios, 
                     numeroMesa: numeroMesa 
                 }));
 

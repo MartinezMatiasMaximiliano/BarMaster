@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -12,12 +12,23 @@ export default function Select(props) {
         : '';
     const [value, setValue] = useState(valorInicial);
 
+    // Actualizar el valor si cambia datoActual (útil para modo edición)
+    useEffect(() => {
+        const nuevoValor = props.datoActual !== null && props.datoActual !== undefined && props.datoActual !== '' 
+            ? props.datoActual 
+            : '';
+        setValue(nuevoValor);
+    }, [props.datoActual]);
+
     const handleChange = (event) => {
         const nuevoValor = event.target.value;
         setValue(nuevoValor);
         // Pasar el tipo 'select' para que el handler lo procese correctamente
         props.handleChange(event, props.campo.name, 'select');
     };
+
+    // Verificar que options exista y sea un array
+    const options = Array.isArray(props.campo.options) ? props.campo.options : [];
 
     return (
         <FormControl fullWidth>
@@ -27,11 +38,17 @@ export default function Select(props) {
                     label={props.campo.label}
                     onChange={handleChange}
                 >
-                    {props.campo.options.map((dato, i) => (
-                        <MenuItem key={i} value={dato.id === null ? '' : dato.id}>
-                            {dato.nombre}
+                    {options.length === 0 ? (
+                        <MenuItem disabled value="">
+                            No hay opciones disponibles
                         </MenuItem>
-                    ))}
+                    ) : (
+                        options.map((dato, i) => (
+                            <MenuItem key={i} value={dato.id === null ? '' : dato.id}>
+                                {dato.nombre}
+                            </MenuItem>
+                        ))
+                    )}
                 </Select_>
         </FormControl>
     );

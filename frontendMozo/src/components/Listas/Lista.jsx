@@ -33,7 +33,8 @@ export default function Lista(props) {
         >
             <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                 {props.items.map((item, i) => {
-                    if (item.estado !== 2) {
+                    // Mostrar solo productos que no estén pagados
+                    if (!item.estadoPagado) {
                         const labelId = `checkbox-list-label-${item}-${i}`;
 
                         return (
@@ -47,7 +48,7 @@ export default function Lista(props) {
                                             disableRipple
                                             inputProps={{ 'aria-labelledby': labelId }} />
                                     </ListItemIcon>
-                                    <ListItemText id={labelId} primary={item.nombre} secondary={item.indicaciones} />
+                                    <ListItemText id={labelId} primary={item.nombre || item.nombreProducto} secondary={item.indicaciones || item.detalles} />
                                 </ListItemButton>
                             </ListItem>
                         );

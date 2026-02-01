@@ -31,8 +31,8 @@ function Modal_Ver_Cuenta(props) {
     const {
         show,
         tabValue,
-        pedidosMesa,
-        itemsAPagar,
+        visitasMesa,
+        productosAPagar,
         totalPedidos,
         cantidadItems,
         currencyFormatter,
@@ -101,20 +101,20 @@ function Modal_Ver_Cuenta(props) {
                             label="Tickets abiertos"
                             icon={<ReceiptIcon />}
                             iconPosition="start"
-                            disabled={!pedidosMesa[0]}
+                            disabled={!visitasMesa[0]}
                         />
                         <Tab
                             label="Pagos registrados"
                             icon={<CheckCircleIcon />}
                             iconPosition="start"
-                            disabled={!pedidosMesa[0]}
+                            disabled={!visitasMesa[0]}
                         />
                     </Tabs>
 
                     <Box sx={{ p: 3, minHeight: 300, maxHeight: 500, overflowY: 'auto' }}>
                         {tabValue === 0 && (
                             <TabContent
-                                pedidosMesa={pedidosMesa}
+                                visitasMesa={visitasMesa}
                                 estado={false}
                                 titulo="Pedido total"
                                 subtitulo="Total"
@@ -123,7 +123,7 @@ function Modal_Ver_Cuenta(props) {
 
                         {tabValue === 1 && (
                             <TabContent
-                                pedidosMesa={pedidosMesa}
+                                visitasMesa={visitasMesa}
                                 estado={1}
                                 titulo="Ticket"
                                 PagarMesa={PagarMesa}
@@ -133,7 +133,7 @@ function Modal_Ver_Cuenta(props) {
 
                         {tabValue === 2 && (
                             <TabContent
-                                pedidosMesa={pedidosMesa}
+                                visitasMesa={visitasMesa}
                                 estado={2}
                                 titulo="Pagado"
                                 subtitulo="Subtotal"
@@ -149,8 +149,8 @@ function Modal_Ver_Cuenta(props) {
                         cuerpo="¿Confirmar la acción?"
                         confirmar={true}
                         func={PagarMesa}
-                        param={itemsAPagar}
-                        disabled={!(itemsAPagar.length > 0)}
+                        param={productosAPagar}
+                        disabled={!(productosAPagar.length > 0)}
                         color="success"
                     />
                     <Button onClick={handleClose} variant="outlined">

@@ -20,14 +20,12 @@ export const inicializarCampos = (rolesData) => {
       return [...camposBase];
     }
     
-    const roles = rolesData
-      .filter(r => r.activo === true || r.activo === undefined)
-      .map(r => ({ 
-        id: r.id || r.Id, 
-        nombre: r.nombre || r.Nombre 
-      }));
+    const roles = rolesData.map(r => ({ 
+      id: r.id || r.Id, 
+      nombre: r.nombre || r.Nombre 
+    }));
 
-    // Si no hay roles activos, retornar campos base
+    // Si no hay roles, retornar campos base
     if (roles.length === 0) {
       return [...camposBase];
     }

@@ -6,7 +6,7 @@ import Lista_Items from '../../../Listas/Lista_Items';
  * Componente memoizado para el contenido de cada tab
  * Optimizado para evitar re-renders innecesarios
  */
-const TabContent = memo(({ pedidosMesa, estado, titulo, subtitulo, PagarMesa, facturar }) => {
+const TabContent = memo(({ visitasMesa, estado, titulo, subtitulo, PagarMesa, facturar }) => {
     return (
         <Box
             sx={{
@@ -19,7 +19,7 @@ const TabContent = memo(({ pedidosMesa, estado, titulo, subtitulo, PagarMesa, fa
             }}
         >
             <Lista_Items
-                pedidosMesa={pedidosMesa}
+                visitasMesa={visitasMesa}
                 titulo={titulo}
                 subtitulo={subtitulo}
                 estado={estado}
@@ -38,34 +38,34 @@ const TabContent = memo(({ pedidosMesa, estado, titulo, subtitulo, PagarMesa, fa
         return false;
     }
     
-    // Comparación optimizada de pedidosMesa
-    if (prevProps.pedidosMesa === nextProps.pedidosMesa) {
+    // Comparación optimizada de visitasMesa
+    if (prevProps.visitasMesa === nextProps.visitasMesa) {
         return true;
     }
     
-    const prevItems = prevProps.pedidosMesa?.[0]?.items;
-    const nextItems = nextProps.pedidosMesa?.[0]?.items;
+    const prevProductos = prevProps.visitasMesa?.[0]?.productos;
+    const nextProductos = nextProps.visitasMesa?.[0]?.productos;
     
-    if (!prevItems || !nextItems) {
-        return prevItems === nextItems;
+    if (!prevProductos || !nextProductos) {
+        return prevProductos === nextProductos;
     }
     
-    if (prevItems.length !== nextItems.length) {
+    if (prevProductos.length !== nextProductos.length) {
         return false;
     }
     
-    // Comparación optimizada: solo verificar primeros y últimos items
+    // Comparación optimizada: solo verificar primeros y últimos productos
     // en lugar de crear strings completos (más eficiente)
-    if (prevItems.length > 0) {
-        const firstPrev = prevItems[0];
-        const firstNext = nextItems[0];
-        const lastPrev = prevItems[prevItems.length - 1];
-        const lastNext = nextItems[nextItems.length - 1];
+    if (prevProductos.length > 0) {
+        const firstPrev = prevProductos[0];
+        const firstNext = nextProductos[0];
+        const lastPrev = prevProductos[prevProductos.length - 1];
+        const lastNext = nextProductos[nextProductos.length - 1];
         
         if (firstPrev.id !== firstNext.id || 
-            firstPrev.estado !== firstNext.estado ||
+            firstPrev.estadoPagado !== firstNext.estadoPagado ||
             lastPrev.id !== lastNext.id || 
-            lastPrev.estado !== lastNext.estado) {
+            lastPrev.estadoPagado !== lastNext.estadoPagado) {
             return false;
         }
     }

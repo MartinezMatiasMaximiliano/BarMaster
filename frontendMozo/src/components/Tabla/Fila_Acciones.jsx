@@ -1,5 +1,6 @@
 import React from "react";
-import { Stack } from "@mui/material";
+import { Stack, IconButton } from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
 import Modal_Eliminar from "../Modals/Modal_Eliminar";
 import Modal_Editar from "../Modals/Editar_ABM/Modal_Editar";
 import Switch from "../Switch";
@@ -16,7 +17,17 @@ export default function Fila_Acciones(props) {
                 />
             )}
 
-            {props.showEditar && (
+            {props.showEditar && props.onClickEditar && (
+                <IconButton
+                    color="primary"
+                    onClick={props.onClickEditar}
+                    size="small"
+                >
+                    <EditIcon fontSize="small" />
+                </IconButton>
+            )}
+
+            {props.showEditar && !props.onClickEditar && (
                 <Modal_Editar
                     recargarComponentes={props.recargar}
                     fila={props.fila}

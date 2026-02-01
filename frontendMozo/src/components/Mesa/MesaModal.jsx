@@ -29,7 +29,8 @@ export const MesaModal = ({
     show,
     handleClose,
     datos_mesa,
-    pedidoMesa,
+    visitaMesa,
+    productos,
     checkBoxSeleccionados,
     handleChangeCheckBox,
     activarCancelarPedido,
@@ -37,8 +38,8 @@ export const MesaModal = ({
     onCerrarMesa
 }) => {
     const [showAgregarPedidos, setShowAgregarPedidos] = useState(false);
-    const fechaFormateada = formatearFecha(pedidoMesa?.fechaRealizado);
-    const totalPrecio = calcularTotalPrecio(pedidoMesa?.items);
+    const fechaFormateada = formatearFecha(visitaMesa?.fechaHora);
+    const totalPrecio = calcularTotalPrecio(productos);
 
     return (
         <Dialog 
@@ -118,13 +119,13 @@ export const MesaModal = ({
                             <Typography variant="h6" component="h3">
                                 Pedidos Actuales
                             </Typography>
-                            {pedidoMesa?.items && pedidoMesa.items.length > 0 && (
+                            {productos && productos.length > 0 && (
                                 <Typography variant="body2" color="text.secondary">
-                                    ({pedidoMesa.items.length} {pedidoMesa.items.length === 1 ? 'item' : 'items'})
+                                    ({productos.length} {productos.length === 1 ? 'item' : 'items'})
                                 </Typography>
                             )}
                         </Stack>
-                        {(!pedidoMesa?.items || pedidoMesa.items.length === 0) ? (
+                        {(!productos || productos.length === 0) ? (
                             <Box
                                 sx={{
                                     p: 3,
@@ -141,7 +142,7 @@ export const MesaModal = ({
                             </Box>
                         ) : (
                             <Lista
-                                items={pedidoMesa.items}
+                                items={productos}
                                 handleCheckBox={handleChangeCheckBox}
                                 checkBoxSeleccionados={checkBoxSeleccionados}
                             />

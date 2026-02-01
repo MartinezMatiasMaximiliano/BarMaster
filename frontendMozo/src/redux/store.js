@@ -1,5 +1,5 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import pedidosActivosReducer from './slices/pedidosActivosSlice'
+import visitasActivasReducer from './slices/visitasActivasSlice'
 import notificacionesReducer from './slices/notificacionesSlice'
 import mozoReducer from './slices/mozoSlice'
 import codigoMozoReducer from './slices/codigoMozoSlice'
@@ -12,11 +12,11 @@ import {thunk} from 'redux-thunk'
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['pedidosActivos', 'notificaciones', 'ticket', 'mozo', 'codigoMozo', 'cajaActiva'],
+    whitelist: ['visitasActivas', 'notificaciones', 'ticket', 'mozo', 'codigoMozo', 'cajaActiva'],
 }
 
 const rootReducer = combineReducers({
-    pedidosActivos: pedidosActivosReducer,
+    visitasActivas: visitasActivasReducer,
     notificaciones: notificacionesReducer,
     ticket : ticketReducer,
     codigoMozo: codigoMozoReducer,
