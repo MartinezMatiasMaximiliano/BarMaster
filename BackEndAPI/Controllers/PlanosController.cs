@@ -75,6 +75,7 @@ namespace BackEndAPI.Controllers
                         Id = mesa.Id,
                         Nombre = mesa.Nombre,
                         Capacidad = mesa.Capacidad,
+                        CodigoParaPedir = mesa.CodigoParaPedir,
                         x = mesa.x,
                         y = mesa.y,
                         w = mesa.w,
