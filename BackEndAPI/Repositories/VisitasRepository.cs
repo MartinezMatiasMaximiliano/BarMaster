@@ -48,6 +48,7 @@ namespace BackEndAPI.Repositories
         public async Task<IEnumerable<Visita>> ObtenerVisitasActivasAsync()
         {
             return await db.Visitas
+                .Include(v => v.Mozo)
                 .Where(v => v.Estado == "Abierta")
                 .ToListAsync();
         }

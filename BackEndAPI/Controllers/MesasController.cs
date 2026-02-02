@@ -144,7 +144,13 @@ namespace BackEndAPI.Controllers
                     {
                         Id = t.visita.Id,
                         IdCaja = t.visita.IdCaja,
-                        IdMozo = t.visita.IdMozo ?? Guid.Empty,
+                        Mozo = t.visita.Mozo != null ? new MozoEnVisitaDTO
+                        {
+                            Id = t.visita.Mozo.Id,
+                            CodigoDeServicio = t.visita.Mozo.CodigoDeServicio,
+                            Nombres = t.visita.Mozo.Nombres,
+                            Apellido = t.visita.Mozo.Apellido
+                        } : null,
                         FechaHora = t.visita.FechaHora,
                         Estado = t.visita.Estado
                     } : null
