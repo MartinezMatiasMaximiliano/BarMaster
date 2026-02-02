@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
@@ -35,7 +35,11 @@ namespace BackEndAPI.Repositories
         }
         public async Task<Plano> ActualizarPlano(Plano planoActualizado)
         {
-            db.Planos.Update(planoActualizado);
+            // Marcar solo las propiedades específicas como modificadas
+            // Esto evita que EF actualice las relaciones de navegación (Mesas)
+            db.Entry(planoActualizado).Property(p => p.Nombre).IsModified = true;
+            db.Entry(planoActualizado).Property(p => p.Detalles).IsModified = true;
+            
             await db.SaveChangesAsync();
             return planoActualizado;
         }

@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
@@ -62,7 +62,6 @@ namespace BackEndAPI.Services
 
             busquedaPlano.Nombre = !string.IsNullOrEmpty(request.Nombre) ? request.Nombre : busquedaPlano.Nombre;
             busquedaPlano.Detalles = !string.IsNullOrEmpty(request.Detalles) ? request.Detalles : busquedaPlano.Detalles;
-            busquedaPlano.Mesas = new List<Mesa>(); // Se vacía la lista de mesas para evitar ciclo infinito en la response
 
             return await _planosRepository.ActualizarPlano(busquedaPlano);
         }
