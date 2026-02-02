@@ -11,5 +11,7 @@ namespace BackEndAPI.DTOs.Response
         public float w { get; set; }
         public float h { get; set; }
         public PlanoDTO? Plano { get; set; }
+        /// <summary>Visita asociada a la mesa si está abierta (Estado = Abierta). Sin IdMesa por redundancia.</summary>
+        public VisitaEnMesaDTO? Visita { get; set; }
     }
 }
