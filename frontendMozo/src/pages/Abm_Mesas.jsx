@@ -96,16 +96,15 @@ function Abm_Mesas(props) {
             align: "right"
         },
         { 
+            key: "capacidad", 
+            label: "Capacidad", 
+            align: "right"
+        },
+        { 
             key: "codigoParaPedir", 
             label: "Código", 
             align: "right",
             render: (fila) => fila.codigoParaPedir || "-"
-        },
-        { 
-            key: "nombreMozo", 
-            label: "Mozo", 
-            align: "right",
-            render: (fila) => fila.nombreMozo || "Sin Mozo"
         },
         {
             key: "__acciones",

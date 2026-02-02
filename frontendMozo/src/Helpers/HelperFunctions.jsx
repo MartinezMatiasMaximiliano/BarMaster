@@ -138,6 +138,7 @@ export function MappearPersonas(personas) {
             dni: persona.dni,
             direccion: persona.direccion,
             telefono: persona.telefono,
+            email: persona.email,
             rol: persona.rol?.id || persona.idRol,
             rolNombre: persona.rol?.nombre || '',
             activo: persona.activo
@@ -190,8 +191,7 @@ export function MappearMesas(mesas) {
             id: mesa.id,
             numero: mesa.nombre || mesa.numeroMesa || "", 
             codigoParaPedir: mesa.codigoParaPedir,
-            nombreMozo: mesa.persona == null ? "Sin Mozo" : mesa.persona.nombres + ' ' + mesa.persona.apellido,
-            idMozo: mesa.persona == null ? '' : mesa.persona.id,
+            capacidad: mesa.capacidad || 0,
             idPlano: mesa.plano?.id || mesa.idPlano || null,
             nombrePlano: mesa.plano?.nombre || mesa.nombrePlano || null,
         }))

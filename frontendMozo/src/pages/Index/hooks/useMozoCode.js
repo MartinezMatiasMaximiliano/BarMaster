@@ -9,8 +9,10 @@ export const useMozoCode = (datosMozos) => {
     const mozo = useSelector((state) => state.mozo.value);
 
     useEffect(() => {
-        if (datosMozos && Array.isArray(datosMozos) && datosMozos.length > 0) {
-            const mozoEncontrado = datosMozos.find(m => m.codigoDeServicio === codigoMozo);
+        const isArray = Array.isArray(datosMozos);
+        const mozoEncontrado = isArray ? datosMozos.find(m => m.codigoDeServicio === codigoMozo) : undefined;
+        const mismoMozo = mozo?.id === mozoEncontrado?.id;
+        if (!mismoMozo) {
             dispatch(modificarMozo(mozoEncontrado));
         }
     }, [codigoMozo, datosMozos, dispatch]);

@@ -77,6 +77,7 @@ function Abm_Categorias(props) {
                             { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' }
                         ]}
                         onOrdenar={setFilasOrdenadas}
+                        key={filasFiltradas.length} // Forzar re-render cuando cambien las filas filtradas
                     />
                 )}
                 renderFiltros={() => (
@@ -87,6 +88,7 @@ function Abm_Categorias(props) {
                             nombre: { tipo: 'text' }
                         }}
                         onFiltrar={setFilasFiltradas}
+                        key={props.datos_categorias?.length} // Forzar re-render cuando cambien los datos
                     />
                 )}
             />

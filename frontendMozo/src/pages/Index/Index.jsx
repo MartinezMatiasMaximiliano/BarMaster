@@ -6,10 +6,8 @@ import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoS
 import { LoginContext, AuthTypeContext } from '../../App';
 import { handleConfirmarSalir } from '../../Helpers/HelperFunctions';
 import { useKeyboardInput } from './hooks/useKeyboardInput';
-import { useMesas } from './hooks/useMesas';
 import { useMesaFiltering } from './hooks/useMesaFiltering.jsx';
 import { useMozoCode } from './hooks/useMozoCode';
-import { useDateTime } from './hooks/useDateTime';
 import { MesasGrid } from './components/MesasGrid';
 import { BottomBar } from './components/BottomBar';
 import { ConfirmLogoutDialog } from './components/ConfirmLogoutDialog';
@@ -25,17 +23,17 @@ function Index(props) {
     const authTypeContext = useContext(AuthTypeContext);
     
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-    
+
     // Obtener estado de caja activa desde Redux
     const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
-    
-    // Cargar todas las mesas desde la API (ignora planos)
-    const { mesas, cargando: cargandoMesas } = useMesas();
+
+    const mesas = Array.isArray(props.mesas) ? props.mesas : [];
+    const cargandoMesas = props.mesas == null;
     
     const { inputRef } = useKeyboardInput();
     const { mesasParaMostrar } = useMesaFiltering(mesas, props.datos_mozos, hayCajaActiva);
+    console.log("mesasParaMostrar", mesas);
     const { codigoMozo, mozo } = useMozoCode(props.datos_mozos);
-    const fechaHora = useDateTime();
 
     // Cargar estado de caja activa al montar el componente
     useEffect(() => {
@@ -85,7 +83,6 @@ function Index(props) {
                 codigoMozo={codigoMozo}
                 handleChange={handleChange}
                 mozo={mozo}
-                fechaHora={fechaHora}
                 onSalirClick={handleAbrirConfirmacion}
             />
 

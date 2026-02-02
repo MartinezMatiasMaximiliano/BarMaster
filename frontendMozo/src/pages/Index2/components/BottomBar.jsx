@@ -6,15 +6,18 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { GetChipNombreCompleto, formatearFechaCompleta, formatearHoraCompleta } from '../../../Helpers/HelperFunctions';
+import { useDateTime } from '../hooks/useDateTime';
 
 export const BottomBar = ({ 
     inputRef, 
     codigoMozo, 
     handleChange, 
     mozo, 
-    fechaHora, 
+    fechaHora: fechaHoraProp, 
     onSalirClick 
 }) => {
+    const fechaHoraFromHook = useDateTime();
+    const fechaHora = fechaHoraProp ?? fechaHoraFromHook;
     return (
         <div className="position-absolute bottom-0 start-0 w-100 p-3 d-flex align-items-end gap-3 flex-wrap">
             <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">

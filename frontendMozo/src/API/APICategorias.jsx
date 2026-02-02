@@ -8,8 +8,8 @@ export async function BuscarTodasLasCategorias() {
         const response = await axios.get(BASE_URL, authService.getAuthHeaders());
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
-        return error.response;
+        console.error("Error al buscar categorías:", error);
+        return [];
     }
 }
 

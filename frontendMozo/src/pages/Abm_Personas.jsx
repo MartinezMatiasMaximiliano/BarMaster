@@ -52,6 +52,7 @@ function Abm_Personas(props) {
         { key: "dni", label: "DNI" },
         { key: "direccion", label: "Dirección" },
         { key: "telefono", label: "Teléfono" },
+        { key: "email", label: "Email" },
         { key: "rolNombre", label: "Rol" },
         {
             key: "__acciones",
@@ -80,7 +81,7 @@ function Abm_Personas(props) {
                 renderAgregar={() => (
                     <Modal_Agregar
                         recargarComponentes={props.recargarComponentes}
-                        columnas={['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Rol']}
+                        columnas={['Nombre', 'Apellido', 'DNI', 'Dirección', 'Teléfono', 'Email', 'Rol']}
                         agregar={api.crear}
                         campos={campos}
                     >
@@ -94,6 +95,7 @@ function Abm_Personas(props) {
                             { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
                             { label: 'Apellido', campo: 'apellido', tipoOrden: 'texto' },
                             { label: 'DNI', campo: 'dni', tipoOrden: 'numero' },
+                            { label: 'Email', campo: 'email', tipoOrden: 'texto' },
                             { label: 'Rol', campo: 'rolNombre', tipoOrden: 'texto' }
                         ]}
                         onOrdenar={setFilasOrdenadas}
@@ -109,6 +111,7 @@ function Abm_Personas(props) {
                             dni: { tipo: 'text' },
                             direccion: { tipo: 'text' },
                             telefono: { tipo: 'text' },
+                            email: { tipo: 'text' },
                             rolNombre: { 
                                 tipo: 'select',
                                 opciones: props.datos_select ? props.datos_select.map(rol => ({ id: rol.id, nombre: rol.nombre })) : []

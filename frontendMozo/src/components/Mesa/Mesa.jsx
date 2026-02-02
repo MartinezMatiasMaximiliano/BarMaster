@@ -56,8 +56,6 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         handleShow();
     };
 
-    console.log("DATOS_MESA:", datos_mesa);
-
     // Renderizado condicional simplificado
     const renderMesa = () => {
         // Mesa sin código (inactiva)

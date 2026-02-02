@@ -1,5 +1,5 @@
 import './styles/App.css'
-import React, { useState, useEffect, createContext } from 'react'
+import React, { useState, useEffect, createContext, useMemo } from 'react'
 import { Route, Routes, useLocation, Navigate } from "react-router-dom"
 import { Box } from '@mui/material'
 import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos, MappearReservas, MappearPlanos } from './Helpers/HelperFunctions'
@@ -84,7 +84,7 @@ function App() {
 
     // States que se llenan con llamados a la DB y su valor es constante
     const [categorias, SetCategorias] = useState([])
-    const [mesas, SetMesas] = useState([])
+    const [mesas, SetMesas] = useState(null)
     const [mozos, SetMozos] = useState([])
     const [menu, SetMenu] = useState([])
     const [personas, SetPersonas] = useState([])
@@ -100,6 +100,9 @@ function App() {
     useEffect(() => {
         if (location.pathname === '/sistema_sucursal') {
             if (localStorage.getItem('token')) {
+                BuscarTodasLasMesas()
+                    .then(data => SetMesas(Array.isArray(data) ? data : []))
+                    .catch(() => SetMesas([]));
                 BuscarTodosLosMozos()
                     .then(data => SetMozos(Array.isArray(data) ? data : []))
                     .catch(() => SetMozos([]));
@@ -248,7 +251,7 @@ function App() {
         }
     }
 
-    const datos_mozos_listado = MappearMozos(mozos || [])
+    const datos_mozos_listado = useMemo(() => MappearMozos(Array.isArray(mozos) ? mozos : []), [mozos]);
     const datos_personas_abm = MappearPersonas(personas || [])
     const datos_mesas_abm = MappearMesas(mesas || [])
     const datos_menu_abm = MappearMenu(menu || [])
@@ -322,7 +325,7 @@ function App() {
                             <Route path="/movimiento_caja" element={<Control_Login><MovimientoCaja /></Control_Login>} />
                             <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
                             <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
-                            <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarMesas} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
+                            <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarPlanos} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                             <Route path="/abm_menu" element={<Control_Login><Abm_Menu recargarComponentes={recargarProductos} datos_menu={datos_menu_abm} categorias={categorias} titulo="Menu" /></Control_Login>} />
                             <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
                             <Route path="/abm_tipo_pago" element={<Control_Login><Abm_TipoPago recargarComponentes={recargarTipoPagos} datos_tipo_pagos={tipoPagos} titulo="Tipos de Pago" /></Control_Login>} />

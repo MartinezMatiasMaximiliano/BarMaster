@@ -4,12 +4,11 @@ import { useDispatch } from 'react-redux';
 import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoSlice';
 import { useKeyboardInput } from './hooks/useKeyboardInput';
 import { useMozoCode } from './hooks/useMozoCode';
-import { useDateTime } from './hooks/useDateTime';
 import { BottomBar } from './components/BottomBar';
 import { ConfirmLogoutDialog } from './components/ConfirmLogoutDialog';
 import { usePlanos } from './hooks/usePlanos';
-import { useMesas } from './hooks/useMesas';
 import { useMesasGrid } from './hooks/useMesasGrid';
+import { normalizarMesa } from './utils/mesaHelpers';
 import { useLogoutHandlers } from './hooks/useLogoutHandlers';
 import { PlanoSelector } from './components/PlanoSelector';
 import { MesasGridLayout } from './components/MesasGridLayout';
@@ -21,14 +20,16 @@ function Index2(props) {
     
     // Hooks para datos
     const { planos, planoSeleccionado, setPlanoSeleccionado, cargando: cargandoPlanos } = usePlanos();
-    const { mesas, cargando: cargandoMesas } = useMesas();
+    const cargandoMesas = props.mesas == null;
+    const mesas = props.mesas == null
+        ? []
+        : (Array.isArray(props.mesas) ? props.mesas.map(normalizarMesa) : []);
     const { layout, obtenerMesaPorId, obtenerDatosMesa } = useMesasGrid(mesas, planoSeleccionado);
 
     // Hooks para BottomBar
     const { inputRef } = useKeyboardInput();
     const { codigoMozo, mozo } = useMozoCode(props.datos_mozos || []);
-    const fechaHora = useDateTime();
-    
+
     // Hooks para logout
     const {
         openConfirmDialog,
@@ -83,7 +84,6 @@ function Index2(props) {
                 codigoMozo={codigoMozo}
                 handleChange={handleChange}
                 mozo={mozo}
-                fechaHora={fechaHora}
                 onSalirClick={handleAbrirConfirmacion}
             />
 

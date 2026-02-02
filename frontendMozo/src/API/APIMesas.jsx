@@ -57,8 +57,8 @@ export async function ModificarMesa(datos) {
         const body = {
             Id: datos.id
         };
-        if (datos.idMozo !== undefined) {
-            body.MozoId = datos.idMozo;
+        if (datos.capacidad !== undefined) {
+            body.Capacidad = datos.capacidad;
         }
         if (datos.x !== undefined) {
             body.x = datos.x;
@@ -121,14 +121,24 @@ export async function ActivarMesa(Id) {
     }
 }
 
-
-export async function BorrarMesa(IdMesa, Token) {
-    // Token se mantiene como parámetro para compatibilidad, pero se obtiene de localStorage
+export async function BorrarMesa(idMesa) {
     try {
-        const response = await axios.delete(BASE_URL + IdMesa, authService.getAuthHeaders());
+        const response = await axios.delete(
+            import.meta.env.VITE_BASE_URL + "Mesa",
+            {
+                params: { IdMesa: idMesa },
+                ...authService.getAuthHeaders()
+            }
+        );
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error al borrar mesa:", error);
+        if (error.response?.data?.error?.mensaje) {
+            alert(error.response.data.error.mensaje);
+        } else if (error.response?.data?.mensaje) {
+            alert(error.response.data.mensaje);
+        }
+        throw error;
     }
 }
 
