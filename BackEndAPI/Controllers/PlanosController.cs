@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
@@ -150,7 +150,17 @@ namespace BackEndAPI.Controllers
             try
             {
                 var planoModificado = await _planosServices.ActualizarPlano(request);
-                return Ok(planoModificado);
+                
+                // Mapear a DTO para evitar ciclos de referencia en la serialización
+                var response = new PlanoDTO
+                {
+                    Id = planoModificado.Id,
+                    Nombre = planoModificado.Nombre,
+                    Detalles = planoModificado.Detalles,
+                    IdSucursal = planoModificado.IdSucursal
+                };
+                
+                return Ok(response);
             }
             catch (Exception ex)
             {
