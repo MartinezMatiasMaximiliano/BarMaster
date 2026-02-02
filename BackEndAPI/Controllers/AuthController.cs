@@ -1,5 +1,6 @@
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndAPI.Controllers
@@ -22,10 +23,8 @@ namespace BackEndAPI.Controllers
             {
                 var result = await _authServices.Authenticate(request);
                 
-                if (result == null)
-                {
-                    throw new Exception("Usuario o contraseña incorrectos");
-                }   
+                if (result == null) throw new Exception("Usuario o contraseña incorrectos");
+                
 
                 return Ok(result);
 
@@ -43,6 +42,39 @@ namespace BackEndAPI.Controllers
                 }
             }
         }
+
+        [HttpPost("/LoginPersona")]
+        public async Task<IActionResult> LoginPersona([FromBody] LoginDTO request)
+        {
+            try
+            {
+                var result = await _authServices.AuthenticatePersona(request);
+                
+                if (result == null) throw new Exception("Usuario o contraseña incorrectos");
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "usuario no encontrado":
+                        return BadRequest("usuario no encontrado");
+                    case "Usuario o contraseña incorrectos":
+                        return Unauthorized("Usuario o contraseña incorrectos");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+            }
+        }
+
+        [HttpPost("/Logout")]
+        public async Task<IActionResult> Logout()
+        {
+            // Lógica para cerrar sesión (si es necesario)
+            return Ok();
+        }
+
 
     }
 }

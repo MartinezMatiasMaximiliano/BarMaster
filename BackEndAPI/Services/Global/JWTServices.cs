@@ -1,7 +1,6 @@
 ﻿using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -79,6 +78,40 @@ namespace BackEndAPI.Services.Global
                 Access_token = tokenString,
                 Token_type = "bearer",
                 Auth_type = "empresa",
+                expires = token.ValidTo.ToString(),
+                Expires_in = 3600 * hours_expire
+            };
+        }
+
+        public JWTToken CrearJWTPersona(Persona persona)
+        {
+            int hours_expire = 1;
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
+                new Claim("RequestedBy",$"{persona.Apellido},{persona.Nombres}"),
+                new Claim("RequestedRole",$"{persona.Rol}"),
+                new Claim("TipoAuth","admin"),
+
+            };
+
+            var key = _key;
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: "BackendAPI",
+                audience: "FrontendCliente",
+                claims: claims,
+                expires: DateTime.Now.AddHours(hours_expire),
+                signingCredentials: creds);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return new JWTToken
+            {
+                Access_token = tokenString,
+                Token_type = "bearer",
+                Auth_type = "admin",
                 expires = token.ValidTo.ToString(),
                 Expires_in = 3600 * hours_expire
             };
