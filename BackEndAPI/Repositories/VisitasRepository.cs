@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
@@ -43,8 +43,14 @@ namespace BackEndAPI.Repositories
             db.Visitas.Remove(request);
             await db.SaveChangesAsync();
             return true;
-
         }
 
+        public async Task<IEnumerable<Visita>> ObtenerVisitasActivasAsync()
+        {
+            return await db.Visitas
+                .Include(v => v.Mozo)
+                .Where(v => v.Estado == "Abierta")
+                .ToListAsync();
+        }
     }
 }

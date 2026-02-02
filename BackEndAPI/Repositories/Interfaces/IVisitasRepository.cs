@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Models;
+using BackEndAPI.Models;
 
 namespace BackEndAPI.Repositories.Interfaces
 {
@@ -8,5 +8,7 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<Visita> CrearVisita(Visita request);
         Task<Visita> ModificarVisita(Visita request);
         Task<bool> EliminarVisita(Visita request);
+        /// <summary>Obtiene las visitas en estado "Abierta" (mesa con visita activa).</summary>
+        Task<IEnumerable<Visita>> ObtenerVisitasActivasAsync();
     }
 }

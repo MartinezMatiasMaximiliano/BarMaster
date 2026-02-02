@@ -123,6 +123,8 @@ builder.Services.AddScoped<ITipoPagosRepository, TipoPagosRepository>();
 builder.Services.AddScoped<ITipoPagosServices, TipoPagosServices>();
 builder.Services.AddScoped<IReservasRepository, ReservasRepository>();
 builder.Services.AddScoped<IReservasServices, ReservasServices>();
+builder.Services.AddScoped<IRolesRepository, RolesRepository>();
+builder.Services.AddScoped<IRolesServices, RolesServices>();
 
 builder.Services.AddDbContext<MasterDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Master")));

@@ -1,6 +1,6 @@
-namespace BackEndAPI.Models
+namespace BackEndAPI.DTOs.Response
 {
-    public class Rol
+    public class RolDTO
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = null!;
