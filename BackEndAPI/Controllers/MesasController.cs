@@ -121,24 +121,38 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var mesas = await _mesasServices.ObtenerTodasLasMesas();
+                var mesasConVisita = await _mesasServices.ObtenerTodasLasMesasConVisitaAsync();
 
-                var response = mesas.Select(mesa => new MesaDTO
+                var response = mesasConVisita.Select(t => new MesaDTO
                 {
-                    Id = mesa.Id,
-                    Nombre = mesa.Nombre,
-                    Capacidad = mesa.Capacidad,
-                    CodigoParaPedir = mesa.CodigoParaPedir,
-                    x = mesa.x,
-                    y = mesa.y,
-                    w = mesa.w,
-                    h = mesa.h,
-                    Plano = mesa.Plano != null ? new PlanoDTO
+                    Id = t.mesa.Id,
+                    Nombre = t.mesa.Nombre,
+                    Capacidad = t.mesa.Capacidad,
+                    CodigoParaPedir = t.mesa.CodigoParaPedir,
+                    x = t.mesa.x,
+                    y = t.mesa.y,
+                    w = t.mesa.w,
+                    h = t.mesa.h,
+                    Plano = t.mesa.Plano != null ? new PlanoDTO
                     {
-                        Id = mesa.Plano.Id,
-                        Nombre = mesa.Plano.Nombre,
-                        Detalles = mesa.Plano.Detalles,
-                        IdSucursal = mesa.Plano.IdSucursal
+                        Id = t.mesa.Plano.Id,
+                        Nombre = t.mesa.Plano.Nombre,
+                        Detalles = t.mesa.Plano.Detalles,
+                        IdSucursal = t.mesa.Plano.IdSucursal
+                    } : null,
+                    Visita = t.visita != null ? new VisitaEnMesaDTO
+                    {
+                        Id = t.visita.Id,
+                        IdCaja = t.visita.IdCaja,
+                        Mozo = t.visita.Mozo != null ? new MozoEnVisitaDTO
+                        {
+                            Id = t.visita.Mozo.Id,
+                            CodigoDeServicio = t.visita.Mozo.CodigoDeServicio,
+                            Nombres = t.visita.Mozo.Nombres,
+                            Apellido = t.visita.Mozo.Apellido
+                        } : null,
+                        FechaHora = t.visita.FechaHora,
+                        Estado = t.visita.Estado
                     } : null
                 }).ToList();
 
