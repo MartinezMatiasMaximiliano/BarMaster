@@ -253,3 +253,39 @@ export async function BuscarVisitaPorId(idVisita) {
         return null;
     }
 }
+
+export async function AgregarProductosAVisita(idVisita, productos) {
+    try {
+        // Agrupar productos por ID y indicaciones para enviar cantidad correcta
+        const productosAgrupados = {};
+        productos.forEach(producto => {
+            const key = `${producto.id}_${producto.indicaciones || ''}`;
+            if (!productosAgrupados[key]) {
+                productosAgrupados[key] = {
+                    IdProducto: producto.id,
+                    Detalles: producto.indicaciones || '',
+                    Cantidad: 0
+                };
+            }
+            productosAgrupados[key].Cantidad += producto.cantidad || 1;
+        });
+
+        // Convertir a array
+        const productosDTO = Object.values(productosAgrupados);
+
+        const response = await axios.post(
+            `${BASE_URL}AgregarProductoAVisita?IdVisita=${idVisita}`,
+            productosDTO,
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        return response.data;
+    } catch (error) {
+        console.error('Error al agregar productos a la visita:', error);
+        throw error;
+    }
+}

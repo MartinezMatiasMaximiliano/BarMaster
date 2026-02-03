@@ -4,6 +4,7 @@ import { BuscarTodosLosPlanos } from "../../API/APIPlanos";
 const camposBase = [
   { name: "numero", label: "Numero de Mesa", type: "text" },
   { name: "idPlano", label: "Plano", type: "select", options: [] },
+  { name: "capacidad", label: "Capacidad", type: "number", required: true },
 ];
 
 // Función para inicializar los campos con los datos de planos
@@ -26,6 +27,7 @@ export const inicializarCampos = async () => {
     return [
       camposBase[0],
       { ...camposBase[1], options: planos },
+      camposBase[2],
     ];
   } catch (error) {
     console.error("Error al cargar planos:", error);

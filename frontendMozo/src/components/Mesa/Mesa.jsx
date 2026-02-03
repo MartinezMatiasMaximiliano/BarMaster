@@ -17,7 +17,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         handleClose,
         handleChangeCheckBox,
         setCheckBoxSeleccionados
-    } = useMesaState(datos_mesa.numeroMesa);
+    } = useMesaState(datos_mesa.nombre);
 
     const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic();
 
@@ -25,13 +25,13 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     const handleCancelarPedidos = (idsProductos) => {
         cancelarPedidos(
             idsProductos, 
-            datos_mesa.numeroMesa,
+            datos_mesa.nombre,
             () => setCheckBoxSeleccionados([])
         );
     };
 
     const handleCerrarMesa = (mesaId) => {
-        cerrarMesa(mesaId, datos_mesa.numeroMesa, productos);
+        cerrarMesa(mesaId, datos_mesa.nombre, productos);
     };
 
     const handleAbrirMesa = () => {
@@ -41,7 +41,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         }
         var request = {
             idMesa: datos_mesa.id,
-            numeroMesa: datos_mesa.numeroMesa, // Necesario para crear la visita en Redux
+            numeroMesa: datos_mesa.nombre, // Necesario para crear la visita en Redux
             codigoServicioMozo: mozo.codigoDeServicio,
             abrir: true,
         }
@@ -62,7 +62,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         if (!datos_mesa.codigoParaPedir) {
             return (
                 <MesaButton
-                    numeroMesa={datos_mesa.numeroMesa}
+                    numeroMesa={datos_mesa.nombre}
                     estilo={estilo}
                     variant="secondary"
                     onClick={handleAbrirMesa}
@@ -78,7 +78,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
             return (
                 <>
                     <MesaButton
-                        numeroMesa={datos_mesa.numeroMesa}
+                        numeroMesa={datos_mesa.nombre}
                         estilo={estilo}
                         variant={variant}
                         onClick={handleShowConValidacion}
@@ -90,7 +90,6 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                         show={show}
                         handleClose={handleClose}
                         datos_mesa={datos_mesa}
-                        visitaMesa={visitaMesa}
                         productos={productos}
                         checkBoxSeleccionados={checkBoxSeleccionados}
                         handleChangeCheckBox={handleChangeCheckBox}
@@ -119,7 +118,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         return (
             <>
                 <MesaButton
-                    numeroMesa={datos_mesa.numeroMesa}
+                    numeroMesa={datos_mesa.nombre}
                     estilo={estilo}
                     variant={variant}
                     onClick={handleShowConValidacion}
@@ -131,7 +130,6 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                     show={show}
                     handleClose={handleClose}
                     datos_mesa={datos_mesa}
-                    visitaMesa={visitaMesa}
                     productos={productos}
                     checkBoxSeleccionados={checkBoxSeleccionados}
                     handleChangeCheckBox={handleChangeCheckBox}

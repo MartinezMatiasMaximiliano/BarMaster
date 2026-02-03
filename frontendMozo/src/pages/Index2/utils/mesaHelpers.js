@@ -93,21 +93,26 @@ export const obtenerNombreMesa = (mesas, mesaId) => {
  */
 export const mapearDatosMesa = (mesa) => ({
     id: mesa.id,
-    numeroMesa: mesa.nombre || mesa.Nombre || mesa.id,
+    nombre: mesa.nombre || mesa.Nombre || mesa.id,
     codigoParaPedir: mesa.codigoParaPedir || null,
-    persona: mesa.persona || null,
-    plano: mesa.plano || null
+    visita: mesa.visita || null,
+    plano: mesa.plano || null,
+    capacidad: mesa.capacidad || null,
+    x: mesa.x || null,
+    y: mesa.y || null,
+    w: mesa.w || null,
+    h: mesa.h || null
 });
 
 /**
  * Determina el variant de una mesa según el mozo asignado
- * @param {Object} mesa - Mesa con información de persona/mozo
+ * @param {Object} mesa - Mesa con información de visita/mozo
  * @param {Object} mozoRedux - Mozo del estado de Redux
  * @returns {string} Variant de la mesa ('success', 'primary', o 'secondary')
  */
 export const obtenerVariantMesa = (mesa, mozoRedux) => {
-    if (!mesa.persona) return "secondary";
-    if (mozoRedux && mesa.persona.codigoDeServicio === mozoRedux.codigoDeServicio) {
+    if (!mesa.visita || !mesa.visita.mozo) return "secondary";
+    if (mozoRedux && mesa.visita.mozo.codigoDeServicio === mozoRedux.codigoDeServicio) {
         return "success";
     }
     return "primary";

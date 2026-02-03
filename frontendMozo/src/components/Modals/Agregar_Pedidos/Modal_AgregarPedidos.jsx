@@ -17,7 +17,7 @@ import { ListaProductos } from './components/ListaProductos';
 import { Carrito } from './components/Carrito';
 import { LoadingWrapper } from '../../common/LoadingWrapper';
 
-function Modal_AgregarPedidos({ open, onClose, numeroMesa }) {
+function Modal_AgregarPedidos({ open, onClose, idVisita, numeroMesa }) {
     const {
         productos,
         categorias,
@@ -35,7 +35,7 @@ function Modal_AgregarPedidos({ open, onClose, numeroMesa }) {
         actualizarIndicaciones,
         handleEnviarPedidos,
         limpiarEstado
-    } = useAgregarPedidos(open, numeroMesa, onClose);
+    } = useAgregarPedidos(open, idVisita, numeroMesa, onClose);
 
     const handleClose = () => {
         limpiarEstado();

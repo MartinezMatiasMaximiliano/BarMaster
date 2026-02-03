@@ -26,8 +26,8 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
     // Filtrar visitas de la mesa actual
     const visitasMesa = useMemo(() => {
         if (!visitasActivas || visitasActivas.length === 0) return [];
-        return visitasActivas.filter(visita => visita.mesa?.numero === datosMesa.numeroMesa);
-    }, [visitasActivas, datosMesa.numeroMesa]);
+        return visitasActivas.filter(visita => visita.mesa?.numero === datosMesa.nombre);
+    }, [visitasActivas, datosMesa.nombre]);
 
     // Calcular productos disponibles para pagar (no pagados)
     const productosAPagar = useMemo(() => {
@@ -81,10 +81,10 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
         CambiarEstadoItems(arregloIds, "Pagar");
 
         // Generar la factura PDF
-        GenerarTicketPDF(datosMesa.numeroMesa, arregloIds);
+        GenerarTicketPDF(datosMesa.nombre, arregloIds);
 
         // Enviar mensaje al cliente para actualizar su cuenta
-        connection.send("RecargarTicket", datosMesa.numeroMesa);
+        connection.send("RecargarTicket", datosMesa.nombre);
 
         // Actualizar el estado de visitasActivas en Redux - marcar productos como pagados
         dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true }));
@@ -96,7 +96,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
 
         handleClose();
         cerrarModalMesa();
-    }, [datosMesa.numeroMesa, cerrarModalMesa, dispatch, handleClose]);
+    }, [datosMesa.nombre, cerrarModalMesa, dispatch, handleClose]);
 
     return {
         // Estado

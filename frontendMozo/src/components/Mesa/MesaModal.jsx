@@ -29,7 +29,6 @@ export const MesaModal = ({
     show,
     handleClose,
     datos_mesa,
-    visitaMesa,
     productos,
     checkBoxSeleccionados,
     handleChangeCheckBox,
@@ -38,7 +37,7 @@ export const MesaModal = ({
     onCerrarMesa
 }) => {
     const [showAgregarPedidos, setShowAgregarPedidos] = useState(false);
-    const fechaFormateada = formatearFecha(visitaMesa?.fechaHora);
+    const fechaFormateada = formatearFecha(datos_mesa.visita?.fechaHora);
     const totalPrecio = calcularTotalPrecio(productos);
 
     return (
@@ -61,7 +60,7 @@ export const MesaModal = ({
                         <Stack direction="row" spacing={1} alignItems="center">
                             <TableRestaurantIcon color="primary" />
                             <Typography variant="h6" component="span">
-                                Mesa {datos_mesa.numeroMesa}
+                                Mesa {datos_mesa.nombre}
                             </Typography>
                         </Stack>
                         {datos_mesa.codigoParaPedir && (
@@ -173,7 +172,7 @@ export const MesaModal = ({
 
                         <Modal_Ver_Cuenta
                             titulo="Ver cuenta"
-                            numeroMesa={datos_mesa.numeroMesa}
+                            numeroMesa={datos_mesa.nombre}
                             datos_mesa={datos_mesa}
                             textoBoton="Ver cuenta"
                             cerrar_modal={handleClose}
@@ -220,7 +219,8 @@ export const MesaModal = ({
             <Modal_AgregarPedidos
                 open={showAgregarPedidos}
                 onClose={() => setShowAgregarPedidos(false)}
-                numeroMesa={datos_mesa.numeroMesa}
+                idVisita={datos_mesa.visita?.id}
+                numeroMesa={datos_mesa.nombre}
             />
         </Dialog>
     );
