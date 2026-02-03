@@ -1,4 +1,5 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -16,12 +17,35 @@ namespace BackEndAPI.Controllers
         private readonly ISucursalesServices _sucursalesServices;
         private readonly JWTServices _jWTServices;
 
-        public SucursalesController(ISucursalesServices sucursalesServices,JWTServices jWTServices)
+        public SucursalesController(ISucursalesServices sucursalesServices, JWTServices jWTServices)
         {
             _sucursalesServices = sucursalesServices;
             _jWTServices = jWTServices;
         }
 
+
+        [HttpGet("/Sucursal")]
+        public async Task<IActionResult> BuscarSucursal()
+        {
+            try
+            {
+                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
+
+                var result = await _sucursalesServices.BuscarSucursalPorId(IdSucursal);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Sucursal no encontrada":
+                        return BadRequest("Sucursal no encontrada");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+            }
+        }
 
         [HttpPost("/Sucursal")]
         public async Task<IActionResult> CrearSucursal([FromBody] CrearSucursalDTO request)
@@ -52,15 +76,13 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpGet("/Sucursal")]
-        public async Task<IActionResult> BuscarSucursal()
+        [HttpPatch("/Sucursal")]
+        public async Task<IActionResult> EditarSucursal([FromBody] ModificarSucursalDTO request)
         {
             try
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-
-                var result = await _sucursalesServices.BuscarSucursalPorId(IdSucursal);
-
+                var result = await _sucursalesServices.ActualizarSucursal(IdSucursal,request);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -69,12 +91,12 @@ namespace BackEndAPI.Controllers
                 {
                     case "Sucursal no encontrada":
                         return BadRequest("Sucursal no encontrada");
-
+                    case "Sucursal ya existe":
+                        return BadRequest("Sucursal ya existe");
                     default:
                         return StatusCode(500, "Error interno del servidor");
-
                 }
             }
-        }
+        } 
     }
 }

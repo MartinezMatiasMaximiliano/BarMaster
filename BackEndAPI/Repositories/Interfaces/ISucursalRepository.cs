@@ -6,6 +6,7 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<Sucursal?> GetSucursalById(Guid id);
         Task<Sucursal?> GetSucursalByUsername(string username);
         Task<Sucursal?> CrearSucursal(Sucursal sucursal);
+        Task<Sucursal?> ActualizarSucursal(Sucursal sucursal); 
         Task<bool> EliminarSucursal(Guid id);
     }
 }

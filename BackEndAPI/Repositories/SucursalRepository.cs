@@ -40,6 +40,12 @@ namespace BackEndAPI.Repositories
             return sucursal;
         }
 
+        public async Task<Sucursal?> ActualizarSucursal(Sucursal sucursal)
+        {
+            db.Entry(sucursal).State = EntityState.Modified;
+            await db.SaveChangesAsync();
+            return sucursal;
+        }
         public async Task<bool> EliminarSucursal(Guid id)
         {
             var sucursal = await db.Sucursales.FirstOrDefaultAsync(s => s.Id == id);
