@@ -2,11 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { BuscarTodosLosProductos } from '../../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
-import { PostItems } from '../../../../API/APIPedidos';
+import { AgregarProductosAVisita } from '../../../../API/APIVisitas';
 import { agregarProductos } from '../../../../redux/slices/visitasActivasSlice';
 import connection from '../../../../connections/HubConnMozo';
 
-export const useAgregarPedidos = (open, numeroMesa, onClose) => {
+export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
     const dispatch = useDispatch();
     const [productos, setProductos] = useState([]);
     const [categorias, setCategorias] = useState([]);
@@ -112,30 +112,43 @@ export const useAgregarPedidos = (open, numeroMesa, onClose) => {
 
     // Enviar pedidos
     const handleEnviarPedidos = async () => {
-        if (carrito.length === 0) return;
+        if (carrito.length === 0 || !idVisita) return;
 
         setLoading(true);
         try {
             const itemsParaEnviar = [];
             carrito.forEach(item => {
-                for (let i = 0; i < item.cantidad; i++) {
-                    itemsParaEnviar.push({
-                        id: item.producto.id,
-                        indicaciones: item.indicaciones || ''
-                    });
-                }
+                // Agregar cada producto con su cantidad
+                itemsParaEnviar.push({
+                    id: item.producto.id,
+                    indicaciones: item.indicaciones || '',
+                    cantidad: item.cantidad
+                });
             });
 
-            const productosCreados = await PostItems(itemsParaEnviar, numeroMesa);
+            const visitaActualizada = await AgregarProductosAVisita(idVisita, itemsParaEnviar);
             
-            if (productosCreados && productosCreados.length > 0) {
-                const productosLimpios = productosCreados.map(({ pedidoId, ...resto }) => resto);
+            if (visitaActualizada && visitaActualizada.productos) {
+                // Mapear los productos de la respuesta al formato esperado por Redux
+                // El backend devuelve ProductosPorVisita con propiedades en PascalCase
+                const productosLimpios = visitaActualizada.productos.map(producto => ({
+                    id: producto.id || producto.Id,
+                    nombre: producto.nombreProducto || producto.NombreProducto || producto.nombre || producto.Nombre,
+                    precio: producto.precioDelMomento || producto.PrecioDelMomento || producto.precio || producto.Precio,
+                    indicaciones: producto.detalles || producto.Detalles || producto.indicaciones || producto.Indicaciones || '',
+                    estadoPagado: producto.estadoPagado || producto.EstadoPagado || false
+                }));
+
                 dispatch(agregarProductos({ 
                     productos: productosLimpios, 
                     numeroMesa: numeroMesa 
                 }));
 
                 connection.send("RecargarTicket", numeroMesa);
+                setCarrito([]);
+                onClose();
+            } else {
+                // Si no hay productos en la respuesta, al menos cerrar el modal
                 setCarrito([]);
                 onClose();
             }

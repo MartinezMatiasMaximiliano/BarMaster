@@ -47,7 +47,8 @@ namespace BackEndAPI.Services
 
                 foreach (var item in productos)
                 {
-                    //TODO: Mejorar esto
+                    //TODO: Mejorar esto, buscar una manera de 
+                    //agregar los productos que si se encuentran y notificar los que no se encuentran... (no no agregar ninguno si algo falla?)
                     var producto = await _productosRepository.GetProductoPorId(item.IdProducto);
                     if (producto == null)
                     {

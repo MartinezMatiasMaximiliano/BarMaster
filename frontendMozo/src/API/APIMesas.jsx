@@ -18,9 +18,10 @@ class CrearMesaDTO {
 export async function CrearMesa(datos) {
     try {
         console.log("DATOS", datos);
+        const capacidad = datos.capacidad ? parseInt(datos.capacidad) : 0;
         const response = await axios.post(
             BASE_URL, 
-            new CrearMesaDTO(datos.numero, datos.idPlano), 
+            new CrearMesaDTO(datos.numero, datos.idPlano, capacidad), 
             authService.getAuthHeaders()
         );
         return response.data;

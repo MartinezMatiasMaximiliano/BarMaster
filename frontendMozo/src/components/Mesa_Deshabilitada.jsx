@@ -32,7 +32,8 @@ export default function Mesa_Deshabilitada(props) {
 
     const fechaFormateada = formatearFecha(props.visitaMesa ? props.visitaMesa.fechaHora : null);
     const totalPrecio = props.productos ? props.productos.reduce((acumulador, producto) => acumulador + parseFloat(producto.precio || producto.precioDelMomento || 0), 0) : 0;
-    const datosMozo = props.datos_mesa.persona;
+    const datosMozo = props.datos_mesa.visita?.mozo;
+    console.log("DATOS_MESA: ", props.datos_mesa);
 
     const modal = (
         <>
@@ -44,7 +45,7 @@ export default function Mesa_Deshabilitada(props) {
                 disabled={props.deshabilitadaPorCaja}
             >
                 <FontAwesomeIcon icon={faBurger} />
-                <p>Mesa {props.datos_mesa.numeroMesa}</p>
+                <p>Mesa {props.datos_mesa.nombre}</p>
             </Button>
 
             <Modal show={show} onHide={handleClose}>

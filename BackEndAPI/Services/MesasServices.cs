@@ -137,7 +137,7 @@ namespace BackEndAPI.Services
                 }else //desactivar visitas no vacias
                 {
                     visita.Estado = "Cerrada";
-                    //TODO: cerrar una mesa si quedan productos sin pagar?
+                    //TODO: cerrar una mesa si quedan productos sin pagar? lo mejor es tomar todos los productos no pagos, pero como crear el pago?
 
                     return visita;
                 }

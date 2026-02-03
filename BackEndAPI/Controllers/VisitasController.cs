@@ -66,8 +66,25 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var InsertarItems = await _visitasServices.AgregarProductos(listaProductos, IdVisita);
-                return Ok(InsertarItems);
+                var visitaActualizada = await _visitasServices.AgregarProductos(listaProductos, IdVisita);
+                
+                // Mapear a DTO para evitar referencias circulares
+                var response = new VisitaResponseDTO
+                {
+                    Id = visitaActualizada.Id,
+                    FechaHora = visitaActualizada.FechaHora,
+                    Estado = visitaActualizada.Estado,
+                    ProductosConsumidos = visitaActualizada.Productos.Select(item => new ItemDTO
+                    {
+                        Id = item.Id,
+                        Nombre = item.NombreProducto,
+                        Indicaciones = item.Detalles,
+                        Precio = item.PrecioDelMomento,
+                        EstadoPagado = item.EstadoPagado,
+                    }).ToList(),
+                };
+                
+                return Ok(response);
             }
             catch (Exception ex)
             {
