@@ -187,8 +187,6 @@ export async function ObtenerMovimientosCaja(idCaja) {
         const idCajaString = typeof idCaja === 'string' ? idCaja : idCaja.toString();
         const url = `${MOVIMIENTOS_URL}/Caja/${idCajaString}`;
         
-        console.log('Obteniendo movimientos de caja:', url, 'ID:', idCajaString);
-        
         const response = await axios.get(url, authService.getAuthHeaders());
         const movimientos = response.data || [];
         

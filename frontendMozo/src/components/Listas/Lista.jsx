@@ -26,12 +26,12 @@ export default function Lista(props) {
     return (
         <div
             style={{
-                maxHeight: '40vh',   // Ajusta la altura máxima que deseas
-                overflowY: 'auto',    // Habilita el scroll vertical
-                marginBottom: '2em',
+                maxHeight: 'none',   // Sin límite de altura, el scroll lo maneja el contenedor padre
+                overflowY: 'visible', // Sin scroll aquí, lo maneja el padre
+                marginBottom: '0',
             }}
         >
-            <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+            <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
                 {props.items.map((item, i) => {
                     // Mostrar solo productos que no estén pagados
                     if (!item.estadoPagado) {

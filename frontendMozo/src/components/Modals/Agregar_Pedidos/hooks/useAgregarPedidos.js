@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { BuscarTodosLosProductos } from '../../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
 import { AgregarProductosAVisita } from '../../../../API/APIVisitas';
-import { agregarProductos } from '../../../../redux/slices/visitasActivasSlice';
+import { actualizarVisita } from '../../../../redux/slices/visitasActivasSlice';
 import connection from '../../../../connections/HubConnMozo';
 
 export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
@@ -120,30 +120,22 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
             carrito.forEach(item => {
                 // Agregar cada producto con su cantidad
                 itemsParaEnviar.push({
-                    id: item.producto.id,
-                    indicaciones: item.indicaciones || '',
+                    idProducto: item.producto.id,
+                    detalles: item.indicaciones || '',
                     cantidad: item.cantidad
                 });
             });
-
+            
             const visitaActualizada = await AgregarProductosAVisita(idVisita, itemsParaEnviar);
             
-            if (visitaActualizada && visitaActualizada.productos) {
-                // Mapear los productos de la respuesta al formato esperado por Redux
-                // El backend devuelve ProductosPorVisita con propiedades en PascalCase
-                const productosLimpios = visitaActualizada.productos.map(producto => ({
-                    id: producto.id || producto.Id,
-                    nombre: producto.nombreProducto || producto.NombreProducto || producto.nombre || producto.Nombre,
-                    precio: producto.precioDelMomento || producto.PrecioDelMomento || producto.precio || producto.Precio,
-                    indicaciones: producto.detalles || producto.Detalles || producto.indicaciones || producto.Indicaciones || '',
-                    estadoPagado: producto.estadoPagado || producto.EstadoPagado || false
+            if (visitaActualizada) {
+                // Actualizar Redux con la visita actualizada del backend
+                // Asegurar que tenga el número de mesa para poder encontrarla en Redux
+                dispatch(actualizarVisita({
+                    ...visitaActualizada,
+                    numeroMesa: numeroMesa
                 }));
-
-                dispatch(agregarProductos({ 
-                    productos: productosLimpios, 
-                    numeroMesa: numeroMesa 
-                }));
-
+                
                 connection.send("RecargarTicket", numeroMesa);
                 setCarrito([]);
                 onClose();

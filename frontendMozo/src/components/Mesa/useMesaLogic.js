@@ -95,8 +95,7 @@ export const useMesaLogic = () => {
                 mesa: {
                     id: response.idMesa,
                     numero: numeroMesa // Lo obtenemos del request
-                },
-                productos: [] // Una mesa recién abierta no tiene productos
+                }
             };
             
             dispatch(agregarVisita(datosVisita));

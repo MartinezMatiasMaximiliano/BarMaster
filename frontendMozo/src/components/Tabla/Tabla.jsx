@@ -41,8 +41,6 @@ export default function Tabla(props) {
         rowsPerPage: rowsPerPageValue
     } = usePaginacion(props.filas, rowsPerPage, habilitarPaginacion);
 
-    console.log("filas", props.filas);
-
     // Filtrar columnas para exportación (excluir solo acciones)
     const columnasExportacion = useMemo(() => {
         return props.columnas.filter(col => {

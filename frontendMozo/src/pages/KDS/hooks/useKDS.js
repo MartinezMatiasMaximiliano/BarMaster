@@ -55,7 +55,7 @@ export const useKDS = () => {
         const items = [];
 
         visitasActivas.forEach(visita => {
-            const productos = visita.productos || [];
+            const productos = visita.productosConsumidos || [];
             
             productos.forEach(producto => {
                 // Mostrar solo productos que no estén pagados
@@ -178,7 +178,7 @@ export const useKDS = () => {
                     if (!prev) return prev;
                     const nuevosDatos = JSON.parse(JSON.stringify(prev));
                     nuevosDatos.forEach(visita => {
-                        visita.productos?.forEach(producto => {
+                        visita.productosConsumidos?.forEach(producto => {
                             if (producto.id === productoId) {
                                 producto.estadoPreparacion = 1;
                             }
@@ -217,7 +217,7 @@ export const useKDS = () => {
                     if (!prev) return prev;
                     const nuevosDatos = JSON.parse(JSON.stringify(prev));
                     nuevosDatos.forEach(visita => {
-                        visita.productos?.forEach(producto => {
+                        visita.productosConsumidos?.forEach(producto => {
                             if (producto.id === productoId) {
                                 producto.estadoPreparacion = 2;
                             }
@@ -261,7 +261,7 @@ export const useKDS = () => {
                     if (!prev) return prev;
                     const nuevosDatos = JSON.parse(JSON.stringify(prev));
                     nuevosDatos.forEach(visita => {
-                        visita.productos?.forEach(producto => {
+                        visita.productosConsumidos?.forEach(producto => {
                             if (producto.id === itemId) {
                                 producto.estadoPreparacion = estadoAnterior;
                             }

@@ -12,8 +12,6 @@ const camposBase = [
 export const inicializarCampos = async () => {
   try {
     const data = await BuscarTodosLosPlanos();
-    
-    console.log("Data planos (agregar):", data);
 
     // Verificar que los datos sean un array válido
     const planos = Array.isArray(data)

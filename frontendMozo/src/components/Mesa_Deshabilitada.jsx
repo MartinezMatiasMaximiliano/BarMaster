@@ -30,10 +30,13 @@ export default function Mesa_Deshabilitada(props) {
         return `${horas}:${minutos}`;
     }
 
-    const fechaFormateada = formatearFecha(props.visitaMesa ? props.visitaMesa.fechaHora : null);
-    const totalPrecio = props.productos ? props.productos.reduce((acumulador, producto) => acumulador + parseFloat(producto.precio || producto.precioDelMomento || 0), 0) : 0;
-    const datosMozo = props.datos_mesa.visita?.mozo;
-    console.log("DATOS_MESA: ", props.datos_mesa);
+    const fechaFormateada = formatearFecha(props.visitaMesa?.fechaHora || null);
+    const totalPrecio = props.visitaMesa?.productosConsumidos 
+        ? props.visitaMesa.productosConsumidos.reduce((acumulador, producto) => 
+            acumulador + parseFloat(producto.precio || producto.precioDelMomento || 0), 0) 
+        : 0;
+    // El mozo no viene en visitaMesa desde el backend, se obtiene de datos_mesa si está disponible
+    const datosMozo = props.datos_mesa?.visita?.mozo || null;
 
     const modal = (
         <>
@@ -56,13 +59,19 @@ export default function Mesa_Deshabilitada(props) {
                 <Modal.Body>
                     <Alert severity="info">Atendida por {datosMozo ? datosMozo.nombres + ' ' + datosMozo.apellido : 'No asignado'} - {fechaFormateada} - ${totalPrecio}</Alert>
                     <hr></hr>
-                    <Lista_Items visitaMesa={[props.visitaMesa]} titulo="Pedido total" subtitulo="Total" estado={false}></Lista_Items>
-                    <hr></hr>
-                    <div style={{ maxHeight: '28vh', overflowY: 'auto', marginBottom: '2em' }} >
-                        <Lista_Items visitaMesa={[props.visitaMesa]} titulo="Ticket" subtitulo="Subtotal" estado={1} facturar={false}></Lista_Items>
-                    </div>
-                        <hr></hr>
-                    <Lista_Items visitaMesa={[props.visitaMesa]} titulo="Pagado" subtitulo="Subtotal" estado={2}></Lista_Items>
+                    {props.visitaMesa ? (
+                        <>
+                            <Lista_Items visitaMesa={props.visitaMesa} titulo="Pedido total" subtitulo="Total" estado={false}></Lista_Items>
+                            <hr></hr>
+                            <div style={{ maxHeight: '28vh', overflowY: 'auto', marginBottom: '2em' }} >
+                                <Lista_Items visitaMesa={props.visitaMesa} titulo="Ticket" subtitulo="Subtotal" estado={1} facturar={false}></Lista_Items>
+                            </div>
+                            <hr></hr>
+                            <Lista_Items visitaMesa={props.visitaMesa} titulo="Pagado" subtitulo="Subtotal" estado={2}></Lista_Items>
+                        </>
+                    ) : (
+                        <Alert severity="info">No hay visitas activas para esta mesa</Alert>
+                    )}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="primary" onClick={handleClose}>

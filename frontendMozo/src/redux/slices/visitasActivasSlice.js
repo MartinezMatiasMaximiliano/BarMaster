@@ -9,52 +9,22 @@ export const visitasActivasSlice = createSlice({
     name: 'visitasActivas',
     initialState,
     reducers: {
-        // crear - Recibe array de visitas del backend
-        crear: (state, action) => {
-            // Asegurar que cada producto tenga estadoPreparacion
-            state.value = action.payload.map(visita => ({
-                ...visita,
-                productos: (visita.productos || []).map(p => ({
-                    ...p,
-                    estadoPreparacion: p.estadoPreparacion ?? 0
-                }))
-            }));
+        // cargarVisitasActivas - Carga todas las visitas activas desde el backend
+        cargarVisitasActivas: (state, action) => {
+            state.value = Array.isArray(action.payload) ? action.payload : [];
         },
 
         // agregarVisita - Agrega una nueva visita cuando se abre una mesa
         agregarVisita: (state, action) => {
-            const visita = {
-                ...action.payload,
-                productos: (action.payload.productos || []).map(p => ({
-                    ...p,
-                    estadoPreparacion: p.estadoPreparacion ?? 0
-                }))
-            };
-            state.value.push(visita);
+            state.value.push(action.payload);
         },
 
-        // agregarProductos - Agrega productos a una visita existente
-        agregarProductos: (state, action) => {
-            const { productos, numeroMesa } = action.payload;
-            const visita = state.value.find(v => v.mesa?.numero === numeroMesa);
-            if (visita) {
-                if (!visita.productos) {
-                    visita.productos = [];
-                }
-                // Agregar estadoPreparacion local para el KDS (0: pendiente, 1: en preparación, 2: listo)
-                const productosConEstado = productos.map(p => ({
-                    ...p,
-                    estadoPreparacion: p.estadoPreparacion ?? 0
-                }));
-                visita.productos.push(...productosConEstado);
-            }
-        },
 
         // cambiarEstadoPagadoProductos - Marca productos como pagados
         cambiarEstadoPagadoProductos: (state, action) => {
             const { idsProductos, pagado } = action.payload;
             state.value.forEach(visita => {
-                visita.productos?.forEach(producto => {
+                visita.productosConsumidos?.forEach(producto => {
                     if (idsProductos.includes(producto.id)) {
                         producto.estadoPagado = pagado;
                     }
@@ -66,8 +36,8 @@ export const visitasActivasSlice = createSlice({
         cambiarEstadoPagadoPorMesa: (state, action) => {
             const { numeroMesa, pagado } = action.payload;
             const visita = state.value.find(v => v.mesa?.numero === numeroMesa);
-            if (visita && visita.productos) {
-                visita.productos.forEach(producto => {
+            if (visita && visita.productosConsumidos) {
+                visita.productosConsumidos.forEach(producto => {
                     producto.estadoPagado = pagado;
                 });
             }
@@ -77,8 +47,8 @@ export const visitasActivasSlice = createSlice({
         eliminarProductos: (state, action) => {
             const { numeroMesa, idsProductos } = action.payload;
             const visita = state.value.find(v => v.mesa?.numero === numeroMesa);
-            if (visita && visita.productos) {
-                visita.productos = visita.productos.filter(
+            if (visita && visita.productosConsumidos) {
+                visita.productosConsumidos = visita.productosConsumidos.filter(
                     p => !idsProductos.includes(p.id)
                 );
             }
@@ -93,26 +63,67 @@ export const visitasActivasSlice = createSlice({
         cambiarEstadoPreparacion: (state, action) => {
             const { idsProductos, estadoNuevo } = action.payload;
             state.value.forEach(visita => {
-                visita.productos?.forEach(producto => {
+                visita.productosConsumidos?.forEach(producto => {
                     if (idsProductos.includes(producto.id)) {
                         producto.estadoPreparacion = estadoNuevo;
                     }
                 });
             });
         },
+
+        // actualizarVisita - Actualiza una visita existente con datos nuevos del backend
+        actualizarVisita: (state, action) => {
+            const visitaActualizada = action.payload;
+            // Normalizar nombres de propiedades (PascalCase a camelCase)
+            const visitaNormalizada = {
+                id: visitaActualizada.id || visitaActualizada.Id,
+                fechaHora: visitaActualizada.fechaHora || visitaActualizada.FechaHora,
+                estado: visitaActualizada.estado || visitaActualizada.Estado,
+                idMesa: visitaActualizada.idMesa || visitaActualizada.IdMesa,
+                numeroMesa: visitaActualizada.numeroMesa || visitaActualizada.NumeroMesa,
+                productosConsumidos: (visitaActualizada.productosConsumidos || visitaActualizada.ProductosConsumidos || []).map(p => ({
+                    id: p.id || p.Id,
+                    nombre: p.nombre || p.Nombre,
+                    indicaciones: p.indicaciones || p.Indicaciones || '',
+                    precio: p.precio || p.Precio || 0,
+                    precioDelMomento: p.precioDelMomento || p.Precio || p.precio || 0,
+                    estadoPagado: p.estadoPagado !== undefined ? p.estadoPagado : (p.EstadoPagado !== undefined ? p.EstadoPagado : false)
+                }))
+            };
+
+            // Buscar la visita por id o por numeroMesa
+            const index = state.value.findIndex(
+                v => v.id === visitaNormalizada.id || 
+                v.numeroMesa === visitaNormalizada.numeroMesa ||
+                (v.mesa?.numero === visitaNormalizada.numeroMesa)
+            );
+
+            if (index !== -1) {
+                // Mantener la estructura existente (como mesa) pero actualizar con los nuevos datos
+                state.value[index] = {
+                    ...state.value[index],
+                    ...visitaNormalizada,
+                    // Preservar el objeto mesa si existe
+                    mesa: state.value[index].mesa || (visitaNormalizada.numeroMesa ? {
+                        id: visitaNormalizada.idMesa,
+                        numero: visitaNormalizada.numeroMesa
+                    } : undefined)
+                };
+            }
+        },
     },
 })
 
 // Action creators are generated for each case reducer function
 export const { 
-    crear, 
-    agregarProductos, 
+    cargarVisitasActivas,
     agregarVisita, 
     eliminarPorMesa, 
     eliminarProductos, 
     cambiarEstadoPagadoProductos,
     cambiarEstadoPagadoPorMesa,
-    cambiarEstadoPreparacion 
+    cambiarEstadoPreparacion,
+    actualizarVisita
 } = visitasActivasSlice.actions
 
 export default visitasActivasSlice.reducer

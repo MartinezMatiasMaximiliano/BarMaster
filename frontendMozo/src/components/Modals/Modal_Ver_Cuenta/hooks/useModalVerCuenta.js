@@ -23,32 +23,32 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
     const [show, setShow] = useState(false);
     const [tabValue, setTabValue] = useState(0);
 
-    // Filtrar visitas de la mesa actual
-    const visitasMesa = useMemo(() => {
-        if (!visitasActivas || visitasActivas.length === 0) return [];
-        return visitasActivas.filter(visita => visita.mesa?.numero === datosMesa.nombre);
+    // Obtener la visita de la mesa actual
+    const visitaMesa = useMemo(() => {
+        if (!visitasActivas || visitasActivas.length === 0) return null;
+        return visitasActivas.find(visita => visita.mesa?.numero === datosMesa.nombre || visita.numeroMesa === datosMesa.nombre) || null;
     }, [visitasActivas, datosMesa.nombre]);
 
     // Calcular productos disponibles para pagar (no pagados)
     const productosAPagar = useMemo(() => {
-        if (!visitasMesa[0]?.productos) return [];
-        return visitasMesa[0].productos
+        if (!visitaMesa?.productosConsumidos) return [];
+        return visitaMesa.productosConsumidos
             .filter(producto => !producto.estadoPagado)
             .map(producto => producto.id);
-    }, [visitasMesa]);
+    }, [visitaMesa]);
 
     // Calcular total de productos pendientes
     const totalPedidos = useMemo(() => {
-        if (!visitasMesa[0]?.productos) return 0;
-        return visitasMesa[0].productos
+        if (!visitaMesa?.productosConsumidos) return 0;
+        return visitaMesa.productosConsumidos
             .filter(producto => !producto.estadoPagado)
             .reduce((acc, producto) => acc + (producto.precio || producto.precioDelMomento || 0), 0);
-    }, [visitasMesa]);
+    }, [visitaMesa]);
 
     // Calcular cantidad de productos
     const cantidadItems = useMemo(() => {
-        return visitasMesa[0]?.productos?.length ?? 0;
-    }, [visitasMesa]);
+        return visitaMesa?.productosConsumidos?.length ?? 0;
+    }, [visitaMesa]);
 
     // Formateador de moneda
     const currencyFormatter = useMemo(
@@ -75,9 +75,14 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
         setTabValue(newValue);
     }, []);
 
-    // Función para pagar/facturar la mesa
+    // Función para pagar/facturar productos (usada tanto para "Facturar todo" como para "Facturar ticket")
     const PagarMesa = useCallback((arregloIds) => {
-        // Actualizar la base de datos
+        if (!arregloIds || arregloIds.length === 0) {
+            alert("No hay productos para facturar");
+            return;
+        }
+
+        // Actualizar la base de datos a "Pagar"
         CambiarEstadoItems(arregloIds, "Pagar");
 
         // Generar la factura PDF
@@ -89,20 +94,20 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
         // Actualizar el estado de visitasActivas en Redux - marcar productos como pagados
         dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true }));
 
-        // Actualizar el estado de ticket en Redux
+        // Si hay un ticket en Redux con estos IDs, eliminarlo (ya fue facturado)
         dispatch(eliminarTicket(arregloIds));
 
-        alert("Pedidos facturados");
+        // Cambiar a la pestaña de "Pagos registrados" para mostrar los productos pagados
+        setTabValue(2);
 
-        handleClose();
-        cerrarModalMesa();
-    }, [datosMesa.nombre, cerrarModalMesa, dispatch, handleClose]);
+        alert("Productos facturados correctamente");
+    }, [datosMesa.nombre, dispatch]);
 
     return {
         // Estado
         show,
         tabValue,
-        visitasMesa,
+        visitaMesa,
         productosAPagar,
         totalPedidos,
         cantidadItems,

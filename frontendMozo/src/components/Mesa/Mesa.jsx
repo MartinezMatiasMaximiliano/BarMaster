@@ -1,11 +1,10 @@
 // components/Mesa/Mesa.jsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { MesaButton } from './MesaButton';
 import { MesaModal } from './MesaModal';
 import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
 import { useMesaState } from './useMesaState';
 import { useMesaLogic } from './useMesaLogic';
-import { ObtenerVisitaPorId } from '../../API/APIVisitas';
 
 export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true }) {
     const {
@@ -19,20 +18,6 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         setCheckBoxSeleccionados
     } = useMesaState(datos_mesa.nombre);
 
-    const [visita, setVisita] = useState(null);
-
-    useEffect(() => {
-        if (!show) {
-            setVisita(null);
-            return;
-        }
-
-        ObtenerVisitaPorId(datos_mesa.visita?.id).then(visita => {
-            setVisita(visita);
-        });
-    }, [show, datos_mesa.visita?.id]);
-
-    const productosAMostrar = visita?.productosConsumidos;
 
     const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic();
 
@@ -46,7 +31,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     };
 
     const handleCerrarMesa = (mesaId) => {
-        cerrarMesa(mesaId, datos_mesa.nombre, productosAMostrar);
+        cerrarMesa(mesaId, datos_mesa.nombre, visitaMesa?.productosConsumidos || []);
     };
 
     const handleAbrirMesa = () => {
@@ -105,7 +90,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                         show={show}
                         handleClose={handleClose}
                         datos_mesa={datos_mesa}
-                        productos={productosAMostrar}
+                        visitaMesa={visitaMesa}
                         checkBoxSeleccionados={checkBoxSeleccionados}
                         handleChangeCheckBox={handleChangeCheckBox}
                         activarCancelarPedido={activarCancelarPedido}
@@ -121,7 +106,6 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
             return (
                 <Mesa_Deshabilitada 
                     visitaMesa={visitaMesa}
-                    productos={productosAMostrar}
                     estilo={estilo}  
                     datos_mesa={datos_mesa}
                     deshabilitadaPorCaja={!hayCajaActiva}
@@ -145,7 +129,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                     show={show}
                     handleClose={handleClose}
                     datos_mesa={datos_mesa}
-                    productos={productosAMostrar}
+                    visitaMesa={visitaMesa}
                     checkBoxSeleccionados={checkBoxSeleccionados}
                     handleChangeCheckBox={handleChangeCheckBox}
                     activarCancelarPedido={activarCancelarPedido}
