@@ -6,9 +6,13 @@ export const ListaProductos = ({ productos, onAgregarProducto }) => {
         <Box
             sx={{
                 width: '100%',
+                minWidth: 0,
                 flex: 1,
                 overflowY: 'auto',
+                overflowX: 'hidden',
                 pr: 1,
+                contain: 'layout style paint',
+                willChange: 'scroll-position',
                 display: 'grid',
                 gridTemplateColumns: {
                     xs: 'repeat(1, 1fr)',
@@ -20,7 +24,7 @@ export const ListaProductos = ({ productos, onAgregarProducto }) => {
             }}
         >
             {productos.map((producto) => (
-                                <Box key={producto.id} sx={{ height: 240 }}>
+                <Box key={producto.id} sx={{ height: 240, minWidth: 0, contentVisibility: 'auto' }}>
                     <ProductoCard 
                         producto={producto} 
                         onAgregar={onAgregarProducto}

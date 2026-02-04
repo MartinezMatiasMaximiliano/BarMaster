@@ -71,9 +71,9 @@ function Modal_AgregarPedidos({ open, onClose, idVisita, numeroMesa }) {
             </DialogTitle>
 
             <DialogContent dividers>
-                <Box sx={{ display: 'flex', gap: 2, height: '100%' }}>
+                <Box sx={{ display: 'flex', gap: 2, height: '100%', minWidth: 0, overflow: 'hidden' }}>
                     {/* Columna izquierda: Productos - 65% */}
-                    <Box sx={{ width: '65%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <Box sx={{ width: '65%', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <Stack spacing={2} sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
                             <FiltrosProductos
                                 productos={productos}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { BuscarTodosLosProductos } from '../../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
@@ -70,45 +70,45 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
         return carrito.reduce((sum, item) => sum + item.cantidad, 0);
     }, [carrito]);
 
-    // Agregar producto al carrito
-    const agregarAlCarrito = (producto) => {
-        const existe = carrito.find(item => item.producto.id === producto.id);
-        if (existe) {
-            setCarrito(carrito.map(item =>
-                item.producto.id === producto.id
-                    ? { ...item, cantidad: item.cantidad + 1 }
-                    : item
-            ));
-        } else {
-            setCarrito([...carrito, {
-                producto,
-                cantidad: 1,
-                indicaciones: ''
-            }]);
-        }
-    };
+    // Agregar producto al carrito (useCallback estable para evitar re-renders de ListaProductos)
+    const agregarAlCarrito = useCallback((producto) => {
+        setCarrito((prev) => {
+            const existe = prev.find(item => item.producto.id === producto.id);
+            if (existe) {
+                return prev.map(item =>
+                    item.producto.id === producto.id
+                        ? { ...item, cantidad: item.cantidad + 1 }
+                        : item
+                );
+            }
+            return [...prev, { producto, cantidad: 1, indicaciones: '' }];
+        });
+    }, []);
 
     // Actualizar cantidad en carrito
-    const actualizarCantidad = (productoId, nuevaCantidad) => {
-        if (nuevaCantidad <= 0) {
-            setCarrito(carrito.filter(item => item.producto.id !== productoId));
-        } else {
-            setCarrito(carrito.map(item =>
+    const actualizarCantidad = useCallback((productoId, nuevaCantidad) => {
+        setCarrito((prev) => {
+            if (nuevaCantidad <= 0) {
+                return prev.filter(item => item.producto.id !== productoId);
+            }
+            return prev.map(item =>
                 item.producto.id === productoId
                     ? { ...item, cantidad: nuevaCantidad }
                     : item
-            ));
-        }
-    };
+            );
+        });
+    }, []);
 
     // Actualizar indicaciones
-    const actualizarIndicaciones = (productoId, indicaciones) => {
-        setCarrito(carrito.map(item =>
-            item.producto.id === productoId
-                ? { ...item, indicaciones }
-                : item
-        ));
-    };
+    const actualizarIndicaciones = useCallback((productoId, indicaciones) => {
+        setCarrito((prev) =>
+            prev.map(item =>
+                item.producto.id === productoId
+                    ? { ...item, indicaciones }
+                    : item
+            )
+        );
+    }, []);
 
     // Enviar pedidos
     const handleEnviarPedidos = async () => {

@@ -5,7 +5,6 @@ import { Container, Alert } from 'react-bootstrap';
 import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoSlice';
 import { LoginContext, AuthTypeContext } from '../../App';
 import { handleConfirmarSalir } from '../../Helpers/HelperFunctions';
-import { useKeyboardInput } from './hooks/useKeyboardInput';
 import { useMesaFiltering } from './hooks/useMesaFiltering.jsx';
 import { useMozoCode } from './hooks/useMozoCode';
 import { MesasGrid } from './components/MesasGrid';
@@ -30,9 +29,8 @@ function Index(props) {
     const mesas = Array.isArray(props.mesas) ? props.mesas : [];
     const cargandoMesas = props.mesas == null;
     
-    const { inputRef } = useKeyboardInput();
     const { mesasParaMostrar } = useMesaFiltering(mesas, props.datos_mozos, hayCajaActiva);
-    console.log("mesasParaMostrar", mesas);
+
     const { codigoMozo, mozo } = useMozoCode(props.datos_mozos);
 
     // Cargar estado de caja activa al montar el componente
@@ -79,7 +77,6 @@ function Index(props) {
             )}
             
             <BottomBar
-                inputRef={inputRef}
                 codigoMozo={codigoMozo}
                 handleChange={handleChange}
                 mozo={mozo}

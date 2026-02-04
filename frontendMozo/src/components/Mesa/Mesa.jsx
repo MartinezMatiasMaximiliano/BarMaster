@@ -1,10 +1,25 @@
 // components/Mesa/Mesa.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MesaButton } from './MesaButton';
 import { MesaModal } from './MesaModal';
 import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
 import { useMesaState } from './useMesaState';
 import { useMesaLogic } from './useMesaLogic';
+import { ObtenerVisitaPorId } from '../../API/APIVisitas';
+
+function normalizarProductos(productosConsumidos) {
+    if (!Array.isArray(productosConsumidos)) return [];
+    return productosConsumidos.map(p => ({
+        id: p.id ?? p.Id,
+        nombre: p.nombre ?? p.Nombre,
+        nombreProducto: p.nombre ?? p.Nombre,
+        indicaciones: p.indicaciones ?? p.Indicaciones ?? '',
+        detalles: p.indicaciones ?? p.Indicaciones,
+        precio: p.precio ?? p.Precio,
+        precioDelMomento: p.precio ?? p.Precio,
+        estadoPagado: p.estadoPagado ?? p.EstadoPagado ?? false
+    }));
+}
 
 export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true }) {
     const {
@@ -19,6 +34,26 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         setCheckBoxSeleccionados
     } = useMesaState(datos_mesa.nombre);
 
+    const [productosVisita, setProductosVisita] = useState(null);
+    const idVisita = datos_mesa.visita?.id ?? visitaMesa?.id;
+
+    useEffect(() => {
+        if (!show || !idVisita) {
+            if (!show) setProductosVisita(null);
+            return;
+        }
+        let cancelled = false;
+        ObtenerVisitaPorId(idVisita).then(visita => {
+            if (cancelled || !visita) return;
+            const raw = visita.productosConsumidos ?? visita.ProductosConsumidos ?? [];
+            setProductosVisita(normalizarProductos(raw));
+        });
+        console.log('productosVisita', productosVisita);
+        return () => { cancelled = true; };
+    }, [show, idVisita]);
+
+    const productosAMostrar = productosVisita ?? productos;
+
     const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic();
 
     // Handlers con contexto
@@ -31,7 +66,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     };
 
     const handleCerrarMesa = (mesaId) => {
-        cerrarMesa(mesaId, datos_mesa.nombre, productos);
+        cerrarMesa(mesaId, datos_mesa.nombre, productosAMostrar);
     };
 
     const handleAbrirMesa = () => {
@@ -90,7 +125,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                         show={show}
                         handleClose={handleClose}
                         datos_mesa={datos_mesa}
-                        productos={productos}
+                        productos={productosAMostrar}
                         checkBoxSeleccionados={checkBoxSeleccionados}
                         handleChangeCheckBox={handleChangeCheckBox}
                         activarCancelarPedido={activarCancelarPedido}
@@ -106,7 +141,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
             return (
                 <Mesa_Deshabilitada 
                     visitaMesa={visitaMesa}
-                    productos={productos}
+                    productos={productosAMostrar}
                     estilo={estilo}  
                     datos_mesa={datos_mesa}
                     deshabilitadaPorCaja={!hayCajaActiva}
@@ -130,7 +165,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                     show={show}
                     handleClose={handleClose}
                     datos_mesa={datos_mesa}
-                    productos={productos}
+                    productos={productosAMostrar}
                     checkBoxSeleccionados={checkBoxSeleccionados}
                     handleChangeCheckBox={handleChangeCheckBox}
                     activarCancelarPedido={activarCancelarPedido}

@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { Card, Typography, Box } from '@mui/material';
 import { gradientPrimary } from '../../../../styles/buttonStyles';
 
-export const ProductoCard = ({ producto, onAgregar }) => {
+const ProductoCardComponent = ({ producto, onAgregar }) => {
     const imagenFondo = producto.imagenUrl 
         ? `${import.meta.env.VITE_BASE_URL}${producto.imagenUrl}`
         : null;
@@ -21,8 +22,9 @@ export const ProductoCard = ({ producto, onAgregar }) => {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
+                backgroundColor: imagenFondo ? 'rgba(0,0,0,0.15)' : undefined,
                 borderRadius: 2,
-                transition: 'all 0.3s ease',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
                     transform: 'translateY(-6px) scale(1.02)',
                     boxShadow: 8,
@@ -134,3 +136,4 @@ export const ProductoCard = ({ producto, onAgregar }) => {
     );
 };
 
+export const ProductoCard = memo(ProductoCardComponent);

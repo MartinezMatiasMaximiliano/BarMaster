@@ -9,7 +9,6 @@ import { GetChipNombreCompleto, formatearFechaCompleta, formatearHoraCompleta } 
 import { useDateTime } from '../hooks/useDateTime';
 
 export const BottomBar = ({ 
-    inputRef, 
     codigoMozo, 
     handleChange, 
     mozo, 
@@ -23,7 +22,6 @@ export const BottomBar = ({
             <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                 <Form.Label>Código</Form.Label>
                 <Form.Control
-                    ref={inputRef}
                     onChange={handleChange}
                     type="password"
                     value={codigoMozo}

@@ -4,6 +4,63 @@ import { authService } from '../services/authService';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+export async function ObtenerVisitaPorId(idVisita) {
+    try {
+        const response = await axios.get(`${BASE_URL}Visita?IdVisita=${idVisita}`, authService.getAuthHeaders());
+        console.log('response', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener caja activa:', error);
+    }
+}
+
+export async function AgregarProductosAVisita(idVisita, productos) {
+    try {
+        // Agrupar productos por ID y indicaciones para enviar cantidad correcta
+        const productosAgrupados = {};
+        productos.forEach(producto => {
+
+            const key = `${productoId}_${producto.indicaciones || ''}`;
+            if (!productosAgrupados[key]) {
+                productosAgrupados[key] = {
+                    IdProducto: productoId, // Debe ser un Guid (string)
+                    Detalles: producto.indicaciones || producto.detalles || '',
+                    Cantidad: 0
+                };
+            }
+            productosAgrupados[key].Cantidad += producto.cantidad || 1;
+        });
+
+        // Convertir a array
+        const productosDTO = Object.values(productosAgrupados);
+
+        if (productosDTO.length === 0) {
+            throw new Error('No hay productos válidos para agregar');
+        }
+
+        const response = await axios.post(
+            `${BASE_URL}AgregarProductoAVisita?IdVisita=${idVisita}`,
+            productosDTO,
+            authService.getAuthHeaders()
+        );
+        
+        return response.data;
+    } catch (error) {
+        console.error('Error al agregar productos a la visita:', error);
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+            console.error('Response headers:', error.response.headers);
+        }
+        if (error.request) {
+            console.error('Request:', error.request);
+        }
+        throw error;
+    }
+}
+
+////////////////////////////// FUNCIONES PARA DATOS DE PRUEBA //////////////////////////////
+
 // Función para simular delay de API
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -252,68 +309,5 @@ export async function BuscarVisitaPorId(idVisita) {
     } catch (error) {
         console.error('Error al obtener visita por ID:', error);
         return null;
-    }
-}
-
-export async function AgregarProductosAVisita(idVisita, productos) {
-    try {
-        // Validar que idVisita sea un Guid válido
-        if (!idVisita || typeof idVisita !== 'string') {
-            throw new Error('IdVisita inválido');
-        }
-
-        // Agrupar productos por ID y indicaciones para enviar cantidad correcta
-        const productosAgrupados = {};
-        productos.forEach(producto => {
-            // Asegurar que el ID del producto sea un Guid válido
-            const productoId = producto.id || producto.Id;
-            if (!productoId) {
-                console.warn('Producto sin ID:', producto);
-                return;
-            }
-
-            const key = `${productoId}_${producto.indicaciones || ''}`;
-            if (!productosAgrupados[key]) {
-                productosAgrupados[key] = {
-                    IdProducto: productoId, // Debe ser un Guid (string)
-                    Detalles: producto.indicaciones || producto.detalles || '',
-                    Cantidad: 0
-                };
-            }
-            productosAgrupados[key].Cantidad += producto.cantidad || 1;
-        });
-
-        // Convertir a array
-        const productosDTO = Object.values(productosAgrupados);
-
-        if (productosDTO.length === 0) {
-            throw new Error('No hay productos válidos para agregar');
-        }
-
-        console.log('Enviando productos a la visita:', {
-            idVisita,
-            cantidadProductos: productosDTO.length,
-            productosDTO,
-            url: `${BASE_URL}AgregarProductoAVisita?IdVisita=${idVisita}`
-        });
-
-        const response = await axios.post(
-            `${BASE_URL}AgregarProductoAVisita?IdVisita=${idVisita}`,
-            productosDTO,
-            authService.getAuthHeaders()
-        );
-        
-        return response.data;
-    } catch (error) {
-        console.error('Error al agregar productos a la visita:', error);
-        if (error.response) {
-            console.error('Response data:', error.response.data);
-            console.error('Response status:', error.response.status);
-            console.error('Response headers:', error.response.headers);
-        }
-        if (error.request) {
-            console.error('Request:', error.request);
-        }
-        throw error;
     }
 }
