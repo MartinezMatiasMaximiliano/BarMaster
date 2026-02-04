@@ -7,12 +7,12 @@ export const useMesaState = (nombreMesa) => {
     const [show, setShow] = useState(false);
     const visitasActivas = useSelector((state) => state.visitasActivas.value);
     const [visitaMesa, setVisitaMesa] = useState(
-        visitasActivas.find(visita => visita.mesa?.numero === nombreMesa)
+        visitasActivas.find(visita => visita.numeroMesa === nombreMesa)
     );
 
     // Sincronizar visitaMesa cuando cambia visitasActivas
     useEffect(() => {
-        setVisitaMesa(visitasActivas.find(visita => visita.mesa?.numero === nombreMesa));
+        setVisitaMesa(visitasActivas.find(visita => visita.numeroMesa === nombreMesa));
     }, [visitasActivas, nombreMesa]);
 
     const handleShow = () => setShow(true);

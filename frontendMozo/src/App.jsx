@@ -43,7 +43,7 @@ import { BuscarTodasLasCategorias } from './API/APICategorias';
 import { BuscarTodosLosMozos } from './API/APIPersonas'
 import { BuscarTodasLasPersonas } from './API/APIPersonas'
 import { BuscarTodosLosRoles } from './API/APIRoles'
-import { BuscarTodasLasVisitas, BuscarVisitaPorId } from './API/APIVisitas'
+import { BuscarTodasLasVisitas, BuscarVisitaPorId, BuscarVisitasActivas } from './API/APIVisitas'
 import { BuscarTodasLasReservas } from './API/APIReservas'
 import { BuscarTodosLosTipoPagos } from './API/APITipoPagos'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
@@ -118,6 +118,9 @@ function App() {
                 BuscarTodasLasVisitas()
                     .then(data => SetVisitas(Array.isArray(data) ? data : []))
                     .catch(() => SetVisitas([]));
+                BuscarVisitasActivas()
+                    .then(data => dispatch(crearVisitasActivas(Array.isArray(data) ? data : [])))
+                    .catch(() => dispatch(crearVisitasActivas([])));
                 BuscarTodasLasCategorias()
                     .then(data => SetCategorias(Array.isArray(data) ? data : []))
                     .catch(() => SetCategorias([]));    
@@ -138,6 +141,7 @@ function App() {
                 SetPersonas([]);
                 SetRoles([]);
                 SetVisitas([]);
+                dispatch(crearVisitasActivas([]));
                 SetCategorias([]);
                 SetReservas([]);
                 SetTipoPagos([]);
@@ -154,23 +158,7 @@ function App() {
         onPagarMesaSeparado: (ArrayIdsItems) => { pagarSeparado(ArrayIdsItems) }
     })
 
-    useEffect(() => {
-        if (visitas.length > 0) {
-            // Filtrar visitas activas/pendientes
-            const visitasPendientes = visitas.filter(v => 
-                v.estado === 'Pendiente' || v.estado === 'activo'
-            );
-            
-            // Asegurar que cada visita tenga la estructura correcta
-            const visitasConEstructura = visitasPendientes.map(v => ({
-                ...v,
-                mesa: v.mesa || {},
-                productos: v.productos || v.ProductosConsumidos || []
-            }));
-            
-            dispatch(crearVisitasActivas(visitasConEstructura));
-        }
-    }, [visitas]);
+    // Las visitas activas se cargan con GET /VisitasActivas en el useEffect de sistema_sucursal
 
     async function recargarMesas() {
         await BuscarTodasLasMesas().then(data => SetMesas(data));

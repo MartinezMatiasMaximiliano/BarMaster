@@ -7,26 +7,11 @@ import { useMesaState } from './useMesaState';
 import { useMesaLogic } from './useMesaLogic';
 import { ObtenerVisitaPorId } from '../../API/APIVisitas';
 
-function normalizarProductos(productosConsumidos) {
-    if (!Array.isArray(productosConsumidos)) return [];
-    return productosConsumidos.map(p => ({
-        id: p.id ?? p.Id,
-        nombre: p.nombre ?? p.Nombre,
-        nombreProducto: p.nombre ?? p.Nombre,
-        indicaciones: p.indicaciones ?? p.Indicaciones ?? '',
-        detalles: p.indicaciones ?? p.Indicaciones,
-        precio: p.precio ?? p.Precio,
-        precioDelMomento: p.precio ?? p.Precio,
-        estadoPagado: p.estadoPagado ?? p.EstadoPagado ?? false
-    }));
-}
-
 export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true }) {
     const {
         checkBoxSeleccionados,
         show,
         visitaMesa,
-        productos,
         activarCancelarPedido,
         handleShow,
         handleClose,
@@ -34,25 +19,20 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         setCheckBoxSeleccionados
     } = useMesaState(datos_mesa.nombre);
 
-    const [productosVisita, setProductosVisita] = useState(null);
-    const idVisita = datos_mesa.visita?.id ?? visitaMesa?.id;
+    const [visita, setVisita] = useState(null);
 
     useEffect(() => {
-        if (!show || !idVisita) {
-            if (!show) setProductosVisita(null);
+        if (!show) {
+            setVisita(null);
             return;
         }
-        let cancelled = false;
-        ObtenerVisitaPorId(idVisita).then(visita => {
-            if (cancelled || !visita) return;
-            const raw = visita.productosConsumidos ?? visita.ProductosConsumidos ?? [];
-            setProductosVisita(normalizarProductos(raw));
-        });
-        console.log('productosVisita', productosVisita);
-        return () => { cancelled = true; };
-    }, [show, idVisita]);
 
-    const productosAMostrar = productosVisita ?? productos;
+        ObtenerVisitaPorId(datos_mesa.visita?.id).then(visita => {
+            setVisita(visita);
+        });
+    }, [show, datos_mesa.visita?.id]);
+
+    const productosAMostrar = visita?.productosConsumidos;
 
     const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic();
 

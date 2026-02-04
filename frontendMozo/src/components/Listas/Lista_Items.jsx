@@ -21,7 +21,7 @@ function Lista_Items(props) {
                 return mensajeListaVacia;
             }
 
-            const todosLosProductos = props.visitasMesa[0].productos;
+            const todosLosProductos = props.visitasMesa.productosConsumidos;
             const productosPorTicket = ticket.map(idsGrupo =>
                 todosLosProductos.filter(producto => idsGrupo.includes(producto.id))
             );

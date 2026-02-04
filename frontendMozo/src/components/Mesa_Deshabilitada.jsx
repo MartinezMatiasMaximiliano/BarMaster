@@ -56,13 +56,13 @@ export default function Mesa_Deshabilitada(props) {
                 <Modal.Body>
                     <Alert severity="info">Atendida por {datosMozo ? datosMozo.nombres + ' ' + datosMozo.apellido : 'No asignado'} - {fechaFormateada} - ${totalPrecio}</Alert>
                     <hr></hr>
-                    <Lista_Items visitasMesa={[props.visitaMesa]} titulo="Pedido total" subtitulo="Total" estado={false}></Lista_Items>
+                    <Lista_Items visitaMesa={[props.visitaMesa]} titulo="Pedido total" subtitulo="Total" estado={false}></Lista_Items>
                     <hr></hr>
                     <div style={{ maxHeight: '28vh', overflowY: 'auto', marginBottom: '2em' }} >
-                        <Lista_Items visitasMesa={[props.visitaMesa]} titulo="Ticket" subtitulo="Subtotal" estado={1} facturar={false}></Lista_Items>
+                        <Lista_Items visitaMesa={[props.visitaMesa]} titulo="Ticket" subtitulo="Subtotal" estado={1} facturar={false}></Lista_Items>
                     </div>
                         <hr></hr>
-                    <Lista_Items visitasMesa={[props.visitaMesa]} titulo="Pagado" subtitulo="Subtotal" estado={2}></Lista_Items>
+                    <Lista_Items visitaMesa={[props.visitaMesa]} titulo="Pagado" subtitulo="Subtotal" estado={2}></Lista_Items>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="primary" onClick={handleClose}>

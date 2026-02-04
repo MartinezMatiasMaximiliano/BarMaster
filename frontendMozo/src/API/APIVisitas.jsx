@@ -14,6 +14,17 @@ export async function ObtenerVisitaPorId(idVisita) {
     }
 }
 
+/** GET /VisitasActivas - Obtiene todas las visitas con estado "Abierta" */
+export async function BuscarVisitasActivas() {
+    try {
+        const response = await axios.get(`${BASE_URL}VisitasActivas`, authService.getAuthHeaders());
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener visitas activas:', error);
+        return [];
+    }
+}
+
 export async function AgregarProductosAVisita(idVisita, productos) {
     try {
         // Agrupar productos por ID y indicaciones para enviar cantidad correcta
