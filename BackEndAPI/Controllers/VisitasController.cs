@@ -37,6 +37,8 @@ namespace BackEndAPI.Controllers
                     Id = visita.Id,
                     FechaHora = visita.FechaHora,
                     Estado = visita.Estado,
+                    IdMesa = visita.Mesa?.Id,
+                    NumeroMesa = visita.Mesa?.Nombre,
                     ProductosConsumidos = visita.Productos?.Select(item => new ItemDTO
                     {
                         Id = item.Id,
