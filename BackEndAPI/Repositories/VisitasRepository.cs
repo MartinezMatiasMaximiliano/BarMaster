@@ -49,6 +49,7 @@ namespace BackEndAPI.Repositories
         {
             return await db.Visitas
                 .Include(v => v.Mozo)
+                .Include(v => v.Mesa)
                 .Include(v => v.Productos)
                 .Where(v => v.Estado == "Abierta")
                 .ToListAsync();
