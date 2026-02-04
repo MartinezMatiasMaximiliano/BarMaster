@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
@@ -24,6 +24,35 @@ namespace BackEndAPI.Controllers
         public VisitasController(IVisitasServices visitasServices)
         {
             _visitasServices = visitasServices;
+        }
+
+        [HttpGet("/VisitasActivas")]
+        public async Task<IActionResult> VisitasActivas()
+        {
+            try
+            {
+                var visitasActivas = await _visitasServices.ObtenerVisitasActivasAsync();
+                var response = visitasActivas.Select(visita => new VisitaResponseDTO
+                {
+                    Id = visita.Id,
+                    FechaHora = visita.FechaHora,
+                    Estado = visita.Estado,
+                    ProductosConsumidos = visita.Productos?.Select(item => new ItemDTO
+                    {
+                        Id = item.Id,
+                        Nombre = item.NombreProducto,
+                        Indicaciones = item.Detalles,
+                        Precio = item.PrecioDelMomento,
+                        EstadoPagado = item.EstadoPagado,
+                    }).ToList() ?? new List<ItemDTO>(),
+                }).ToList();
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error catch: VisitasActivas - " + ex.Message);
+            }
         }
 
         [HttpGet("/Visita")]
