@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -75,7 +75,10 @@ namespace BackEndAPI.Services
             }
         }
 
-        
+        public async Task<IEnumerable<Visita>> ObtenerVisitasActivasAsync()
+        {
+            return await _visitasRepository.ObtenerVisitasActivasAsync();
+        }
     }
 }
 
