@@ -36,7 +36,6 @@ export const useMesaState = (nombreMesa) => {
         checkBoxSeleccionados,
         show,
         visitaMesa,
-        productos: visitaMesa?.productos || [],
         activarCancelarPedido,
         handleShow,
         handleClose,

@@ -4,7 +4,6 @@ const AuthService = {
     login: async (Dni, contrasena) => {
         try {
             // El backend espera Username y Password (PascalCase)
-            console.log("USUARIO Y PASS:", Dni, contrasena);
             const response = await axios.post(import.meta.env.VITE_BASE_URL + "Login", { 
                 username: Dni, 
                 password: contrasena 

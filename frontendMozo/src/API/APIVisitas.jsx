@@ -7,7 +7,6 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 export async function ObtenerVisitaPorId(idVisita) {
     try {
         const response = await axios.get(`${BASE_URL}Visita?IdVisita=${idVisita}`, authService.getAuthHeaders());
-        console.log('response', response.data);
         return response.data;
     } catch (error) {
         console.error('Error al obtener caja activa:', error);
@@ -27,31 +26,10 @@ export async function BuscarVisitasActivas() {
 
 export async function AgregarProductosAVisita(idVisita, productos) {
     try {
-        // Agrupar productos por ID y indicaciones para enviar cantidad correcta
-        const productosAgrupados = {};
-        productos.forEach(producto => {
-
-            const key = `${productoId}_${producto.indicaciones || ''}`;
-            if (!productosAgrupados[key]) {
-                productosAgrupados[key] = {
-                    IdProducto: productoId, // Debe ser un Guid (string)
-                    Detalles: producto.indicaciones || producto.detalles || '',
-                    Cantidad: 0
-                };
-            }
-            productosAgrupados[key].Cantidad += producto.cantidad || 1;
-        });
-
-        // Convertir a array
-        const productosDTO = Object.values(productosAgrupados);
-
-        if (productosDTO.length === 0) {
-            throw new Error('No hay productos válidos para agregar');
-        }
-
+        console.log("PRODUCTOS: ", productos);
         const response = await axios.post(
             `${BASE_URL}AgregarProductoAVisita?IdVisita=${idVisita}`,
-            productosDTO,
+            productos,
             authService.getAuthHeaders()
         );
         

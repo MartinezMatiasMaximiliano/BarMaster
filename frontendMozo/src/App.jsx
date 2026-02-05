@@ -43,14 +43,14 @@ import { BuscarTodasLasCategorias } from './API/APICategorias';
 import { BuscarTodosLosMozos } from './API/APIPersonas'
 import { BuscarTodasLasPersonas } from './API/APIPersonas'
 import { BuscarTodosLosRoles } from './API/APIRoles'
-import { BuscarTodasLasVisitas, BuscarVisitaPorId, BuscarVisitasActivas } from './API/APIVisitas'
+import { BuscarVisitaPorId, BuscarVisitasActivas } from './API/APIVisitas'
 import { BuscarTodasLasReservas } from './API/APIReservas'
 import { BuscarTodosLosTipoPagos } from './API/APITipoPagos'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { CambiarEstadoItems } from './API/APIItems'
 import { useSelector, useDispatch } from 'react-redux'
-import { agregarProductos, crear as crearVisitasActivas, cambiarEstadoPagadoProductos } from './redux/slices/visitasActivasSlice'
+import { cambiarEstadoPagadoProductos, cargarVisitasActivas } from './redux/slices/visitasActivasSlice'
 import { agregar as agregarNotificaciones } from './redux/slices/notificacionesSlice'
 import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
@@ -115,12 +115,9 @@ function App() {
                 BuscarTodosLosRoles()
                     .then(data => SetRoles(Array.isArray(data) ? data : []))
                     .catch(() => SetRoles([]));
-                BuscarTodasLasVisitas()
-                    .then(data => SetVisitas(Array.isArray(data) ? data : []))
-                    .catch(() => SetVisitas([]));
                 BuscarVisitasActivas()
-                    .then(data => dispatch(crearVisitasActivas(Array.isArray(data) ? data : [])))
-                    .catch(() => dispatch(crearVisitasActivas([])));
+                    .then(data => dispatch(cargarVisitasActivas(Array.isArray(data) ? data : [])))
+                    .catch(() => dispatch(cargarVisitasActivas([])));
                 BuscarTodasLasCategorias()
                     .then(data => SetCategorias(Array.isArray(data) ? data : []))
                     .catch(() => SetCategorias([]));    
@@ -141,7 +138,6 @@ function App() {
                 SetPersonas([]);
                 SetRoles([]);
                 SetVisitas([]);
-                dispatch(crearVisitasActivas([]));
                 SetCategorias([]);
                 SetReservas([]);
                 SetTipoPagos([]);
@@ -202,7 +198,7 @@ function App() {
         const visita = await BuscarVisitaPorId(IdVisita);
 
         if (visita) {
-            const ListaProductosPendientes = visita.productos?.filter(p => !p.estadoPagado).map(p => p.id) || [];
+            const ListaProductosPendientes = visita.productosConsumidos?.filter(p => !p.estadoPagado).map(p => p.id) || [];
 
             if (ListaProductosPendientes.length > 0) {
                 // Hacer la actualización en la base de datos
@@ -232,8 +228,6 @@ function App() {
 
         try {
             const productosCreados = await PostItems(Pedido, numeroMesa);
-            const productosLimpios = productosCreados.map(({ pedidoId, ...resto }) => resto);
-            dispatch(agregarProductos({ productos: productosLimpios, numeroMesa: numeroMesa }));
             sendRecargarTicket(numeroMesa);
         } catch (error) {
         }

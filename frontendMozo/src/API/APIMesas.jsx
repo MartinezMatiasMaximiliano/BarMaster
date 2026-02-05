@@ -17,7 +17,6 @@ class CrearMesaDTO {
 
 export async function CrearMesa(datos) {
     try {
-        console.log("DATOS", datos);
         const capacidad = datos.capacidad ? parseInt(datos.capacidad) : 0;
         const response = await axios.post(
             BASE_URL, 
@@ -39,7 +38,6 @@ export async function CrearMesa(datos) {
 
 export async function AbrirCerrarMesa(request) {
     try {
-        console.log("REQUEST EN API", request);
         const response = await axios.patch(`${BASE_URL}AbrirCerrar`, request, authService.getAuthHeaders());
         return response.data;
     } catch (error) {

@@ -36,9 +36,6 @@ function Modal_Editar(props) {
 
     const { id, activo } = props.fila;
 
-    console.log('Modal_Editar props:', props);
-    console.log('Modal_Editar campos:', props.campos);
-
     // Inicializar editValues con los valores de la fila
     const getInitialValues = () => {
         const { id, activo, estado, Estado, ...rest } = props.fila;
@@ -48,14 +45,9 @@ function Modal_Editar(props) {
     const [editValues, setEditValues] = useState(() => getInitialValues());
 
     const handleShow = () => {
-        console.log('🔵 Abriendo modal de editar');
-        console.log('🔵 Show actual:', show);
-        console.log('🔵 Campos:', props.campos);
-        console.log('🔵 Fila:', props.fila);
         if (!isControlled) {
             setShowInterno(true);
         }
-        console.log('🔵 Show después de setShow:', true);
     };
 
     // Solo resetear valores cuando el modal se abre, no en cada render

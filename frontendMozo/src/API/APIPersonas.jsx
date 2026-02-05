@@ -170,9 +170,7 @@ export async function DesactivarPersona(Id) {
 
 
 export async function BorrarPersona(Id) {
-    console.log("ID EN API: ", Id)
     try {
-        console.log("URL: ", `${BASE_URL}Eliminar/${Id}`)
         const response = await axios.delete(`${BASE_URL}Eliminar/${Id}`, authService.getAuthHeaders());
         return response.data;
     } catch (error) {

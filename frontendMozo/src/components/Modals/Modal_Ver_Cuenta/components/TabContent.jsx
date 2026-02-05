@@ -6,7 +6,7 @@ import Lista_Items from '../../../Listas/Lista_Items';
  * Componente memoizado para el contenido de cada tab
  * Optimizado para evitar re-renders innecesarios
  */
-const TabContent = memo(({ visitasMesa, estado, titulo, subtitulo, PagarMesa, facturar }) => {
+const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, facturar }) => {
     return (
         <Box
             sx={{
@@ -19,7 +19,7 @@ const TabContent = memo(({ visitasMesa, estado, titulo, subtitulo, PagarMesa, fa
             }}
         >
             <Lista_Items
-                visitasMesa={visitasMesa}
+                visitaMesa={visitaMesa}
                 titulo={titulo}
                 subtitulo={subtitulo}
                 estado={estado}
@@ -38,13 +38,13 @@ const TabContent = memo(({ visitasMesa, estado, titulo, subtitulo, PagarMesa, fa
         return false;
     }
     
-    // Comparación optimizada de visitasMesa
-    if (prevProps.visitasMesa === nextProps.visitasMesa) {
+    // Comparación optimizada de visitaMesa
+    if (prevProps.visitaMesa === nextProps.visitaMesa) {
         return true;
     }
     
-    const prevProductos = prevProps.visitasMesa?.[0]?.productos;
-    const nextProductos = nextProps.visitasMesa?.[0]?.productos;
+    const prevProductos = prevProps.visitaMesa?.productosConsumidos;
+    const nextProductos = nextProps.visitaMesa?.productosConsumidos;
     
     if (!prevProductos || !nextProductos) {
         return prevProductos === nextProductos;

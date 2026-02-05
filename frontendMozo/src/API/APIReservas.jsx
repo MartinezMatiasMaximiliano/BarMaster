@@ -47,7 +47,6 @@ export async function ModificarReserva(datos) {
 }
 
 export async function BorrarReserva(Id) {
-    console.log("ID EN API: ", Id)
     try {
         const response = await axios.delete(`${BASE_URL}?Id=${Id}`, authService.getAuthHeaders());
         return response.data;

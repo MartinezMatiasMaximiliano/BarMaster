@@ -105,7 +105,7 @@ export function GetChipNombreCompleto(Nombre, Apellido) {
 
 export function MappearPedidos(visitas) {
     return visitas.flatMap(visita => {
-        const productos = visita.productos || [];
+        const productos = visita.productosConsumidos || [];
         return productos.map(producto => ({
             fecha: visita.fechaHora || visita.fechaRealizado,
             indicaciones: producto.indicaciones,

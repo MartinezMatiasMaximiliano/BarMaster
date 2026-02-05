@@ -17,11 +17,11 @@ function Lista_Items(props) {
     const res = useMemo(() => {
         if (props.estado === 1) {
             // Generar resumen por ticket
-            if (!props.visitasMesa || !props.visitasMesa[0] || !props.visitasMesa[0].productos || !ticket || ticket.length === 0) {
+            if (!props.visitaMesa || !props.visitaMesa.productosConsumidos || !ticket || ticket.length === 0) {
                 return mensajeListaVacia;
             }
 
-            const todosLosProductos = props.visitasMesa.productosConsumidos;
+            const todosLosProductos = props.visitaMesa.productosConsumidos || [];
             const productosPorTicket = ticket.map(idsGrupo =>
                 todosLosProductos.filter(producto => idsGrupo.includes(producto.id))
             );
@@ -82,16 +82,22 @@ function Lista_Items(props) {
             return (resumenPorTicket.length > 0 ? resumenPorTicket : mensajeListaVacia);
         } else {
             // Generar resumen normal
-            if (!props.visitasMesa || !props.visitasMesa[0] || !props.visitasMesa[0].productos) {
+            if (!props.visitaMesa || !props.visitaMesa.productosConsumidos) {
                 return mensajeListaVacia;
             }
 
             const estado = props.estado;
             const resumen = {};
             let total = 0;
-            const productosCorrespondientes = estado 
-                ? props.visitasMesa[0].productos.filter(producto => producto.estadoPreparacion === estado) 
-                : props.visitasMesa[0].productos;
+            
+            // Si estado === 2, mostrar productos pagados (estadoPagado === true)
+            // Si estado === false, mostrar todos los productos
+            // Si estado es otro número, filtrar por estadoPreparacion
+            const productosCorrespondientes = estado === 2
+                ? props.visitaMesa.productosConsumidos.filter(producto => producto.estadoPagado === true)
+                : estado === false
+                ? props.visitaMesa.productosConsumidos
+                : props.visitaMesa.productosConsumidos.filter(producto => producto.estadoPreparacion === estado);
 
             productosCorrespondientes.forEach(producto => {
                 const nombre = producto.nombre || producto.nombreProducto;
@@ -132,14 +138,14 @@ function Lista_Items(props) {
 
             return (total != 0 ? resultado : mensajeListaVacia);
         }
-    }, [props.visitasMesa, props.estado, props.titulo, props.subtitulo, props.facturar, props.PagarMesa, ticket, mensajeListaVacia]);
+    }, [props.visitaMesa, props.estado, props.titulo, props.subtitulo, props.facturar, props.PagarMesa, ticket, mensajeListaVacia]);
 
     return res;
 }
 
 // Memoizar con comparador optimizado para Firefox
 export default memo(Lista_Items, (prevProps, nextProps) => {
-    if (prevProps.visitasMesa === nextProps.visitasMesa &&
+    if (prevProps.visitaMesa === nextProps.visitaMesa &&
         prevProps.estado === nextProps.estado &&
         prevProps.titulo === nextProps.titulo &&
         prevProps.subtitulo === nextProps.subtitulo &&

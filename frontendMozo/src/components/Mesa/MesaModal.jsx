@@ -29,7 +29,7 @@ export const MesaModal = ({
     show,
     handleClose,
     datos_mesa,
-    productos,
+    visitaMesa,
     checkBoxSeleccionados,
     handleChangeCheckBox,
     activarCancelarPedido,
@@ -37,7 +37,9 @@ export const MesaModal = ({
     onCerrarMesa
 }) => {
     const [showAgregarPedidos, setShowAgregarPedidos] = useState(false);
-    const fechaFormateada = formatearFecha(datos_mesa.visita?.fechaHora);
+    
+    const productos = visitaMesa?.productosConsumidos || [];
+    const fechaFormateada = formatearFecha(visitaMesa?.fechaHora || datos_mesa.visita?.fechaHora);
     const totalPrecio = calcularTotalPrecio(productos);
 
     return (
@@ -85,76 +87,101 @@ export const MesaModal = ({
                 </Stack>
             </DialogTitle>
 
-            <DialogContent dividers>
+            <DialogContent 
+                dividers 
+                sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    p: 0,
+                    height: 'calc(100vh - 200px)',
+                    maxHeight: '600px',
+                    overflow: 'hidden'
+                }}
+            >
                 <Box 
                     sx={{ 
-                        mb: 3,
-                        p: 2,
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: 'divider'
+                        p: 3, 
+                        flex: '1 1 auto',
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        minHeight: 0
                     }}
                 >
-                    <Stack direction="row" spacing={1} alignItems="center">
-                        <AttachMoneyIcon color="primary" />
-                        <Typography variant="h6" color="primary" fontWeight="bold">
-                            Total: ${totalPrecio}
-                        </Typography>
-                    </Stack>
-                </Box>
-                
-                <Box 
-                    sx={{ 
-                        mb: 3,
-                        p: 2,
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: 'divider'
-                    }}
-                >
-                    <Stack spacing={1}>
-                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                            <RestaurantMenuIcon color="primary" />
-                            <Typography variant="h6" component="h3">
-                                Pedidos Actuales
+                    <Box 
+                        sx={{ 
+                            mb: 3,
+                            p: 2,
+                            borderRadius: 2,
+                            border: '1px solid',
+                            borderColor: 'divider'
+                        }}
+                    >
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <AttachMoneyIcon color="primary" />
+                            <Typography variant="h6" color="primary" fontWeight="bold">
+                                Total: ${totalPrecio}
                             </Typography>
-                            {productos && productos.length > 0 && (
-                                <Typography variant="body2" color="text.secondary">
-                                    ({productos.length} {productos.length === 1 ? 'item' : 'items'})
+                        </Stack>
+                    </Box>
+                    
+                    <Box 
+                        sx={{ 
+                            mb: 3,
+                            p: 2,
+                            borderRadius: 2,
+                            border: '1px solid',
+                            borderColor: 'divider'
+                        }}
+                    >
+                        <Stack spacing={1}>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                                <RestaurantMenuIcon color="primary" />
+                                <Typography variant="h6" component="h3">
+                                    Pedidos Actuales
                                 </Typography>
+                                {productos && productos.length > 0 && (
+                                    <Typography variant="body2" color="text.secondary">
+                                        ({productos.length} {productos.length === 1 ? 'item' : 'items'})
+                                    </Typography>
+                                )}
+                            </Stack>
+                            {(!productos || productos.length === 0) ? (
+                                <Box
+                                    sx={{
+                                        p: 3,
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    <RestaurantMenuIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+                                    <Typography variant="body1" color="text.secondary" fontWeight="medium">
+                                        No hay pedidos actualmente
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                        Los pedidos que se agreguen a esta mesa aparecerán aquí
+                                    </Typography>
+                                </Box>
+                            ) : (
+                                <Lista
+                                    items={productos}
+                                    handleCheckBox={handleChangeCheckBox}
+                                    checkBoxSeleccionados={checkBoxSeleccionados}
+                                />
                             )}
                         </Stack>
-                        {(!productos || productos.length === 0) ? (
-                            <Box
-                                sx={{
-                                    p: 3,
-                                    textAlign: 'center'
-                                }}
-                            >
-                                <RestaurantMenuIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-                                <Typography variant="body1" color="text.secondary" fontWeight="medium">
-                                    No hay pedidos actualmente
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                    Los pedidos que se agreguen a esta mesa aparecerán aquí
-                                </Typography>
-                            </Box>
-                        ) : (
-                            <Lista
-                                items={productos}
-                                handleCheckBox={handleChangeCheckBox}
-                                checkBoxSeleccionados={checkBoxSeleccionados}
-                            />
-                        )}
-                    </Stack>
+                    </Box>
                 </Box>
 
                 {datos_mesa.codigoParaPedir && (
                     <Box
                         sx={{
+                            p: 3,
                             display: 'grid',
                             gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: 2
+                            gap: 2,
+                            flexShrink: 0,
+                            borderTop: '1px solid',
+                            borderColor: 'divider',
+                            bgcolor: 'background.paper'
                         }}
                     >
                         <Button
