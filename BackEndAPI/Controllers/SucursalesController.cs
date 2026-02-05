@@ -1,5 +1,6 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -31,18 +32,59 @@ namespace BackEndAPI.Controllers
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
 
-                var result = await _sucursalesServices.BuscarSucursalPorId(IdSucursal);
+                var sucursal = await _sucursalesServices.BuscarSucursalPorId(IdSucursal);
 
-                return Ok(result);
+                if (sucursal == null)
+                {
+                    return NotFound(new ErrorDTO(404, "NOT FOUND", "Sucursal no encontrada"));
+                }
+
+                // Mapear a DTO para evitar referencias circulares
+                var response = new SucursalDTO
+                {
+                    Id = sucursal.Id,
+                    IdEmpresa = sucursal.IdEmpresa,
+                    Nombre = sucursal.Nombre,
+                    Direccion = sucursal.Direccion,
+                    Telefono = sucursal.Telefono,
+                    Username = sucursal.Username,
+                    Menus = sucursal.Menus?.Select(m => new MenuDTO
+                    {
+                        Id = m.Id,
+                        IdSucursal = m.IdSucursal,
+                        Nombre = m.Nombre,
+                        Activo = m.Activo
+                    }).ToList(),
+                    Planos = sucursal.Planos?.Select(p => new PlanoDTO
+                    {
+                        Id = p.Id,
+                        IdSucursal = p.IdSucursal,
+                        Nombre = p.Nombre,
+                        Detalles = p.Detalles
+                    }).ToList(),
+                    Cajas = sucursal.Cajas?.Select(c => new CajaDTO
+                    {
+                        Id = c.Id,
+                        IdSucursal = c.IdSucursal,
+                        FechaApertura = c.FechaApertura,
+                        FechaCierre = c.FechaCierre,
+                        MontoApertura = c.MontoApertura,
+                        MontoActual = c.MontoActual,
+                        MontoCierre = c.MontoCierre,
+                        Diferencia = c.Diferencia
+                    }).ToList()
+                };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 switch (ex.Message)
                 {
                     case "Sucursal no encontrada":
-                        return BadRequest("Sucursal no encontrada");
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     default:
-                        return StatusCode(500, "Error interno del servidor");
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", ex.Message));
                 }
             }
         }
