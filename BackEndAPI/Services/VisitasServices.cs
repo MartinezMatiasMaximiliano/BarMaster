@@ -79,6 +79,74 @@ namespace BackEndAPI.Services
         {
             return await _visitasRepository.ObtenerVisitasActivasAsync();
         }
+
+        public async Task<bool> PagarProductos(Guid IdVisita, ICollection<int> IdsProductos)
+        {
+            // Validaciones de negocio
+            if (IdVisita == Guid.Empty)
+            {
+                throw new Exception("El IdVisita no puede estar vacío");
+            }
+
+            if (IdsProductos == null || IdsProductos.Count == 0)
+            {
+                throw new Exception("Lista de IDs de productos vacía");
+            }
+
+            // Verificar que la visita existe y cargarla con sus productos
+            var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
+            if (visita == null)
+            {
+                throw new Exception("Visita no encontrada");
+            }
+
+            // Verificar que los productos existen en la visita
+            var productosEnVisita = visita.Productos?.Select(p => p.Id).ToList() ?? new List<int>();
+            var productosNoEncontrados = IdsProductos.Where(id => !productosEnVisita.Contains(id)).ToList();
+            
+            if (productosNoEncontrados.Any())
+            {
+                throw new Exception($"Los siguientes IDs de productos no pertenecen a esta visita: {string.Join(", ", productosNoEncontrados)}");
+            }
+
+            // Si todas las validaciones pasan, proceder con la actualización en la DB
+            // Pasamos la visita ya cargada para evitar una segunda consulta
+            return await _visitasRepository.PagarProductos(visita, IdsProductos);
+        }
+
+        public async Task<bool> EliminarProductos(Guid IdVisita, ICollection<int> IdsProductos)
+        {
+            // Validaciones de negocio
+            if (IdVisita == Guid.Empty)
+            {
+                throw new Exception("El IdVisita no puede estar vacío");
+            }
+
+            if (IdsProductos == null || IdsProductos.Count == 0)
+            {
+                throw new Exception("Lista de IDs de productos vacía");
+            }
+
+            // Verificar que la visita existe y cargarla con sus productos
+            var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
+            if (visita == null)
+            {
+                throw new Exception("Visita no encontrada");
+            }
+
+            // Verificar que los productos existen en la visita
+            var productosEnVisita = visita.Productos?.Select(p => p.Id).ToList() ?? new List<int>();
+            var productosNoEncontrados = IdsProductos.Where(id => !productosEnVisita.Contains(id)).ToList();
+            
+            if (productosNoEncontrados.Any())
+            {
+                throw new Exception($"Los siguientes IDs de productos no pertenecen a esta visita: {string.Join(", ", productosNoEncontrados)}");
+            }
+
+            // Si todas las validaciones pasan, proceder con la eliminación en la DB
+            // Pasamos la visita ya cargada para evitar una segunda consulta
+            return await _visitasRepository.EliminarProductos(visita, IdsProductos);
+        }
     }
 }
 

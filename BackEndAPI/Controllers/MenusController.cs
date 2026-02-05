@@ -1,10 +1,9 @@
-﻿using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request.Crear;
+﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace BackEndAPI.Controllers
 {
@@ -83,25 +82,42 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var result = await _menuServices.CrearMenu(nuevoMenu);
-                return Ok(result);
+                var menuCreado = await _menuServices.CrearMenu(nuevoMenu);
+                return Created("created", new EntregaDTO(201, "CREATED", $"Creado exitosamente, Id:{menuCreado.Id}"));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error interno del servidor: " + ex.Message);
+                switch (ex.Message)
+                {
+                    case "El nombre del menú no puede estar vacío":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "El IdSucursal no puede estar vacío":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                }
             }
         }
 
         [HttpPatch("/Menu")]
-        public async Task<IActionResult> ModificarMenu([FromBody] ModificarMenuDTO request)
+        public async Task<ActionResult> ModificarMenu([FromBody] ModificarMenuDTO DTO)
         {
-            try { 
-                var result = await _menuServices.ActualizarMenu(request);
-                return Ok(result);
+            try
+            {
+                var menuActualizado = await _menuServices.ActualizarMenu(DTO);
+                return Ok(new EntregaDTO(200, "MODIFIED", $"Modificado exitosamente, Id:{menuActualizado.Id}"));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error interno del servidor: " + ex.Message);
+                switch (ex.Message)
+                {
+                    case "El Id del menú no puede estar vacío":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "Menú no encontrado":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    default:
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                }
             }
         }
 
@@ -121,16 +137,24 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpDelete("/Menu")]
-        public async Task<IActionResult> EliminarMenu(Guid IdMenu)
+        public async Task<IActionResult> EliminarMenu([FromQuery] Guid IdMenu)
         {
             try
             {
-                var result = await _menuServices.EliminarMenu(IdMenu);
-                return Ok(result);
+                var resultado = await _menuServices.EliminarMenu(IdMenu);
+                return Ok(new EntregaDTO(200, "DELETED", "Menú eliminado exitosamente"));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error interno del servidor: " + ex.Message);
+                switch (ex.Message)
+                {
+                    case "El Id del menú no puede estar vacío":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "Menú no encontrado":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    default:
+                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", ex.Message));
+                }
             }
         }
     }

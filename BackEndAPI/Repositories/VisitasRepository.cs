@@ -54,5 +54,36 @@ namespace BackEndAPI.Repositories
                 .Where(v => v.Estado == "Abierta")
                 .ToListAsync();
         }
+
+        public async Task<bool> PagarProductos(Visita visita, ICollection<int> IdsProductos)
+        {
+            // Marcar como pagados los productos que coincidan con los IDs proporcionados
+            foreach (var producto in visita.Productos)
+            {
+                if (IdsProductos.Contains(producto.Id))
+                {
+                    producto.EstadoPagado = true;
+                }
+            }
+
+            await db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> EliminarProductos(Visita visita, ICollection<int> IdsProductos)
+        {
+            // Eliminar los productos que coincidan con los IDs proporcionados
+            var productosAEliminar = visita.Productos
+                .Where(p => IdsProductos.Contains(p.Id))
+                .ToList();
+
+            foreach (var producto in productosAEliminar)
+            {
+                db.ProductosPorVisita.Remove(producto);
+            }
+
+            await db.SaveChangesAsync();
+            return true;
+        }
     }
 }
