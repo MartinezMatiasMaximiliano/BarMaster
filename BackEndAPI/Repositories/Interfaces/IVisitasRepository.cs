@@ -10,5 +10,9 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<bool> EliminarVisita(Visita request);
         /// <summary>Obtiene las visitas en estado "Abierta" (mesa con visita activa).</summary>
         Task<IEnumerable<Visita>> ObtenerVisitasActivasAsync();
+        /// <summary>Marca como pagados los productos especificados de una visita.</summary>
+        Task<bool> PagarProductos(Visita visita, ICollection<int> IdsProductos);
+        /// <summary>Elimina los productos especificados de una visita.</summary>
+        Task<bool> EliminarProductos(Visita visita, ICollection<int> IdsProductos);
     }
 }
