@@ -3,10 +3,13 @@ import LoginForm from '../components/LoginForm';
 import authService from '../connections/AuthService';
 import { useNavigate } from 'react-router-dom';
 import { LoginContext } from '../App';
+import { useSnackbar } from '../hooks/useSnackbar.jsx';
+import { SnackbarWrapper } from '../components/common/SnackbarWrapper';
 
 const LoginUsuarios = () => {
     const navigate = useNavigate();
     const loginProvider = useContext(LoginContext);
+    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
     // TEMPORAL: Bypass para desarrollo - permite login con cualquier usuario
     const BYPASS_MODE = true; // Cambiar a false cuando se implemente el login real
@@ -14,7 +17,7 @@ const LoginUsuarios = () => {
     const handleLoginBypass = (Dni, password) => {
         // Validar que se ingresó algo
         if (!Dni || !password) {
-            alert('Por favor ingrese DNI y contraseña');
+            showSnackbar('Por favor ingrese DNI y contraseña', 'warning');
             return;
         }
 
@@ -47,19 +50,27 @@ const LoginUsuarios = () => {
                 loginProvider.setRol(localStorage.getItem("rol"));
                 navigate('/sistema_sucursal');
             } else {
-                alert('Credenciales incorrectas.');
+                showSnackbar('Credenciales incorrectas.', 'error');
             }
         } catch (error) {
             console.error('Error durante el login', error);
-            alert('Hubo un problema al intentar iniciar sesión');
+            showSnackbar('Hubo un problema al intentar iniciar sesión', 'error');
         }
     };
 
     return (
-        <div>
-            <h1>Login</h1>
-            <LoginForm onSubmit={handleLogin} />
-        </div>
+        <>
+            <div>
+                <h1>Login</h1>
+                <LoginForm onSubmit={handleLogin} />
+            </div>
+            <SnackbarWrapper
+                open={snackbar.open}
+                message={snackbar.message}
+                severity={snackbar.severity}
+                onClose={closeSnackbar}
+            />
+        </>
     );
 };
 

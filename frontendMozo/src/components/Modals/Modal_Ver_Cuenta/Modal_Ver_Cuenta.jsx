@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useCallback } from 'react';
 import {
     Button,
     Dialog,
@@ -12,11 +12,13 @@ import {
     Typography,
     Box
 } from '@mui/material';
+import { SnackbarWrapper } from '../../common/SnackbarWrapper';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import { useModalVerCuenta } from './hooks/useModalVerCuenta';
 import ChipsHeader from './components/ChipsHeader';
 import TabContent from './components/TabContent';
@@ -42,6 +44,62 @@ function Modal_Ver_Cuenta(props) {
         PagarMesa
     } = useModalVerCuenta(props.datos_mesa, props.cerrar_modal_mesa);
 
+    // Estado para productos seleccionados en el resumen
+    const [productosSeleccionados, setProductosSeleccionados] = useState([]);
+
+    // Estado para Snackbar
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: '',
+        severity: 'info'
+    });
+
+    // Función para mostrar Snackbar
+    const showSnackbar = useCallback((message, severity = 'info') => {
+        setSnackbar({
+            open: true,
+            message,
+            severity
+        });
+    }, []);
+
+    // Cerrar Snackbar
+    const handleCloseSnackbar = useCallback(() => {
+        setSnackbar(prev => ({ ...prev, open: false }));
+    }, []);
+
+    // Manejar selección/deselección de productos
+    const handleToggleProducto = useCallback((productoId) => {
+        setProductosSeleccionados(prev => {
+            if (prev.includes(productoId)) {
+                return prev.filter(id => id !== productoId);
+            } else {
+                return [...prev, productoId];
+            }
+        });
+    }, []);
+
+    // Manejar facturación por partes
+    const handleFacturarPorPartes = useCallback(() => {
+        if (productosSeleccionados.length === 0) {
+            showSnackbar("Por favor, seleccione al menos un producto para facturar", "warning");
+            return;
+        }
+        PagarMesa(productosSeleccionados, showSnackbar);
+        setProductosSeleccionados([]);
+    }, [productosSeleccionados, PagarMesa, showSnackbar]);
+
+    // Wrapper para PagarMesa que incluye showSnackbar
+    const handlePagarMesa = useCallback((arregloIds) => {
+        PagarMesa(arregloIds, showSnackbar);
+    }, [PagarMesa, showSnackbar]);
+
+    // Limpiar selección al cerrar el modal
+    const handleCloseWithCleanup = useCallback(() => {
+        setProductosSeleccionados([]);
+        handleClose();
+    }, [handleClose]);
+
     return (
         <>
             <Button 
@@ -49,9 +107,11 @@ function Modal_Ver_Cuenta(props) {
                 color="primary" 
                 onClick={handleShow}
                 startIcon={<ReceiptIcon />}
+                size={props.buttonSize || 'medium'}
                 sx={{ 
                     width: '100%',
-                    py: 1.5
+                    py: props.buttonSize === 'small' ? 0.75 : 1.5,
+                    fontSize: props.buttonSize === 'small' ? '0.875rem' : undefined
                 }}
             >
                 {props.textoBoton}
@@ -59,7 +119,7 @@ function Modal_Ver_Cuenta(props) {
 
             <Dialog
                 open={show}
-                onClose={handleClose}
+                onClose={handleCloseWithCleanup}
                 maxWidth="md"
                 fullWidth
                 disableEnforceFocus
@@ -73,7 +133,7 @@ function Modal_Ver_Cuenta(props) {
                                 {props.titulo} · Mesa {props.datos_mesa.nombre}
                             </Typography>
                         </Stack>
-                        <IconButton onClick={handleClose} size="small">
+                        <IconButton onClick={handleCloseWithCleanup} size="small">
                             <CloseIcon />
                         </IconButton>
                     </Stack>
@@ -118,6 +178,10 @@ function Modal_Ver_Cuenta(props) {
                                 estado={false}
                                 titulo="Pedido total"
                                 subtitulo="Total"
+                                mostrarCheckboxes={true}
+                                productosSeleccionados={productosSeleccionados}
+                                onToggleProducto={handleToggleProducto}
+                                currencyFormatter={currencyFormatter}
                             />
                         )}
 
@@ -126,7 +190,7 @@ function Modal_Ver_Cuenta(props) {
                                 visitaMesa={visitaMesa}
                                 estado={1}
                                 titulo="Ticket"
-                                PagarMesa={PagarMesa}
+                                PagarMesa={handlePagarMesa}
                                 facturar={true}
                             />
                         )}
@@ -142,22 +206,55 @@ function Modal_Ver_Cuenta(props) {
                     </Box>
                 </DialogContent>
 
-                <DialogActions sx={{ px: 4, py: 3 }}>
-                    <Modal_Generico
-                        textoBoton="Facturar todo"
-                        titulo="Facturar todo"
-                        cuerpo="¿Confirmar el pago de todos los productos pendientes?"
-                        confirmar={true}
-                        func={PagarMesa}
-                        param={productosAPagar}
-                        disabled={!(productosAPagar.length > 0)}
-                        color="success"
-                    />
-                    <Button onClick={handleClose} variant="outlined">
+                <DialogActions sx={{ px: 4, py: 2, display: 'flex', justifyContent: 'space-between' }}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <Modal_Generico
+                            textoBoton="Facturar todo"
+                            titulo="Facturar todo"
+                            cuerpo="¿Confirmar el pago de todos los productos pendientes?"
+                            confirmar={true}
+                            func={handlePagarMesa}
+                            param={productosAPagar}
+                            disabled={!(productosAPagar.length > 0)}
+                            color="success"
+                            buttonSize="small"
+                        />
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleFacturarPorPartes}
+                            disabled={productosSeleccionados.length === 0}
+                            startIcon={<PlaylistAddCheckIcon />}
+                            size="small"
+                            sx={{
+                                py: 0.75,
+                                fontSize: '0.875rem',
+                                width: 'auto'
+                            }}
+                        >
+                            Facturar por partes {productosSeleccionados.length > 0 && `(${productosSeleccionados.length})`}
+                        </Button>
+                    </Stack>
+                    <Button 
+                        onClick={handleCloseWithCleanup} 
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                            py: 0.75,
+                            fontSize: '0.875rem'
+                        }}
+                    >
                         Cerrar
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <SnackbarWrapper
+                open={snackbar.open}
+                message={snackbar.message}
+                severity={snackbar.severity}
+                onClose={handleCloseSnackbar}
+            />
         </>
     );
 }

@@ -9,12 +9,13 @@ import {
     Stack,
     Box
 } from '@mui/material';
+import { SnackbarWrapper } from '../../common/SnackbarWrapper';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useAgregarPedidos } from './hooks/useAgregarPedidos';
 import { FiltrosProductos } from './components/FiltrosProductos';
 import { ListaProductos } from './components/ListaProductos';
-import { Carrito } from './components/Carrito';
+import { Comanda } from './components/Comanda';
 import { LoadingWrapper } from '../../common/LoadingWrapper';
 
 function Modal_AgregarPedidos({ open, onClose, idVisita, numeroMesa }) {
@@ -22,19 +23,21 @@ function Modal_AgregarPedidos({ open, onClose, idVisita, numeroMesa }) {
         productos,
         categorias,
         productosFiltrados,
-        carrito,
+        comanda,
         busqueda,
         categoriaFiltro,
         loading,
-        totalCarrito,
+        totalComanda,
         totalItems,
+        snackbar,
         setBusqueda,
         setCategoriaFiltro,
-        agregarAlCarrito,
+        agregarAComanda,
         actualizarCantidad,
         actualizarIndicaciones,
         handleEnviarPedidos,
-        limpiarEstado
+        limpiarEstado,
+        closeSnackbar
     } = useAgregarPedidos(open, idVisita, numeroMesa, onClose);
 
     const handleClose = () => {
@@ -87,17 +90,17 @@ function Modal_AgregarPedidos({ open, onClose, idVisita, numeroMesa }) {
                             <LoadingWrapper minHeight={400}>
                                 <ListaProductos
                                     productos={productosFiltrados}
-                                    onAgregarProducto={agregarAlCarrito}
+                                    onAgregarProducto={agregarAComanda}
                                 />
                             </LoadingWrapper>
                         </Stack>
                     </Box>
 
-                    {/* Columna derecha: Carrito - 35% */}
+                    {/* Columna derecha: Comanda - 35% */}
                     <Box sx={{ width: '35%', display: 'flex', flexDirection: 'column' }}>
-                        <Carrito
-                            carrito={carrito}
-                            totalCarrito={totalCarrito}
+                        <Comanda
+                            comanda={comanda}
+                            totalComanda={totalComanda}
                             onActualizarCantidad={actualizarCantidad}
                             onActualizarIndicaciones={actualizarIndicaciones}
                         />
@@ -113,7 +116,7 @@ function Modal_AgregarPedidos({ open, onClose, idVisita, numeroMesa }) {
                     onClick={handleEnviarPedidos}
                     variant="contained"
                     color="primary"
-                    disabled={carrito.length === 0 || loading}
+                    disabled={comanda.length === 0 || loading}
                     startIcon={<ShoppingCartIcon />}
                 >
                     {loading 
@@ -122,6 +125,13 @@ function Modal_AgregarPedidos({ open, onClose, idVisita, numeroMesa }) {
                     }
                 </Button>
             </DialogActions>
+
+            <SnackbarWrapper
+                open={snackbar.open}
+                message={snackbar.message}
+                severity={snackbar.severity}
+                onClose={closeSnackbar}
+            />
         </Dialog>
     );
 }

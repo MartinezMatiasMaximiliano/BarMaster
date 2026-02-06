@@ -4,6 +4,7 @@ import { cambiarEstadoPreparacion } from '../../../redux/slices/visitasActivasSl
 import { CambiarEstadoItems } from '../../../API/APIItems';
 import connection from '../../../connections/HubConnMozo';
 import datosPruebaKDS from '../utils/datosPruebaKDS.json';
+import { useSnackbar } from '../../../hooks/useSnackbar.jsx';
 
 /**
  * Hook personalizado para manejar la lógica del KDS (Kitchen Display System)
@@ -11,6 +12,7 @@ import datosPruebaKDS from '../utils/datosPruebaKDS.json';
  */
 export const useKDS = () => {
     const dispatch = useDispatch();
+    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
     // Obtener visitas activas de Redux
     const visitasActivasRedux = useSelector(
@@ -198,7 +200,7 @@ export const useKDS = () => {
             });
         } catch (error) {
             console.error('Error al marcar como en preparación:', error);
-            alert('Error al actualizar el estado del pedido');
+            showSnackbar('Error al actualizar el estado del pedido', 'error');
         }
     }, [dispatch, visitasActivasRedux, obtenerEstadoAnterior]);
 
@@ -237,7 +239,7 @@ export const useKDS = () => {
             });
         } catch (error) {
             console.error('Error al marcar como listo:', error);
-            alert('Error al actualizar el estado del pedido');
+            showSnackbar('Error al actualizar el estado del pedido', 'error');
         }
     }, [dispatch, visitasActivasRedux, obtenerEstadoAnterior]);
 
@@ -275,7 +277,7 @@ export const useKDS = () => {
             setNotificacion(null);
         } catch (error) {
             console.error('Error al revertir acción:', error);
-            alert('Error al revertir la acción');
+            showSnackbar('Error al revertir la acción', 'error');
         }
     }, [dispatch, visitasActivasRedux]);
 
@@ -289,7 +291,7 @@ export const useKDS = () => {
             dispatch(cambiarEstadoPreparacion({ idsProductos: productosIds, estadoNuevo: 2 }));
         } catch (error) {
             console.error('Error al marcar múltiples productos como listos:', error);
-            alert('Error al actualizar los estados de los pedidos');
+            showSnackbar('Error al actualizar los estados de los pedidos', 'error');
         }
     }, [dispatch]);
 
@@ -329,6 +331,7 @@ export const useKDS = () => {
         ordenamiento,
         sonidoHabilitado,
         notificacion,
+        snackbar,
         
         // Setters
         setFiltroEstado,
@@ -341,7 +344,8 @@ export const useKDS = () => {
         marcarListo,
         marcarMultiplesListos,
         revertirAccion,
-        calcularTiempoTranscurrido
+        calcularTiempoTranscurrido,
+        closeSnackbar
     };
 };
 

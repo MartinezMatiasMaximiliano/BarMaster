@@ -5,14 +5,16 @@ import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
 import { AgregarProductosAVisita } from '../../../../API/APIVisitas';
 import { actualizarVisita } from '../../../../redux/slices/visitasActivasSlice';
 import connection from '../../../../connections/HubConnMozo';
+import { useSnackbar } from '../../../../hooks/useSnackbar.jsx';
 
 export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
     const dispatch = useDispatch();
+    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
     const [productos, setProductos] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [busqueda, setBusqueda] = useState('');
     const [categoriaFiltro, setCategoriaFiltro] = useState(null);
-    const [carrito, setCarrito] = useState([]);
+    const [comanda, setComanda] = useState([]);
     const [loading, setLoading] = useState(false);
 
     // Cargar productos y categorías
@@ -58,21 +60,21 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
         return filtrados;
     }, [productos, busqueda, categoriaFiltro]);
 
-    // Calcular total del carrito
-    const totalCarrito = useMemo(() => {
-        return carrito.reduce((total, item) => {
+    // Calcular total de la comanda
+    const totalComanda = useMemo(() => {
+        return comanda.reduce((total, item) => {
             return total + (item.producto.precio * item.cantidad);
         }, 0);
-    }, [carrito]);
+    }, [comanda]);
 
     // Calcular total de items
     const totalItems = useMemo(() => {
-        return carrito.reduce((sum, item) => sum + item.cantidad, 0);
-    }, [carrito]);
+        return comanda.reduce((sum, item) => sum + item.cantidad, 0);
+    }, [comanda]);
 
-    // Agregar producto al carrito (useCallback estable para evitar re-renders de ListaProductos)
-    const agregarAlCarrito = useCallback((producto) => {
-        setCarrito((prev) => {
+    // Agregar producto a la comanda (useCallback estable para evitar re-renders de ListaProductos)
+    const agregarAComanda = useCallback((producto) => {
+        setComanda((prev) => {
             const existe = prev.find(item => item.producto.id === producto.id);
             if (existe) {
                 return prev.map(item =>
@@ -85,9 +87,9 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
         });
     }, []);
 
-    // Actualizar cantidad en carrito
+    // Actualizar cantidad en comanda
     const actualizarCantidad = useCallback((productoId, nuevaCantidad) => {
-        setCarrito((prev) => {
+        setComanda((prev) => {
             if (nuevaCantidad <= 0) {
                 return prev.filter(item => item.producto.id !== productoId);
             }
@@ -101,7 +103,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
     // Actualizar indicaciones
     const actualizarIndicaciones = useCallback((productoId, indicaciones) => {
-        setCarrito((prev) =>
+        setComanda((prev) =>
             prev.map(item =>
                 item.producto.id === productoId
                     ? { ...item, indicaciones }
@@ -112,12 +114,12 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
     // Enviar pedidos
     const handleEnviarPedidos = async () => {
-        if (carrito.length === 0 || !idVisita) return;
+        if (comanda.length === 0 || !idVisita) return;
 
         setLoading(true);
         try {
             const itemsParaEnviar = [];
-            carrito.forEach(item => {
+            comanda.forEach(item => {
                 // Agregar cada producto con su cantidad
                 itemsParaEnviar.push({
                     idProducto: item.producto.id,
@@ -137,16 +139,16 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
                 }));
                 
                 connection.send("RecargarTicket", numeroMesa);
-                setCarrito([]);
+                setComanda([]);
                 onClose();
             } else {
                 // Si no hay productos en la respuesta, al menos cerrar el modal
-                setCarrito([]);
+                setComanda([]);
                 onClose();
             }
         } catch (error) {
             console.error('Error al enviar pedidos:', error);
-            alert('Error al agregar los pedidos. Por favor, intenta nuevamente.');
+            showSnackbar('Error al agregar los pedidos. Por favor, intenta nuevamente.', 'error');
         } finally {
             setLoading(false);
         }
@@ -154,7 +156,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
     // Limpiar estado
     const limpiarEstado = () => {
-        setCarrito([]);
+        setComanda([]);
         setBusqueda('');
         setCategoriaFiltro(null);
     };
@@ -164,21 +166,23 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
         productos,
         categorias,
         productosFiltrados,
-        carrito,
+        comanda,
         busqueda,
         categoriaFiltro,
         loading,
-        totalCarrito,
+        totalComanda,
         totalItems,
+        snackbar,
         
         // Acciones
         setBusqueda,
         setCategoriaFiltro,
-        agregarAlCarrito,
+        agregarAComanda,
         actualizarCantidad,
         actualizarIndicaciones,
         handleEnviarPedidos,
-        limpiarEstado
+        limpiarEstado,
+        closeSnackbar
     };
 };
 

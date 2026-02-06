@@ -76,15 +76,19 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
     }, []);
 
     // Función para pagar/facturar productos (usada tanto para "Facturar todo" como para "Facturar ticket")
-    const PagarMesa = useCallback(async (arregloIds) => {
+    const PagarMesa = useCallback(async (arregloIds, showSnackbar) => {
         if (!arregloIds || arregloIds.length === 0) {
-            alert("No hay productos para facturar");
+            if (showSnackbar) {
+                showSnackbar("No hay productos para facturar", "warning");
+            }
             return;
         }
 
         const idVisita = visitaMesa?.id;
         if (!idVisita) {
-            alert("No se pudo identificar la visita de la mesa");
+            if (showSnackbar) {
+                showSnackbar("No se pudo identificar la visita de la mesa", "error");
+            }
             return;
         }
 
@@ -107,10 +111,14 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
             // Cambiar a la pestaña de "Pagos registrados" para mostrar los productos pagados
             setTabValue(2);
 
-            alert("Productos facturados correctamente");
+            if (showSnackbar) {
+                showSnackbar("Productos facturados correctamente", "success");
+            }
         } catch (error) {
             console.error("Error al facturar:", error);
-            alert("Error al facturar. Intente de nuevo.");
+            if (showSnackbar) {
+                showSnackbar("Error al facturar. Intente de nuevo.", "error");
+            }
         }
     }, [datosMesa.nombre, dispatch, visitaMesa?.id]);
 

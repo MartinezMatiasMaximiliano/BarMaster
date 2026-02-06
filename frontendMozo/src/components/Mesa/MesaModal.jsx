@@ -1,5 +1,5 @@
 // components/Mesa/MesaModal.jsx
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -10,20 +10,26 @@ import {
     Typography,
     Stack,
     Box,
-    IconButton
+    IconButton,
+    Tab,
+    Tabs
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
-import Lista from "../Listas/Lista";
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import Modal_Generico from "../Modals/Modal_Generico";
-import Modal_Ver_Cuenta from "../Modals/Modal_Ver_Cuenta/Modal_Ver_Cuenta";
 import Modal_AgregarPedidos from "../Modals/Agregar_Pedidos/Modal_AgregarPedidos";
-import { formatearFecha, calcularTotalPrecio } from './dateFormatter';
+import { formatearFecha } from './dateFormatter';
+import { useSnackbar } from '../../hooks/useSnackbar.jsx';
+import { useModalVerCuenta } from '../Modals/Modal_Ver_Cuenta/hooks/useModalVerCuenta';
+import TabContent from '../Modals/Modal_Ver_Cuenta/components/TabContent';
+import { SnackbarWrapper } from '../common/SnackbarWrapper';
 
 export const MesaModal = ({
     show,
@@ -37,18 +43,110 @@ export const MesaModal = ({
     onCerrarMesa
 }) => {
     const [showAgregarPedidos, setShowAgregarPedidos] = useState(false);
+    const { showSnackbar, SnackbarComponent } = useSnackbar();
     
-    const productos = visitaMesa?.productosConsumidos || [];
-    const fechaFormateada = formatearFecha(visitaMesa?.fechaHora || datos_mesa.visita?.fechaHora);
-    const totalPrecio = calcularTotalPrecio(productos);
+    // Hook para manejar la lógica de ver cuenta
+    const {
+        tabValue,
+        visitaMesa: visitaMesaCuenta,
+        productosAPagar,
+        totalPedidos,
+        cantidadItems,
+        currencyFormatter,
+        handleTabChange,
+        PagarMesa
+    } = useModalVerCuenta(datos_mesa, handleClose);
+
+    // Estado para productos seleccionados en el resumen (para facturar por partes)
+    const [productosSeleccionados, setProductosSeleccionados] = useState([]);
+
+    // Estado para Snackbar de facturación
+    const [snackbarFacturacion, setSnackbarFacturacion] = useState({
+        open: false,
+        message: '',
+        severity: 'info'
+    });
+
+    // Usar visitaMesaCuenta del hook si está disponible, sino usar la prop
+    const visitaMesaFinal = visitaMesaCuenta || visitaMesa;
+    
+    const fechaFormateada = formatearFecha(visitaMesaFinal?.fechaHora || datos_mesa.visita?.fechaHora);
+
+    // Función para mostrar Snackbar de facturación
+    const showSnackbarFacturacion = useCallback((message, severity = 'info') => {
+        setSnackbarFacturacion({
+            open: true,
+            message,
+            severity
+        });
+    }, []);
+
+    // Cerrar Snackbar de facturación
+    const handleCloseSnackbarFacturacion = useCallback(() => {
+        setSnackbarFacturacion(prev => ({ ...prev, open: false }));
+    }, []);
+
+    // Manejar selección/deselección de productos
+    const handleToggleProducto = useCallback((productoId) => {
+        setProductosSeleccionados(prev => {
+            if (prev.includes(productoId)) {
+                return prev.filter(id => id !== productoId);
+            } else {
+                return [...prev, productoId];
+            }
+        });
+    }, []);
+
+    // Manejar facturación por partes
+    const handleFacturarPorPartes = useCallback(() => {
+        if (productosSeleccionados.length === 0) {
+            showSnackbarFacturacion("Por favor, seleccione al menos un producto para facturar", "warning");
+            return;
+        }
+        PagarMesa(productosSeleccionados, showSnackbarFacturacion);
+        setProductosSeleccionados([]);
+    }, [productosSeleccionados, PagarMesa, showSnackbarFacturacion]);
+
+    // Wrapper para PagarMesa que incluye showSnackbar
+    const handlePagarMesa = useCallback((arregloIds) => {
+        PagarMesa(arregloIds, showSnackbarFacturacion);
+    }, [PagarMesa, showSnackbarFacturacion]);
+
+    // Limpiar selección al cerrar el modal
+    const handleCloseWithCleanup = useCallback(() => {
+        setProductosSeleccionados([]);
+        handleClose();
+    }, [handleClose]);
+
+    // Wrapper para onCancelarPedidos que muestra Snackbar
+    const handleCancelarPedidosConSnackbar = useCallback((idsProductos) => {
+        if (!idsProductos || idsProductos.length === 0) {
+            showSnackbar('Por favor, seleccione al menos un pedido para cancelar', 'warning');
+            return;
+        }
+        
+        // Ejecutar la función original
+        onCancelarPedidos(idsProductos);
+        
+        // Limpiar selección después de cancelar
+        setProductosSeleccionados([]);
+        
+        // Mostrar Snackbar de éxito
+        const cantidad = idsProductos.length;
+        showSnackbar(
+            `Se ${cantidad === 1 ? 'canceló' : 'cancelaron'} ${cantidad} ${cantidad === 1 ? 'pedido' : 'pedidos'} correctamente`,
+            'success'
+        );
+    }, [onCancelarPedidos, showSnackbar]);
 
     return (
         <Dialog 
             open={show} 
-            onClose={handleClose}
-            maxWidth="sm"
+            onClose={handleCloseWithCleanup}
+            maxWidth="md"
             fullWidth
             disableEnforceFocus
+            PaperProps={{ sx: { borderRadius: 3 } }}
         >
             <DialogTitle>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -77,7 +175,7 @@ export const MesaModal = ({
                     </Stack>
                     <IconButton
                         aria-label="close"
-                        onClick={handleClose}
+                        onClick={handleCloseWithCleanup}
                         sx={{
                             color: (theme) => theme.palette.grey[500],
                         }}
@@ -87,125 +185,91 @@ export const MesaModal = ({
                 </Stack>
             </DialogTitle>
 
-            <DialogContent 
-                dividers 
-                sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    p: 0,
-                    height: 'calc(100vh - 200px)',
-                    maxHeight: '600px',
-                    overflow: 'hidden'
-                }}
-            >
-                <Box 
-                    sx={{ 
-                        p: 3, 
-                        flex: '1 1 auto',
-                        overflowY: 'auto',
-                        overflowX: 'hidden',
-                        minHeight: 0
-                    }}
+            <DialogContent dividers sx={{ p: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <Tabs
+                    value={tabValue}
+                    onChange={handleTabChange}
+                    sx={{ borderBottom: 1, borderColor: 'divider', px: 2, flexShrink: 0 }}
                 >
-                    <Box 
-                        sx={{ 
-                            mb: 3,
-                            p: 2,
-                            borderRadius: 2,
-                            border: '1px solid',
-                            borderColor: 'divider'
-                        }}
-                    >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                            <AttachMoneyIcon color="primary" />
-                            <Typography variant="h6" color="primary" fontWeight="bold">
-                                Total: ${totalPrecio}
-                            </Typography>
-                        </Stack>
-                    </Box>
-                    
-                    <Box 
-                        sx={{ 
-                            mb: 3,
-                            p: 2,
-                            borderRadius: 2,
-                            border: '1px solid',
-                            borderColor: 'divider'
-                        }}
-                    >
-                        <Stack spacing={1}>
-                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                                <RestaurantMenuIcon color="primary" />
-                                <Typography variant="h6" component="h3">
-                                    Pedidos Actuales
-                                </Typography>
-                                {productos && productos.length > 0 && (
-                                    <Typography variant="body2" color="text.secondary">
-                                        ({productos.length} {productos.length === 1 ? 'item' : 'items'})
-                                    </Typography>
-                                )}
-                            </Stack>
-                            {(!productos || productos.length === 0) ? (
-                                <Box
-                                    sx={{
-                                        p: 3,
-                                        textAlign: 'center'
-                                    }}
-                                >
-                                    <RestaurantMenuIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-                                    <Typography variant="body1" color="text.secondary" fontWeight="medium">
-                                        No hay pedidos actualmente
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                        Los pedidos que se agreguen a esta mesa aparecerán aquí
-                                    </Typography>
-                                </Box>
-                            ) : (
-                                <Lista
-                                    items={productos}
-                                    handleCheckBox={handleChangeCheckBox}
-                                    checkBoxSeleccionados={checkBoxSeleccionados}
-                                />
-                            )}
-                        </Stack>
-                    </Box>
-                </Box>
+                    <Tab
+                        label="Resumen"
+                        icon={<RestaurantMenuIcon />}
+                        iconPosition="start"
+                    />
+                    <Tab
+                        label="Tickets abiertos"
+                        icon={<ReceiptIcon />}
+                        iconPosition="start"
+                        disabled={!visitaMesaFinal}
+                    />
+                    <Tab
+                        label="Pagos registrados"
+                        icon={<CheckCircleIcon />}
+                        iconPosition="start"
+                        disabled={!visitaMesaFinal}
+                    />
+                </Tabs>
 
-                {datos_mesa.codigoParaPedir && (
-                    <Box
-                        sx={{
-                            p: 3,
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: 2,
-                            flexShrink: 0,
-                            borderTop: '1px solid',
-                            borderColor: 'divider',
-                            bgcolor: 'background.paper'
-                        }}
-                    >
+                <Box sx={{ 
+                    p: 3, 
+                    flex: '1 1 auto',
+                    minHeight: 0,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    {tabValue === 0 && (
+                        <TabContent
+                            visitaMesa={visitaMesaFinal}
+                            estado={false}
+                            titulo="Pedido total"
+                            subtitulo="Total"
+                            mostrarCheckboxes={true}
+                            productosSeleccionados={productosSeleccionados}
+                            onToggleProducto={handleToggleProducto}
+                            currencyFormatter={currencyFormatter}
+                        />
+                    )}
+
+                    {tabValue === 1 && (
+                        <TabContent
+                            visitaMesa={visitaMesaFinal}
+                            estado={1}
+                            titulo="Ticket"
+                            PagarMesa={handlePagarMesa}
+                            facturar={true}
+                        />
+                    )}
+
+                    {tabValue === 2 && (
+                        <TabContent
+                            visitaMesa={visitaMesaFinal}
+                            estado={2}
+                            titulo="Pagado"
+                            subtitulo="Subtotal"
+                        />
+                    )}
+                </Box>
+            </DialogContent>
+
+            <DialogActions sx={{ px: 4, py: 2, flexDirection: 'column', alignItems: 'stretch', gap: 1.5 }}>
+                {/* Primera fila: Agregar Productos, Cerrar mesa, Cancelar pedidos, y Cerrar */}
+                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, flex: 1 }}>
                         <Button
                             variant="contained"
                             color="success"
                             startIcon={<AddShoppingCartIcon />}
                             onClick={() => setShowAgregarPedidos(true)}
+                            size="small"
                             sx={{ 
-                                width: '100%',
-                                py: 1.5
+                                py: 0.75,
+                                fontSize: '0.875rem',
+                                minWidth: 'auto'
                             }}
                         >
-                            Agregar Pedidos
+                            Agregar Productos
                         </Button>
-
-                        <Modal_Ver_Cuenta
-                            titulo="Ver cuenta"
-                            numeroMesa={datos_mesa.nombre}
-                            datos_mesa={datos_mesa}
-                            textoBoton="Ver cuenta"
-                            cerrar_modal={handleClose}
-                            func={handleClose}
-                            cerrar_modal_mesa={handleClose}
-                        />
 
                         <Modal_Generico
                             confirmar={true}
@@ -214,32 +278,67 @@ export const MesaModal = ({
                             textoBoton="Cerrar mesa"
                             func={onCerrarMesa}
                             param={datos_mesa.id}
-                            cerrar_modal={handleClose}
+                            cerrar_modal={handleCloseWithCleanup}
                             disabled={false}
+                            buttonSize="small"
                         />
 
                         <Modal_Generico
                             confirmar={true}
                             titulo="Cancelar pedidos"
                             cuerpo="¿Seguro que desea cancelar los pedidos?"
-                            textoBoton="Cancelar pedidos"
-                            func={onCancelarPedidos}
-                            param={checkBoxSeleccionados}
-                            cerrar_modal={handleClose}
-                            disabled={activarCancelarPedido}
+                            textoBoton={`Cancelar pedidos${productosSeleccionados.length > 0 ? ` (${productosSeleccionados.length})` : ''}`}
+                            func={handleCancelarPedidosConSnackbar}
+                            param={productosSeleccionados}
+                            cerrar_modal={handleCloseWithCleanup}
+                            disabled={productosSeleccionados.length === 0}
+                            buttonSize="small"
                         />
                     </Box>
-                )}
-            </DialogContent>
+                    <Button 
+                        onClick={handleCloseWithCleanup} 
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                            py: 0.75,
+                            fontSize: '0.875rem',
+                            minWidth: 'auto'
+                        }}
+                    >
+                        Cerrar
+                    </Button>
+                </Box>
 
-            <DialogActions sx={{ px: 3, py: 2 }}>
-                <Button 
-                    variant="contained" 
-                    color="primary" 
-                    onClick={handleClose}
-                >
-                    Cerrar
-                </Button>
+                {/* Segunda fila: Facturar todo y Facturar por partes */}
+                <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, 'margin-left': "0 !important"}}>
+                    <Modal_Generico
+                        textoBoton="Facturar todo"
+                        titulo="Facturar todo"
+                        cuerpo="¿Confirmar el pago de todos los productos pendientes?"
+                        confirmar={true}
+                        func={handlePagarMesa}
+                        param={productosAPagar}
+                        disabled={!(productosAPagar.length > 0)}
+                        color="success"
+                        buttonSize="small"
+                    />
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleFacturarPorPartes}
+                        disabled={productosSeleccionados.length === 0}
+                        startIcon={<PlaylistAddCheckIcon />}
+                        size="small"
+                        sx={{
+                            py: 0.75,
+                            fontSize: '0.875rem',
+                            minWidth: 'auto'
+                        }}
+                    >
+                        Facturar por partes {productosSeleccionados.length > 0 && `(${productosSeleccionados.length})`}
+                    </Button>
+                </Box>
             </DialogActions>
 
             {/* Modal para agregar pedidos */}
@@ -248,6 +347,17 @@ export const MesaModal = ({
                 onClose={() => setShowAgregarPedidos(false)}
                 idVisita={datos_mesa.visita?.id}
                 numeroMesa={datos_mesa.nombre}
+            />
+
+            {/* Snackbar para notificaciones */}
+            <SnackbarComponent />
+            
+            {/* Snackbar para notificaciones de facturación */}
+            <SnackbarWrapper
+                open={snackbarFacturacion.open}
+                message={snackbarFacturacion.message}
+                severity={snackbarFacturacion.severity}
+                onClose={handleCloseSnackbarFacturacion}
             />
         </Dialog>
     );

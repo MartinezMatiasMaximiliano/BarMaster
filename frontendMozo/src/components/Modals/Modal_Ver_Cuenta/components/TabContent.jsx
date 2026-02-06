@@ -6,7 +6,7 @@ import Lista_Items from '../../../Listas/Lista_Items';
  * Componente memoizado para el contenido de cada tab
  * Optimizado para evitar re-renders innecesarios
  */
-const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, facturar }) => {
+const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, facturar, mostrarCheckboxes, productosSeleccionados, onToggleProducto, currencyFormatter }) => {
     return (
         <Box
             sx={{
@@ -15,7 +15,13 @@ const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, fac
                 borderColor: 'divider',
                 p: 2,
                 bgcolor: estado === false ? 'background.default' : 'transparent',
-                minHeight: 200
+                minHeight: 200,
+                ...(mostrarCheckboxes && {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    minHeight: 0
+                })
             }}
         >
             <Lista_Items
@@ -25,6 +31,10 @@ const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, fac
                 estado={estado}
                 PagarMesa={PagarMesa}
                 facturar={facturar}
+                mostrarCheckboxes={mostrarCheckboxes}
+                productosSeleccionados={productosSeleccionados}
+                onToggleProducto={onToggleProducto}
+                currencyFormatter={currencyFormatter}
             />
         </Box>
     );
@@ -34,7 +44,11 @@ const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, fac
         prevProps.titulo !== nextProps.titulo ||
         prevProps.subtitulo !== nextProps.subtitulo ||
         prevProps.facturar !== nextProps.facturar ||
-        prevProps.PagarMesa !== nextProps.PagarMesa) {
+        prevProps.PagarMesa !== nextProps.PagarMesa ||
+        prevProps.mostrarCheckboxes !== nextProps.mostrarCheckboxes ||
+        prevProps.productosSeleccionados !== nextProps.productosSeleccionados ||
+        prevProps.onToggleProducto !== nextProps.onToggleProducto ||
+        prevProps.currencyFormatter !== nextProps.currencyFormatter) {
         return false;
     }
     

@@ -27,6 +27,7 @@ import { useKDS } from './hooks/useKDS';
 import PedidoCard from './components/PedidoCard';
 import EstadisticasKDS from './components/EstadisticasKDS';
 import useSignalR from '../../hooks/useSignalR';
+import { SnackbarWrapper } from '../../components/common/SnackbarWrapper';
 
 /**
  * Página principal del KDS (Kitchen Display System)
@@ -40,6 +41,7 @@ function KDS() {
         ordenamiento,
         sonidoHabilitado,
         notificacion,
+        snackbar,
         setFiltroEstado,
         setOrdenamiento,
         setSonidoHabilitado,
@@ -47,7 +49,8 @@ function KDS() {
         marcarEnPreparacion,
         marcarListo,
         revertirAccion,
-        calcularTiempoTranscurrido
+        calcularTiempoTranscurrido,
+        closeSnackbar
     } = useKDS();
 
     // Integrar SignalR para actualización en tiempo real
@@ -202,7 +205,7 @@ function KDS() {
                 autoHideDuration={10000}
                 onClose={() => setNotificacion(null)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                sx={{ mb: 8 }}
+                sx={{ mb: 8, zIndex: 1500 }}
             >
                 <Alert
                     severity={notificacion?.estadoNuevo === 1 ? 'info' : 'success'}
@@ -244,6 +247,15 @@ function KDS() {
                     </Typography>
                 </Alert>
             </Snackbar>
+
+            {/* Snackbar para errores */}
+            <SnackbarWrapper
+                open={snackbar.open}
+                message={snackbar.message}
+                severity={snackbar.severity}
+                onClose={closeSnackbar}
+                sx={{ mb: notificacion !== null ? 18 : 8 }}
+            />
         </Container>
     );
 }

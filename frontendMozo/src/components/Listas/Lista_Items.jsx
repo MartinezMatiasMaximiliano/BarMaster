@@ -1,6 +1,6 @@
 import { useMemo, memo } from 'react';
 import Alert from '@mui/material/Alert';
-import { Typography, Box } from "@mui/material";
+import { Typography, Box, Checkbox, Stack } from "@mui/material";
 import { useSelector } from 'react-redux';
 import Modal_Generico from '../Modals/Modal_Generico';
 
@@ -10,7 +10,7 @@ function Lista_Items(props) {
     const mensajeListaVacia = useMemo(() => (
         <div className="mb-0">
             <h4>{props.titulo}</h4>
-            <p>No hay items para mostrar</p>
+            <p>No hay items para mostrar. Los tickets enviados por los clientes aparecerán aquí</p>
         </div>
     ), [props.titulo]);
 
@@ -99,6 +99,98 @@ function Lista_Items(props) {
                 ? props.visitaMesa.productosConsumidos
                 : props.visitaMesa.productosConsumidos.filter(producto => producto.estadoPreparacion === estado);
 
+            // Si se muestran checkboxes (solo para resumen con productos pendientes)
+            if (props.mostrarCheckboxes && estado === false) {
+                // Filtrar solo productos pendientes
+                const productosPendientes = productosCorrespondientes.filter(producto => !producto.estadoPagado);
+                
+                if (productosPendientes.length === 0) {
+                    return mensajeListaVacia;
+                }
+
+                // Calcular total de productos pendientes
+                productosPendientes.forEach(producto => {
+                    total += (producto.precio || producto.precioDelMomento || 0);
+                });
+
+                let texto = productosPendientes.map((producto, index) => {
+                    const nombre = producto.nombre || producto.nombreProducto;
+                    const precio = producto.precio || producto.precioDelMomento || 0;
+                    const isSelected = props.productosSeleccionados?.includes(producto.id) || false;
+                    const labelId = `checkbox-resumen-${producto.id}`;
+
+                    return (
+                        <Box
+                            key={producto.id}
+                            sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center',
+                                justifyContent: 'space-between', 
+                                mb: 0.5,
+                                py: 0.5,
+                                px: 1,
+                                borderRadius: 1,
+                                bgcolor: isSelected ? 'action.selected' : 'transparent',
+                                '&:hover': {
+                                    bgcolor: 'action.hover'
+                                },
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => props.onToggleProducto?.(producto.id)}
+                        >
+                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                                <Checkbox
+                                    checked={isSelected}
+                                    onChange={() => props.onToggleProducto?.(producto.id)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    size="small"
+                                    sx={{ mr: 1 }}
+                                    inputProps={{ 'aria-labelledby': labelId }}
+                                />
+                                <Typography 
+                                    variant="body2" 
+                                    id={labelId}
+                                    sx={{ flex: 1 }}
+                                >
+                                    {nombre}
+                                </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ fontWeight: 'medium', ml: 2 }}>
+                                {props.currencyFormatter ? props.currencyFormatter.format(precio) : `$${precio}`}
+                            </Typography>
+                        </Box>
+                    );
+                });
+
+                const resultado = (
+                    <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        height: '100%',
+                        minHeight: 0
+                    }}>
+                        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2, flexShrink: 0 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                {props.titulo}
+                            </Typography>
+                            <Alert severity="success" sx={{ py: 0.5, px: 1.5 }}>
+                                <b>{props.subtitulo}</b>: {props.currencyFormatter ? props.currencyFormatter.format(total) : `$${total}`}
+                            </Alert>
+                        </Stack>
+                        <Box sx={{ 
+                            flex: '1 1 auto',
+                            overflowY: 'auto',
+                            minHeight: 0
+                        }}>
+                            {texto}
+                        </Box>
+                    </Box>
+                );
+
+                return resultado;
+            }
+
+            // Resumen normal sin checkboxes (comportamiento original)
             productosCorrespondientes.forEach(producto => {
                 const nombre = producto.nombre || producto.nombreProducto;
                 const precio = producto.precio || producto.precioDelMomento;
@@ -138,7 +230,7 @@ function Lista_Items(props) {
 
             return (total != 0 ? resultado : mensajeListaVacia);
         }
-    }, [props.visitaMesa, props.estado, props.titulo, props.subtitulo, props.facturar, props.PagarMesa, ticket, mensajeListaVacia]);
+    }, [props.visitaMesa, props.estado, props.titulo, props.subtitulo, props.facturar, props.PagarMesa, props.mostrarCheckboxes, props.productosSeleccionados, props.onToggleProducto, props.currencyFormatter, ticket, mensajeListaVacia]);
 
     return res;
 }
@@ -150,7 +242,11 @@ export default memo(Lista_Items, (prevProps, nextProps) => {
         prevProps.titulo === nextProps.titulo &&
         prevProps.subtitulo === nextProps.subtitulo &&
         prevProps.facturar === nextProps.facturar &&
-        prevProps.PagarMesa === nextProps.PagarMesa) {
+        prevProps.PagarMesa === nextProps.PagarMesa &&
+        prevProps.mostrarCheckboxes === nextProps.mostrarCheckboxes &&
+        prevProps.productosSeleccionados === nextProps.productosSeleccionados &&
+        prevProps.onToggleProducto === nextProps.onToggleProducto &&
+        prevProps.currencyFormatter === nextProps.currencyFormatter) {
         return true;
     }
     return false;

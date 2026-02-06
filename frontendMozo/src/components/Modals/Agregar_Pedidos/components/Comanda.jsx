@@ -16,9 +16,9 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { gradientPrimary } from '../../../../styles/buttonStyles';
 
-export const Carrito = ({ 
-    carrito, 
-    totalCarrito, 
+export const Comanda = ({ 
+    comanda, 
+    totalComanda, 
     onActualizarCantidad, 
     onActualizarIndicaciones 
 }) => {
@@ -35,11 +35,11 @@ export const Carrito = ({
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
                 <ShoppingCartIcon color="primary" />
                 <Typography variant="h6">
-                    Carrito
+                    Comanda
                 </Typography>
-                {carrito.length > 0 && (
+                {comanda.length > 0 && (
                     <Chip 
-                        label={carrito.length} 
+                        label={comanda.length} 
                         color="primary" 
                         size="small"
                         sx={{ ml: 0.5 }}
@@ -49,7 +49,7 @@ export const Carrito = ({
 
             <Divider sx={{ mb: 2 }} />
 
-            {carrito.length === 0 ? (
+            {comanda.length === 0 ? (
                 <Box
                     sx={{
                         flex: 1,
@@ -60,7 +60,7 @@ export const Carrito = ({
                     }}
                 >
                     <Typography variant="body2" color="text.secondary">
-                        El carrito está vacío.<br />
+                        La comanda está vacía.<br />
                         Haz clic en un producto para agregarlo.
                     </Typography>
                 </Box>
@@ -88,7 +88,7 @@ export const Carrito = ({
                         }}
                     >
                         <Stack spacing={2}>
-                            {carrito.map((item) => {
+                            {comanda.map((item) => {
                                 const imagenFondo = item.producto.imagenUrl 
                                     ? `${import.meta.env.VITE_BASE_URL}${item.producto.imagenUrl}`
                                     : null;
@@ -229,7 +229,7 @@ export const Carrito = ({
                             Total:
                         </Typography>
                         <Typography variant="h6" color="primary" fontWeight="bold">
-                            ${totalCarrito.toFixed(2)}
+                            ${totalComanda.toFixed(2)}
                         </Typography>
                     </Stack>
                 </>
@@ -237,4 +237,3 @@ export const Carrito = ({
         </Paper>
     );
 };
-

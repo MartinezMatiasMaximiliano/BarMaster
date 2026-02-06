@@ -14,6 +14,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LockIcon from '@mui/icons-material/Lock';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 
 // Mapeo de variantes de react-bootstrap a Material UI
 const variantMap = {
@@ -61,6 +62,7 @@ function Modal_Generico(props) {
     // Determinar el ícono según el texto del botón
     const getButtonIcon = () => {
         const texto = props.textoBoton?.toLowerCase() || '';
+        if (texto.includes('facturar')) return <ReceiptIcon />;
         if (texto.includes('cerrar')) return <LockIcon />;
         if (texto.includes('cancelar')) return <DeleteOutlineIcon />;
         return null;
@@ -74,9 +76,11 @@ function Modal_Generico(props) {
                 onClick={handleShow} 
                 disabled={props.disabled}
                 startIcon={getButtonIcon()}
+                size={props.buttonSize || 'medium'}
                 sx={{ 
-                    width: '100%',
-                    py: 1.5
+                    width: props.buttonSize === 'small' ? 'auto' : '100%',
+                    py: props.buttonSize === 'small' ? 0.75 : 1.5,
+                    fontSize: props.buttonSize === 'small' ? '0.875rem' : undefined
                 }}
             >
                 {props.textoBoton}
