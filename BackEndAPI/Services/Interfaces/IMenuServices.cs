@@ -12,5 +12,6 @@ namespace BackEndAPI.Services.Interfaces
         Task<Menu> ActivarDesactivarMenu(Guid idMenu, bool activar);
         Task<Menu> ActualizarMenu(ModificarMenuDTO actualizarMenu);
         Task<bool> EliminarMenu(Guid idMenu);
+        Task<Menu> ModificarProductosMenu(ModificarProductosMenuDTO dto);
     }
 }

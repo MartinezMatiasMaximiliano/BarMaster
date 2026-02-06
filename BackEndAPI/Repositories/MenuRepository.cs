@@ -41,5 +41,27 @@ namespace BackEndAPI.Repositories
             await db.SaveChangesAsync();
             return true;
         }
+
+        public async Task<Menu> ModificarProductosMenu(Menu menu, List<Producto> productos, string accion)
+        {
+            if (accion.Equals("Agregar", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var producto in productos)
+                {
+                    menu.Productos.Add(producto);
+                }
+            }
+            else if (accion.Equals("Eliminar", StringComparison.OrdinalIgnoreCase))
+            {
+                var productosAQuitar = menu.Productos.Where(p => productos.Select(pr => pr.Id).Contains(p.Id)).ToList();
+                foreach (var producto in productosAQuitar)
+                {
+                    menu.Productos.Remove(producto);
+                }
+            }
+
+            await db.SaveChangesAsync();
+            return menu;
+        }
     }
 }
