@@ -35,7 +35,7 @@ export const visitasActivasSlice = createSlice({
         // cambiarEstadoPagadoPorMesa - Marca todos los productos de una mesa como pagados
         cambiarEstadoPagadoPorMesa: (state, action) => {
             const { numeroMesa, pagado } = action.payload;
-            const visita = state.value.find(v => v.mesa?.numero === numeroMesa);
+            const visita = state.value.find(v => v.numeroMesa === numeroMesa);
             if (visita && visita.productosConsumidos) {
                 visita.productosConsumidos.forEach(producto => {
                     producto.estadoPagado = pagado;
@@ -43,10 +43,10 @@ export const visitasActivasSlice = createSlice({
             }
         },
 
-        // eliminarProductos - Elimina productos de una visita
+        // eliminarProductos - Elimina productos de una visita (por ID de producto)
         eliminarProductos: (state, action) => {
             const { numeroMesa, idsProductos } = action.payload;
-            const visita = state.value.find(v => v.mesa?.numero === numeroMesa);
+            const visita = state.value.find(v => v.numeroMesa === numeroMesa);
             if (visita && visita.productosConsumidos) {
                 visita.productosConsumidos = visita.productosConsumidos.filter(
                     p => !idsProductos.includes(p.id)

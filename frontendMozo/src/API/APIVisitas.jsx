@@ -48,6 +48,52 @@ export async function AgregarProductosAVisita(idVisita, productos) {
     }
 }
 
+/** DELETE /Visitas/EliminarProductos - Elimina productos de una visita */
+export async function EliminarProductosVisita(idVisita, idsProductos) {
+    try {
+        const response = await axios.delete(
+            `${BASE_URL}Visitas/EliminarProductos`,
+            {
+                ...authService.getAuthHeaders(),
+                data: {
+                    IdVisita: idVisita,
+                    IdsProductos: idsProductos
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error al eliminar productos de la visita:', error);
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+        }
+        throw error;
+    }
+}
+
+/** POST /Visitas/Pagar - Marca productos de una visita como pagados */
+export async function PagarProductosVisita(idVisita, idsProductos) {
+    try {
+        const response = await axios.post(
+            `${BASE_URL}Visitas/Pagar`,
+            {
+                IdVisita: idVisita,
+                IdsProductos: idsProductos
+            },
+            authService.getAuthHeaders()
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error al pagar productos de la visita:', error);
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+        }
+        throw error;
+    }
+}
+
 ////////////////////////////// FUNCIONES PARA DATOS DE PRUEBA //////////////////////////////
 
 // Función para simular delay de API

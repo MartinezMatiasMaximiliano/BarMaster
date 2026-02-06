@@ -6,7 +6,7 @@ import {
     eliminarProductos, 
     agregarVisita 
 } from '../../redux/slices/visitasActivasSlice';
-import { EliminarItems } from '../../API/APIItems';
+import { EliminarProductosVisita } from '../../API/APIVisitas';
 import { AbrirCerrarMesa } from '../../API/APIMesas';
 import { GenerarTicketPDF } from '../../API/APIPedidos';
 import connection from '../../connections/HubConnMozo';
@@ -21,13 +21,14 @@ export const useMesaLogic = () => {
             .map(producto => producto.id);
     };
 
-    const cancelarPedidos = async (idsProductos, numeroMesa, onSuccess) => {
+    const cancelarPedidos = async (idsProductos, idVisita, numeroMesa, onSuccess) => {
         try {
-            await EliminarItems(idsProductos, numeroMesa);
+            await EliminarProductosVisita(idVisita, idsProductos);
             dispatch(eliminarProductos({ 
                 numeroMesa, 
                 idsProductos 
             }));
+            connection.send("RecargarTicket", numeroMesa);
             onSuccess?.();
         } catch (error) {
             console.error('Error al cancelar productos:', error);

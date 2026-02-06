@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
-import { CambiarEstadoItems } from '../../../../API/APIItems';
+import { PagarProductosVisita } from '../../../../API/APIVisitas';
 import { GenerarTicketPDF } from '../../../../API/APIPedidos';
 import { cambiarEstadoPagadoProductos } from '../../../../redux/slices/visitasActivasSlice';
 import { eliminar as eliminarTicket } from '../../../../redux/slices/ticketSlice';
@@ -76,32 +76,43 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
     }, []);
 
     // Función para pagar/facturar productos (usada tanto para "Facturar todo" como para "Facturar ticket")
-    const PagarMesa = useCallback((arregloIds) => {
+    const PagarMesa = useCallback(async (arregloIds) => {
         if (!arregloIds || arregloIds.length === 0) {
             alert("No hay productos para facturar");
             return;
         }
 
-        // Actualizar la base de datos a "Pagar"
-        CambiarEstadoItems(arregloIds, "Pagar");
+        const idVisita = visitaMesa?.id;
+        if (!idVisita) {
+            alert("No se pudo identificar la visita de la mesa");
+            return;
+        }
 
-        // Generar la factura PDF
-        GenerarTicketPDF(datosMesa.nombre, arregloIds);
+        try {
+            // Marcar productos como pagados en la DB (endpoint Visitas/Pagar)
+            await PagarProductosVisita(idVisita, arregloIds);
 
-        // Enviar mensaje al cliente para actualizar su cuenta
-        connection.send("RecargarTicket", datosMesa.nombre);
+            // Generar la factura PDF
+            GenerarTicketPDF(datosMesa.nombre, arregloIds);
 
-        // Actualizar el estado de visitasActivas en Redux - marcar productos como pagados
-        dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true }));
+            // Enviar mensaje al cliente para actualizar su cuenta
+            connection.send("RecargarTicket", datosMesa.nombre);
 
-        // Si hay un ticket en Redux con estos IDs, eliminarlo (ya fue facturado)
-        dispatch(eliminarTicket(arregloIds));
+            // Actualizar el estado de visitasActivas en Redux - marcar productos como pagados
+            dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true }));
 
-        // Cambiar a la pestaña de "Pagos registrados" para mostrar los productos pagados
-        setTabValue(2);
+            // Si hay un ticket en Redux con estos IDs, eliminarlo (ya fue facturado)
+            dispatch(eliminarTicket(arregloIds));
 
-        alert("Productos facturados correctamente");
-    }, [datosMesa.nombre, dispatch]);
+            // Cambiar a la pestaña de "Pagos registrados" para mostrar los productos pagados
+            setTabValue(2);
+
+            alert("Productos facturados correctamente");
+        } catch (error) {
+            console.error("Error al facturar:", error);
+            alert("Error al facturar. Intente de nuevo.");
+        }
+    }, [datosMesa.nombre, dispatch, visitaMesa?.id]);
 
     return {
         // Estado

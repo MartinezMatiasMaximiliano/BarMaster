@@ -23,8 +23,11 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
 
     // Handlers con contexto
     const handleCancelarPedidos = (idsProductos) => {
+        const idVisita = visitaMesa?.id || datos_mesa.visita?.id;
+        if (!idVisita) return;
         cancelarPedidos(
-            idsProductos, 
+            idsProductos,
+            idVisita,
             datos_mesa.nombre,
             () => setCheckBoxSeleccionados([])
         );
