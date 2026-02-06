@@ -9,5 +9,6 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<Menu> CrearMenu(Menu menu);
         Task<Menu> ActualizarMenu(Menu menu);
         Task<bool> EliminarMenu(Menu menu);
+        Task<Menu> ModificarProductosMenu(Menu menu, List<Producto> productos, string accion);
     }
 }
