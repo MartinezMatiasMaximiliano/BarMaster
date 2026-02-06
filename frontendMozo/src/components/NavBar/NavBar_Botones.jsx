@@ -44,11 +44,13 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 import HistoryIcon from '@mui/icons-material/History';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
+import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 
 const menuConfig = {
     Encargado: {
         "Gestión": [
-            { path: "/abm_menu", label: "Menú", icon: RestaurantMenuOutlinedIcon },
+            { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
+            { path: "/abm_menus", label: "Menús", icon: MenuBookOutlinedIcon },
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_personas", label: "Personas", icon: GroupOutlinedIcon },
@@ -85,7 +87,8 @@ const menuConfig = {
     },
     Cajero: {
         "Gestión": [
-            { path: "/abm_menu", label: "Menú", icon: RestaurantMenuOutlinedIcon },
+            { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
+            { path: "/abm_menus", label: "Menús", icon: MenuBookOutlinedIcon },
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_pago", label: "Tipos de Pago", icon: PaymentOutlinedIcon },

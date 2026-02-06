@@ -43,6 +43,33 @@ export const authService = {
                 'X-Tenant-ID': tenantId || ''
             }
         };
+    },
+
+    // Función para decodificar el token JWT y extraer claims
+    decodeToken: (token) => {
+        try {
+            if (!token) return null;
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            return JSON.parse(jsonPayload);
+        } catch (error) {
+            console.error('Error al decodificar token:', error);
+            return null;
+        }
+    },
+
+    // Función para obtener el IdSucursal del token
+    getIdSucursal: () => {
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+        const decoded = authService.decodeToken(token);
+        return decoded?.IdSucursal || null;
     }
 };
 

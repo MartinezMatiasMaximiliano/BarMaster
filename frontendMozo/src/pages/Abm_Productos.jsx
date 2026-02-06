@@ -16,10 +16,10 @@ import {
 } from "../API/APIProductos";
 import { Campos, inicializarCampos } from "../configs/agregar/Producto"
 
-function Abm_Menu(props) {
+function Abm_Productos(props) {
     const [campos, setCampos] = useState(Campos);
-    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_menu || []);
-    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_menu || []);
+    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_productos || []);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_productos || []);
 
     // Inicializar campos solo cuando el componente se monte y haya token
     useEffect(() => {
@@ -32,9 +32,9 @@ function Abm_Menu(props) {
 
     // Actualizar filas filtradas cuando cambien los datos originales
     useEffect(() => {
-        setFilasFiltradas(props.datos_menu || []);
-        setFilasOrdenadas(props.datos_menu || []);
-    }, [props.datos_menu]);
+        setFilasFiltradas(props.datos_productos || []);
+        setFilasOrdenadas(props.datos_productos || []);
+    }, [props.datos_productos]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
     useEffect(() => {
@@ -104,7 +104,7 @@ function Abm_Menu(props) {
                 )}
                 renderFiltros={() => (
                     <Filtros
-                        filas={props.datos_menu || []}
+                        filas={props.datos_productos || []}
                         columnas={columnas}
                         configuracionFiltros={{
                             codigo: { tipo: 'text' },
@@ -121,4 +121,4 @@ function Abm_Menu(props) {
     );
 }
 
-export default Abm_Menu;
+export default Abm_Productos;
