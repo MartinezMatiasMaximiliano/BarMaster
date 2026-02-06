@@ -61,6 +61,13 @@ namespace BackEndAPI.Services
             sucursal.Direccion = actualizarSucursal.Direccion == null ? sucursal.Direccion : actualizarSucursal.Direccion;
             sucursal.Telefono = actualizarSucursal.Telefono == null ? sucursal.Telefono : actualizarSucursal.Telefono;
             sucursal.Username = actualizarSucursal.Username == null ? sucursal.Username : actualizarSucursal.Username;
+            
+            if(actualizarSucursal.Password != null)
+            {
+                _passwordService.CrearPasswordHash(actualizarSucursal.Password ?? "" , out byte[] passwordHash, out byte[] passwordSalt);
+                sucursal.EstablecerContrasena(passwordHash, passwordSalt);
+            }
+            
             var sucursalActualizada = await _sucursalesRepository.ActualizarSucursal(sucursal);
             return sucursalActualizada;
         }

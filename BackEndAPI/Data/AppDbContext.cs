@@ -156,6 +156,10 @@ namespace BackEndAPI.Data
                 .HasForeignKey(pm => pm.IdPlano)
                 .OnDelete(DeleteBehavior.SetNull); // Si se borra un plano, se pone a null en las mesas 
 
+            modelBuilder.Entity<Menu>()
+                .HasMany(m => m.Productos)
+                .WithMany(p => p.Menus);
+
             // Relacion Menu N:1 Sucursal
             modelBuilder.Entity<Menu>()
                 .HasOne(m => m.Sucursal)

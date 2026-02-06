@@ -17,8 +17,68 @@ namespace BackEndAPI.Controllers
             _menuServices = menuServices;
         }
 
+        [HttpGet("/ListaMenu")]
+        public async Task<IActionResult> GetListaMenus(Guid IdSucursal)
+        {
+            try
+            {
+                //TODO: traer productos del menu
+                var listaMenus = await _menuServices.ObtenerMenusPorSucursal(IdSucursal);
+                var response = listaMenus.Select(menu => new
+                {
+                    Id = menu.Id,
+                    Nombre = menu.Nombre,
+                    Activo = menu.Activo,
+                    Productos = menu.Productos.Select(p => new
+                    {
+                        Id = p.Id,
+                        Nombre = p.Nombre,
+                        Descripcion = p.Descripcion,
+                        Precio = p.Precio,
+                        Activo = p.Activo,
+                        PathImagen = p.PathImagen
+                    }).ToList()
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor: " + ex.Message);
+            }
+        }
+
+        [HttpGet("/Menu")]
+        public async Task<IActionResult> GetMenuPorId(Guid IdMenu)
+        {
+            try
+            {
+                var menu = await _menuServices.ObtenerMenuPorId(IdMenu);
+                if (menu == null) throw new Exception("Menu no encontrado");
+                var response = new
+                {
+                    Id = menu.Id,
+                    Nombre = menu.Nombre,
+                    Activo = menu.Activo,
+                    Productos = menu.Productos.Select(p => new
+                    {
+                        Id = p.Id,
+                        Nombre = p.Nombre,
+                        Descripcion = p.Descripcion,
+                        Precio = p.Precio,
+                        Activo = p.Activo,
+                        PathImagen = p.PathImagen
+                    }).ToList()
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor: " + ex.Message);
+            }
+        }
+
         [HttpPost("/Menu")]
-        public async Task<IActionResult> CrearMenu([FromBody] CrearMenuDTO nuevoMenu)
+        public async Task<IActionResult> CrearMenu([FromBody] CrearMenuDTO nuevoMenu) //
         {
             try
             {
@@ -44,7 +104,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var menuActualizado = await _menuServices.ModificarMenu(DTO);
+                var menuActualizado = await _menuServices.ActualizarMenu(DTO);
                 return Ok(new EntregaDTO(200, "MODIFIED", $"Modificado exitosamente, Id:{menuActualizado.Id}"));
             }
             catch (Exception ex)
@@ -61,25 +121,18 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpGet("/Menus")]
-        public async Task<ActionResult> ObtenerTodosLosMenus()
+        //TODO: deberia hacer una funcion que pida activo/inactivo o una funcion que busca el activo y lo desactive?
+        [HttpPatch("/ActivarMenu")]
+        public async Task<IActionResult> CambiarMenuActivo([FromQuery] Guid IdMenu, [FromQuery] bool Activar)
         {
             try
             {
-                var menus = await _menuServices.ObtenerTodosLosMenus();
-                // Mapear a DTO para evitar referencias circulares
-                var menusDTO = menus.Select(menu => new MenuDTO
-                {
-                    Id = menu.Id,
-                    IdSucursal = menu.IdSucursal,
-                    Nombre = menu.Nombre,
-                    Activo = menu.Activo
-                }).ToList();
-                return Ok(menusDTO);
+                var result = await _menuServices.ActivarDesactivarMenu(IdMenu, Activar);
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", ex.Message));
+                return StatusCode(500, "Error interno del servidor: " + ex.Message);
             }
         }
 

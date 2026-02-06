@@ -9,11 +9,22 @@ namespace BackEndAPI.Services
     public class MenuServices : IMenuServices
     {
         private readonly IMenuRepository _menuRepository;
-        public MenuServices(IMenuRepository menuRepository)
+        public  MenuServices(IMenuRepository menuRepository)
         {
             _menuRepository = menuRepository;
         }
-
+        public async Task<ICollection<Menu>> ObtenerMenusPorSucursal(Guid idSucursal)
+        {
+            var menus = await _menuRepository.ObtenerMenusPorSucursal(idSucursal);
+            if(menus == null || menus.Count == 0) throw new Exception("No se encontraron menus para la sucursal indicada");
+            return menus;
+        }
+        public async Task<Menu?> ObtenerMenuPorId(Guid idMenu)
+        {
+            var menu = await _menuRepository.ObtenerMenuPorId(idMenu);
+            if(menu == null) throw new Exception("Menu no encontrado");
+            return menu;
+        }
         public async Task<Menu> CrearMenu(CrearMenuDTO nuevoMenu)
         {
             // Validaciones
@@ -33,62 +44,32 @@ namespace BackEndAPI.Services
                 IdSucursal = nuevoMenu.IdSucursal,
                 Activo = true
             };
-
             return await _menuRepository.CrearMenu(menu);
         }
-
-        public async Task<Menu> ModificarMenu(ModificarMenuDTO request)
+        public async Task<Menu> ActivarDesactivarMenu(Guid idMenu, bool activar)
         {
-            // Validaciones
-            if (request.Id == Guid.Empty)
+            var menu = await _menuRepository.ObtenerMenuPorId(idMenu);
+            if (menu == null) throw new Exception("Menu no encontrado");
+            menu.Activo = activar;
+            return await _menuRepository.ActualizarMenu(menu); 
+        }
+        public async Task<Menu> ActualizarMenu(ModificarMenuDTO actualizarMenu)
+        {
+            if (actualizarMenu.IdMenu == Guid.Empty)
             {
                 throw new Exception("El Id del menú no puede estar vacío");
             }
-
-            var menuExistente = await _menuRepository.ObtenerMenuPorId(request.Id);
-            if (menuExistente == null)
-            {
-                throw new Exception("Menú no encontrado");
-            }
-
-            // Actualizar solo los campos proporcionados
-            if (!string.IsNullOrWhiteSpace(request.Nombre))
-            {
-                menuExistente.Nombre = request.Nombre;
-            }
-
-            if (request.Activo.HasValue)
-            {
-                menuExistente.Activo = request.Activo.Value;
-            }
-
-            return await _menuRepository.ModificarMenu(menuExistente);
+            var menu = await _menuRepository.ObtenerMenuPorId(actualizarMenu.IdMenu);
+            if (menu == null) throw new Exception("Menu no encontrado");
+            menu.Nombre = actualizarMenu.Nombre;
+            return await _menuRepository.ActualizarMenu(menu);
         }
 
-        public async Task<IEnumerable<Menu>> ObtenerTodosLosMenus()
+        public async Task<bool> EliminarMenu(Guid idMenu)
         {
-            return await _menuRepository.ObtenerTodosLosMenus();
-        }
-
-        public async Task<bool> EliminarMenu(Guid IdMenu)
-        {
-            // Validaciones
-            if (IdMenu == Guid.Empty)
-            {
-                throw new Exception("El Id del menú no puede estar vacío");
-            }
-
-            var menuAEliminar = await _menuRepository.ObtenerMenuPorId(IdMenu);
-            if (menuAEliminar == null)
-            {
-                throw new Exception("Menú no encontrado");
-            }
-
-            // Verificar si el menú tiene productos asociados
-            // Nota: Esto requeriría incluir los productos en ObtenerMenuPorId si queremos validar
-            // Por ahora, la eliminación en cascada se manejará en la DB si está configurada
-
-            return await _menuRepository.EliminarMenu(menuAEliminar);
+            var menu = await _menuRepository.ObtenerMenuPorId(idMenu);
+            if (menu == null) throw new Exception("Menu no encontrado");
+            return await _menuRepository.EliminarMenu(menu);
         }
     }
 }

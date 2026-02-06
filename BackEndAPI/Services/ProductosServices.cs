@@ -8,18 +8,21 @@ namespace BackEndAPI.Services
     public class ProductosServices : IProductosServices
     {
         private readonly IProductosRepository _productosRepository;
-        public ProductosServices(IProductosRepository productosRepository)
+        private readonly IMenuRepository _menuRepository;
+        public ProductosServices(IProductosRepository productosRepository, IMenuRepository menuRepository)
         {
             _productosRepository = productosRepository;
+            _menuRepository = menuRepository;
         }
 
         public async Task<Producto?> CrearProducto(CrearProductoDTO request, string pathImagen)
         {
             var exitente = await _productosRepository.GetProductoPorNombre(request.Nombre);
-            if (exitente != null)
-            {
-                throw new Exception("El producto ya existe");
-            }
+            if (exitente != null) throw new Exception("El producto ya existe");
+
+            var menu = await _menuRepository.ObtenerMenuPorId(request.IdMenu);
+            if (menu == null) throw new Exception("El menú no existe");
+
 
             Producto nuevoProducto = new Producto
             {
@@ -37,8 +40,9 @@ namespace BackEndAPI.Services
                     PrecioExtra = 0 // Valor por defecto, ya que no viene en el DTO
                 }).ToList() ?? new List<Opcion>()
             };
+            
 
-            return await _productosRepository.AddProducto(nuevoProducto);
+            return await _productosRepository.AddProducto(nuevoProducto,menu);
         }
 
         public async Task<IEnumerable<Producto>> BuscarListaProductos()

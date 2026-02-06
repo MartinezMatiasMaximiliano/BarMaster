@@ -33,12 +33,23 @@ namespace BackEndAPI.Repositories
             return await db.Productos.FirstOrDefaultAsync(p => p.Nombre == nombre);
         }
 
-        public async Task<Producto?> AddProducto(Producto producto)
+        public async Task<Producto?> AddProducto(Producto producto, Menu menu)
         {
-            await db.Productos.AddAsync(producto);
-            await db.SaveChangesAsync();
-            producto.Opciones = new List<Opcion>();
-            return producto;
+            var transaccion = await db.Database.BeginTransactionAsync();
+            try
+            {
+                menu.Productos.Add(producto);
+                await db.Productos.AddAsync(producto);
+                await db.SaveChangesAsync();
+
+                await transaccion.CommitAsync();
+                return producto;
+            }
+            catch (Exception ex)
+            {
+                db.Database.RollbackTransaction();
+                throw new Exception("Error al agregar el producto");
+            }
         }
 
         public Task<Producto?> UpdateProducto(Producto producto)
@@ -48,7 +59,7 @@ namespace BackEndAPI.Repositories
 
         public async Task<Producto?> DeleteProductoAsync(Guid id)
         {
-            db.Productos.Remove(new Producto { Id = id});
+            db.Productos.Remove(new Producto { Id = id });
             await db.SaveChangesAsync();
             return null;
         }
