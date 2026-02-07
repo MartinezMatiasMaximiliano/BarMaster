@@ -42,22 +42,18 @@ namespace BackEndAPI.Repositories
             return true;
         }
 
-        public async Task<Menu> ModificarProductosMenu(Menu menu, List<Producto> productos, string accion)
+        public async Task<Menu> ModificarProductosMenu(Menu menu, List<Producto> productosParaAgregar, List<Producto> productosParaQuitar)
         {
-            if (accion.Equals("Agregar", StringComparison.OrdinalIgnoreCase))
+            // Agregar productos
+            foreach (var producto in productosParaAgregar)
             {
-                foreach (var producto in productos)
-                {
-                    menu.Productos.Add(producto);
-                }
+                menu.Productos.Add(producto);
             }
-            else if (accion.Equals("Eliminar", StringComparison.OrdinalIgnoreCase))
+
+            // Quitar productos
+            foreach (var producto in productosParaQuitar)
             {
-                var productosAQuitar = menu.Productos.Where(p => productos.Select(pr => pr.Id).Contains(p.Id)).ToList();
-                foreach (var producto in productosAQuitar)
-                {
-                    menu.Productos.Remove(producto);
-                }
+                menu.Productos.Remove(producto);
             }
 
             await db.SaveChangesAsync();
