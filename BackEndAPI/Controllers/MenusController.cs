@@ -164,28 +164,20 @@ namespace BackEndAPI.Controllers
             try
             {
                 var menuActualizado = await _menuServices.ModificarProductosMenu(dto);
-                var accionTexto = dto.Accion.Equals("Agregar", StringComparison.OrdinalIgnoreCase) ? "agregado(s)" : "quitado(s)";
-                return Ok(new EntregaDTO(200, "MODIFIED", $"{dto.IdsProductos.Count} producto(s) {accionTexto} al menú exitosamente, Id:{menuActualizado.Id}"));
+                return Ok(new EntregaDTO(200, "MODIFIED", $"Productos del menú actualizados exitosamente, Id:{menuActualizado.Id}"));
             }
             catch (Exception ex)
             {
                 switch (ex.Message)
                 {
                     case "El Id del menú no puede estar vacío":
-                    case "Debe proporcionar al menos un producto":
+                    case "La lista de productos no puede ser nula":
                     case "Uno o más Ids de productos están vacíos":
-                    case "La acción no puede estar vacía":
-                    case "La acción debe ser 'Agregar' o 'Eliminar'":
-                    case "Acción no válida. Debe ser 'Agregar' o 'Eliminar'":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Menú no encontrado":
-                    case "Ninguno de los productos especificados está en el menú":
                         return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     case var msg1 when msg1.Contains("no fueron encontrados"):
-                    case var msg2 when msg2.Contains("no están en el menú"):
                         return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
-                    case var msg3 when msg3.Contains("ya están en el menú"):
-                        return Conflict(new ErrorDTO(409, "CONFLICT", ex.Message));
                     default:
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                 }

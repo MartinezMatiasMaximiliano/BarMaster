@@ -84,22 +84,13 @@ namespace BackEndAPI.Services
             {
                 throw new Exception("El Id del menú no puede estar vacío");
             }
-            if (dto.IdsProductos == null || dto.IdsProductos.Count == 0)
+            if (dto.IdsProductos == null)
             {
-                throw new Exception("Debe proporcionar al menos un producto");
+                throw new Exception("La lista de productos no puede ser nula");
             }
             if (dto.IdsProductos.Any(id => id == Guid.Empty))
             {
                 throw new Exception("Uno o más Ids de productos están vacíos");
-            }
-            if (string.IsNullOrWhiteSpace(dto.Accion))
-            {
-                throw new Exception("La acción no puede estar vacía");
-            }
-            if (!dto.Accion.Equals("Agregar", StringComparison.OrdinalIgnoreCase) && 
-                !dto.Accion.Equals("Eliminar", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new Exception("La acción debe ser 'Agregar' o 'Eliminar'");
             }
 
             // Validar que el menú existe
@@ -109,7 +100,7 @@ namespace BackEndAPI.Services
                 throw new Exception("Menú no encontrado");
             }
 
-            // Validar que todos los productos existen
+            // Validar que todos los productos del estado final existen
             var productosExistentes = await _productosRepository.GetAllProductosAsync();
             var idsProductosExistentes = productosExistentes.Select(p => p.Id).ToList();
             var productosNoEncontrados = dto.IdsProductos.Except(idsProductosExistentes).ToList();
@@ -119,46 +110,22 @@ namespace BackEndAPI.Services
                 throw new Exception($"Los siguientes productos no fueron encontrados: {string.Join(", ", productosNoEncontrados)}");
             }
 
-            // Validaciones específicas según la acción
-            if (dto.Accion.Equals("Agregar", StringComparison.OrdinalIgnoreCase))
-            {
-                // Verificar si algún producto ya está en el menú
-                var productosYaEnMenu = menu.Productos.Where(p => dto.IdsProductos.Contains(p.Id)).ToList();
-                if (productosYaEnMenu.Any())
-                {
-                    var nombresProductos = productosYaEnMenu.Select(p => p.Nombre).ToList();
-                    throw new Exception($"Los siguientes productos ya están en el menú: {string.Join(", ", nombresProductos)}");
-                }
-            }
-            else if (dto.Accion.Equals("Eliminar", StringComparison.OrdinalIgnoreCase))
-            {
-                // Verificar que los productos estén en el menú
-                var productosEnMenu = menu.Productos.Where(p => dto.IdsProductos.Contains(p.Id)).ToList();
-                
-                if (productosEnMenu.Count == 0)
-                {
-                    throw new Exception("Ninguno de los productos especificados está en el menú");
-                }
-
-                // Verificar si algún producto no está en el menú
-                var productosNoEnMenu = dto.IdsProductos.Except(productosEnMenu.Select(p => p.Id)).ToList();
-                if (productosNoEnMenu.Any())
-                {
-                    var productosNoEncontradosEnMenu = productosExistentes
-                        .Where(p => productosNoEnMenu.Contains(p.Id))
-                        .Select(p => p.Nombre)
-                        .ToList();
-                    throw new Exception($"Los siguientes productos no están en el menú: {string.Join(", ", productosNoEncontradosEnMenu)}");
-                }
-            }
+            // Calcular diferencia: qué productos agregar y qué productos quitar
+            var idsActuales = menu.Productos.Select(p => p.Id).ToList();
+            var idsParaAgregar = dto.IdsProductos.Except(idsActuales).ToList();
+            var idsParaQuitar = idsActuales.Except(dto.IdsProductos).ToList();
 
             // Obtener los productos de la base de datos
-            var productos = (await _productosRepository.GetAllProductosAsync())
-                .Where(p => dto.IdsProductos.Contains(p.Id))
+            var productosParaAgregar = productosExistentes
+                .Where(p => idsParaAgregar.Contains(p.Id))
+                .ToList();
+            
+            var productosParaQuitar = menu.Productos
+                .Where(p => idsParaQuitar.Contains(p.Id))
                 .ToList();
 
             // Si todas las validaciones pasan, ejecutar la operación en el repositorio
-            return await _menuRepository.ModificarProductosMenu(menu, productos, dto.Accion);
+            return await _menuRepository.ModificarProductosMenu(menu, productosParaAgregar, productosParaQuitar);
         }
     }
 }
