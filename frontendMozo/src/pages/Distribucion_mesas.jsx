@@ -16,6 +16,7 @@ function Distribucion_mesas() {
     const [mesas, setMesas] = useState([]);
     const [layout, setLayout] = useState([]);
     const [cargando, setCargando] = useState(false);
+    const [guardando, setGuardando] = useState(false);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
     // Cargar planos al montar el componente
@@ -131,6 +132,8 @@ function Distribucion_mesas() {
             }
         } catch (error) {
             setMensaje({ tipo: 'error', texto: 'Error al guardar las coordenadas: ' + (error.message || 'Error desconocido') });
+        } finally {
+            setGuardando(false);
         }
     };
 
@@ -178,6 +181,7 @@ function Distribucion_mesas() {
                             color="primary"
                             startIcon={<SaveIcon />}
                             onClick={handleGuardar}
+                            loading={guardando}
                         >
                             Guardar Cambios
                         </LoadingButton>

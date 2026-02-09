@@ -305,7 +305,7 @@ export const MesaModal = ({
                 </Box>
 
                 {/* Segunda fila: Facturar todo y Facturar por partes */}
-                <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, 'margin-left': "0 !important"}}>
+                <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, marginLeft: '0 !important'}}>
                     <Modal_Generico
                         textoBoton="Facturar todo"
                         titulo="Facturar todo"

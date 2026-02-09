@@ -16,6 +16,7 @@ const MesaGridItem = forwardRef(({
     datos_mesa,
     variant,
     mozo,
+    hayCajaActiva = true,
     ...props
 }, ref) => {
     return (
@@ -36,6 +37,7 @@ const MesaGridItem = forwardRef(({
                 datos_mesa={datos_mesa}
                 variant={variant}
                 mozo={mozo}
+                hayCajaActiva={hayCajaActiva}
                 estilo={{ width: '100%', height: '100%', minWidth: 0, minHeight: 0 }}
                 simpleStyle={true}
             />

@@ -23,7 +23,10 @@ export const normalizarMesa = (mesa) => ({
     y: mesa.y || DEFAULT_MESA_COORDS.y,
     w: mesa.w || DEFAULT_MESA_COORDS.w,
     h: mesa.h || DEFAULT_MESA_COORDS.h,
-    plano: mesa.plano || mesa.Plano || null
+    plano: mesa.plano || mesa.Plano || null,
+    visita: mesa.visita || mesa.Visita || null,
+    codigoParaPedir: mesa.codigoParaPedir ?? mesa.CodigoParaPedir ?? null,
+    capacidad: mesa.capacidad ?? mesa.Capacidad ?? null
 });
 
 /**

@@ -1,7 +1,9 @@
-import React from 'react';
-import { Container } from 'react-bootstrap';
-import { useDispatch } from 'react-redux';
+import React, { useEffect } from 'react';
+import { Container, Alert } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
 import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoSlice';
+import { ObtenerCajaActiva } from '../../API/APICaja';
+import { setCajaActiva } from '../../redux/slices/cajaActivaSlice';
 import { useKeyboardInput } from './hooks/useKeyboardInput';
 import { useMozoCode } from './hooks/useMozoCode';
 import { BottomBar } from './components/BottomBar';
@@ -14,10 +16,25 @@ import { PlanoSelector } from './components/PlanoSelector';
 import { MesasGridLayout } from './components/MesasGridLayout';
 import { LoadingState } from './components/LoadingState';
 import { EmptyState } from './components/EmptyState';
+import WarningIcon from '@mui/icons-material/Warning';
 
 function Index2(props) {
     const dispatch = useDispatch();
-    
+    const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
+
+    // Cargar estado de caja activa al montar
+    useEffect(() => {
+        const cargarEstadoCaja = async () => {
+            try {
+                const caja = await ObtenerCajaActiva();
+                dispatch(setCajaActiva(!!caja?.id));
+            } catch (error) {
+                dispatch(setCajaActiva(false));
+            }
+        };
+        cargarEstadoCaja();
+    }, [dispatch]);
+
     // Hooks para datos
     const { planos, planoSeleccionado, setPlanoSeleccionado, cargando: cargandoPlanos } = usePlanos();
     const cargandoMesas = props.mesas == null;
@@ -64,12 +81,19 @@ function Index2(props) {
                 layout={layout}
                 obtenerMesaPorId={obtenerMesaPorId}
                 obtenerDatosMesa={obtenerDatosMesa}
+                hayCajaActiva={hayCajaActiva}
             />
         );
     };
 
     return (
         <Container className="position-relative" style={{ height: "98vh" }}>
+            {!hayCajaActiva && (
+                <Alert variant="warning" className="m-3 d-flex align-items-center">
+                    <WarningIcon className="me-2" style={{ fontSize: '1.5rem' }} />
+                    <span>No se puede abrir mesas si no hay una caja activa</span>
+                </Alert>
+            )}
             <PlanoSelector
                 planos={planos}
                 planoSeleccionado={planoSeleccionado}

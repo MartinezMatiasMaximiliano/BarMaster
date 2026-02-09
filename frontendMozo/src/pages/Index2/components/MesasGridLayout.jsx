@@ -14,8 +14,9 @@ const ResponsiveGridLayout = WidthProvider(GridLayout);
  * @param {Array} props.layout - Layout del grid
  * @param {Function} props.obtenerMesaPorId - Función para obtener una mesa por ID
  * @param {Function} props.obtenerDatosMesa - Función para obtener datos formateados de una mesa
+ * @param {boolean} [props.hayCajaActiva=true] - Si hay caja activa para permitir abrir mesas
  */
-export const MesasGridLayout = ({ layout, obtenerMesaPorId, obtenerDatosMesa }) => {
+export const MesasGridLayout = ({ layout, obtenerMesaPorId, obtenerDatosMesa, hayCajaActiva = true }) => {
     return (
         <ResponsiveGridLayout
             layout={layout}
@@ -37,6 +38,7 @@ export const MesasGridLayout = ({ layout, obtenerMesaPorId, obtenerDatosMesa }) 
                         datos_mesa={datosMesa}
                         variant={variant}
                         mozo={mozo}
+                        hayCajaActiva={hayCajaActiva}
                     />
                 );
             })}
