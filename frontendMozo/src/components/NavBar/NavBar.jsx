@@ -13,7 +13,11 @@ function NavBar() {
     const navigate = useNavigate();
 
     function cerrarSesion() {
-        localStorage.clear();
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith("USER_")) {
+              localStorage.removeItem(key);
+            }
+          });
         loginProvider.setLogeadoUsuario(false);
         loginProvider.setRol("");
         navigate('/');

@@ -49,12 +49,17 @@ const LoginEmpresaSucursal = () => {
         const authType = response.auth_type;
         // Extraer y guardar el tenant ID (nombre de empresa)
         const tenantId = authService.extractCompanyName(formData.username);
+
+        // Decodificar el JWT para obtener IdSucursal
+        const decoded = authService.decodeToken(response.access_token);
+        const idSucursal = decoded?.IdSucursal != null ? String(decoded.IdSucursal) : null;
         
         // Guardar datos en localStorage
         localStorage.setItem('token', response.access_token);
         localStorage.setItem('auth_type', authType);
         localStorage.setItem('username', formData.username);
         localStorage.setItem('tenantId', tenantId);
+        localStorage.setItem('idSucursal', idSucursal || '');
 
         // Actualizar contextos
         loginContext.setLogeadoEmpresaSucursal(true);

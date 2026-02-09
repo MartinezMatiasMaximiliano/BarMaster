@@ -47,7 +47,7 @@ import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 
 const menuConfig = {
-    Encargado: {
+    admin: {
         "Gestión": [
             { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
             { path: "/abm_menus", label: "Menús", icon: MenuBookOutlinedIcon },
@@ -85,7 +85,7 @@ const menuConfig = {
             { path: "/mi_plan", label: "Mi Plan", icon: StarOutlineOutlinedIcon },
         ],
     },
-    Cajero: {
+    cajero: {
         "Gestión": [
             { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
             { path: "/abm_menus", label: "Menús", icon: MenuBookOutlinedIcon },

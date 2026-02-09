@@ -36,9 +36,6 @@ export const MesaModal = ({
     handleClose,
     datos_mesa,
     visitaMesa,
-    checkBoxSeleccionados,
-    handleChangeCheckBox,
-    activarCancelarPedido,
     onCancelarPedidos,
     onCerrarMesa
 }) => {
@@ -50,8 +47,6 @@ export const MesaModal = ({
         tabValue,
         visitaMesa: visitaMesaCuenta,
         productosAPagar,
-        totalPedidos,
-        cantidadItems,
         currencyFormatter,
         handleTabChange,
         PagarMesa

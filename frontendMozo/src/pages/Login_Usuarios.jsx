@@ -21,13 +21,11 @@ const LoginUsuarios = () => {
         try {
             const result = await authService.loginPersona(Dni, password);
             
-            if (result && result.success) {
-                // Obtener el rol del localStorage (ya fue guardado por loginPersona)
-                const rol = localStorage.getItem('rol') || '';
+            if (result && result.success && result.token) {
                 
                 // Actualizar el contexto de login
                 loginProvider.setLogeadoUsuario(true);
-                loginProvider.setRol(rol);
+                loginProvider.setRol(localStorage.getItem('USER_auth_type'));
                 
                 // Navegar al sistema
                 navigate('/sistema_sucursal');

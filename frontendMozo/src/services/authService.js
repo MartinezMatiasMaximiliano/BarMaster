@@ -89,35 +89,26 @@ export const authService = {
                 const tokenData = response.data;
                 
                 // Guardar el token
-                localStorage.setItem('token', tokenData.Access_token || tokenData.access_token);
-                localStorage.setItem('auth_type', tokenData.Auth_type || tokenData.auth_type || 'admin');
+                localStorage.setItem('USER_token', tokenData.access_token);
+                localStorage.setItem('USER_auth_type', tokenData.auth_type);
                 
                 // Decodificar el token para extraer información de la persona
-                const decoded = authService.decodeToken(tokenData.Access_token || tokenData.access_token);
+                const decoded = authService.decodeToken(tokenData.access_token);
                 
                 if (decoded) {
                     // Extraer nombres y apellido del claim RequestedBy
                     const requestedBy = decoded.RequestedBy || '';
                     if (requestedBy) {
                         const [apellido, nombres] = requestedBy.split(',');
-                        localStorage.setItem('apellido', apellido?.trim() || '');
-                        localStorage.setItem('nombres', nombres?.trim() || '');
+                        localStorage.setItem('USER_apellido', apellido?.trim() || '');
+                        localStorage.setItem('USER_nombres', nombres?.trim() || '');
                     }
-                    
-                    // Extraer el rol
-                    const rol = decoded.RequestedRole || '';
-                    if (rol) {
-                        localStorage.setItem('rol', rol);
-                    }
-                    
-                    // Guardar tipo de autenticación
-                    localStorage.setItem('auth_type', decoded.TipoAuth || 'admin');
                 }
                 
                 return {
                     success: true,
-                    token: tokenData.Access_token || tokenData.access_token,
-                    authType: tokenData.Auth_type || tokenData.auth_type
+                    token: tokenData.access_token,
+                    authType: tokenData.auth_type
                 };
             }
             

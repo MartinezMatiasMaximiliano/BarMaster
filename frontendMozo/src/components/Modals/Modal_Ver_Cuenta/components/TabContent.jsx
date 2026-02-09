@@ -15,12 +15,12 @@ const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, fac
                 borderColor: 'divider',
                 p: 2,
                 bgcolor: estado === false ? 'background.default' : 'transparent',
-                minHeight: 200,
+                minHeight: '25vh',
                 ...(mostrarCheckboxes && {
                     display: 'flex',
                     flexDirection: 'column',
                     height: '100%',
-                    minHeight: 0
+                    minHeight: '25vh'
                 })
             }}
         >

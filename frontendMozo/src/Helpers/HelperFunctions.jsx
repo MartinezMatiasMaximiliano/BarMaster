@@ -89,8 +89,8 @@ export function formatearHoraCompleta(fecha) {
 }
 
 export function GetChipNombreCompleto(Nombre, Apellido) {
-    const nombres = Nombre || localStorage.getItem('nombres') || '';
-    const apellido = Apellido || localStorage.getItem('apellido') || '';
+    const nombres = Nombre || localStorage.getItem('USER_nombres') || '';
+    const apellido = Apellido || localStorage.getItem('USER_apellido') || '';
 
     const ChipNombreCompleto =
         <Chip
