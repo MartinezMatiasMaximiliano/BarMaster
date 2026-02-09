@@ -6,7 +6,7 @@ import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
 import { useMesaState } from './useMesaState';
 import { useMesaLogic } from './useMesaLogic';
 
-export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true }) {
+export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true, esVistaPlano = false }) {
     const {
         checkBoxSeleccionados,
         show,
@@ -34,7 +34,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     };
 
     const handleCerrarMesa = (mesaId) => {
-        cerrarMesa(mesaId, datos_mesa.nombre, visitaMesa?.productosConsumidos || []);
+        cerrarMesa(mesaId, datos_mesa.nombre, visitaMesa?.productosConsumidos || [], esVistaPlano);
     };
 
     const handleAbrirMesa = () => {
@@ -48,7 +48,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
             codigoServicioMozo: mozo.codigoDeServicio,
             abrir: true,
         }
-        abrirMesa(request);
+        abrirMesa(request, esVistaPlano);
     };
 
     // Wrapper para handleShow que verifica si hay caja activa

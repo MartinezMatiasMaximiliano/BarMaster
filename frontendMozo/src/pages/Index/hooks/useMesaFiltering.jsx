@@ -22,14 +22,18 @@ const ESTILO_MESAS = {
 export const useMesaFiltering = (mesas, datosMozos, hayCajaActiva = true) => {
     const mozo = useSelector((state) => state.mozo.value);
 
-    // Renderizar TODAS las mesas sin filtrar por plano
+    // Renderizar TODAS las mesas sin filtrar por plano, ordenadas por nombre ascendente
     const mesasParaMostrar = useMemo(() => {
         if (!mesas || !Array.isArray(mesas) || mesas.length === 0) {
             return [];
         }
 
-        // Mostrar todas las mesas sin importar el plano al que pertenecen
-        return mesas.map((mesa, i) => {
+        const nombre = (mesa) => (mesa.nombre ?? mesa.Nombre ?? '').toString();
+        const ordenadas = [...mesas].sort((a, b) =>
+            nombre(a).localeCompare(nombre(b), undefined, { numeric: true })
+        );
+
+        return ordenadas.map((mesa, i) => {
             
             // Determinar el variant según el mozo asignado
             const variant = mesa.visita 

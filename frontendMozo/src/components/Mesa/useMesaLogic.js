@@ -35,7 +35,7 @@ export const useMesaLogic = () => {
         }
     };
 
-    const cerrarMesa = async (mesaId, numeroMesa, productos) => {
+    const cerrarMesa = async (mesaId, numeroMesa, productos, index2 = false) => {
         try {
             const productosPendientes = obtenerIdProductosPendientes(productos);
             
@@ -60,14 +60,18 @@ export const useMesaLogic = () => {
             // Notificar al cliente
             connection.send("MesaCerrada", numeroMesa);
 
-            // Recargar vista
-            navigate('/?=' + Date.now());
+            // Recargar vista manteniendo la pestaña actual (Index2 o grid)
+            if (index2) {
+                navigate('/Index2?=' + Date.now());
+            } else {
+                navigate('/sistema_sucursal?=' + Date.now());
+            }
         } catch (error) {
             console.error('Error al cerrar mesa:', error);
         }
     };
 
-    const abrirMesa = async (request) => {
+    const abrirMesa = async (request, index2=false) => {
         try {
             // Asegurar que el objeto tenga los nombres correctos en PascalCase para el DTO
             const requestDTO = {
@@ -100,7 +104,11 @@ export const useMesaLogic = () => {
             };
             
             dispatch(agregarVisita(datosVisita));
-            navigate('/?=' + Date.now());
+            if (index2) {
+                navigate('/Index2?=' + Date.now());
+            } else {
+                navigate('/sistema_sucursal?=' + Date.now());
+            }
         } catch (error) {
             console.error('Error al abrir mesa:', error);
         }

@@ -38,6 +38,7 @@ const MesaGridItem = forwardRef(({
                 variant={variant}
                 mozo={mozo}
                 hayCajaActiva={hayCajaActiva}
+                esVistaPlano={true}
                 estilo={{ width: '100%', height: '100%', minWidth: 0, minHeight: 0 }}
                 simpleStyle={true}
             />

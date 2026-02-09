@@ -102,7 +102,8 @@ function App() {
     // Es mucho más rápido que usar window.location.reload() al abrir/cerrar mesa
 
     useEffect(() => {
-        if (location.pathname === '/sistema_sucursal') {
+        const esVistaMesas = location.pathname === '/sistema_sucursal' || location.pathname === '/Index2';
+        if (esVistaMesas) {
             if (localStorage.getItem('token')) {
                 BuscarTodasLasMesas()
                     .then(data => SetMesas(Array.isArray(data) ? data : []))
