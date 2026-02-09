@@ -23,6 +23,13 @@ namespace BackEndAPI.Repositories
             return await db.Visitas.Include(v => v.Productos).FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<Visita?> BuscarVisitaActivaPorIdMesa(Guid idMesa)
+        {
+            return await db.Visitas
+                .Include(v => v.Productos)
+                .FirstOrDefaultAsync(v => v.IdMesa == idMesa && v.Estado == "Abierta");
+        }
+
         public async Task<Visita> CrearVisita(Visita request)
         {
             await db.Visitas.AddAsync(request);

@@ -118,28 +118,27 @@ namespace BackEndAPI.Services
                 return await _visitasRepository.CrearVisita(Visita);
 
             }
-            else // Lógica para cerrar la mesa
+            else // Lógica para cerrar la mesa: buscar la visita activa de esta mesa
             {
                 buscarMesa.CodigoParaPedir = null;
-                var visita = await _visitasRepository.BuscarVisitaPorId(request.IdVisita);
+                var visita = await _visitasRepository.BuscarVisitaActivaPorIdMesa(request.IdMesa);
 
                 if (visita == null)
                 {
-                    throw new Exception("Visita no encontrada");
+                    throw new Exception("No hay una visita abierta para esta mesa");
                 }
 
-                if (visita.Productos.Count() <= 0) //borrar visitas vacias
-                {
+                await _mesasRepository.ModificarMesa(buscarMesa);
 
+                if (visita.Productos.Count() <= 0) // borrar visitas vacías
+                {
                     await _visitasRepository.EliminarVisita(visita);
                     return visita;
-
-                }else //desactivar visitas no vacias
+                }
+                else // desactivar visitas no vacías
                 {
                     visita.Estado = "Cerrada";
-                    //TODO: cerrar una mesa si quedan productos sin pagar? lo mejor es tomar todos los productos no pagos, pero como crear el pago?
-
-                    return visita;
+                    return await _visitasRepository.ModificarVisita(visita);
                 }
 
                 
