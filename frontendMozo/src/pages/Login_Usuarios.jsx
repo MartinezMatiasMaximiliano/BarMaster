@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import LoginForm from '../components/LoginForm';
-import authService from '../connections/AuthService';
+import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { LoginContext } from '../App';
 import { useSnackbar } from '../hooks/useSnackbar.jsx';
@@ -11,50 +11,33 @@ const LoginUsuarios = () => {
     const loginProvider = useContext(LoginContext);
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
 
-    // TEMPORAL: Bypass para desarrollo - permite login con cualquier usuario
-    const BYPASS_MODE = true; // Cambiar a false cuando se implemente el login real
-
-    const handleLoginBypass = (Dni, password) => {
-        // Validar que se ingresó algo
+    const handleLogin = async (Dni, password) => {
+        // Validar que se ingresaron datos
         if (!Dni || !password) {
             showSnackbar('Por favor ingrese DNI y contraseña', 'warning');
             return;
         }
 
-        // Guardar datos temporales en localStorage
-        localStorage.setItem('nombres', 'Usuario');
-        localStorage.setItem('apellido', 'Temporal');
-        localStorage.setItem('id', '1');
-        localStorage.setItem('rol', 'Encargado'); // Rol con acceso completo
-        localStorage.setItem('auth_type', 'sucursal'); // Necesario para que funcione el sistema
-
-        loginProvider.setLogeadoUsuario(true);
-        loginProvider.setRol('Encargado');
-
-        // Navegar al sistema
-        navigate('/sistema_sucursal');
-    };
-
-    const handleLogin = async (Dni, password) => {
-        // TEMPORAL: Bypass activado
-        if (BYPASS_MODE) {
-            handleLoginBypass(Dni, password);
-            return;
-        }
-
-        // Código original del login
         try {
-            const exito = await authService.login(Dni, password);
-            if (exito) {
+            const result = await authService.loginPersona(Dni, password);
+            
+            if (result && result.success) {
+                // Obtener el rol del localStorage (ya fue guardado por loginPersona)
+                const rol = localStorage.getItem('rol') || '';
+                
+                // Actualizar el contexto de login
                 loginProvider.setLogeadoUsuario(true);
-                loginProvider.setRol(localStorage.getItem("rol"));
+                loginProvider.setRol(rol);
+                
+                // Navegar al sistema
                 navigate('/sistema_sucursal');
             } else {
-                showSnackbar('Credenciales incorrectas.', 'error');
+                showSnackbar('Credenciales incorrectas', 'error');
             }
         } catch (error) {
-            console.error('Error durante el login', error);
-            showSnackbar('Hubo un problema al intentar iniciar sesión', 'error');
+            console.error('Error durante el login:', error);
+            const errorMessage = error.message || 'Hubo un problema al intentar iniciar sesión';
+            showSnackbar(errorMessage, 'error');
         }
     };
 

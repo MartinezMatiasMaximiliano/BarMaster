@@ -70,6 +70,77 @@ export const authService = {
         if (!token) return null;
         const decoded = authService.decodeToken(token);
         return decoded?.IdSucursal || null;
+    },
+
+    // Función para login de personas (empleados)
+    loginPersona: async (dni, password) => {
+        try {
+            const url = `${import.meta.env.VITE_BASE_URL}LoginPersona`;
+            
+            const response = await axios.post(
+                url,
+                { 
+                    Username: dni,  // El backend espera Username (DNI)
+                    Password: password 
+                }, authService.getAuthHeaders()
+            );
+
+            if (response.status === 200 && response.data) {
+                const tokenData = response.data;
+                
+                // Guardar el token
+                localStorage.setItem('token', tokenData.Access_token || tokenData.access_token);
+                localStorage.setItem('auth_type', tokenData.Auth_type || tokenData.auth_type || 'admin');
+                
+                // Decodificar el token para extraer información de la persona
+                const decoded = authService.decodeToken(tokenData.Access_token || tokenData.access_token);
+                
+                if (decoded) {
+                    // Extraer nombres y apellido del claim RequestedBy
+                    const requestedBy = decoded.RequestedBy || '';
+                    if (requestedBy) {
+                        const [apellido, nombres] = requestedBy.split(',');
+                        localStorage.setItem('apellido', apellido?.trim() || '');
+                        localStorage.setItem('nombres', nombres?.trim() || '');
+                    }
+                    
+                    // Extraer el rol
+                    const rol = decoded.RequestedRole || '';
+                    if (rol) {
+                        localStorage.setItem('rol', rol);
+                    }
+                    
+                    // Guardar tipo de autenticación
+                    localStorage.setItem('auth_type', decoded.TipoAuth || 'admin');
+                }
+                
+                return {
+                    success: true,
+                    token: tokenData.Access_token || tokenData.access_token,
+                    authType: tokenData.Auth_type || tokenData.auth_type
+                };
+            }
+            
+            return { success: false };
+        } catch (error) {
+            console.error('Error en login de persona:', error);
+            
+            // Manejar errores específicos del backend
+            if (error.response) {
+                const status = error.response.status;
+                const message = error.response.data || error.message;
+                
+                if (status === 401) {
+                    throw new Error('Usuario o contraseña incorrectos');
+                } else if (status === 400) {
+                    throw new Error(message || 'Usuario no encontrado');
+                } else {
+                    throw new Error(message || 'Error al iniciar sesión');
+                }
+            }
+            
+            throw new Error('Error de conexión. Por favor, intente nuevamente');
+        }
     }
 };
 

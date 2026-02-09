@@ -112,3 +112,26 @@ export async function BorrarMenu(idMenu) {
         return error.response;
     }
 }
+
+export async function ModificarProductosMenu(idMenu, idsProductos) {
+    try {
+        const response = await axios.post(
+            `${BASE_URL_API}Menu/ModificarProductos`,
+            {
+                IdMenu: idMenu,
+                IdsProductos: idsProductos
+            },
+            authService.getAuthHeaders()
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error al modificar productos del menú:", error);
+        if (error.response?.data) {
+            const errorMessage = typeof error.response.data === 'string'
+                ? error.response.data
+                : error.response.data.error?.mensaje || "Error al modificar productos del menú";
+            throw new Error(errorMessage);
+        }
+        throw error;
+    }
+}

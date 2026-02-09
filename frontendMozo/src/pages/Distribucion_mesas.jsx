@@ -6,6 +6,7 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { BuscarTodosLosPlanos } from "../API/APIPlanos";
 import { ModificarMesa } from "../API/APIMesas";
+import { LoadingButton } from "../components/common/LoadingButton";
 
 const ResponsiveGridLayout = WidthProvider(GridLayout);
 
@@ -15,7 +16,6 @@ function Distribucion_mesas() {
     const [mesas, setMesas] = useState([]);
     const [layout, setLayout] = useState([]);
     const [cargando, setCargando] = useState(false);
-    const [guardando, setGuardando] = useState(false);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
     // Cargar planos al montar el componente
@@ -131,8 +131,6 @@ function Distribucion_mesas() {
             }
         } catch (error) {
             setMensaje({ tipo: 'error', texto: 'Error al guardar las coordenadas: ' + (error.message || 'Error desconocido') });
-        } finally {
-            setGuardando(false);
         }
     };
 
@@ -175,15 +173,14 @@ function Distribucion_mesas() {
                     </FormControl>
 
                     {planoSeleccionado && layout.length > 0 && (
-                        <Button
+                        <LoadingButton
                             variant="contained"
                             color="primary"
                             startIcon={<SaveIcon />}
                             onClick={handleGuardar}
-                            disabled={guardando}
                         >
-                            {guardando ? 'Guardando...' : 'Guardar Cambios'}
-                        </Button>
+                            Guardar Cambios
+                        </LoadingButton>
                     )}
                 </Box>
 

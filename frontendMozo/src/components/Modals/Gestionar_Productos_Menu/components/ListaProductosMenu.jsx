@@ -87,8 +87,20 @@ export const ListaProductosDisponibles = ({
                         sx={{ width: 200 }}
                         isOptionEqualToValue={(option, value) => option?.Id === value?.Id}
                     />
-                )}
-            </Stack>
+                    )}
+                </Stack>
+
+            {/* Mensaje de productos mostrados */}
+            <Typography 
+                variant="caption" 
+                sx={{ 
+                    color: 'text.secondary',
+                    mb: 1,
+                    fontSize: '0.75rem'
+                }}
+            >
+                Mostrando {productosFiltrados.length} producto{productosFiltrados.length !== 1 ? 's' : ''} de {productos.length}
+            </Typography>
 
             {/* Lista de productos */}
             <Box
@@ -248,8 +260,20 @@ export const ListaProductosEnMenu = ({
                         sx={{ width: 200 }}
                         isOptionEqualToValue={(option, value) => option?.Id === value?.Id}
                     />
-                )}
-            </Stack>
+                    )}
+                </Stack>
+
+            {/* Mensaje de productos mostrados */}
+            <Typography 
+                variant="caption" 
+                sx={{ 
+                    color: 'text.secondary',
+                    mb: 1,
+                    fontSize: '0.75rem'
+                }}
+            >
+                Mostrando {productosFiltrados.length} producto{productosFiltrados.length !== 1 ? 's' : ''} de {productos.length}
+            </Typography>
 
             {/* Lista de productos */}
             <Box

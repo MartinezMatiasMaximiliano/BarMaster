@@ -19,13 +19,13 @@ import {
     Typography
 } from '@mui/material';
 import LockResetIcon from '@mui/icons-material/LockReset';
+import { LoadingButton } from '../components/common/LoadingButton';
 
 const PasswordChangeForm = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -55,7 +55,6 @@ const PasswordChangeForm = () => {
             return;
         }
 
-        setLoading(true);
         try {
             await ModificarPassword(id, newPassword, token);
             setSuccess('Contraseña cambiada exitosamente.');
@@ -67,8 +66,6 @@ const PasswordChangeForm = () => {
                 || error.message 
                 || 'Error al cambiar la contraseña. Por favor, intenta nuevamente.';
             setError(errorMessage);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -92,14 +89,13 @@ const PasswordChangeForm = () => {
                         <TextField label="Confirmar Nueva Contraseña" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                     </Box>
                     <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3}>
-                        <Button
+                        <LoadingButton
                             onClick={handleSubmit}
                             variant="contained"
-                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <LockResetIcon />}
-                            disabled={loading}
+                            startIcon={<LockResetIcon />}
                         >
-                            {loading ? 'Guardando...' : 'Guardar'}
-                        </Button>
+                            Guardar
+                        </LoadingButton>
                     </Stack>
                 </CardContent>
             </Card>

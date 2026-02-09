@@ -16,6 +16,8 @@ import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import { ListaProductosDisponibles, ListaProductosEnMenu } from './components/ListaProductosMenu';
 import { useSnackbar } from '../../../hooks/useSnackbar.jsx';
 import { SnackbarWrapper } from '../../common/SnackbarWrapper';
+import { LoadingButton } from '../../common/LoadingButton';
+import { ModificarProductosMenu } from '../../../API/APIMenus';
 
 export default function Modal_GestionarProductosMenu({
     open,
@@ -78,11 +80,34 @@ export default function Modal_GestionarProductosMenu({
         onClose();
     }, [onClose, idsProductosEnMenuInicial]);
 
-    // Manejar guardar cambios (sin funcionalidad por ahora)
-    const handleGuardar = useCallback(() => {
-        // TODO: Implementar cuando estén listos los endpoints
-        showSnackbar('Esta funcionalidad estará disponible próximamente', 'info');
-    }, [showSnackbar]);
+    // Manejar guardar cambios
+    const handleGuardar = useCallback(async () => {
+        try {
+            const menuId = menu.id || menu.Id;
+            if (!menuId) {
+                showSnackbar('Error: No se pudo obtener el ID del menú', 'error');
+                return;
+            }
+
+            // Enviar todos los IDs de productos que están en la lista derecha (estado final deseado)
+            await ModificarProductosMenu(menuId, idsProductosEnMenu);
+            
+            showSnackbar('Productos del menú actualizados exitosamente', 'success');
+            
+            // Recargar datos si se proporciona la función
+            if (recargar) {
+                recargar();
+            }
+            
+            // Cerrar el modal después de un breve delay para que se vea el mensaje
+            setTimeout(() => {
+                handleClose();
+            }, 1000);
+        } catch (error) {
+            const errorMessage = error.message || 'Error al guardar los cambios';
+            showSnackbar(errorMessage, 'error');
+        }
+    }, [showSnackbar, menu, idsProductosEnMenu, recargar, handleClose]);
 
     if (!menu) {
         return null;
@@ -143,14 +168,14 @@ export default function Modal_GestionarProductosMenu({
                 </DialogContent>
 
                 <DialogActions sx={{ px: 4, py: 2, display: 'flex', justifyContent: 'space-between' }}>
-                    <Button
+                    <LoadingButton
                         variant="contained"
                         color="primary"
                         onClick={handleGuardar}
                         size="small"
                     >
                         Guardar cambios
-                    </Button>
+                    </LoadingButton>
                     <Button
                         onClick={handleClose}
                         variant="outlined"

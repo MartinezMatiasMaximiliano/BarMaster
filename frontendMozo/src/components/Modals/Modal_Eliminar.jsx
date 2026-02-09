@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+import { LoadingButton } from '../common/LoadingButton';
 
 function Modal_Eliminar(props) {
 
@@ -70,9 +71,9 @@ function Modal_Eliminar(props) {
                     <Button onClick={handleClose} variant="outlined">
                         Cancelar
                     </Button>
-                    <Button onClick={handleSave} variant="contained" color="error">
+                    <LoadingButton onClick={handleSave} variant="contained" color="error">
                         Eliminar
-                    </Button>
+                    </LoadingButton>
                 </DialogActions>
             </Dialog>
         </>

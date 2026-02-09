@@ -18,6 +18,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { Renderizados } from "./Renderizados";
 import Errores from "./Errores"
 import Handlers from "./Handlers";
+import { LoadingButton } from "../../common/LoadingButton";
 import { 
     gradientButtonStyles, 
     cancelButtonStyles, 
@@ -178,7 +179,7 @@ function Modal_Editar(props) {
                     >
                         Cancelar
                     </Button>
-                    <Button 
+                    <LoadingButton 
                         onClick={handleSave} 
                         variant="contained" 
                         color="primary"
@@ -186,7 +187,7 @@ function Modal_Editar(props) {
                         sx={gradientButtonStyles}
                     >
                         Guardar Cambios
-                    </Button>
+                    </LoadingButton>
                 </DialogActions>
             </Dialog>
         </>
