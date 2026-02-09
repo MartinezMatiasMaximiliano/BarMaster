@@ -109,6 +109,8 @@ namespace BackEndAPI.Controllers
                         return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     case "La mesa ya está en el estado solicitado":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No hay una visita abierta para esta mesa":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     default:
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                 }

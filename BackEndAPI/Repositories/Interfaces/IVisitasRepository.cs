@@ -5,6 +5,8 @@ namespace BackEndAPI.Repositories.Interfaces
     public interface IVisitasRepository
     {
         Task<Visita?> BuscarVisitaPorId(Guid? id);
+        /// <summary>Obtiene la visita en estado "Abierta" para la mesa indicada, si existe.</summary>
+        Task<Visita?> BuscarVisitaActivaPorIdMesa(Guid idMesa);
         Task<Visita> CrearVisita(Visita request);
         Task<Visita> ModificarVisita(Visita request);
         Task<bool> EliminarVisita(Visita request);
