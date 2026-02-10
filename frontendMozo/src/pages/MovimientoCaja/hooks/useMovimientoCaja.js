@@ -24,28 +24,20 @@ export const useMovimientoCaja = () => {
         cargarDatos();
     }, []);
 
-    // Función para calcular el balance actual de la caja
+    // Función para calcular el balance (fallback cuando el backend no envía montoActual)
     const calcularBalanceActual = (movimientos, montoInicial) => {
         let saldoAcumulado = montoInicial || 0;
-        
-        // Ordenar movimientos por fecha y hora ascendente (más antiguos primero)
         const movimientosOrdenados = [...movimientos].sort((a, b) => {
             const fechaA = new Date(`${a.fecha}T${a.hora}`);
             const fechaB = new Date(`${b.fecha}T${b.hora}`);
             return fechaA - fechaB;
         });
-        
-        // Calcular saldo acumulado
         movimientosOrdenados.forEach(mov => {
             if (mov.esEfectivo) {
-                if (mov.esIngreso) {
-                    saldoAcumulado += mov.monto;
-                } else {
-                    saldoAcumulado -= mov.monto;
-                }
+                if (mov.esIngreso) saldoAcumulado += mov.monto;
+                else saldoAcumulado -= mov.monto;
             }
         });
-        
         return saldoAcumulado;
     };
 
@@ -85,9 +77,10 @@ export const useMovimientoCaja = () => {
         }
     };
 
-    // Calcular balance actual
+    // Balance actual: usar MontoActual del backend (fuente de verdad). Fallback a cálculo si no viene.
     const balanceActual = useMemo(() => {
         if (!cajaActiva) return 0;
+        if (typeof cajaActiva.montoActual === 'number') return cajaActiva.montoActual;
         const montoInicial = cajaActiva.montoInicial || 0;
         return calcularBalanceActual(movimientosCajaActiva, montoInicial);
     }, [cajaActiva, movimientosCajaActiva]);
@@ -165,11 +158,12 @@ export const useMovimientoCaja = () => {
         try {
             await CrearMovimientoCaja(formData);
             setMensaje('El movimiento de caja se registró correctamente.');
-            // Limpiar formulario
             setFormData(initialFormData);
-            // Recargar movimientos para actualizar el balance
-            if (cajaActiva?.id) {
-                await cargarMovimientosCaja(cajaActiva.id, cajaActiva.montoInicial);
+            // Recargar caja activa para obtener MontoActual actualizado (fuente de verdad)
+            const cajaActualizada = await ObtenerCajaActiva();
+            if (cajaActualizada) {
+                setCajaActiva(cajaActualizada);
+                await cargarMovimientosCaja(cajaActualizada.id, cajaActualizada.montoInicial);
             }
         } catch (err) {
             setError(obtenerMensajeError(err, 'No pudimos registrar el movimiento de caja.'));

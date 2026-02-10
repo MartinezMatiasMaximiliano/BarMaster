@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 
 const Graficas = (props) => {
-    const data = props.datos_pedidos;
+    const data = Array.isArray(props.datos_pedidos) ? props.datos_pedidos : [];
 
     // --- Estados para el rango de fechas ---
     const [fechaInicio, setFechaInicio] = useState("");
@@ -23,36 +23,6 @@ const Graficas = (props) => {
         const fin = new Date(fechaFin);
         return fechaPedido >= inicio && fechaPedido <= fin;
     });
-
-    function generarRegistros(cantidad = 100) {
-        const nombres = [
-            "Paella", "Pizza", "Milanesa", "Flan", "Tarta",
-            "Empanadas", "Helado", "Hamburguesa", "Ensalada", "Sopa"
-        ];
-
-        const registros = [];
-        const fechaInicio = new Date("2025-01-01T00:00:00Z");
-
-        for (let i = 0; i < cantidad; i++) {
-            const fecha = new Date(fechaInicio);
-            fecha.setDate(fechaInicio.getDate() + i);
-
-            const registro = {
-                fecha: fecha.toISOString(),
-                indicaciones: "",
-                mesa: Math.floor(Math.random() * 20) + 1, // mesas del 1 al 20
-                nombre: nombres[Math.floor(Math.random() * nombres.length)],
-                precio: Math.floor(Math.random() * (100000 - 20000 + 1)) + 8000 // entre 8k y 20k
-            };
-
-            registros.push(registro);
-        }
-
-        return registros;
-    }
-
-    // Ejemplo de uso:
-    const datos = generarRegistros(150);
 
     var chipFecha = fechaInicio && fechaFin ? <Chip label={formatearFecha(fechaInicio) + " a " + formatearFecha(fechaFin)}></Chip> : <Chip label="Historico"></Chip>
 
@@ -93,7 +63,7 @@ const Graficas = (props) => {
                 <hr></hr>
                 <Box>
                     <h3 style={{ textAlign: "center" }}>Ganancias por fecha {chipFecha}</h3>
-                    <Grafica_Curva data={datos} calcularDatos={calcularGananciasPorFecha} />
+                    <Grafica_Curva data={dataFiltrada} calcularDatos={calcularGananciasPorFecha} />
                 </Box>
                 <hr></hr>
                 <Box>   

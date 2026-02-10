@@ -258,7 +258,7 @@ function App() {
     const datos_mesas_abm = MappearMesas(mesas || [])
     const datos_menu_abm = MappearMenu(menu || [])
     const Notificaciones = MappearNotificaciones(notificaciones || [])
-    const datos_pedidos = MappearPedidos(visitas || [])
+    const datos_pedidos = MappearPedidos(visitasActivas || [])
     const datos_reservas = MappearReservas(reservas || [])
     const datos_planos_abm = MappearPlanos(planos || [])
 

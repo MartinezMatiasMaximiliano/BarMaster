@@ -87,12 +87,14 @@ function Index2(props) {
     };
 
     return (
-        <Container className="position-relative" style={{ height: "98vh" }}>
+        <Container className="position-relative" style={{ height: "calc(100vh - 32px)", overflow: "hidden" }}>
             {!hayCajaActiva && (
-                <Alert variant="warning" className="m-3 d-flex align-items-center">
-                    <WarningIcon className="me-2" style={{ fontSize: '1.5rem' }} />
-                    <span>No se puede abrir mesas si no hay una caja activa</span>
-                </Alert>
+                <div className="position-absolute top-0 start-0 end-0 m-3" style={{ zIndex: 10 }}>
+                    <Alert variant="warning" className="mb-0 d-flex align-items-center shadow-sm">
+                        <WarningIcon className="me-2" style={{ fontSize: '1.5rem' }} />
+                        <span>No se puede abrir mesas si no hay una caja activa</span>
+                    </Alert>
+                </div>
             )}
             <PlanoSelector
                 planos={planos}

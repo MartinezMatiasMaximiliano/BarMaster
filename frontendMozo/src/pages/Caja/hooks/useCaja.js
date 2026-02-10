@@ -201,21 +201,19 @@ export const useCaja = () => {
         }
     };
 
-    // Calcular el balance actual basado en movimientos con esEfectivo = true
-    // Solo para la caja activa, usando movimientosCajaActiva (no afectado por caja seleccionada)
+    // Balance actual: usar MontoActual del backend (fuente de verdad) para integridad de datos.
+    // Fallback a cálculo por movimientos solo si el backend no envía montoActual (retrocompatibilidad).
     const balanceActual = useMemo(() => {
         if (!cajaActiva) {
             return 0;
         }
-        
+        if (typeof cajaActiva.montoActual === 'number') {
+            return cajaActiva.montoActual;
+        }
         const montoInicial = cajaActiva?.montoInicial || 0;
-        
         if (movimientosCajaActiva.length === 0) {
             return montoInicial;
         }
-        
-        // El balance es el saldo del último movimiento (más reciente) después de invertir
-        // Como los movimientos ya vienen con saldo calculado, tomamos el primero (más reciente)
         const movimientoMasReciente = movimientosCajaActiva[0];
         return movimientoMasReciente?.saldo ?? montoInicial;
     }, [cajaActiva, movimientosCajaActiva]);

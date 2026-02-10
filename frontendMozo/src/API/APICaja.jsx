@@ -13,34 +13,29 @@ function formatearFechaHora(dateTimeString) {
     return { fecha: fechaStr, hora: horaStr };
 }
 
-// Función auxiliar para transformar caja del backend al formato del frontend
-function transformarCaja(caja) {
-    const id = caja.id || caja.Id;
-    const fechaAperturaRaw = caja.fechaApertura || caja.FechaApertura;
-    const fechaCierreRaw = caja.fechaCierre || caja.FechaCierre;
-    const montoAperturaRaw = caja.montoApertura || caja.MontoApertura;
-    const montoCierreRaw = caja.montoCierre || caja.MontoCierre;
-    const diferenciaRaw = caja.diferencia || caja.Diferencia;
-    
-    const fechaApertura = formatearFechaHora(fechaAperturaRaw);
-    const fechaCierre = fechaCierreRaw ? formatearFechaHora(fechaCierreRaw) : null;
-    
+// Transforma la response del backend al formato del frontend.
+// Response esperada (camelCase): { id, idSucursal, fechaApertura, fechaCierre, montoApertura, montoActual, montoCierre, diferencia }
+function MappearCaja(caja) {
+    const fechaApertura = formatearFechaHora(caja.fechaApertura);
+    const fechaCierre = caja.fechaCierre ? formatearFechaHora(caja.fechaCierre) : null;
+
     return {
-        id: id,
+        id: caja.id,
         fechaApertura: fechaApertura.fecha,
         horaApertura: fechaApertura.hora,
         fecha: fechaApertura.fecha,
-        fechaCierre: fechaCierre?.fecha || null,
-        horaCierre: fechaCierre?.hora || null,
-        montoInicial: parseFloat(montoAperturaRaw) || 0,
-        montoFinal: montoCierreRaw ? parseFloat(montoCierreRaw) : null,
-        montoEsperado: montoCierreRaw ? parseFloat(montoCierreRaw) : parseFloat(montoAperturaRaw) || 0,
-        totalEsperado: montoCierreRaw ? parseFloat(montoCierreRaw) : parseFloat(montoAperturaRaw) || 0,
-        diferencia: diferenciaRaw ? parseFloat(diferenciaRaw) : 0,
+        fechaCierre: fechaCierre?.fecha ?? null,
+        horaCierre: fechaCierre?.hora ?? null,
+        montoInicial: Number(caja.montoApertura) || 0,
+        montoActual: caja.montoActual != null ? Number(caja.montoActual) : undefined,
+        montoFinal: caja.montoCierre != null ? Number(caja.montoCierre) : null,
+        montoEsperado: caja.montoCierre != null ? Number(caja.montoCierre) : Number(caja.montoApertura) || 0,
+        totalEsperado: caja.montoCierre != null ? Number(caja.montoCierre) : Number(caja.montoApertura) || 0,
+        diferencia: caja.diferencia != null ? Number(caja.diferencia) : 0,
         observaciones: '',
         responsable: '',
         usuario: '',
-        estado: fechaCierreRaw ? 'cerrada' : 'abierta'
+        estado: caja.fechaCierre ? 'cerrada' : 'abierta'
     };
 }
 
@@ -53,7 +48,7 @@ export async function ObtenerCajaActiva() {
             return null;
         }
         
-        return transformarCaja(response.data);
+        return MappearCaja(response.data);
     } catch (error) {
         // Si el error es 404, significa que no hay caja activa
         if (error.response?.status === 404) {
@@ -74,7 +69,7 @@ export async function AbrirCaja(datos) {
         const cajaCreada = response.data;
         
         // Transformar la respuesta al formato esperado
-        return transformarCaja(cajaCreada);
+        return MappearCaja(cajaCreada);
     } catch (error) {
         console.error('Error al abrir la caja:', error);
         throw error;
@@ -120,7 +115,7 @@ export async function ObtenerHistorialCaja(params = {}) {
         // Para cada caja cerrada, calcular el monto esperado basado en los movimientos
         const cajasConDiferencia = await Promise.all(
             cajasFiltradas.map(async (caja) => {
-                const cajaTransformada = transformarCaja(caja);
+                const cajaTransformada = MappearCaja(caja);
                 
                 // Obtener los movimientos de esta caja para calcular el monto esperado
                 try {

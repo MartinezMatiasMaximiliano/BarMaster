@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-    BuscarTodasLasVisitas,
-    BuscarTodasLasMesas,
-    BuscarTodosLosProductos,
-    BuscarTodasLasCategorias,
-    BuscarTodosLosTipoPagos
-} from '../../../API/APIVisitas';
+import { BuscarTodasLasVisitas } from '../../../API/APIVisitas';
+import { BuscarTodasLasMesas } from '../../../API/APIMesas';
+import { BuscarTodosLosProductos } from '../../../API/APIProductos';
+import { BuscarTodasLasCategorias } from '../../../API/APICategorias';
+import { BuscarTodosLosTipoPagos } from '../../../API/APITipoPagos';
+
+/** Normaliza mesas de la API (id, nombre, visita.mozo) al formato esperado por filtros (id, nombre, idMozo). */
+function normalizarMesasParaReportes(mesas) {
+    return mesas.map(m => ({
+        id: m.id ?? m.Id,
+        nombre: m.nombre ?? m.Nombre ?? '',
+        idMozo: m.visita?.mozo?.id ?? m.Visita?.Mozo?.Id ?? null
+    }));
+}
 
 export const useReportes = (filtros) => {
     const [visitas, setVisitas] = useState([]);
@@ -26,26 +33,25 @@ export const useReportes = (filtros) => {
         filtros.filtros.estados?.join(',')
     ]);
 
-    // Cargar datos iniciales - solo cargar una vez al montar, los filtros se aplican después
+    // Cargar datos iniciales: visitas desde mock (API no expone listado); catálogos desde API real.
     useEffect(() => {
         const cargarDatos = async () => {
             setLoading(true);
             setError(null);
             try {
-                // Cargar datos base (sin filtros de fecha para evitar recargas)
                 const [visitasData, mesasData, productosData, categoriasData, tipoPagosData] = await Promise.all([
-                    BuscarTodasLasVisitas({}), // Cargar todas las visitas inicialmente
+                    BuscarTodasLasVisitas({}), // Datos de prueba: la API no brinda listado de visitas cerradas
                     BuscarTodasLasMesas(),
                     BuscarTodosLosProductos(),
                     BuscarTodasLasCategorias(),
                     BuscarTodosLosTipoPagos()
                 ]);
 
-                setVisitas(visitasData);
-                setMesas(mesasData);
-                setProductos(productosData);
-                setCategorias(categoriasData);
-                setTipoPagos(tipoPagosData);
+                setVisitas(Array.isArray(visitasData) ? visitasData : []);
+                setMesas(normalizarMesasParaReportes(Array.isArray(mesasData) ? mesasData : []));
+                setProductos(Array.isArray(productosData) ? productosData : []);
+                setCategorias(Array.isArray(categoriasData) ? categoriasData : []);
+                setTipoPagos(Array.isArray(tipoPagosData) ? tipoPagosData : []);
             } catch (err) {
                 console.error('Error al cargar datos:', err);
                 setError('Error al cargar los datos. Por favor, intenta nuevamente.');
@@ -55,7 +61,7 @@ export const useReportes = (filtros) => {
         };
 
         cargarDatos();
-    }, []); // Solo ejecutar una vez al montar
+    }, []);
 
     // Aplicar filtros a las visitas
     const visitasFiltradas = useMemo(() => {
@@ -84,30 +90,16 @@ export const useReportes = (filtros) => {
             filtradas = filtradas.filter(v => filtros.filtros.idMesas.includes(v.idMesa));
         }
 
-        // Filtro por categorías (a través de productos)
+        // Filtro por categorías (a través de productos): compatible con idCategoria como UUID (API) o número (mock)
         if (filtros.filtros.idCategorias && filtros.filtros.idCategorias.length > 0) {
-            // Los productos tienen idCategoria como número (1, 2, 3...)
-            // Las categorías tienen id como UUID
-            // Necesitamos mapear los UUIDs de categorías a sus números correspondientes
-            // El índice de la categoría en el array + 1 = idCategoria del producto
-            const categoriasFiltradas = categorias.filter(c => 
-                filtros.filtros.idCategorias.includes(c.id.toString())
-            );
-            
-            // Obtener los números de categoría (índice + 1) para cada categoría filtrada
-            const numerosCategorias = categoriasFiltradas.map(c => {
-                const indice = categorias.findIndex(cat => cat.id === c.id);
-                return indice >= 0 ? indice + 1 : null;
-            }).filter(i => i !== null);
-            
-            // Filtrar productos que pertenezcan a las categorías seleccionadas
-            const productosCategorias = productos.filter(p => 
-                numerosCategorias.includes(p.idCategoria)
-            );
-            
-            const nombresProductos = productosCategorias.map(p => p.nombre);
-            filtradas = filtradas.filter(v => 
-                v.productos.some(p => nombresProductos.includes(p.nombreProducto))
+            const idCategoriasSet = new Set(filtros.filtros.idCategorias.map(id => String(id)));
+            const productosCategorias = productos.filter(p => {
+                const idCat = p.idCategoria ?? p.IdCategoria;
+                return idCat != null && idCategoriasSet.has(String(idCat));
+            });
+            const nombresProductos = new Set(productosCategorias.map(p => p.nombre ?? p.Nombre ?? ''));
+            filtradas = filtradas.filter(v =>
+                v.productos?.some(p => nombresProductos.has(p.nombreProducto ?? p.NombreProducto))
             );
         }
 
@@ -151,9 +143,10 @@ export const useReportes = (filtros) => {
         // Calcular margen de ganancia (necesita productos con costo)
         const margenGanancia = visitasFiltradas.reduce((sum, v) => {
             const margenVisita = v.productos.reduce((prodSum, p) => {
-                const producto = productos.find(prod => prod.nombre === p.nombreProducto);
-                if (producto && producto.costo) {
-                    const costoTotal = producto.costo * p.cantidad;
+                const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombreProducto ?? p.NombreProducto));
+                const costoUnit = producto?.costo ?? producto?.CostoProduccion;
+                if (producto && costoUnit != null) {
+                    const costoTotal = Number(costoUnit) * p.cantidad;
                     return prodSum + (p.precioTotal - costoTotal);
                 }
                 return prodSum;
@@ -214,8 +207,8 @@ export const useReportes = (filtros) => {
         const porTipoPago = {};
         visitasFiltradas.forEach(v => {
             v.pagos.forEach(p => {
-                const tipoPago = tipoPagos.find(tp => tp.id === p.idTipoPago);
-                const nombre = tipoPago ? tipoPago.nombre : `Tipo ${p.idTipoPago}`;
+                const tipoPago = tipoPagos.find(tp => String(tp.id ?? tp.Id) === String(p.idTipoPago ?? p.IdTipoPago));
+                const nombre = tipoPago ? (tipoPago.nombre ?? tipoPago.Nombre) : `Tipo ${p.idTipoPago ?? p.IdTipoPago}`;
                 porTipoPago[nombre] = (porTipoPago[nombre] || 0) + (p.monto || 0);
             });
         });
@@ -251,9 +244,10 @@ export const useReportes = (filtros) => {
                 productosVendidos[p.nombreProducto].ingresos += (p.precioTotal || 0);
                 
                 // Buscar costo del producto
-                const producto = productos.find(prod => prod.nombre === p.nombreProducto);
-                if (producto && producto.costo) {
-                    productosVendidos[p.nombreProducto].costo += producto.costo * (p.cantidad || 0);
+                const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombreProducto ?? p.NombreProducto));
+                const costUnit = producto?.costo ?? producto?.CostoProduccion;
+                if (producto && costUnit != null) {
+                    productosVendidos[p.nombreProducto].costo += Number(costUnit) * (p.cantidad || 0);
                 }
             });
         });
@@ -267,10 +261,11 @@ export const useReportes = (filtros) => {
         // Por categoría
         const porCategoria = {};
         productosArray.forEach(p => {
-            const producto = productos.find(prod => prod.nombre === p.nombre);
+            const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombre ?? p.Nombre));
             if (producto) {
-                const categoria = categorias.find(c => c.id === producto.idCategoria.toString() || c.id === producto.idCategoria);
-                const nombreCategoria = categoria ? categoria.nombre : 'Sin categoría';
+                const idCat = producto.idCategoria ?? producto.IdCategoria;
+                const categoria = categorias.find(c => String(c.id ?? c.Id) === String(idCat));
+                const nombreCategoria = categoria ? (categoria.nombre ?? categoria.Nombre) : 'Sin categoría';
                 if (!porCategoria[nombreCategoria]) {
                     porCategoria[nombreCategoria] = {
                         nombre: nombreCategoria,
@@ -368,9 +363,10 @@ export const useReportes = (filtros) => {
         
         const totalCostos = visitasFiltradas.reduce((sum, v) => {
             const costoVisita = v.productos.reduce((prodSum, p) => {
-                const producto = productos.find(prod => prod.nombre === p.nombreProducto);
-                if (producto && producto.costo) {
-                    return prodSum + (producto.costo * (p.cantidad || 0));
+                const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombreProducto ?? p.NombreProducto));
+                const costo = producto?.costo ?? producto?.CostoProduccion;
+                if (costo != null) {
+                    return prodSum + (Number(costo) * (p.cantidad || 0));
                 }
                 return prodSum;
             }, 0);

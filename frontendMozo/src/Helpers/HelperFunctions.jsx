@@ -91,7 +91,7 @@ export function formatearHoraCompleta(fecha) {
 export function GetChipNombreCompleto(Nombre, Apellido) {
     const nombres = Nombre || localStorage.getItem('USER_nombres') || '';
     const apellido = Apellido || localStorage.getItem('USER_apellido') || '';
-
+ 
     const ChipNombreCompleto =
         <Chip
             avatar={<Avatar>{nombres?.[0]?.toUpperCase() || ''}</Avatar>}
@@ -107,9 +107,9 @@ export function MappearPedidos(visitas) {
     return visitas.flatMap(visita => {
         const productos = visita.productosConsumidos || [];
         return productos.map(producto => ({
-            fecha: visita.fechaHora || visita.fechaRealizado,
+            fecha: visita.fechaHora,
             indicaciones: producto.indicaciones,
-            mesa: visita.mesa?.numero || visita.numeroMesa,
+            mesa: visita.numeroMesa,
             precio: producto.precio,
             nombre: producto.nombre
         }));
