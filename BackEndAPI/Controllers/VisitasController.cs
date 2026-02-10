@@ -31,7 +31,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var visitasActivas = await _visitasServices.ObtenerVisitasActivasAsync();
+                var visitasActivas = await _visitasServices.ObtenerVisitasActivas();
                 var response = visitasActivas.Select(visita => new VisitaResponseDTO
                 {
                     Id = visita.Id,
@@ -57,6 +57,45 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpGet("/TodasLasVisitas")]
+        public async Task<IActionResult> TodasLasVisitas()
+        {
+            try
+            {
+                var visitas = await _visitasServices.ObtenerTodasLasVisitas();
+                var response = visitas.Select(visita => new VisitaResponseDTO
+                {
+                    Id = visita.Id,
+                    FechaHora = visita.FechaHora,
+                    Estado = visita.Estado,
+                    Total = visita.Total,
+                    IdMesa = visita.Mesa?.Id,
+                    NumeroMesa = visita.Mesa?.Nombre,
+                    Mozo = visita.Mozo != null ? new MozoEnVisitaDTO
+                    {
+                        Id = visita.Mozo.Id,
+                        CodigoDeServicio = visita.Mozo.CodigoDeServicio,
+                        Nombres = visita.Mozo.Nombres ?? string.Empty,
+                        Apellido = visita.Mozo.Apellido ?? string.Empty,
+                    } : null,
+                    ProductosConsumidos = visita.Productos?.Select(item => new ItemDTO
+                    {
+                        Id = item.Id,
+                        Nombre = item.NombreProducto,
+                        Indicaciones = item.Detalles,
+                        Precio = item.PrecioDelMomento,
+                        EstadoPagado = item.EstadoPagado,
+                    }).ToList() ?? new List<ItemDTO>(),
+                }).ToList();
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error catch: TodasLasVisitas - " + ex.Message);
+            }
+        }
+
         [HttpGet("/Visita")]
         public async Task<IActionResult> GetVisitaPorId(Guid IdVisita)
         {
@@ -68,6 +107,8 @@ namespace BackEndAPI.Controllers
                     Id = visitaBuscada.Id,
                     FechaHora = visitaBuscada.FechaHora,
                     Estado = visitaBuscada.Estado,
+                    IdMesa = visitaBuscada.Mesa?.Id,
+                    NumeroMesa = visitaBuscada.Mesa?.Nombre,
                     ProductosConsumidos = visitaBuscada.Productos.Select(item => new ItemDTO
                     {
                         Id = item.Id,

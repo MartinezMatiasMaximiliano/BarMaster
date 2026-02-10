@@ -7,7 +7,8 @@ namespace BackEndAPI.Services.Interfaces
     {
         Task<Visita> BuscarVisitaPorId(Guid IdVisita);
         Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> ListaProductos,Guid IdVisita);
-        Task<IEnumerable<Visita>> ObtenerVisitasActivasAsync();
+        Task<IEnumerable<Visita>> ObtenerVisitasActivas();
+        Task<IEnumerable<Visita>> ObtenerTodasLasVisitas();
         Task<bool> PagarProductos(Guid IdVisita, ICollection<int> IdsProductos);
         Task<bool> EliminarProductos(Guid IdVisita, ICollection<int> IdsProductos);
     }

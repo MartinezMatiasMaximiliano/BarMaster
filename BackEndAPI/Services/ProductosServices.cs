@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -47,7 +47,7 @@ namespace BackEndAPI.Services
 
         public async Task<IEnumerable<Producto>> BuscarListaProductos()
         {
-            var productos = await _productosRepository.GetAllProductosAsync();
+            var productos = await _productosRepository.GetAllProductos();
 
             var listaProductos = productos.Select(producto => new Producto
             {

@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using System;
 using System.Linq;
@@ -101,7 +101,7 @@ namespace BackEndAPI.Services
             }
 
             // Validar que todos los productos del estado final existen
-            var productosExistentes = await _productosRepository.GetAllProductosAsync();
+            var productosExistentes = await _productosRepository.GetAllProductos();
             var idsProductosExistentes = productosExistentes.Select(p => p.Id).ToList();
             var productosNoEncontrados = dto.IdsProductos.Except(idsProductosExistentes).ToList();
             

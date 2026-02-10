@@ -11,7 +11,7 @@ namespace BackEndAPI.Services.Interfaces
         public Task<Visita?> AbrirCerrarMesa(AbrirMesaDTO request);
         public Task<IEnumerable<Mesa>> ObtenerTodasLasMesas();
         /// <summary>Obtiene todas las mesas con la visita asociada (activa) si existe.</summary>
-        Task<IEnumerable<(Mesa mesa, Visita? visita)>> ObtenerTodasLasMesasConVisitaAsync();
+        Task<IEnumerable<(Mesa mesa, Visita? visita)>> ObtenerTodasLasMesasConVisita();
         public Task<bool> EliminarMesa(Guid IdMesa);
     }
 }
