@@ -14,6 +14,17 @@ function normalizarMesasParaReportes(mesas) {
     }));
 }
 
+/** Normaliza una visita de la API (productosConsumidos, sin pagos) al formato esperado por reportes (productos, pagos). */
+function normalizarVisitaParaReportes(visita) {
+    const productos = visita.productos ?? (visita.productosConsumidos ?? []).map(p => ({
+        cantidad: 1,
+        precioTotal: p.precio ?? p.Precio ?? 0,
+        nombreProducto: p.nombre ?? p.Nombre ?? ''
+    }));
+    const pagos = visita.pagos ?? [];
+    return { ...visita, productos, pagos };
+}
+
 export const useReportes = (filtros) => {
     const [visitas, setVisitas] = useState([]);
     const [mesas, setMesas] = useState([]);
@@ -47,7 +58,7 @@ export const useReportes = (filtros) => {
                     BuscarTodosLosTipoPagos()
                 ]);
 
-                setVisitas(Array.isArray(visitasData) ? visitasData : []);
+                setVisitas((Array.isArray(visitasData) ? visitasData : []).map(normalizarVisitaParaReportes));
                 setMesas(normalizarMesasParaReportes(Array.isArray(mesasData) ? mesasData : []));
                 setProductos(Array.isArray(productosData) ? productosData : []);
                 setCategorias(Array.isArray(categoriasData) ? categoriasData : []);
@@ -106,7 +117,7 @@ export const useReportes = (filtros) => {
         // Filtro por tipo de pago
         if (filtros.filtros.idTipoPagos && filtros.filtros.idTipoPagos.length > 0) {
             filtradas = filtradas.filter(v => 
-                v.pagos.some(p => filtros.filtros.idTipoPagos.includes(p.idTipoPago.toString()))
+                (v.pagos ?? []).some(p => filtros.filtros.idTipoPagos.includes(String(p.idTipoPago ?? p.IdTipoPago)))
             );
         }
 
@@ -137,12 +148,14 @@ export const useReportes = (filtros) => {
         
         // Calcular productos vendidos (sumar cantidades)
         const productosVendidos = visitasFiltradas.reduce((sum, v) => {
-            return sum + v.productos.reduce((prodSum, p) => prodSum + (p.cantidad || 0), 0);
+            const prods = v.productos ?? [];
+            return sum + prods.reduce((prodSum, p) => prodSum + (p.cantidad || 0), 0);
         }, 0);
 
         // Calcular margen de ganancia (necesita productos con costo)
         const margenGanancia = visitasFiltradas.reduce((sum, v) => {
-            const margenVisita = v.productos.reduce((prodSum, p) => {
+            const prods = v.productos ?? [];
+            const margenVisita = prods.reduce((prodSum, p) => {
                 const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombreProducto ?? p.NombreProducto));
                 const costoUnit = producto?.costo ?? producto?.CostoProduccion;
                 if (producto && costoUnit != null) {
@@ -206,10 +219,10 @@ export const useReportes = (filtros) => {
         // Por tipo de pago
         const porTipoPago = {};
         visitasFiltradas.forEach(v => {
-            v.pagos.forEach(p => {
+            (v.pagos ?? []).forEach(p => {
                 const tipoPago = tipoPagos.find(tp => String(tp.id ?? tp.Id) === String(p.idTipoPago ?? p.IdTipoPago));
                 const nombre = tipoPago ? (tipoPago.nombre ?? tipoPago.Nombre) : `Tipo ${p.idTipoPago ?? p.IdTipoPago}`;
-                porTipoPago[nombre] = (porTipoPago[nombre] || 0) + (p.monto || 0);
+                porTipoPago[nombre] = (porTipoPago[nombre] || 0) + (p.monto ?? p.Monto ?? 0);
             });
         });
         const ventasPorTipoPago = Object.entries(porTipoPago).map(([nombre, total]) => ({
@@ -231,23 +244,23 @@ export const useReportes = (filtros) => {
         const productosVendidos = {};
         
         visitasFiltradas.forEach(v => {
-            v.productos.forEach(p => {
-                if (!productosVendidos[p.nombreProducto]) {
-                    productosVendidos[p.nombreProducto] = {
-                        nombre: p.nombreProducto,
+            (v.productos ?? []).forEach(p => {
+                const nombreProd = p.nombreProducto ?? p.NombreProducto ?? '';
+                if (!nombreProd) return;
+                if (!productosVendidos[nombreProd]) {
+                    productosVendidos[nombreProd] = {
+                        nombre: nombreProd,
                         cantidad: 0,
                         ingresos: 0,
                         costo: 0
                     };
                 }
-                productosVendidos[p.nombreProducto].cantidad += (p.cantidad || 0);
-                productosVendidos[p.nombreProducto].ingresos += (p.precioTotal || 0);
-                
-                // Buscar costo del producto
-                const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombreProducto ?? p.NombreProducto));
+                productosVendidos[nombreProd].cantidad += (p.cantidad || 0);
+                productosVendidos[nombreProd].ingresos += (p.precioTotal ?? p.precio ?? p.Precio ?? 0);
+                const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === nombreProd);
                 const costUnit = producto?.costo ?? producto?.CostoProduccion;
                 if (producto && costUnit != null) {
-                    productosVendidos[p.nombreProducto].costo += Number(costUnit) * (p.cantidad || 0);
+                    productosVendidos[nombreProd].costo += Number(costUnit) * (p.cantidad || 0);
                 }
             });
         });
@@ -362,7 +375,7 @@ export const useReportes = (filtros) => {
         const totalIngresos = visitasFiltradas.reduce((sum, v) => sum + (v.total || 0), 0);
         
         const totalCostos = visitasFiltradas.reduce((sum, v) => {
-            const costoVisita = v.productos.reduce((prodSum, p) => {
+            const costoVisita = (v.productos ?? []).reduce((prodSum, p) => {
                 const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombreProducto ?? p.NombreProducto));
                 const costo = producto?.costo ?? producto?.CostoProduccion;
                 if (costo != null) {

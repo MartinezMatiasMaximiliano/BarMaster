@@ -334,7 +334,7 @@ function App() {
                             <Route path="/abm_tipo_pago" element={<Control_Login><Abm_TipoPago recargarComponentes={recargarTipoPagos} datos_tipo_pagos={tipoPagos} titulo="Tipos de Pago" /></Control_Login>} />
                             <Route path="/reservas" element={<Control_Login><Abm_Reservas recargarComponentes={recargarReservas} datos_reservas={datos_reservas} titulo="Reservas" /></Control_Login>} />
                             <Route path="/abm_planos" element={<Control_Login><Abm_Planos recargarComponentes={recargarPlanos} datos_planos={datos_planos_abm} titulo="Planos" /></Control_Login>} />
-                            <Route path="/graficas" element={<Control_Login><Graficas datos_pedidos={datos_pedidos} titulo="Caja"></Graficas></Control_Login>} />
+                            <Route path="/graficas" element={<Control_Login><Graficas /></Control_Login>} />
                             <Route path="/reportes" element={<Control_Login><Reportes /></Control_Login>} />
                             <Route path="/reporte_ventas" element={<Control_Login><ReporteVentas /></Control_Login>} />
                             <Route path="/reporte_productos" element={<Control_Login><ReporteProductos /></Control_Login>} />

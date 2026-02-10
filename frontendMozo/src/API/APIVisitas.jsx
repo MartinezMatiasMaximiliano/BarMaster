@@ -4,6 +4,17 @@ import { authService } from '../services/authService';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+/** GET /TodasLasVisitas - Obtiene todas las visitas (activas y cerradas) para reportes y gráficas */
+export async function ObtenerTodasLasVisitas() {
+    try {
+        const response = await axios.get(`${BASE_URL}TodasLasVisitas`, authService.getAuthHeaders());
+        return response.data ?? [];
+    } catch (error) {
+        console.error('Error al obtener todas las visitas:', error);
+        return [];
+    }
+}
+
 export async function ObtenerVisitaPorId(idVisita) {
     try {
         const response = await axios.get(`${BASE_URL}Visita?IdVisita=${idVisita}`, authService.getAuthHeaders());
@@ -129,34 +140,28 @@ const unirDatosRelacionados = (visitas, datosCompletos) => {
 
 export async function BuscarTodasLasVisitas(filtros = {}) {
     try {
-        // TODO: Descomentar cuando esté lista la API real
-        // const response = await axios.get(`${BASE_URL}Visitas`, { params: filtros });
-        // return response.data;
+        const visitas = await ObtenerTodasLasVisitas();
+        if (!Array.isArray(visitas)) return [];
 
-        // DATOS DE PRUEBA
-        await delay(300);
-        
-        let visitas = [...datosPrueba.visitas];
-        
-        // Aplicar filtros básicos
+        let resultado = [...visitas];
+
         if (filtros.fechaInicio) {
-            visitas = visitas.filter(v => new Date(v.fechaHora) >= new Date(filtros.fechaInicio));
+            resultado = resultado.filter(v => new Date(v.fechaHora) >= new Date(filtros.fechaInicio));
         }
         if (filtros.fechaFin) {
-            visitas = visitas.filter(v => new Date(v.fechaHora) <= new Date(filtros.fechaFin));
+            resultado = resultado.filter(v => new Date(v.fechaHora) <= new Date(filtros.fechaFin));
         }
         if (filtros.idMesa) {
-            visitas = visitas.filter(v => v.idMesa === filtros.idMesa);
+            resultado = resultado.filter(v => v.idMesa === filtros.idMesa);
         }
         if (filtros.estado) {
-            visitas = visitas.filter(v => v.estado === filtros.estado);
+            resultado = resultado.filter(v => v.estado === filtros.estado);
         }
 
-        return unirDatosRelacionados(visitas, datosPrueba);
+        return resultado;
     } catch (error) {
         console.error('Error al obtener visitas:', error);
-        // En caso de error, retornar datos de prueba
-        return unirDatosRelacionados(datosPrueba.visitas, datosPrueba);
+        return [];
     }
 }
 

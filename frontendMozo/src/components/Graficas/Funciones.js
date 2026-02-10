@@ -1,12 +1,13 @@
 export function contarMesas(arr) {
     const conteo = {};
     arr.forEach(item => {
-        if (item.mesa !== undefined) {
-            conteo[item.mesa] = (conteo[item.mesa] || 0) + 1;
+        if (item.mesa !== undefined && item.mesa !== null) {
+            const key = String(item.mesa).trim();
+            if (key) conteo[key] = (conteo[key] || 0) + 1;
         }
     });
-    return Object.entries(conteo).map(([mesa, cantidad], index) => ({
-        id: Number(mesa),
+    return Object.entries(conteo).map(([mesa, cantidad]) => ({
+        id: mesa,
         value: cantidad,
         label: `Mesa ${mesa}`
     }));

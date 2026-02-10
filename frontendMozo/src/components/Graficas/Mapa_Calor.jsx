@@ -6,15 +6,14 @@ import { Paper, Tooltip } from "@mui/material";
 const ResponsiveGridLayout = WidthProvider(GridLayout);
 
 const Mapa_Calor = (props) => {
-
     const ocupacion = props.contarMesas(props.dataFiltrada);
-    const maxCount = Math.max(...ocupacion.map(o => o.value));
     const ocupacionMap = ocupacion.reduce((acc, o) => {
         acc[o.id] = o.value;
         return acc;
     }, {});
+    const maxCount = ocupacion.length > 0 ? Math.max(...ocupacion.map(o => o.value)) : 0;
     function colorPorOcupacion(count, maxCount) {
-        if (count === 0) return "#9fb3c7";
+        if (count === 0 || maxCount === 0) return "#9fb3c7";
 
         // Normalizar entre 0 y 1
         let intensidad = count / maxCount;
@@ -37,22 +36,22 @@ const Mapa_Calor = (props) => {
 
     return (
             <ResponsiveGridLayout
-                layout={props.mesas}
-                cols={15}
-                rowHeight={50}
+                layout={props.layout}
+                cols={props.cols ?? 15}
+                rowHeight={props.rowHeight ?? 50}
                 isDraggable={false}
                 isResizable={false}
                 compactType={null}
             >
-                {props.mesas.map((mesa) => {
-                    const count = ocupacionMap[Number(mesa.i)] || 0;
+                {props.layout.map((mesa) => {
+                    const nombreMesa = mesa.nombre ?? mesa.i;
+                    const count = ocupacionMap[nombreMesa] ?? 0;
                     const color = colorPorOcupacion(count, maxCount);
 
                     return (
                         <div key={mesa.i}>
                             <Tooltip
-                                key={mesa.i}
-                                title={`Total de visitas: ${count}`}  // texto del tooltip
+                                title={`${count} visita(s)`}
                                 arrow
                                 placement="top"
                             >
@@ -71,7 +70,7 @@ const Mapa_Calor = (props) => {
                                         fontSize: "14px",
                                     }}
                                 >
-                                    {mesa.i}
+                                    {nombreMesa}
                                 </Paper>
                             </Tooltip>
                         </div>
