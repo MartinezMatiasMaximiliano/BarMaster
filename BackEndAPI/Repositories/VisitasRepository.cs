@@ -20,7 +20,10 @@ namespace BackEndAPI.Repositories
 
         public async Task<Visita?> BuscarVisitaPorId(Guid? id)
         {
-            return await db.Visitas.Include(v => v.Productos).FirstOrDefaultAsync(x => x.Id == id);
+            return await db.Visitas
+                .Include(v => v.Mesa)
+                .Include(v => v.Productos)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<Visita?> BuscarVisitaActivaPorIdMesa(Guid idMesa)
@@ -52,13 +55,23 @@ namespace BackEndAPI.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<Visita>> ObtenerVisitasActivasAsync()
+        public async Task<IEnumerable<Visita>> ObtenerVisitasActivas()
         {
             return await db.Visitas
                 .Include(v => v.Mozo)
                 .Include(v => v.Mesa)
                 .Include(v => v.Productos)
                 .Where(v => v.Estado == "Abierta")
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Visita>> ObtenerTodasLasVisitas()
+        {
+            return await db.Visitas
+                .Include(v => v.Mesa)
+                .Include(v => v.Mozo)
+                .Include(v => v.Productos)
+                .OrderByDescending(v => v.FechaHora)
                 .ToListAsync();
         }
 

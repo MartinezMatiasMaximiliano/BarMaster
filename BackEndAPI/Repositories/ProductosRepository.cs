@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
@@ -16,7 +16,7 @@ namespace BackEndAPI.Repositories
             db = context.Db;
         }
 
-        public async Task<IEnumerable<Producto>> GetAllProductosAsync()
+        public async Task<IEnumerable<Producto>> GetAllProductos()
         {
             return await db.Productos
                 .Include(p => p.Categorias)
@@ -57,7 +57,7 @@ namespace BackEndAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<Producto?> DeleteProductoAsync(Guid id)
+        public async Task<Producto?> DeleteProducto(Guid id)
         {
             db.Productos.Remove(new Producto { Id = id });
             await db.SaveChangesAsync();

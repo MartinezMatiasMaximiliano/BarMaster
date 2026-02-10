@@ -75,9 +75,14 @@ namespace BackEndAPI.Services
             }
         }
 
-        public async Task<IEnumerable<Visita>> ObtenerVisitasActivasAsync()
+        public async Task<IEnumerable<Visita>> ObtenerVisitasActivas()
         {
-            return await _visitasRepository.ObtenerVisitasActivasAsync();
+            return await _visitasRepository.ObtenerVisitasActivas();
+        }
+
+        public async Task<IEnumerable<Visita>> ObtenerTodasLasVisitas()
+        {
+            return await _visitasRepository.ObtenerTodasLasVisitas();
         }
 
         public async Task<bool> PagarProductos(Guid IdVisita, ICollection<int> IdsProductos)

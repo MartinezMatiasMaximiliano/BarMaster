@@ -164,10 +164,10 @@ namespace BackEndAPI.Services
             return await _mesasRepository.ObtenerTodasLasMesas();
         }
 
-        public async Task<IEnumerable<(Mesa mesa, Visita? visita)>> ObtenerTodasLasMesasConVisitaAsync()
+        public async Task<IEnumerable<(Mesa mesa, Visita? visita)>> ObtenerTodasLasMesasConVisita()
         {
             var mesas = (await _mesasRepository.ObtenerTodasLasMesas()).ToList();
-            var visitasActivas = (await _visitasRepository.ObtenerVisitasActivasAsync()).ToList();
+            var visitasActivas = (await _visitasRepository.ObtenerVisitasActivas()).ToList();
             var visitaPorMesa = visitasActivas.ToDictionary(v => v.IdMesa, v => v);
             return mesas.Select(m => (m, visitaPorMesa.TryGetValue(m.Id, out var vis) ? vis : null));
         }

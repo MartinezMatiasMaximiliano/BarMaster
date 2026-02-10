@@ -123,7 +123,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var mesasConVisita = await _mesasServices.ObtenerTodasLasMesasConVisitaAsync();
+                var mesasConVisita = await _mesasServices.ObtenerTodasLasMesasConVisita();
 
                 var response = mesasConVisita.Select(t => new MesaDTO
                 {
