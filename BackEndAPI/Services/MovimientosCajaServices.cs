@@ -47,7 +47,14 @@ namespace BackEndAPI.Services
 
                 if (TipoMovimiento.EsEfectivo == true)
                 {
-                    caja.MontoActual = caja.MontoActual + request.Monto;
+                    if (TipoMovimiento.EsIngreso == true)
+                    {
+                        caja.MontoActual = caja.MontoActual + request.Monto;
+                    }
+                    else
+                    {
+                        caja.MontoActual = caja.MontoActual - request.Monto;
+                    }
                 }
 
                 var movimientoCreado = await _movimientosCajaRepository.CrearMovimientoCaja(nuevoMovimiento,caja);
