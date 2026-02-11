@@ -9,6 +9,7 @@
         public string? Detalles { get; set; }
         public decimal PrecioDelMomento { get; set; }
         public bool EstadoPagado { get; set; } = false;
+        public DateTime FechaAgregado { get; set; } = DateTime.Now;
 
 
         //navegacion

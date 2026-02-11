@@ -23,7 +23,7 @@ namespace BackEndAPI.Models
         public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
         public ICollection<Menu> Menus { get; set; } = new List<Menu>();
         public ICollection<Caja> Cajas { get; set; } = new List<Caja>();
-        public ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
+        public ICollection<DeliveryAndTakeaway> Deliveries { get; set; } = new List<DeliveryAndTakeaway>();
 
         //public ICollection<Persona> Personas { get; set; } = new List<Persona>();
         //public Persona? Encargado { get; set; } 
