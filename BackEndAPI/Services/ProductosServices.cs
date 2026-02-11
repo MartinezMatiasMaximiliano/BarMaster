@@ -20,13 +20,9 @@ namespace BackEndAPI.Services
             var exitente = await _productosRepository.GetProductoPorNombre(request.Nombre);
             if (exitente != null) throw new Exception("El producto ya existe");
 
-            var menu = await _menuRepository.ObtenerMenuPorId(request.IdMenu);
-            if (menu == null) throw new Exception("El menú no existe");
-
-
             Producto nuevoProducto = new Producto
             {
-                IdMenu = request.IdMenu,
+                
                 Codigo = request.Codigo,
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
@@ -34,15 +30,10 @@ namespace BackEndAPI.Services
                 CostoProduccion = request.CostoProduccion,
                 Activo = request.Activo,
                 PathImagen = pathImagen ?? "uploads/ImagenesProductos/Placeholder.jpeg",
-                Opciones = request.Opciones?.Select(o => new Opcion
-                {
-                    Nombre = o.Nombre,
-                    PrecioExtra = 0 // Valor por defecto, ya que no viene en el DTO
-                }).ToList() ?? new List<Opcion>()
             };
             
 
-            return await _productosRepository.AddProducto(nuevoProducto,menu);
+            return await _productosRepository.AddProducto(nuevoProducto);
         }
 
         public async Task<IEnumerable<Producto>> BuscarListaProductos()
