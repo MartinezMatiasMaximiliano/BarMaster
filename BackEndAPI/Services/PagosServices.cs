@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -50,6 +50,8 @@ namespace BackEndAPI.Services
                     productoPorVisita.EstadoPagado = true;
                 }
             }
+
+            visita.Total += TotalProductosAPagar;
 
             if (InfoPago.Monto < TotalProductosAPagar)
             {

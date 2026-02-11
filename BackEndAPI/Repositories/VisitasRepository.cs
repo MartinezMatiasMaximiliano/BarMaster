@@ -77,14 +77,16 @@ namespace BackEndAPI.Repositories
 
         public async Task<bool> PagarProductos(Visita visita, ICollection<int> IdsProductos)
         {
-            // Marcar como pagados los productos que coincidan con los IDs proporcionados
+            decimal sumaPagada = 0;
             foreach (var producto in visita.Productos)
             {
                 if (IdsProductos.Contains(producto.Id))
                 {
                     producto.EstadoPagado = true;
+                    sumaPagada += producto.PrecioDelMomento;
                 }
             }
+            visita.Total += sumaPagada;
 
             await db.SaveChangesAsync();
             return true;

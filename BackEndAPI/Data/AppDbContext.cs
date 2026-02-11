@@ -36,7 +36,7 @@ namespace BackEndAPI.Data
         public DbSet<TipoPago> TipoPagos => Set<TipoPago>();
         public DbSet<Auditorias> Auditorias => Set<Auditorias>();
         public DbSet<Plano> Planos => Set<Plano>();
-        public DbSet<Delivery> Deliveries => Set<Delivery>();
+        public DbSet<DeliveryAndTakeaway> DeliveriesTakeaways => Set<DeliveryAndTakeaway>();
         public DbSet<TipoEnvio> TipoEnvios => Set<TipoEnvio>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -228,19 +228,19 @@ namespace BackEndAPI.Data
             ////.HasForeignKey(d => d.IdCadete)
             ////.OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Delivery>()
+            modelBuilder.Entity<DeliveryAndTakeaway>()
                 .HasOne(d => d.TipoEnvio)
                 .WithMany()
                 .HasForeignKey(d => d.IdTipoEnvio)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Delivery>()
+            modelBuilder.Entity<DeliveryAndTakeaway>()
                 .HasOne(d => d.Sucursal)
                 .WithMany(s => s.Deliveries)
                 .HasForeignKey(d => d.IdSucursal)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Delivery>()
+            modelBuilder.Entity<DeliveryAndTakeaway>()
                 .HasOne(d => d.Visita)
                 .WithMany()
                 .HasForeignKey(d => d.IdVisita)
