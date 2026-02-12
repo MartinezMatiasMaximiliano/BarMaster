@@ -107,5 +107,19 @@ namespace BackEndAPI.Repositories
             await db.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> CambiarEstadoProducto(int idProducto, string estado)
+        {
+            var productoPorVisita = await db.ProductosPorVisita.FirstOrDefaultAsync(p => p.Id == idProducto);
+            
+            if (productoPorVisita == null)
+            {
+                return false;
+            }
+
+            productoPorVisita.EstadoPedido = estado;
+            await db.SaveChangesAsync();
+            return true;
+        }
     }
 }

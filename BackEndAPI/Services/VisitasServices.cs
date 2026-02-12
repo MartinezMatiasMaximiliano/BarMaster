@@ -152,6 +152,37 @@ namespace BackEndAPI.Services
             // Pasamos la visita ya cargada para evitar una segunda consulta
             return await _visitasRepository.EliminarProductos(visita, IdsProductos);
         }
+
+        public async Task<bool> CambiarEstadoProducto(int idProducto, string estado)
+        {
+            // Validaciones de negocio
+            if (idProducto <= 0)
+            {
+                throw new Exception("El IdProducto debe ser mayor a cero");
+            }
+
+            if (string.IsNullOrWhiteSpace(estado))
+            {
+                throw new Exception("El estado no puede estar vacío");
+            }
+
+            // Validar que el estado sea uno de los permitidos
+            var estadosPermitidos = new[] { "Pendiente", "En Preparación", "Listo" };
+            if (!estadosPermitidos.Contains(estado))
+            {
+                throw new Exception($"El estado '{estado}' no es válido. Los estados permitidos son: {string.Join(", ", estadosPermitidos)}");
+            }
+
+            // Cambiar el estado en la DB
+            var resultado = await _visitasRepository.CambiarEstadoProducto(idProducto, estado);
+            
+            if (!resultado)
+            {
+                throw new Exception("Producto no encontrado");
+            }
+
+            return true;
+        }
     }
 }
 
