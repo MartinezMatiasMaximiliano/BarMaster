@@ -1,13 +1,15 @@
 import React from 'react';
-import { Container, Typography, CircularProgress, Alert, Box } from '@mui/material';
+import { Container, Typography, CircularProgress, Alert, Box, TextField, Grid, Card, CardContent, Button, Stack } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
-import FiltrosAvanzados from './components/FiltrosAvanzados';
 import ResumenReporte from './components/ResumenReporte';
 
 const ReporteResumido = () => {
     const filtros = useFiltros();
-    const reportes = useReportes(filtros);
+    const reportes = useReportes(filtros)
+    
+    console.log("REPORTES:", reportes);
 
     if (reportes.loading) {
         return (
@@ -35,15 +37,45 @@ const ReporteResumido = () => {
                 Reporte Resumido
             </Typography>
 
-            <FiltrosAvanzados
-                filtros={filtros.filtros}
-                actualizarFiltro={filtros.actualizarFiltro}
-                limpiarFiltros={filtros.limpiarFiltros}
-                mesas={reportes.mesas}
-                categorias={reportes.categorias}
-                tipoPagos={reportes.tipoPagos}
-                ocultarTipoReporte={true}
-            />
+            <Card variant="outlined" sx={{ mb: 4 }}>
+                <CardContent>
+                    <Grid container spacing={3} alignItems="center">
+                        <Grid item xs={12} sm={6} md={4}>
+                            <TextField
+                                fullWidth
+                                label="Fecha Inicio"
+                                type="date"
+                                value={filtros.filtros.fechaInicio}
+                                onChange={(e) => filtros.actualizarFiltro('fechaInicio', e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={4}>
+                            <TextField
+                                fullWidth
+                                label="Fecha Fin"
+                                type="date"
+                                value={filtros.filtros.fechaFin}
+                                onChange={(e) => filtros.actualizarFiltro('fechaFin', e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={12} md={4}>
+                            <Button
+                                variant="outlined"
+                                startIcon={<ClearIcon />}
+                                onClick={() => {
+                                    filtros.actualizarFiltro('fechaInicio', '');
+                                    filtros.actualizarFiltro('fechaFin', '');
+                                }}
+                                fullWidth
+                            >
+                                Limpiar
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </Card>
 
             <ResumenReporte 
                 metricas={reportes.metricas} 

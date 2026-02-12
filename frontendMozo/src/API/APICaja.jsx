@@ -9,7 +9,7 @@ function formatearFechaHora(dateTimeString) {
     if (!dateTimeString) return { fecha: '', hora: '' };
     const fecha = new Date(dateTimeString);
     const fechaStr = fecha.toISOString().split('T')[0];
-    const horaStr = fecha.toTimeString().split(' ')[0].substring(0, 5);
+    const horaStr = fecha.toTimeString().split(' ')[0].substring(0, 8); // Incluir segundos (HH:MM:SS)
     return { fecha: fechaStr, hora: horaStr };
 }
 
