@@ -8,7 +8,7 @@ namespace BackEndAPI.Services.Global
         {
             if (imagen == null || imagen.Length == 0)
             {
-                return "uploads/ImagenesProductos/Placeholder.jpeg";
+                return null;
             }
 
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/ImagenesProductos/");

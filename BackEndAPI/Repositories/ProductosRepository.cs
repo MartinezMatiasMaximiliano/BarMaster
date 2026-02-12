@@ -33,33 +33,23 @@ namespace BackEndAPI.Repositories
             return await db.Productos.FirstOrDefaultAsync(p => p.Nombre == nombre);
         }
 
-        public async Task<Producto?> AddProducto(Producto producto, Menu menu)
+        public async Task<Producto?> AddProducto(Producto producto)
         {
-            var transaccion = await db.Database.BeginTransactionAsync();
-            try
-            {
-                menu.Productos.Add(producto);
-                await db.Productos.AddAsync(producto);
-                await db.SaveChangesAsync();
-
-                await transaccion.CommitAsync();
-                return producto;
-            }
-            catch (Exception ex)
-            {
-                db.Database.RollbackTransaction();
-                throw new Exception("Error al agregar el producto");
-            }
+            await db.Productos.AddAsync(producto);
+            await db.SaveChangesAsync();
+            return producto;
         }
 
-        public Task<Producto?> UpdateProducto(Producto producto)
+        public async Task<Producto?> UpdateProducto(Producto producto)
         {
-            throw new NotImplementedException();
+            db.Entry(producto).State = EntityState.Modified;
+            await db.SaveChangesAsync();
+            return producto;
         }
 
-        public async Task<Producto?> DeleteProducto(Guid id)
+        public async Task<Producto?> DeleteProducto(Producto producto)
         {
-            db.Productos.Remove(new Producto { Id = id });
+            db.Productos.Remove(producto);
             await db.SaveChangesAsync();
             return null;
         }

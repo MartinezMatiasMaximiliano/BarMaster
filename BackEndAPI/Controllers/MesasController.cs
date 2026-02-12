@@ -89,7 +89,7 @@ namespace BackEndAPI.Controllers
                 {
                     Id = Visita.Id,
                     IdCaja = Visita.IdCaja,
-                    IdMesa = Visita.IdMesa,
+                    IdMesa = Visita.IdMesa ?? Guid.Empty,
                     IdMozo = Visita.IdMozo ?? Guid.Empty,
                     FechaHora = Visita.FechaHora,
                     Estado = Visita.Estado

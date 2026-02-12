@@ -28,7 +28,6 @@ namespace BackEndAPI.Data
         public DbSet<Menu> Menus => Set<Menu>();
         public DbSet<Producto> Productos => Set<Producto>();
         public DbSet<Categoria> Categorias => Set<Categoria>();
-        public DbSet<Opcion> Opciones => Set<Opcion>();
         public DbSet<ProductosPorVisita> ProductosPorVisita => Set<ProductosPorVisita>();
         public DbSet<Rol> Roles => Set<Rol>();
         public DbSet<EstadoReserva> EstadoReservas => Set<EstadoReserva>();
@@ -166,14 +165,6 @@ namespace BackEndAPI.Data
                 .WithMany(s => s.Menus)
                 .HasForeignKey(m => m.IdSucursal)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus menus
-
-
-            // Relacion Opciones N:1 Producto
-            modelBuilder.Entity<Opcion>()
-                .HasOne(o => o.Producto)
-                .WithMany(p => p.Opciones)
-                .HasForeignKey(o => o.IdProducto)
-                .OnDelete(DeleteBehavior.Cascade); // Si se borra un producto, se borran sus opciones
 
             // Relacion ProductosPorVisita N:1 Producto
             modelBuilder.Entity<ProductosPorVisita>()

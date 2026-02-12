@@ -7,7 +7,6 @@ namespace BackEndAPI.Models
     public class Producto
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public Guid IdMenu { get; set; }
         public string? Codigo { get; set; }
         public string Nombre { get; set; } = null!;
         public string? Descripcion { get; set; }
@@ -20,6 +19,5 @@ namespace BackEndAPI.Models
         //navegacion
         public ICollection<Menu> Menus { get; set; } = new List<Menu>();
         public ICollection<Categoria> Categorias { get; set; } = new List<Categoria>();
-        public ICollection<Opcion> Opciones { get; set; } = new List<Opcion>();
     }
 }

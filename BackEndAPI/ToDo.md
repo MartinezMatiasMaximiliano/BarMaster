@@ -73,9 +73,6 @@ Crea un token JWT para una persona específica dentro de una sucursal, permitien
 # Categorias
 ---
 
-# Opciones
----
-
 # Promociones
 ---
 
