@@ -46,6 +46,7 @@ namespace BackEndAPI.Controllers
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
+                        EstadoPedido = item.EstadoPedido,
                     }).ToList() ?? new List<ItemDTO>(),
                 }).ToList();
 
@@ -85,6 +86,7 @@ namespace BackEndAPI.Controllers
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
+                        EstadoPedido = item.EstadoPedido,
                     }).ToList() ?? new List<ItemDTO>(),
                 }).ToList();
 
@@ -116,6 +118,7 @@ namespace BackEndAPI.Controllers
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
+                        EstadoPedido = item.EstadoPedido,
                     }).ToList(),
                 };
 
@@ -153,6 +156,7 @@ namespace BackEndAPI.Controllers
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
+                        EstadoPedido = item.EstadoPedido,
                     }).ToList(),
                 };
                 
