@@ -27,53 +27,53 @@ namespace BackEndAPI.Services
         }
         public async Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> productos, Guid IdVisita)
         {
+
+            if (productos == null || productos.Count <= 0)
             {
-                if (productos == null || productos.Count <= 0)
-                {
-                    throw new Exception("Lista de productos vacia");
-                }
-
-                if (IdVisita == Guid.Empty)
-                {
-                    throw new Exception("IdVisita vacio");
-                }
-
-                var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
-
-                if (visita == null)
-                {
-                    throw new Exception("Visita no encontrada");
-                }
-
-                foreach (var item in productos)
-                {
-                    //TODO: Mejorar esto, buscar una manera de 
-                    //agregar los productos que si se encuentran y notificar los que no se encuentran... (no no agregar ninguno si algo falla?)
-                    var producto = await _productosRepository.GetProductoPorId(item.IdProducto);
-                    if (producto == null)
-                    {
-                        continue;
-                    }
-
-                    for (int i = 1; i <= item.Cantidad; i++)
-                    {
-                        var productoPorVisita = new ProductosPorVisita
-                        {
-
-                            IdVisita = IdVisita,
-                            IdProducto = item.IdProducto,
-                            NombreProducto = producto.Nombre,
-                            Detalles = item.Detalles,
-                            PrecioDelMomento = producto.Precio,
-
-                        };
-                        visita.Productos.Add(productoPorVisita);
-                    }
-                }
-
-                return await _visitasRepository.ModificarVisita(visita);
+                throw new Exception("Lista de productos vacia");
             }
+
+            if (IdVisita == Guid.Empty)
+            {
+                throw new Exception("IdVisita vacio");
+            }
+
+            var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
+
+            if (visita == null)
+            {
+                throw new Exception("Visita no encontrada");
+            }
+
+            foreach (var item in productos)
+            {
+                //TODO: Mejorar esto, buscar una manera de 
+                //agregar los productos que si se encuentran y notificar los que no se encuentran... (no no agregar ninguno si algo falla?)
+                var producto = await _productosRepository.GetProductoPorId(item.IdProducto);
+                if (producto == null)
+                {
+                    continue;
+                }
+
+                for (int i = 1; i <= item.Cantidad; i++)
+                {
+                    var productoPorVisita = new ProductosPorVisita
+                    {
+
+                        IdVisita = IdVisita,
+                        IdProducto = item.IdProducto,
+                        NombreProducto = producto.Nombre,
+                        Detalles = item.Detalles,
+                        PrecioDelMomento = producto.Precio,
+
+                    };
+                    visita.Productos.Add(productoPorVisita);
+                }
+            }
+
+            return await _visitasRepository.ModificarVisita(visita);
         }
+        
 
         public async Task<IEnumerable<Visita>> ObtenerVisitasActivas()
         {
@@ -108,7 +108,7 @@ namespace BackEndAPI.Services
             // Verificar que los productos existen en la visita
             var productosEnVisita = visita.Productos?.Select(p => p.Id).ToList() ?? new List<int>();
             var productosNoEncontrados = IdsProductos.Where(id => !productosEnVisita.Contains(id)).ToList();
-            
+
             if (productosNoEncontrados.Any())
             {
                 throw new Exception($"Los siguientes IDs de productos no pertenecen a esta visita: {string.Join(", ", productosNoEncontrados)}");
@@ -142,7 +142,7 @@ namespace BackEndAPI.Services
             // Verificar que los productos existen en la visita
             var productosEnVisita = visita.Productos?.Select(p => p.Id).ToList() ?? new List<int>();
             var productosNoEncontrados = IdsProductos.Where(id => !productosEnVisita.Contains(id)).ToList();
-            
+
             if (productosNoEncontrados.Any())
             {
                 throw new Exception($"Los siguientes IDs de productos no pertenecen a esta visita: {string.Join(", ", productosNoEncontrados)}");

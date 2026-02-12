@@ -1,4 +1,5 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
 
@@ -6,11 +7,11 @@ namespace BackEndAPI.Services.Interfaces
 {
     public interface IProductosServices
     {
-        Task<Producto?> CrearProducto(CrearProductoDTO producto, string pathImagen);
+        Task<Producto?> CrearProducto(CrearProductoDTO producto);
         Task<IEnumerable<Producto>> BuscarListaProductos();
-        Task<Producto> BuscarProductoPorId(int id);
-        Task ActualizarProducto(Producto producto);
-        Task EliminarProducto(int id);
+        Task<Producto> BuscarProductoPorId(Guid idProducto);
+        Task<Producto?> ActualizarProducto(ModificarProductoDTO producto);
+        Task<Producto?> EliminarProducto(Guid idProducto);
         Task<bool> ProductoExiste(string nombre);
     }
 }

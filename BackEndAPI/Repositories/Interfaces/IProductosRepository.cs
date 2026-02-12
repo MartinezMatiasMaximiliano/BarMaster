@@ -7,9 +7,9 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<IEnumerable<Producto>> GetAllProductos();
         Task<Producto?> GetProductoPorId(Guid id);
         Task<Producto?> GetProductoPorNombre(string nombre);
-        Task<Producto?> AddProducto(Producto producto,Menu menu);
+        Task<Producto?> AddProducto(Producto producto);
         Task<Producto?> UpdateProducto(Producto producto);
-        Task<Producto?> DeleteProducto(Guid id);
+        Task<Producto?> DeleteProducto(Producto Producto);
         Task<bool> ProductoExiste(string nombre);
     }
 }

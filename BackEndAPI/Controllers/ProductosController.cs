@@ -1,10 +1,9 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
-using BackEndAPI.Services.Global;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using BackEndAPI.DTOs.Request.Modificar;
 
 namespace BackEndAPI.Controllers
 {
@@ -20,7 +19,7 @@ namespace BackEndAPI.Controllers
             _productosServices = productosServices;
         }
 
-        [HttpGet()]
+        [HttpGet("")]
         public async Task<ActionResult<List<ProductoDTO>>> GetTodosLosProductos()
         {
             try
@@ -54,6 +53,39 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpGet("{ProductoId}")]
+        public async Task<ActionResult<ProductoDTO>> GetProductoPorId(Guid ProductoId)
+        {
+            try
+            {
+                var producto = await _productosServices.BuscarProductoPorId(ProductoId);
+                var productoDTO = new ProductoDTO
+                {
+                    Id = producto.Id,
+                    Nombre = producto.Nombre,
+                    Descripcion = producto.Descripcion ?? string.Empty,
+                    Precio = producto.Precio,
+                    Activo = producto.Activo,
+                    ImagenUrl = producto.PathImagen ?? string.Empty,
+                    Categorias = producto.Categorias?
+                        .Where(categoria => categoria != null && categoria.Activo)
+                        .Select(categoria => categoria.Nombre)
+                        .ToArray() ?? Array.Empty<string>(),
+                };
+                return Ok(productoDTO);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Producto no encontrado":
+                        return NotFound(new { message = "Producto no encontrado" });
+                    default:
+                        return StatusCode(500, new { message = "Error interno del servidor" });
+                }
+            }
+        }
+
         [HttpPost()]
         public async Task<ActionResult> CrearProducto([FromForm] CrearProductoDTO request)
         {
@@ -61,11 +93,9 @@ namespace BackEndAPI.Controllers
             {
                 if (request.Nombre == null) throw new Exception("Nombre nulo");
 
-                // Procesar imagen y generar path
-                var pathImagen = await FileHelper.GuardarImagenProducto(request.Imagen, request.Nombre);
+                var producto = await _productosServices.CrearProducto(request);
 
-                var producto = await _productosServices.CrearProducto(request, pathImagen);
-                return Ok(producto);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -75,6 +105,52 @@ namespace BackEndAPI.Controllers
                         return Conflict("El producto ya existe");
                     case "Nombre nulo":
                         return BadRequest("Nombre nulo");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+            }
+        }
+
+        [HttpPatch("")]
+        public async Task<ActionResult> ModificarProducto([FromForm] ModificarProductoDTO request)
+        {
+            try
+            {
+                if (request.IdProducto == Guid.Empty) throw new Exception("Id nulo");
+                var producto = await _productosServices.ActualizarProducto(request);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Producto no encontrado":
+                        return NotFound("Producto no encontrado");
+                    case "Id nulo":
+                        return BadRequest("Id nulo");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+            }
+        }
+
+        [HttpDelete("")]
+        public async Task<ActionResult> EliminarProducto([FromQuery]Guid IdProducto)
+        {
+            try
+            {
+                if (IdProducto == Guid.Empty) throw new Exception("Id nulo");
+                var producto = await _productosServices.EliminarProducto(IdProducto);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Producto no encontrado":
+                        return NotFound("Producto no encontrado");
+                    case "Id nulo":
+                        return BadRequest("Id nulo");
                     default:
                         return StatusCode(500, "Error interno del servidor");
                 }
