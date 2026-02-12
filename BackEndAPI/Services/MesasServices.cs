@@ -110,7 +110,8 @@ namespace BackEndAPI.Services
                     IdMesa = buscarMesa.Id,
                     FechaHora = DateTime.UtcNow,
                     Total = 0,
-                    Estado = "Abierta"
+                    Estado = "Abierta",
+                    Origen = "Local"
 
                 };
 

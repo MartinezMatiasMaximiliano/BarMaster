@@ -1,10 +1,9 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
-using BackEndAPI.Services.Global;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using BackEndAPI.DTOs.Request.Modificar;
 
 namespace BackEndAPI.Controllers
 {
@@ -20,8 +19,8 @@ namespace BackEndAPI.Controllers
             _productosServices = productosServices;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<ProductoDTO>>> Get()
+        [HttpGet("")]
+        public async Task<ActionResult<List<ProductoDTO>>> GetTodosLosProductos()
         {
             try
             {
@@ -37,103 +36,126 @@ namespace BackEndAPI.Controllers
                     Categorias = producto.Categorias?
                         .Where(categoria => categoria != null && categoria.Activo)
                         .Select(categoria => categoria.Nombre)
-                        .ToArray() ?? Array.Empty<string>()
+                        .ToArray() ?? Array.Empty<string>(),
                 }).ToList();
 
                 return Ok(listaProductos);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error catch: Get Productos - " + e.Message });
+                switch (ex.Message)
+                {
+                    case "No se encontraron productos":
+                        return NotFound(new { message = "No se encontraron productos" });
+                    default:
+                        return StatusCode(500, new { message = "Error interno del servidor" });
+                }
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult> Post([FromForm]CrearProductoDTO request)
+        [HttpGet("{ProductoId}")]
+        public async Task<ActionResult<ProductoDTO>> GetProductoPorId(Guid ProductoId)
         {
             try
             {
-                // Procesar opciones desde el form data (necesario cuando hay archivo)
-                if (request.Opciones == null || request.Opciones.Count == 0)
+                var producto = await _productosServices.BuscarProductoPorId(ProductoId);
+                var productoDTO = new ProductoDTO
                 {
-                    request.Opciones = FormDataHelper.ProcesarOpcionesDesdeForm(Request.Form, request.Nombre);
-                }
-
-                // Validar que el producto no exista
-                if (await _productosServices.ProductoExiste(request.Nombre))
-                {
-                    return Conflict("El producto ya existe");
-                }
-
-                // Procesar imagen y generar path
-                var pathImagen = await FileHelper.GuardarImagenProducto(request.Imagen, request.Nombre);
-
-                // Crear producto
-                var producto = await _productosServices.CrearProducto(request, pathImagen);
-                return Ok(producto);
+                    Id = producto.Id,
+                    Nombre = producto.Nombre,
+                    Descripcion = producto.Descripcion ?? string.Empty,
+                    Precio = producto.Precio,
+                    Activo = producto.Activo,
+                    ImagenUrl = producto.PathImagen ?? string.Empty,
+                    Categorias = producto.Categorias?
+                        .Where(categoria => categoria != null && categoria.Activo)
+                        .Select(categoria => categoria.Nombre)
+                        .ToArray() ?? Array.Empty<string>(),
+                };
+                return Ok(productoDTO);
             }
             catch (Exception ex)
             {
-                return ex.Message switch
+                switch (ex.Message)
                 {
-                    "El producto ya existe" => Conflict("El producto ya existe"),
-                    "Request nulo" => BadRequest("Request nulo"),
-                    _ => StatusCode(500, "Error interno del servidor")
-                };
+                    case "Producto no encontrado":
+                        return NotFound(new { message = "Producto no encontrado" });
+                    default:
+                        return StatusCode(500, new { message = "Error interno del servidor" });
+                }
             }
         }
-        //{
-        //    try
-        //    {
-        //        var BuscarProducto = await _context.Productos.Where(producto => producto.Nombre == request.Nombre).FirstOrDefaultAsync();
 
-        //        if (BuscarProducto != null)
-        //        {
-        //            return Conflict(new ErrorDTO(409, "CONFLICT", $"La categoria {BuscarProducto.Nombre} ya existe"));
-        //        };
+        [HttpPost()]
+        public async Task<ActionResult> CrearProducto([FromForm] CrearProductoDTO request)
+        {
+            try
+            {
+                if (request.Nombre == null) throw new Exception("Nombre nulo");
 
-        //        if (request.Categorias.Length == 0)
-        //        {
-        //            return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Se necesita al menos una categoria existente!"));
-        //        }
+                var producto = await _productosServices.CrearProducto(request);
 
-        //        var ListaCategorias = await _context.Categorias
-        //            .Where(categoria => request.Categorias.Contains(categoria.Nombre)).ToListAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "El producto ya existe":
+                        return Conflict("El producto ya existe");
+                    case "Nombre nulo":
+                        return BadRequest("Nombre nulo");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+            }
+        }
 
-        //        if (ListaCategorias.Count != request.Categorias.Length)
-        //        {
-        //            return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Una o más categorias no existen"));
-        //        }
+        [HttpPatch("")]
+        public async Task<ActionResult> ModificarProducto([FromForm] ModificarProductoDTO request)
+        {
+            try
+            {
+                if (request.IdProducto == Guid.Empty) throw new Exception("Id nulo");
+                var producto = await _productosServices.ActualizarProducto(request);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Producto no encontrado":
+                        return NotFound("Producto no encontrado");
+                    case "Id nulo":
+                        return BadRequest("Id nulo");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+            }
+        }
 
-        //        var producto = new Producto
-        //        {
-        //            Nombre = request.Nombre,
-        //            Descripcion = request.Descripcion,
-        //            Precio = request.Precio,
-        //            Activo = request.Activo,
-        //            Categorias = ListaCategorias,
-        //        };
-
-        //        if (request.Imagen == null || request.Imagen.Length == 0)
-        //        {
-        //            producto.PathImagen = $"uploads/ImagenesProductos/Placeholder.jpeg";
-        //        }
-        //        else
-        //        {
-        //            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/ImagenesProductos/");
-        //            if (!Directory.Exists(folderPath))
-        //            {
-        //                Directory.CreateDirectory(folderPath);
-        //            }
-
-        //            var fileExtension = Path.GetFileName(request.Imagen.FileName).Split('.').Last();
-        //            var filePath = Path.Combine(folderPath, $"{request.Nombre.Dehumanize()}.{fileExtension}");
-
-        //            using (var stream = new FileStream(filePath, FileMode.Create))
-        //            {
-        //                await request.Imagen.CopyToAsync(stream);
-        //            }
-        //            producto.PathImagen = $"uploads/ImagenesProductos/{request.Nombre.Dehumanize()}.{fileExtension}";
+        [HttpDelete("")]
+        public async Task<ActionResult> EliminarProducto([FromQuery]Guid IdProducto)
+        {
+            try
+            {
+                if (IdProducto == Guid.Empty) throw new Exception("Id nulo");
+                var producto = await _productosServices.EliminarProducto(IdProducto);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Producto no encontrado":
+                        return NotFound("Producto no encontrado");
+                    case "Id nulo":
+                        return BadRequest("Id nulo");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+            }
+        }
 
 
     }

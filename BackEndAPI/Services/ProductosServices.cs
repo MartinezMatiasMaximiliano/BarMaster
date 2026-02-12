@@ -1,6 +1,8 @@
 using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
+using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 
 namespace BackEndAPI.Services
@@ -8,25 +10,25 @@ namespace BackEndAPI.Services
     public class ProductosServices : IProductosServices
     {
         private readonly IProductosRepository _productosRepository;
+        private readonly ICategoriasRepository _categoriasRepository;
         private readonly IMenuRepository _menuRepository;
-        public ProductosServices(IProductosRepository productosRepository, IMenuRepository menuRepository)
+        public ProductosServices(IProductosRepository productosRepository,ICategoriasRepository categoriasRepository , IMenuRepository menuRepository)
         {
             _productosRepository = productosRepository;
+            _categoriasRepository = categoriasRepository;
             _menuRepository = menuRepository;
         }
 
-        public async Task<Producto?> CrearProducto(CrearProductoDTO request, string pathImagen)
+        public async Task<Producto?> CrearProducto(CrearProductoDTO request)
         {
-            var exitente = await _productosRepository.GetProductoPorNombre(request.Nombre);
-            if (exitente != null) throw new Exception("El producto ya existe");
+            var existente = await _productosRepository.GetProductoPorNombre(request.Nombre);
+            if (existente != null) throw new Exception("El producto ya existe");
 
-            var menu = await _menuRepository.ObtenerMenuPorId(request.IdMenu);
-            if (menu == null) throw new Exception("El menú no existe");
-
+            // Procesar imagen y generar path
+            var pathImagen = await FileHelper.GuardarImagenProducto(request.Imagen, request.Nombre);
 
             Producto nuevoProducto = new Producto
-            {
-                IdMenu = request.IdMenu,
+            {    
                 Codigo = request.Codigo,
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
@@ -34,15 +36,11 @@ namespace BackEndAPI.Services
                 CostoProduccion = request.CostoProduccion,
                 Activo = request.Activo,
                 PathImagen = pathImagen ?? "uploads/ImagenesProductos/Placeholder.jpeg",
-                Opciones = request.Opciones?.Select(o => new Opcion
-                {
-                    Nombre = o.Nombre,
-                    PrecioExtra = 0 // Valor por defecto, ya que no viene en el DTO
-                }).ToList() ?? new List<Opcion>()
             };
-            
+            var categorias = _categoriasRepository.GetListaCategorias(request.ListaIdCategorias).Result;
+            nuevoProducto.Categorias = categorias.ToList(); 
 
-            return await _productosRepository.AddProducto(nuevoProducto,menu);
+            return await _productosRepository.AddProducto(nuevoProducto);
         }
 
         public async Task<IEnumerable<Producto>> BuscarListaProductos()
@@ -63,14 +61,19 @@ namespace BackEndAPI.Services
             return listaProductos;
         }
 
-        public Task EliminarProducto(int id)
+        public async Task<Producto?> EliminarProducto(Guid id)
         {
-            throw new NotImplementedException();
+           var busqueda = await _productosRepository.GetProductoPorId(id);
+            if (busqueda == null) throw new Exception("El producto no existe");
+            return await _productosRepository.DeleteProducto(busqueda);   
         }
 
-        public Task<Producto> BuscarProductoPorId(int id)
+        public async Task<Producto> BuscarProductoPorId(Guid id)
         {
-            throw new NotImplementedException();
+            var busqueda = await _productosRepository.GetProductoPorId(id);
+            if (busqueda == null) throw new Exception("El producto no existe");
+            return busqueda;
+
         }
 
         public async Task<Producto?> BuscarProductoPorNombre(string nombre)
@@ -92,6 +95,31 @@ namespace BackEndAPI.Services
         public Task ActualizarProducto(Producto producto)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<Producto?> ActualizarProducto(ModificarProductoDTO producto)
+        {
+            var busqueda = await _productosRepository.GetProductoPorId(producto.IdProducto);
+            if (busqueda == null) throw new Exception("El producto no existe");
+
+            busqueda.Nombre = producto.Nombre ?? busqueda.Nombre;
+            busqueda.Descripcion = producto.Descripcion ?? busqueda.Descripcion;
+            busqueda.Precio = producto.Precio ?? busqueda.Precio;
+            busqueda.Activo = producto.Activo ?? busqueda.Activo;
+
+             if (producto.categorias != null && producto.categorias.Count() > 0)
+            {
+                var categorias = await _categoriasRepository.GetListaCategorias(producto.categorias);
+                busqueda.Categorias = categorias.ToList();
+            }
+
+             if (producto.Imagen != null)
+            {
+                var pathImagen = await FileHelper.GuardarImagenProducto(producto.Imagen, busqueda.Nombre);
+                busqueda.PathImagen = pathImagen ?? busqueda.PathImagen;
+            }
+
+            return await _productosRepository.UpdateProducto(busqueda);
         }
     }
 }

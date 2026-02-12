@@ -6,7 +6,8 @@ namespace BackEndAPI.Repositories.Interfaces
     {
         Task<bool> CategoriaExiste(string Nombre);  
         Task<Categoria> CrearCategoria(Categoria nuevaCategoria);
-        Task<IEnumerable<Categoria>> GetAllCategorias();
+        Task<ICollection<Categoria>> GetAllCategorias();
+        Task<ICollection<Categoria?>> GetListaCategorias(IEnumerable<Guid> ListaCategorias);
         Task<Categoria?> GetCategoriaPorId(Guid id);
         Task<Categoria?> ActualizarCategoria(Categoria categoria);
         Task<Categoria?> EliminarCategoria(Categoria categoriaAEliminar);
