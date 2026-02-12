@@ -28,9 +28,14 @@ namespace BackEndAPI.Repositories
             return nuevaCategoria;
         }
 
-        public async Task<IEnumerable<Categoria>> GetAllCategorias()
+        public async Task<ICollection<Categoria>> GetAllCategorias()
         {
             return await db.Categorias.ToListAsync();
+        }
+
+        public async Task<ICollection<Categoria?>> GetListaCategorias(IEnumerable<Guid> ListaIdCategorias)
+        {
+            return await db.Categorias.Where(c => ListaIdCategorias.Contains(c.Id)).ToListAsync();
         }
 
         public async Task<Categoria?> GetCategoriaPorId(Guid id)
