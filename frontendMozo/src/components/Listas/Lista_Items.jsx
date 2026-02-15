@@ -1,11 +1,19 @@
 import { useMemo, memo } from 'react';
 import Alert from '@mui/material/Alert';
-import { Typography, Box, Checkbox, Stack } from "@mui/material";
+import { Typography, Box, Checkbox, Stack, Chip } from "@mui/material";
 import { useSelector } from 'react-redux';
 import Modal_Generico from '../Modals/Modal_Generico';
 
 function Lista_Items(props) {
     const ticket = useSelector((state) => state.ticket.value);
+
+    // Función helper para obtener el color del estado
+    const getEstadoColor = (estadoPedido) => {
+        if (!estadoPedido) return 'default';
+        if (estadoPedido === 'Listo') return 'success';
+        if (estadoPedido === 'En Preparación') return 'info';
+        return 'default';
+    };
 
     const mensajeListaVacia = useMemo(() => (
         <div className="mb-0">
@@ -34,15 +42,23 @@ function Lista_Items(props) {
                 grupoProductos.forEach(producto => {
                     const nombre = producto.nombre || producto.nombreProducto;
                     const precio = producto.precio || producto.precioDelMomento;
+                    const estadoPedido = producto.estadoPedido;
                     
                     if (resumen[nombre]) {
                         resumen[nombre].cantidad++;
                         resumen[nombre].total += precio;
+                        // Si hay diferentes estados, marcar como mixto
+                        if (resumen[nombre].estadoPedido && resumen[nombre].estadoPedido !== estadoPedido) {
+                            resumen[nombre].estadoPedido = 'Mixto';
+                        } else if (!resumen[nombre].estadoPedido) {
+                            resumen[nombre].estadoPedido = estadoPedido;
+                        }
                     } else {
                         resumen[nombre] = {
                             precioUnitario: precio,
                             cantidad: 1,
-                            total: precio
+                            total: precio,
+                            estadoPedido: estadoPedido
                         };
                     }
                     total += precio;
@@ -52,19 +68,30 @@ function Lista_Items(props) {
                     <div key={indexTicket}>
                         <Box key={indexTicket} sx={{ mb: 2 }}>
                             <h4>Ticket #{indexTicket + 1}</h4>
-                            {Object.entries(resumen).map(([nombre, data], index) => (
-                                <Box
-                                    key={index}
-                                    sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}
-                                >
-                                    <Typography variant="body2">
-                                        {`${data.cantidad}x ${nombre} ($${data.precioUnitario} x1)`} ...
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        ${data.total}
-                                    </Typography>
-                                </Box>
-                            ))}
+                            {Object.entries(resumen).map(([nombre, data], index) => {
+                                const estadoPedido = data.estadoPedido;
+                                return (
+                                    <Box
+                                        key={index}
+                                        sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}
+                                    >
+                                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            {`${data.cantidad}x ${nombre} ($${data.precioUnitario} x1)`}
+                                            {estadoPedido && (
+                                                <Chip 
+                                                    label={estadoPedido} 
+                                                    size="small" 
+                                                    color={getEstadoColor(estadoPedido)}
+                                                    sx={{ height: 20, fontSize: '0.7rem' }}
+                                                />
+                                            )}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            ${data.total}
+                                        </Typography>
+                                    </Box>
+                                );
+                            })}
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', mt: 1 }}>
                                 <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold', mr: 2 }}>
                                     Total: ${total}
@@ -116,6 +143,7 @@ function Lista_Items(props) {
                 let texto = productosPendientes.map((producto, index) => {
                     const nombre = producto.nombre || producto.nombreProducto;
                     const precio = producto.precio || producto.precioDelMomento || 0;
+                    const estadoPedido = producto.estadoPedido;
                     const isSelected = props.productosSeleccionados?.includes(producto.id) || false;
                     const labelId = `checkbox-resumen-${producto.id}`;
 
@@ -150,9 +178,17 @@ function Lista_Items(props) {
                                 <Typography 
                                     variant="body2" 
                                     id={labelId}
-                                    sx={{ flex: 1 }}
+                                    sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}
                                 >
                                     {nombre}
+                                    {estadoPedido && (
+                                        <Chip 
+                                            label={estadoPedido} 
+                                            size="small" 
+                                            color={getEstadoColor(estadoPedido)}
+                                            sx={{ height: 20, fontSize: '0.7rem' }}
+                                        />
+                                    )}
                                 </Typography>
                             </Box>
                             <Typography variant="body2" sx={{ fontWeight: 'medium', ml: 2 }}>
@@ -191,36 +227,60 @@ function Lista_Items(props) {
             }
 
             // Resumen normal sin checkboxes (comportamiento original)
+            // Solo mostrar EstadoPedido si NO es la tab de "Pagos Registrados" (estado === 2)
+            const mostrarEstadoPedido = estado !== 2;
+            
             productosCorrespondientes.forEach(producto => {
                 const nombre = producto.nombre || producto.nombreProducto;
                 const precio = producto.precio || producto.precioDelMomento;
+                const estadoPedido = mostrarEstadoPedido ? producto.estadoPedido : null;
                 
                 if (resumen[nombre]) {
                     resumen[nombre].cantidad++;
                     resumen[nombre].total += precio;
+                    // Si hay diferentes estados, marcar como mixto (solo si debemos mostrar el estado)
+                    if (mostrarEstadoPedido) {
+                        if (resumen[nombre].estadoPedido && resumen[nombre].estadoPedido !== estadoPedido) {
+                            resumen[nombre].estadoPedido = 'Mixto';
+                        } else if (!resumen[nombre].estadoPedido) {
+                            resumen[nombre].estadoPedido = estadoPedido;
+                        }
+                    }
                 } else {
                     resumen[nombre] = {
                         precioUnitario: precio,
                         cantidad: 1,
-                        total: precio
+                        total: precio,
+                        estadoPedido: mostrarEstadoPedido ? estadoPedido : null
                     };
                 }
                 total += precio;
             });
 
-            let texto = Object.entries(resumen).map(([nombre, data], index) => (
-                <Box
-                    key={index}
-                    sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}
-                >
-                    <Typography variant="body2">
-                        {`${data.cantidad}x ${nombre} ($${data.precioUnitario} x1)`} ...
-                    </Typography>
-                    <Typography variant="body2">
-                        ${data.total}
-                    </Typography>
-                </Box>
-            ));
+            let texto = Object.entries(resumen).map(([nombre, data], index) => {
+                const estadoPedido = mostrarEstadoPedido ? data.estadoPedido : null;
+                return (
+                    <Box
+                        key={index}
+                        sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}
+                    >
+                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {`${data.cantidad}x ${nombre} ($${data.precioUnitario} x1)`}
+                            {estadoPedido && (
+                                <Chip 
+                                    label={estadoPedido} 
+                                    size="small" 
+                                    color={getEstadoColor(estadoPedido)}
+                                    sx={{ height: 20, fontSize: '0.7rem' }}
+                                />
+                            )}
+                        </Typography>
+                        <Typography variant="body2">
+                            ${data.total}
+                        </Typography>
+                    </Box>
+                );
+            });
 
             const resultado = <>
                 <h4>{props.titulo}</h4>
