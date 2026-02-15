@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Models;
+using BackEndAPI.Models;
 
 namespace BackEndAPI.DTOs.Response
 {
@@ -10,5 +10,6 @@ namespace BackEndAPI.DTOs.Response
         public decimal Precio { get; set; }
         public bool EstadoPagado { get; set; }
         public string? EstadoPedido { get; set; }
+        public DateTime FechaAgregado { get; set; }
     }
 }

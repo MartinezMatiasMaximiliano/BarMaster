@@ -47,6 +47,7 @@ namespace BackEndAPI.Controllers
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
                         EstadoPedido = item.EstadoPedido,
+                        FechaAgregado = item.FechaAgregado,
                     }).ToList() ?? new List<ItemDTO>(),
                 }).ToList();
 
@@ -87,6 +88,7 @@ namespace BackEndAPI.Controllers
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
                         EstadoPedido = item.EstadoPedido,
+                        FechaAgregado = item.FechaAgregado,
                     }).ToList() ?? new List<ItemDTO>(),
                 }).ToList();
 
@@ -119,6 +121,7 @@ namespace BackEndAPI.Controllers
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
                         EstadoPedido = item.EstadoPedido,
+                        FechaAgregado = item.FechaAgregado,
                     }).ToList(),
                 };
 
@@ -157,6 +160,7 @@ namespace BackEndAPI.Controllers
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
                         EstadoPedido = item.EstadoPedido,
+                        FechaAgregado = item.FechaAgregado,
                     }).ToList(),
                 };
                 
