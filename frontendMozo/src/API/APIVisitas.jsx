@@ -105,6 +105,28 @@ export async function PagarProductosVisita(idVisita, idsProductos) {
     }
 }
 
+/** PATCH /Visitas/CambiarEstadoProducto - Cambia el estado de un producto */
+export async function CambiarEstadoProducto(idProducto, estado) {
+    try {
+        const response = await axios.patch(
+            `${BASE_URL}Visitas/CambiarEstadoProducto`,
+            {
+                IdProducto: idProducto,
+                Estado: estado
+            },
+            authService.getAuthHeaders()
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error al cambiar estado del producto:', error);
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+        }
+        throw error;
+    }
+}
+
 ////////////////////////////// FUNCIONES PARA DATOS DE PRUEBA //////////////////////////////
 
 // Función para simular delay de API

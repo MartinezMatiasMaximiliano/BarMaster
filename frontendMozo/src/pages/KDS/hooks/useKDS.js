@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { cambiarEstadoPreparacion } from '../../../redux/slices/visitasActivasSlice';
-import { CambiarEstadoItems } from '../../../API/APIItems';
+import { CambiarEstadoProducto } from '../../../API/APIVisitas';
 import connection from '../../../connections/HubConnMozo';
 import datosPruebaKDS from '../utils/datosPruebaKDS.json';
 import { useSnackbar } from '../../../hooks/useSnackbar.jsx';
@@ -172,7 +172,7 @@ export const useKDS = () => {
             
             // Si hay datos en Redux, actualizar en la base de datos y Redux
             if (visitasActivasRedux && visitasActivasRedux.length > 0) {
-                await CambiarEstadoItems([productoId], "Procesando");
+                await CambiarEstadoProducto(productoId, "En Preparación");
                 dispatch(cambiarEstadoPreparacion({ idsProductos: [productoId], estadoNuevo: 1 }));
             } else {
                 // Si estamos usando datos de prueba, actualizar el estado local
@@ -202,7 +202,7 @@ export const useKDS = () => {
             console.error('Error al marcar como en preparación:', error);
             showSnackbar('Error al actualizar el estado del pedido', 'error');
         }
-    }, [dispatch, visitasActivasRedux, obtenerEstadoAnterior]);
+    }, [dispatch, visitasActivasRedux, obtenerEstadoAnterior, showSnackbar]);
 
     // Marcar producto como "Listo"
     const marcarListo = useCallback(async (productoId) => {
@@ -211,7 +211,7 @@ export const useKDS = () => {
             
             // Si hay datos en Redux, actualizar en la base de datos y Redux
             if (visitasActivasRedux && visitasActivasRedux.length > 0) {
-                await CambiarEstadoItems([productoId], "Listo");
+                await CambiarEstadoProducto(productoId, "Listo");
                 dispatch(cambiarEstadoPreparacion({ idsProductos: [productoId], estadoNuevo: 2 }));
             } else {
                 // Si estamos usando datos de prueba, actualizar el estado local
@@ -241,10 +241,12 @@ export const useKDS = () => {
             console.error('Error al marcar como listo:', error);
             showSnackbar('Error al actualizar el estado del pedido', 'error');
         }
-    }, [dispatch, visitasActivasRedux, obtenerEstadoAnterior]);
+    }, [dispatch, visitasActivasRedux, obtenerEstadoAnterior, showSnackbar]);
 
     // Revertir acción (volver al estado anterior)
     const revertirAccion = useCallback(async (notificacion) => {
+        if (!notificacion) return;
+        
         try {
             const { itemId, estadoAnterior } = notificacion;
             
@@ -252,10 +254,10 @@ export const useKDS = () => {
             if (visitasActivasRedux && visitasActivasRedux.length > 0) {
                 // Determinar el estado de texto según el estado anterior
                 let estadoTexto = "Pendiente";
-                if (estadoAnterior === 1) estadoTexto = "Procesando";
+                if (estadoAnterior === 1) estadoTexto = "En Preparación";
                 else if (estadoAnterior === 2) estadoTexto = "Listo";
                 
-                await CambiarEstadoItems([itemId], estadoTexto);
+                await CambiarEstadoProducto(itemId, estadoTexto);
                 dispatch(cambiarEstadoPreparacion({ idsProductos: [itemId], estadoNuevo: estadoAnterior }));
             } else {
                 // Si estamos usando datos de prueba, actualizar el estado local
@@ -275,17 +277,22 @@ export const useKDS = () => {
             
             // Cerrar la notificación
             setNotificacion(null);
+            
+            // Mostrar mensaje de éxito
+            showSnackbar('Estado revertido correctamente', 'success');
         } catch (error) {
             console.error('Error al revertir acción:', error);
             showSnackbar('Error al revertir la acción', 'error');
         }
-    }, [dispatch, visitasActivasRedux]);
+    }, [dispatch, visitasActivasRedux, showSnackbar, setNotificacion]);
 
     // Marcar múltiples productos como listos
     const marcarMultiplesListos = useCallback(async (productosIds) => {
         try {
-            // Actualizar en la base de datos
-            await CambiarEstadoItems(productosIds, "Listo");
+            // Actualizar en la base de datos - llamar al endpoint para cada producto
+            await Promise.all(
+                productosIds.map(id => CambiarEstadoProducto(id, "Listo"))
+            );
             
             // Actualizar en Redux
             dispatch(cambiarEstadoPreparacion({ idsProductos: productosIds, estadoNuevo: 2 }));
@@ -293,7 +300,7 @@ export const useKDS = () => {
             console.error('Error al marcar múltiples productos como listos:', error);
             showSnackbar('Error al actualizar los estados de los pedidos', 'error');
         }
-    }, [dispatch]);
+    }, [dispatch, showSnackbar]);
 
     // Calcular tiempo transcurrido desde que se creó el pedido
     const calcularTiempoTranscurrido = useCallback((fechaHora) => {

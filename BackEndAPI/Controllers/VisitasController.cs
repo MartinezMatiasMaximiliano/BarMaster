@@ -46,6 +46,7 @@ namespace BackEndAPI.Controllers
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
+                        EstadoPedido = item.EstadoPedido,
                     }).ToList() ?? new List<ItemDTO>(),
                 }).ToList();
 
@@ -85,6 +86,7 @@ namespace BackEndAPI.Controllers
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
+                        EstadoPedido = item.EstadoPedido,
                     }).ToList() ?? new List<ItemDTO>(),
                 }).ToList();
 
@@ -116,6 +118,7 @@ namespace BackEndAPI.Controllers
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
+                        EstadoPedido = item.EstadoPedido,
                     }).ToList(),
                 };
 
@@ -153,6 +156,7 @@ namespace BackEndAPI.Controllers
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
                         EstadoPagado = item.EstadoPagado,
+                        EstadoPedido = item.EstadoPedido,
                     }).ToList(),
                 };
                 
@@ -244,6 +248,38 @@ namespace BackEndAPI.Controllers
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     default:
                         return StatusCode(500, "Internal server error catch: Eliminar productos - " + ex.Message);
+                }
+            }
+        }
+
+        [HttpPatch("/Visitas/CambiarEstadoProducto")]
+        public async Task<IActionResult> CambiarEstadoProducto([FromBody] CambiarEstadoProductoDTO request)
+        {
+            try
+            {
+                if (request == null)
+                {
+                    return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El request no puede ser nulo"));
+                }
+
+                await _visitasServices.CambiarEstadoProducto(request.IdProducto, request.Estado);
+                
+                return Ok(new { message = "Estado del producto actualizado correctamente" });
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Producto no encontrado":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    case var msg when msg.Contains("no es válido"):
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "El IdProducto debe ser mayor a cero":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "El estado no puede estar vacío":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, "Internal server error catch: Cambiar estado producto - " + ex.Message);
                 }
             }
         }

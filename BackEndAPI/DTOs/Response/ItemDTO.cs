@@ -9,5 +9,6 @@ namespace BackEndAPI.DTOs.Response
         public string? Indicaciones { get; set; }
         public decimal Precio { get; set; }
         public bool EstadoPagado { get; set; }
+        public string? EstadoPedido { get; set; }
     }
 }
