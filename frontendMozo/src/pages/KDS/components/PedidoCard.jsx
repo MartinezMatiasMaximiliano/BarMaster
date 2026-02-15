@@ -26,55 +26,43 @@ const PedidoCard = memo(({
     onMarcarListo, 
     calcularTiempoTranscurrido 
 }) => {
+    const fechaPedido = item.fechaAgregado;
     const [tiempoTranscurrido, setTiempoTranscurrido] = useState(
-        calcularTiempoTranscurrido(item.fechaHora)
+        calcularTiempoTranscurrido(fechaPedido)
     );
 
-    // Actualizar tiempo transcurrido cada segundo
+    // Actualizar tiempo transcurrido cada segundo (antigüedad desde que se agregó el pedido)
     useEffect(() => {
         const interval = setInterval(() => {
-            setTiempoTranscurrido(calcularTiempoTranscurrido(item.fechaHora));
+            setTiempoTranscurrido(calcularTiempoTranscurrido(fechaPedido));
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [item.fechaHora, calcularTiempoTranscurrido]);
+    }, [fechaPedido, calcularTiempoTranscurrido]);
 
-    // Determinar color según estado
     const getColorEstado = () => {
-        if (item.estado === 2) return 'success'; // Listo
-        if (item.estado === 1) return 'info'; // En preparación
-        return 'default'; // Pendiente
+        if (item.estado === 'Listo') return 'success';
+        if (item.estado === 'En Preparación') return 'info';
+        return 'default';
     };
 
-    // Determinar color del borde según estado
     const getBorderColor = () => {
-        if (item.estado === 2) return 'success.main'; // Listo
-        if (item.estado === 1) return 'info.main'; // En preparación
-        return 'divider'; // Pendiente
+        if (item.estado === 'Listo') return 'success.main';
+        if (item.estado === 'En Preparación') return 'info.main';
+        return 'divider';
     };
 
-    // Determinar color de fondo sutil según estado
     const getBackgroundColor = () => {
-        if (item.estado === 2) {
-            // Verde más opaco para items listos (más visible)
-            return 'rgba(76, 175, 80, 0.15)'; // success.main con 15% opacidad
+        if (item.estado === 'Listo') {
+            return 'rgba(76, 175, 80, 0.15)';
         }
-        if (item.estado === 1) {
-            // Azul muy sutil para items en preparación
-            return 'rgba(33, 150, 243, 0.08)'; // info.main con 8% opacidad
+        if (item.estado === 'En Preparación') {
+            return 'rgba(33, 150, 243, 0.08)';
         }
-        // Gris muy sutil para items pendientes
-        return 'rgba(158, 158, 158, 0.04)'; // Gris muy sutil para pendientes
+        return 'rgba(158, 158, 158, 0.04)';
     };
 
-    const getEstadoLabel = () => {
-        switch (item.estado) {
-            case 0: return 'Pendiente';
-            case 1: return 'En Preparación';
-            case 2: return 'Listo';
-            default: return 'Pendiente';
-        }
-    };
+    const getEstadoLabel = () => item.estado || 'Pendiente';
 
     return (
         <Card
@@ -130,36 +118,6 @@ const PedidoCard = memo(({
                     {/* Producto con Cantidad */}
                     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                         <Stack direction="row" spacing={2} alignItems="flex-start" sx={{ mb: 1.5 }}>
-                            {/* Cantidad - Muy visible */}
-                            <Box
-                                sx={{
-                                    minWidth: 60,
-                                    width: 60,
-                                    height: 60,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderRadius: 2,
-                                    bgcolor: 'primary.main',
-                                    color: 'white',
-                                    fontWeight: 700,
-                                    flexShrink: 0
-                                }}
-                            >
-                                <Typography 
-                                    variant="h3" 
-                                    component="span"
-                                    sx={{ 
-                                        fontSize: { xs: '2rem', sm: '2.5rem' },
-                                        lineHeight: 1,
-                                        fontWeight: 900
-                                    }}
-                                >
-                                    {item.cantidad || 1}
-                                </Typography>
-                            </Box>
-                            
-                            {/* Nombre del producto */}
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Stack direction="row" spacing={1} alignItems="center">
                                     <RestaurantIcon fontSize="small" color="primary" sx={{ flexShrink: 0 }} />
@@ -230,15 +188,16 @@ const PedidoCard = memo(({
                         </Stack>
 
                         <Stack direction="row" spacing={1}>
-                            {item.estado === 0 && (
+                            {item.estado === 'Pendiente' && (
                                 <Tooltip title="Marcar como En Preparación">
                                     <IconButton
                                         color="info"
                                         size="small"
                                         onClick={() => onMarcarEnPreparacion(item.id)}
                                         sx={{
-                                            bgcolor: 'info.light',
-                                            '&:hover': { bgcolor: 'info.main', color: 'white' }
+                                            color: 'white',
+                                            bgcolor: 'info.main',
+                                            '&:hover': { bgcolor: 'info.dark', color: 'white' }
                                         }}
                                     >
                                         <PlayArrowIcon />
@@ -246,15 +205,16 @@ const PedidoCard = memo(({
                                 </Tooltip>
                             )}
                             
-                            {item.estado !== 2 && (
+                            {item.estado !== 'Listo' && (
                                 <Tooltip title="Marcar como Listo">
                                     <IconButton
                                         color="success"
                                         size="small"
                                         onClick={() => onMarcarListo(item.id)}
                                         sx={{
-                                            bgcolor: 'success.light',
-                                            '&:hover': { bgcolor: 'success.main', color: 'white' }
+                                            color: 'white',
+                                            bgcolor: 'success.main',
+                                            '&:hover': { bgcolor: 'success.dark', color: 'white' }
                                         }}
                                     >
                                         <CheckCircleIcon />
@@ -268,10 +228,9 @@ const PedidoCard = memo(({
         </Card>
     );
 }, (prevProps, nextProps) => {
-    // Optimización: solo re-renderizar si cambian propiedades relevantes
     return prevProps.item.id === nextProps.item.id &&
            prevProps.item.estado === nextProps.item.estado &&
-           prevProps.item.fechaHora === nextProps.item.fechaHora;
+           (prevProps.item.fechaAgregado ?? prevProps.item.fechaHora) === (nextProps.item.fechaAgregado ?? nextProps.item.fechaHora);
 });
 
 PedidoCard.displayName = 'PedidoCard';

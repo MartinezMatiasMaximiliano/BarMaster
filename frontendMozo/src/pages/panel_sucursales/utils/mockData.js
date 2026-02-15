@@ -61,4 +61,3 @@ export const datosFacturacion = {
     fechaVencimiento: '2025-11-15',
     periodo: 'Noviembre 2025'
 };
-

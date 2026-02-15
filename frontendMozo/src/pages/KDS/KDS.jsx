@@ -208,7 +208,7 @@ function KDS() {
                 sx={{ mb: 8, zIndex: 1500 }}
             >
                 <Alert
-                    severity={notificacion?.estadoNuevo === 1 ? 'info' : 'success'}
+                    severity={notificacion?.estadoNuevo === 'En Preparación' ? 'info' : 'success'}
                     sx={{ 
                         width: '100%',
                         display: 'flex',
