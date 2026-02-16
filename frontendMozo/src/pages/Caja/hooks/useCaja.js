@@ -201,7 +201,7 @@ export const useCaja = () => {
         }
     };
 
-    // Balance actual: usar MontoActual del backend (fuente de verdad) para integridad de datos.
+    // Balance actual (efectivo): usar MontoActual del backend (fuente de verdad) para integridad de datos.
     // Fallback a cálculo por movimientos solo si el backend no envía montoActual (retrocompatibilidad).
     const balanceActual = useMemo(() => {
         if (!cajaActiva) {
@@ -216,6 +216,25 @@ export const useCaja = () => {
         }
         const movimientoMasReciente = movimientosCajaActiva[0];
         return movimientoMasReciente?.saldo ?? montoInicial;
+    }, [cajaActiva, movimientosCajaActiva]);
+
+    // Balance no efectivo: empieza en 0 al abrir la caja y suma/resta solo movimientos con esEfectivo = false.
+    const balanceNoEfectivo = useMemo(() => {
+        if (!cajaActiva || !movimientosCajaActiva.length) {
+            return 0;
+        }
+        const ordenados = [...movimientosCajaActiva].sort((a, b) => {
+            const fechaA = new Date(`${a.fecha}T${a.hora}`);
+            const fechaB = new Date(`${b.fecha}T${b.hora}`);
+            return fechaA - fechaB;
+        });
+        let saldo = 0;
+        ordenados.forEach((mov) => {
+            if (mov.esEfectivo === false) {
+                saldo += mov.esIngreso ? (mov.monto ?? 0) : -(mov.monto ?? 0);
+            }
+        });
+        return saldo;
     }, [cajaActiva, movimientosCajaActiva]);
 
     const diferencia = useMemo(() => {
@@ -290,6 +309,7 @@ export const useCaja = () => {
         formCierre,
         diferencia,
         balanceActual,
+        balanceNoEfectivo,
         // Setters
         setTabValue,
         setError,

@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Box,
     Card,
     CardContent,
     CardHeader,
@@ -12,9 +13,10 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PaidIcon from '@mui/icons-material/Paid';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { currencyFormatter } from '../utils/constants';
 
-export const EstadoActual = ({ cajaActiva, balanceActual, onRecargar }) => {
+export const EstadoActual = ({ cajaActiva, balanceActual, balanceNoEfectivo = 0, onRecargar }) => {
     return (
         <Card variant="outlined">
             <CardHeader
@@ -34,7 +36,7 @@ export const EstadoActual = ({ cajaActiva, balanceActual, onRecargar }) => {
             />
             <Divider />
             <CardContent>
-                <Stack direction="row" spacing={2} alignItems="center">
+                <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                     <Chip
                         color={cajaActiva ? 'success' : 'error'}
                         label={cajaActiva ? 'Caja abierta' : 'Caja cerrada'}
@@ -51,15 +53,68 @@ export const EstadoActual = ({ cajaActiva, balanceActual, onRecargar }) => {
                     )}
                 </Stack>
                 {cajaActiva && (
-                    <Stack spacing={1} mt={2}>
-                        <Typography variant="body2">
-                            Responsable:{' '}
-                            <strong>{cajaActiva.responsable ?? cajaActiva.usuario ?? 'Sin asignar'}</strong>
-                        </Typography>
-                        <Typography variant="body2">
-                            Balance actual: <strong>{currencyFormatter.format(balanceActual ?? 0)}</strong>
-                        </Typography>
-                    </Stack>
+                    <Box
+                        sx={{
+                            mt: 2,
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            gap: 2
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                flex: '1 1 50%',
+                                minWidth: 0,
+                                p: 3,
+                                borderRadius: 1,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                textAlign: 'center',
+                                minHeight: 120,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                boxSizing: 'border-box'
+                            }}
+                        >
+                            <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
+                                <PaidIcon sx={{ fontSize: 28 }} color="action" />
+                                <Typography variant="subtitle1" fontWeight={600} color="text.secondary">
+                                    Balance en efectivo
+                                </Typography>
+                            </Stack>
+                            <Typography variant="h4" component="div" fontWeight={700} sx={{ width: '100%' }}>
+                                {currencyFormatter.format(balanceActual ?? 0)}
+                            </Typography>
+                        </Box>
+                        <Box
+                            sx={{
+                                flex: '1 1 50%',
+                                minWidth: 0,
+                                p: 3,
+                                borderRadius: 1,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                textAlign: 'center',
+                                minHeight: 120,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                boxSizing: 'border-box'
+                            }}
+                        >
+                            <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
+                                <CreditCardIcon sx={{ fontSize: 28 }} color="action" />
+                                <Typography variant="subtitle1" fontWeight={600} color="text.secondary">
+                                    Balance no efectivo
+                                </Typography>
+                            </Stack>
+                            <Typography variant="h4" component="div" fontWeight={700} sx={{ width: '100%' }}>
+                                {currencyFormatter.format(balanceNoEfectivo ?? 0)}
+                            </Typography>
+                        </Box>
+                    </Box>
                 )}
             </CardContent>
         </Card>

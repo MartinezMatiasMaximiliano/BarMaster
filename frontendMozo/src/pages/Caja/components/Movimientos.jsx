@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Alert,
     Box,
@@ -17,6 +17,8 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    ToggleButton,
+    ToggleButtonGroup,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -24,11 +26,18 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LocalDiningIcon from '@mui/icons-material/LocalDining';
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
+import PaidIcon from '@mui/icons-material/Paid';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { currencyFormatter, formatearFechaCompleta } from '../utils/constants';
 import { usePaginacion } from '../../../components/Tabla/usePaginacion';
 import TablaPaginacion from '../../../components/Tabla/TablaPaginacion';
 import { useExportacionTabla } from '../../../hooks/useExportacionTabla';
 import { BotonesExportacion } from '../../../components/Tabla/BotonesExportacion';
+
+const FILTRO_TODOS = 'todos';
+const FILTRO_EFECTIVO = 'efectivo';
+const FILTRO_NO_EFECTIVO = 'noEfectivo';
 
 export const Movimientos = ({
     cajaActiva,
@@ -38,6 +47,7 @@ export const Movimientos = ({
     onRecargar,
     onVolverACajaActiva
 }) => {
+    const [filtroTipo, setFiltroTipo] = useState(FILTRO_TODOS);
     const cajaActual = cajaSeleccionada || cajaActiva;
     
     if (!cajaActual) {
@@ -76,6 +86,15 @@ export const Movimientos = ({
         return [...movimientos, filaApertura];
     }, [movimientos, filaApertura]);
 
+    // Filtrar por efectivo / no efectivo
+    const filasFiltradas = useMemo(() => {
+        if (filtroTipo === FILTRO_TODOS) return todasLasFilas;
+        if (filtroTipo === FILTRO_EFECTIVO) {
+            return todasLasFilas.filter((f) => f.esEfectivo === true);
+        }
+        return todasLasFilas.filter((f) => f.esEfectivo === false);
+    }, [todasLasFilas, filtroTipo]);
+
     // Calcular diferencia para caja cerrada
     const diferenciaCaja = useMemo(() => {
         if (!esCajaCerrada || !cajaActual.montoFinal) {
@@ -104,7 +123,7 @@ export const Movimientos = ({
         return (cajaActual.montoFinal || 0) - montoEsperado;
     }, [esCajaCerrada, cajaActual, movimientos]);
 
-    // Configurar paginación
+    // Configurar paginación (sobre filas filtradas)
     const rowsPerPage = 10;
     const {
         filasPaginadas,
@@ -112,7 +131,7 @@ export const Movimientos = ({
         totalPages,
         handlePageChange,
         rowsPerPage: rowsPerPageValue
-    } = usePaginacion(todasLasFilas, rowsPerPage, true);
+    } = usePaginacion(filasFiltradas, rowsPerPage, true);
 
     // Configurar exportación
     const columnasExportacion = [
@@ -170,7 +189,7 @@ export const Movimientos = ({
     }
 
     const { handleExportarPDF, handleExportarExcel } = useExportacionTabla({
-        datos: todasLasFilas,
+        datos: filasFiltradas,
         columnas: columnasExportacion,
         titulo: 'Movimientos de Caja',
         subtitulo: esCajaCerrada ? 'Caja Cerrada' : 'Caja Activa',
@@ -195,7 +214,7 @@ export const Movimientos = ({
                         <BotonesExportacion
                             onExportarPDF={handleExportarPDF}
                             onExportarExcel={handleExportarExcel}
-                            deshabilitado={loadingMovimientos || todasLasFilas.length === 0}
+                            deshabilitado={loadingMovimientos || filasFiltradas.length === 0}
                         />
                         {cajaSeleccionada && cajaActiva && onVolverACajaActiva && (
                             <Tooltip title="Ver caja activa">
@@ -230,6 +249,27 @@ export const Movimientos = ({
                     </Stack>
                 ) : (
                     <>
+                        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                            <FilterListIcon color="action" fontSize="small" />
+                            <ToggleButtonGroup
+                                value={filtroTipo}
+                                exclusive
+                                onChange={(_, value) => value != null && setFiltroTipo(value)}
+                                size="small"
+                            >
+                                <ToggleButton value={FILTRO_TODOS}>
+                                    Todos
+                                </ToggleButton>
+                                <ToggleButton value={FILTRO_EFECTIVO}>
+                                    <PaidIcon sx={{ mr: 0.5 }} fontSize="small" />
+                                    Efectivo
+                                </ToggleButton>
+                                <ToggleButton value={FILTRO_NO_EFECTIVO}>
+                                    <CreditCardIcon sx={{ mr: 0.5 }} fontSize="small" />
+                                    No efectivo
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                        </Stack>
                         {esCajaCerrada && fechaFin && cajaActual.montoFinal && (
                             <Alert 
                                 severity="info" 
@@ -355,7 +395,7 @@ export const Movimientos = ({
                                 page={page}
                                 handlePageChange={handlePageChange}
                                 rowsPerPage={rowsPerPageValue}
-                                totalFilas={todasLasFilas.length}
+                                totalFilas={filasFiltradas.length}
                             />
                         </Box>
                     </>

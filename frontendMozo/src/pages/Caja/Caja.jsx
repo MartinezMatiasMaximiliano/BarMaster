@@ -32,6 +32,7 @@ function Caja() {
         formCierre,
         diferencia,
         balanceActual,
+        balanceNoEfectivo,
         setTabValue,
         setError,
         setMensaje,
@@ -72,7 +73,7 @@ function Caja() {
 
                 <LoadingWrapper minHeight={300} sx={{ py: 6 }}>
                     <>
-                        <EstadoActual cajaActiva={cajaActiva} balanceActual={balanceActual} onRecargar={cargarDatos} />
+                        <EstadoActual cajaActiva={cajaActiva} balanceActual={balanceActual} balanceNoEfectivo={balanceNoEfectivo} onRecargar={cargarDatos} />
                         <Card variant="outlined">
                             <Tabs
                                 value={tabValue}
