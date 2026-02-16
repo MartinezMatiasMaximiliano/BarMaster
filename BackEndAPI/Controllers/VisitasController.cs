@@ -37,8 +37,16 @@ namespace BackEndAPI.Controllers
                     Id = visita.Id,
                     FechaHora = visita.FechaHora,
                     Estado = visita.Estado,
+                    Total = visita.Total,
                     IdMesa = visita.Mesa?.Id,
                     NumeroMesa = visita.Mesa?.Nombre,
+                    Mozo = visita.Mozo != null ? new MozoEnVisitaDTO
+                    {
+                        Id = visita.Mozo.Id,
+                        CodigoDeServicio = visita.Mozo.CodigoDeServicio,
+                        Nombres = visita.Mozo.Nombres ?? string.Empty,
+                        Apellido = visita.Mozo.Apellido ?? string.Empty,
+                    } : null,
                     ProductosConsumidos = visita.Productos?.Select(item => new ItemDTO
                     {
                         Id = item.Id,
