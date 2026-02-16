@@ -63,10 +63,6 @@ export default function Mesa_Deshabilitada(props) {
                         <>
                             <Lista_Items visitaMesa={props.visitaMesa} titulo="Pedido total" subtitulo="Total" estado={false}></Lista_Items>
                             <hr></hr>
-                            <div style={{ maxHeight: '28vh', overflowY: 'auto', marginBottom: '2em' }} >
-                                <Lista_Items visitaMesa={props.visitaMesa} titulo="Ticket" subtitulo="Subtotal" estado={1} facturar={false}></Lista_Items>
-                            </div>
-                            <hr></hr>
                             <Lista_Items visitaMesa={props.visitaMesa} titulo="Pagado" subtitulo="Subtotal" estado={2}></Lista_Items>
                         </>
                     ) : (

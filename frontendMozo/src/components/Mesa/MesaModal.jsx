@@ -20,7 +20,6 @@ import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
-import ReceiptIcon from '@mui/icons-material/Receipt';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import Modal_Generico from "../Modals/Modal_Generico";
@@ -192,12 +191,6 @@ export const MesaModal = ({
                         iconPosition="start"
                     />
                     <Tab
-                        label="Tickets abiertos"
-                        icon={<ReceiptIcon />}
-                        iconPosition="start"
-                        disabled={!visitaMesaFinal}
-                    />
-                    <Tab
                         label="Pagos registrados"
                         icon={<CheckCircleIcon />}
                         iconPosition="start"
@@ -227,16 +220,6 @@ export const MesaModal = ({
                     )}
 
                     {tabValue === 1 && (
-                        <TabContent
-                            visitaMesa={visitaMesaFinal}
-                            estado={1}
-                            titulo="Ticket"
-                            PagarMesa={handlePagarMesa}
-                            facturar={true}
-                        />
-                    )}
-
-                    {tabValue === 2 && (
                         <TabContent
                             visitaMesa={visitaMesaFinal}
                             estado={2}

@@ -6,7 +6,6 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import PeopleIcon from '@mui/icons-material/People';
-import CategoryIcon from '@mui/icons-material/Category';
 import PaymentIcon from '@mui/icons-material/Payment';
 import PercentIcon from '@mui/icons-material/Percent';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -23,17 +22,8 @@ const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) 
         const mesasOcupadas = new Set(visitas.map(v => v.idMesa)).size;
         const mozosActivos = new Set(
             visitas
-                .filter(v => v.mesa?.idMozo)
-                .map(v => v.mesa.idMozo)
-        ).size;
-        
-        const categoriasVendidas = new Set(
-            visitas.flatMap(v => 
-                v.productos?.map(p => {
-                    const producto = productos.find(prod => prod.nombre === p.nombreProducto);
-                    return producto?.idCategoria;
-                }).filter(Boolean) || []
-            )
+                .filter(v => v.mozo?.id)
+                .map(v => v.mozo.id)
         ).size;
         
         const margenPorcentual = metricas.totalVentas > 0
@@ -47,11 +37,10 @@ const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) 
             promedioProductosPorVisita,
             mesasOcupadas,
             mozosActivos,
-            categoriasVendidas,
             margenPorcentual,
             totalCostos
         };
-    }, [visitas, mesas, productos, metricas]);
+    }, [visitas, mesas, metricas]);
 
     const cards = [
         {
@@ -107,12 +96,6 @@ const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) 
             valor: metricasAdicionales.mozosActivos || 0,
             icono: <PeopleIcon sx={{ fontSize: 40 }} />,
             color: '#7b1fa2'
-        },
-        {
-            titulo: 'Categorías Vendidas',
-            valor: metricasAdicionales.categoriasVendidas || 0,
-            icono: <CategoryIcon sx={{ fontSize: 40 }} />,
-            color: '#f57c00'
         },
         {
             titulo: 'Margen Porcentual',

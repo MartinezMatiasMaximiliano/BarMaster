@@ -109,7 +109,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
             dispatch(eliminarTicket(arregloIds));
 
             // Cambiar a la pestaña de "Pagos registrados" para mostrar los productos pagados
-            setTabValue(2);
+            setTabValue(1);
 
             if (showSnackbar) {
                 showSnackbar("Productos facturados correctamente", "success");
