@@ -25,7 +25,9 @@ namespace BackEndAPI.Repositories
 
         public async Task<Producto?> GetProductoPorId(Guid id)
         {
-            return await db.Productos.FirstOrDefaultAsync(p => p.Id == id);
+            return await db.Productos
+                .Include(p => p.Categorias)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<Producto?> GetProductoPorNombre(string nombre)

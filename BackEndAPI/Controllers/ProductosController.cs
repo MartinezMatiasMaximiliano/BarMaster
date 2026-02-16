@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -28,9 +28,11 @@ namespace BackEndAPI.Controllers
                 var listaProductos = busqueda.Select(producto => new ProductoDTO
                 {
                     Id = producto.Id,
+                    Codigo = producto.Codigo,
                     Nombre = producto.Nombre,
                     Descripcion = producto.Descripcion ?? string.Empty,
                     Precio = producto.Precio,
+                    Costo = producto.CostoProduccion,
                     Activo = producto.Activo,
                     ImagenUrl = producto.PathImagen ?? string.Empty,
                     Categorias = producto.Categorias?
@@ -62,9 +64,11 @@ namespace BackEndAPI.Controllers
                 var productoDTO = new ProductoDTO
                 {
                     Id = producto.Id,
+                    Codigo = producto.Codigo,
                     Nombre = producto.Nombre,
                     Descripcion = producto.Descripcion ?? string.Empty,
                     Precio = producto.Precio,
+                    Costo = producto.CostoProduccion,
                     Activo = producto.Activo,
                     ImagenUrl = producto.PathImagen ?? string.Empty,
                     Categorias = producto.Categorias?
