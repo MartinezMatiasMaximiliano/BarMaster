@@ -9,6 +9,7 @@ namespace BackEndAPI.DTOs.Response
         public MozoEnVisitaDTO? Mozo { get; set; }
         public DateTime FechaHora { get; set; }
         public string Estado { get; set; } = string.Empty;
+        public string? Origen { get; set; }
     }
 
     /// <summary>Datos del mozo incluidos en una visita (solo campos necesarios para mostrar).</summary>

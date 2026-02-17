@@ -38,6 +38,7 @@ namespace BackEndAPI.Controllers
                     FechaHora = visita.FechaHora,
                     Estado = visita.Estado,
                     Total = visita.Total,
+                    Origen = visita.Origen,
                     IdMesa = visita.Mesa?.Id,
                     NumeroMesa = visita.Mesa?.Nombre,
                     Mozo = visita.Mozo != null ? new MozoEnVisitaDTO
@@ -80,6 +81,7 @@ namespace BackEndAPI.Controllers
                     FechaHora = visita.FechaHora,
                     Estado = visita.Estado,
                     Total = visita.Total,
+                    Origen = visita.Origen,
                     IdMesa = visita.Mesa?.Id,
                     NumeroMesa = visita.Mesa?.Nombre,
                     Mozo = visita.Mozo != null ? new MozoEnVisitaDTO
@@ -121,6 +123,8 @@ namespace BackEndAPI.Controllers
                     Id = visitaBuscada.Id,
                     FechaHora = visitaBuscada.FechaHora,
                     Estado = visitaBuscada.Estado,
+                    Total = visitaBuscada.Total,
+                    Origen = visitaBuscada.Origen,
                     IdMesa = visitaBuscada.Mesa?.Id,
                     NumeroMesa = visitaBuscada.Mesa?.Nombre,
                     ProductosConsumidos = visitaBuscada.Productos.Select(item => new ItemDTO
@@ -163,6 +167,8 @@ namespace BackEndAPI.Controllers
                     Id = visitaActualizada.Id,
                     FechaHora = visitaActualizada.FechaHora,
                     Estado = visitaActualizada.Estado,
+                    Total = visitaActualizada.Total,
+                    Origen = visitaActualizada.Origen,
                     ProductosConsumidos = visitaActualizada.Productos.Select(item => new ItemDTO
                     {
                         Id = item.Id,

@@ -92,7 +92,8 @@ namespace BackEndAPI.Controllers
                     IdMesa = Visita.IdMesa ?? Guid.Empty,
                     IdMozo = Visita.IdMozo ?? Guid.Empty,
                     FechaHora = Visita.FechaHora,
-                    Estado = Visita.Estado
+                    Estado = Visita.Estado,
+                    Origen = Visita.Origen
                 };
 
                 return Ok(response);
@@ -154,7 +155,8 @@ namespace BackEndAPI.Controllers
                             Apellido = t.visita.Mozo.Apellido
                         } : null,
                         FechaHora = t.visita.FechaHora,
-                        Estado = t.visita.Estado
+                        Estado = t.visita.Estado,
+                        Origen = t.visita.Origen
                     } : null
                 }).ToList();
 

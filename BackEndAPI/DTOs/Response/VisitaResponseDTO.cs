@@ -15,5 +15,7 @@ namespace BackEndAPI.DTOs.Response
         public string? NumeroMesa { get; set; }
         /// <summary>Datos del mozo que atendió la mesa en esta visita (id, codigoDeServicio, nombres, apellido).</summary>
         public MozoEnVisitaDTO? Mozo { get; set; }
+        /// <summary>Origen de la visita (ej. Mesa, Delivery, TakeAway).</summary>
+        public string? Origen { get; set; }
     }
 }
