@@ -50,6 +50,7 @@ namespace BackEndAPI.Controllers
                     ProductosConsumidos = visita.Productos?.Select(item => new ItemDTO
                     {
                         Id = item.Id,
+                        IdProducto = item.IdProducto,
                         Nombre = item.NombreProducto,
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
@@ -91,6 +92,7 @@ namespace BackEndAPI.Controllers
                     ProductosConsumidos = visita.Productos?.Select(item => new ItemDTO
                     {
                         Id = item.Id,
+                        IdProducto = item.IdProducto,
                         Nombre = item.NombreProducto,
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
@@ -124,6 +126,7 @@ namespace BackEndAPI.Controllers
                     ProductosConsumidos = visitaBuscada.Productos.Select(item => new ItemDTO
                     {
                         Id = item.Id,
+                        IdProducto = item.IdProducto,
                         Nombre = item.NombreProducto,
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
@@ -163,6 +166,7 @@ namespace BackEndAPI.Controllers
                     ProductosConsumidos = visitaActualizada.Productos.Select(item => new ItemDTO
                     {
                         Id = item.Id,
+                        IdProducto = item.IdProducto,
                         Nombre = item.NombreProducto,
                         Indicaciones = item.Detalles,
                         Precio = item.PrecioDelMomento,
