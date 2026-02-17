@@ -199,8 +199,44 @@ export const MesaModal = ({
                     />
                 </Tabs>
 
+                <Box sx={{ px: 3, pt: 2, pb: 1, flexShrink: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<AddShoppingCartIcon />}
+                        onClick={() => setShowAgregarPedidos(true)}
+                        size="small"
+                        sx={{ py: 0.75, fontSize: '0.875rem', minWidth: 'auto' }}
+                    >
+                        Agregar Productos
+                    </Button>
+                    <Modal_Generico
+                        confirmar={true}
+                        titulo="¿Seguro que desea cerrar la mesa?"
+                        cuerpo="Todos los pedidos pendientes se marcarán como pagados"
+                        textoBoton="Cerrar Mesa"
+                        func={onCerrarMesa}
+                        param={datos_mesa.id}
+                        cerrar_modal={handleCloseWithCleanup}
+                        disabled={false}
+                        buttonSize="small"
+                    />
+                    <Modal_Generico
+                        confirmar={true}
+                        titulo="Cancelar pedidos"
+                        cuerpo="¿Seguro que desea cancelar los pedidos?"
+                        textoBoton={`Cancelar Pedidos${productosSeleccionados.length > 0 ? ` (${productosSeleccionados.length})` : ''}`}
+                        func={handleCancelarPedidosConSnackbar}
+                        param={productosSeleccionados}
+                        cerrar_modal={handleCloseWithCleanup}
+                        disabled={productosSeleccionados.length === 0}
+                        buttonSize="small"
+                    />
+                </Box>
+
                 <Box sx={{ 
                     p: 3, 
+                    pt: 1,
                     flex: '1 1 auto',
                     minHeight: 0,
                     overflow: 'hidden',
@@ -231,65 +267,8 @@ export const MesaModal = ({
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{ px: 4, py: 2, flexDirection: 'column', alignItems: 'stretch', gap: 1.5 }}>
-                {/* Primera fila: Agregar Productos, Cerrar mesa, Cancelar pedidos, y Cerrar */}
-                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, flex: 1 }}>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            startIcon={<AddShoppingCartIcon />}
-                            onClick={() => setShowAgregarPedidos(true)}
-                            size="small"
-                            sx={{ 
-                                py: 0.75,
-                                fontSize: '0.875rem',
-                                minWidth: 'auto'
-                            }}
-                        >
-                            Agregar Productos
-                        </Button>
-
-                        <Modal_Generico
-                            confirmar={true}
-                            titulo="¿Seguro que desea cerrar la mesa?"
-                            cuerpo="Todos los pedidos pendientes se marcarán como pagados"
-                            textoBoton="Cerrar mesa"
-                            func={onCerrarMesa}
-                            param={datos_mesa.id}
-                            cerrar_modal={handleCloseWithCleanup}
-                            disabled={false}
-                            buttonSize="small"
-                        />
-
-                        <Modal_Generico
-                            confirmar={true}
-                            titulo="Cancelar pedidos"
-                            cuerpo="¿Seguro que desea cancelar los pedidos?"
-                            textoBoton={`Cancelar pedidos${productosSeleccionados.length > 0 ? ` (${productosSeleccionados.length})` : ''}`}
-                            func={handleCancelarPedidosConSnackbar}
-                            param={productosSeleccionados}
-                            cerrar_modal={handleCloseWithCleanup}
-                            disabled={productosSeleccionados.length === 0}
-                            buttonSize="small"
-                        />
-                    </Box>
-                    <Button 
-                        onClick={handleCloseWithCleanup} 
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                            py: 0.75,
-                            fontSize: '0.875rem',
-                            minWidth: 'auto'
-                        }}
-                    >
-                        Cerrar
-                    </Button>
-                </Box>
-
-                {/* Segunda fila: Facturar todo y Facturar por partes */}
-                <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, marginLeft: '0 !important'}}>
+            <DialogActions sx={{ px: 4, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Modal_Generico
                         textoBoton="Facturar todo"
                         titulo="Facturar todo"
@@ -301,7 +280,6 @@ export const MesaModal = ({
                         color="success"
                         buttonSize="small"
                     />
-
                     <Button
                         variant="contained"
                         color="primary"
@@ -309,15 +287,19 @@ export const MesaModal = ({
                         disabled={productosSeleccionados.length === 0}
                         startIcon={<PlaylistAddCheckIcon />}
                         size="small"
-                        sx={{
-                            py: 0.75,
-                            fontSize: '0.875rem',
-                            minWidth: 'auto'
-                        }}
+                        sx={{ py: 0.75, fontSize: '0.875rem', minWidth: 'auto' }}
                     >
                         Facturar por partes {productosSeleccionados.length > 0 && `(${productosSeleccionados.length})`}
                     </Button>
                 </Box>
+                <Button 
+                    onClick={handleCloseWithCleanup} 
+                    variant="outlined"
+                    size="small"
+                    sx={{ py: 0.75, fontSize: '0.875rem', minWidth: 'auto' }}
+                >
+                    Cerrar
+                </Button>
             </DialogActions>
 
             {/* Modal para agregar pedidos */}

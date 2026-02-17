@@ -13,18 +13,19 @@ import { useDatosRentabilidad } from '../reportes/rentabilidad/useDatosRentabili
 /** Normaliza mesas de la API al formato esperado por filtros (id, nombre, idMozo). */
 function normalizarMesasParaReportes(mesas) {
     return mesas.map(m => ({
-        id: m.id ?? m.Id,
-        nombre: m.nombre ?? m.Nombre ?? '',
-        idMozo: m.visita?.mozo?.id ?? m.Visita?.Mozo?.Id ?? null
+        id: m.id,
+        nombre: m.nombre ?? '',
+        idMozo: m.visita?.mozo?.id ?? null
     }));
 }
 
 /** Normaliza una visita de la API (productosConsumidos) al formato esperado (productos, pagos). */
 function normalizarVisitaParaReportes(visita) {
     const productos = visita.productos ?? (visita.productosConsumidos ?? []).map(p => ({
-        cantidad: 1,
+        cantidad: p.cantidad ?? p.Cantidad ?? 1,
         precioTotal: p.precio ?? p.Precio ?? 0,
-        nombreProducto: p.nombre ?? p.Nombre ?? ''
+        nombreProducto: p.nombre ?? p.Nombre ?? '',
+        idProducto: p.idProducto ?? p.IdProducto ?? null
     }));
     const pagos = visita.pagos ?? [];
     return { ...visita, productos, pagos };
@@ -104,18 +105,18 @@ export const useReportes = (filtros) => {
         if (filtros.filtros.idCategorias?.length > 0) {
             const idCategoriasSet = new Set(filtros.filtros.idCategorias.map(id => String(id)));
             const productosCategorias = productos.filter(p => {
-                const idCat = p.idCategoria ?? p.IdCategoria;
+                const idCat = p.idCategoria;
                 return idCat != null && idCategoriasSet.has(String(idCat));
             });
-            const nombresProductos = new Set(productosCategorias.map(p => p.nombre ?? p.Nombre ?? ''));
+            const nombresProductos = new Set(productosCategorias.map(p => p.nombre ?? ''));
             filtradas = filtradas.filter(v =>
-                v.productos?.some(p => nombresProductos.has(p.nombreProducto ?? p.NombreProducto))
+                v.productos?.some(p => nombresProductos.has(p.nombreProducto ?? p.nombre))
             );
         }
 
         if (filtros.filtros.idTipoPagos?.length > 0) {
             filtradas = filtradas.filter(v =>
-                (v.pagos ?? []).some(p => filtros.filtros.idTipoPagos.includes(String(p.idTipoPago ?? p.IdTipoPago)))
+                (v.pagos ?? []).some(p => filtros.filtros.idTipoPagos.includes(String(p.idTipoPago)))
             );
         }
         if (filtros.filtros.estados?.length > 0) {
@@ -147,8 +148,8 @@ export const useReportes = (filtros) => {
         const margenGanancia = visitasFiltradas.reduce((sum, v) => {
             const prods = v.productos ?? [];
             const margenVisita = prods.reduce((prodSum, p) => {
-                const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombreProducto ?? p.NombreProducto));
-                const costoUnit = producto?.costo ?? producto?.CostoProduccion;
+                const producto = productos.find(prod => prod.nombre === (p.nombreProducto ?? p.nombre));
+                const costoUnit = producto?.costo;
                 if (producto && costoUnit != null) {
                     const costoTotal = Number(costoUnit) * p.cantidad;
                     return prodSum + (p.precioTotal - costoTotal);

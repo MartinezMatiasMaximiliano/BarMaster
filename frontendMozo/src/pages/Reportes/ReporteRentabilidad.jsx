@@ -4,7 +4,6 @@ import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
 import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
-import TablaDetallada from './components/TablaDetallada';
 import ExportarReporte from './components/ExportarReporte';
 import { formatearMoneda, formatearPorcentaje } from './utils/formatters';
 
@@ -77,8 +76,6 @@ const ReporteRentabilidad = () => {
                     </Box>
                 </CardContent>
             </Card>
-
-            <TablaDetallada visitas={reportes.visitas} tipoReporte="rentabilidad" />
         </Container>
     );
 };

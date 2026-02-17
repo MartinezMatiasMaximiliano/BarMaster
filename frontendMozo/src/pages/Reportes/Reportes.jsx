@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Container, Typography, CircularProgress, Alert, Tabs, Tab } from '@mui/material';
+import React from 'react';
+import { Box, Container, Typography, CircularProgress, Alert } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
 import { useExportacion } from './hooks/useExportacion';
@@ -9,7 +9,6 @@ import GraficaVentas from './reportes/ventas/GraficaVentas';
 import GraficaProductos from './reportes/productos/GraficaProductos';
 import GraficaMozos from './reportes/mozos/GraficaMozos';
 import GraficaMesas from './reportes/mesas/GraficaMesas';
-import TablaDetallada from './components/TablaDetallada';
 import ExportarReporte from './components/ExportarReporte';
 import { boxDividerLineWithMargin } from '../../styles/boxStyles';
 
@@ -18,75 +17,46 @@ const Reportes = () => {
     const reportes = useReportes(filtros);
     const exportacion = useExportacion();
 
-    const [tabValue, setTabValue] = useState(0);
-
-    const handleTabChange = (event, newValue) => {
-        setTabValue(newValue);
-    };
-
     const renderContenidoReporte = () => {
         const tipoReporte = filtros.filtros.tipoReporte;
 
         switch (tipoReporte) {
             case 'ventas':
-                return (
-                    <>
-                        <GraficaVentas datosVentas={reportes.datosVentas} />
-                        <TablaDetallada visitas={reportes.visitas} tipoReporte={tipoReporte} />
-                    </>
-                );
+                return <GraficaVentas datosVentas={reportes.datosVentas} />;
             case 'productos':
-                return (
-                    <>
-                        <GraficaProductos datosProductos={reportes.datosProductos} />
-                        <TablaDetallada visitas={reportes.visitas} tipoReporte={tipoReporte} />
-                    </>
-                );
+                return <GraficaProductos datosProductos={reportes.datosProductos} />;
             case 'mozos':
-                return (
-                    <>
-                        <GraficaMozos datosMozos={reportes.datosMozos} />
-                        <TablaDetallada visitas={reportes.visitas} tipoReporte={tipoReporte} />
-                    </>
-                );
+                return <GraficaMozos datosMozos={reportes.datosMozos} />;
             case 'mesas':
-                return (
-                    <>
-                        <GraficaMesas datosMesas={reportes.datosMesas} />
-                        <TablaDetallada visitas={reportes.visitas} tipoReporte={tipoReporte} />
-                    </>
-                );
+                return <GraficaMesas datosMesas={reportes.datosMesas} />;
             case 'rentabilidad':
                 return (
-                    <>
-                        <Box sx={{ mb: 4 }}>
-                            <Typography variant="h6" gutterBottom>
-                                Resumen de Rentabilidad
-                            </Typography>
-                            <Typography variant="body1">
-                                Total Ingresos: {reportes.datosRentabilidad.totalIngresos.toLocaleString('es-AR', {
-                                    style: 'currency',
-                                    currency: 'ARS'
-                                })}
-                            </Typography>
-                            <Typography variant="body1">
-                                Total Costos: {reportes.datosRentabilidad.totalCostos.toLocaleString('es-AR', {
-                                    style: 'currency',
-                                    currency: 'ARS'
-                                })}
-                            </Typography>
-                            <Typography variant="body1">
-                                Margen Total: {reportes.datosRentabilidad.margenTotal.toLocaleString('es-AR', {
-                                    style: 'currency',
-                                    currency: 'ARS'
-                                })}
-                            </Typography>
-                            <Typography variant="body1">
-                                Margen Porcentaje: {reportes.datosRentabilidad.margenPorcentaje.toFixed(2)}%
-                            </Typography>
-                        </Box>
-                        <TablaDetallada visitas={reportes.visitas} tipoReporte={tipoReporte} />
-                    </>
+                    <Box sx={{ mb: 4 }}>
+                        <Typography variant="h6" gutterBottom>
+                            Resumen de Rentabilidad
+                        </Typography>
+                        <Typography variant="body1">
+                            Total Ingresos: {reportes.datosRentabilidad.totalIngresos.toLocaleString('es-AR', {
+                                style: 'currency',
+                                currency: 'ARS'
+                            })}
+                        </Typography>
+                        <Typography variant="body1">
+                            Total Costos: {reportes.datosRentabilidad.totalCostos.toLocaleString('es-AR', {
+                                style: 'currency',
+                                currency: 'ARS'
+                            })}
+                        </Typography>
+                        <Typography variant="body1">
+                            Margen Total: {reportes.datosRentabilidad.margenTotal.toLocaleString('es-AR', {
+                                style: 'currency',
+                                currency: 'ARS'
+                            })}
+                        </Typography>
+                        <Typography variant="body1">
+                            Margen Porcentaje: {reportes.datosRentabilidad.margenPorcentaje.toFixed(2)}%
+                        </Typography>
+                    </Box>
                 );
             case 'caja':
                 return (
@@ -97,7 +67,6 @@ const Reportes = () => {
                         <Typography variant="body1">
                             Esta funcionalidad estará disponible próximamente.
                         </Typography>
-                        <TablaDetallada visitas={reportes.visitas} tipoReporte={tipoReporte} />
                     </>
                 );
             default:
@@ -150,21 +119,8 @@ const Reportes = () => {
             />
 
             <Box sx={boxDividerLineWithMargin}>
-                <Tabs value={tabValue} onChange={handleTabChange}>
-                    <Tab label="Gráficos" />
-                    <Tab label="Tabla Detallada" />
-                </Tabs>
+                {renderContenidoReporte()}
             </Box>
-
-            {tabValue === 0 && (
-                <Box>
-                    {renderContenidoReporte()}
-                </Box>
-            )}
-
-            {tabValue === 1 && (
-                <TablaDetallada visitas={reportes.visitas} tipoReporte={filtros.filtros.tipoReporte} />
-            )}
         </Container>
     );
 };

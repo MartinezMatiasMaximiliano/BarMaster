@@ -13,8 +13,8 @@ export const useDatosRentabilidad = (visitasFiltradas, productos, datosProductos
 
         const totalCostos = visitasFiltradas.reduce((sum, v) => {
             const costoVisita = (v.productos ?? []).reduce((prodSum, p) => {
-                const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombreProducto ?? p.NombreProducto));
-                const costo = producto?.costo ?? producto?.CostoProduccion;
+                const producto = productos.find(prod => prod.nombre === (p.nombreProducto ?? p.nombre));
+                const costo = producto?.costo;
                 if (costo != null) {
                     return prodSum + (Number(costo) * (p.cantidad || 0));
                 }

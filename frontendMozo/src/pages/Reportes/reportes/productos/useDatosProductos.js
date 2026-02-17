@@ -1,34 +1,38 @@
 import { useMemo } from 'react';
 
-/**
- * Calcula los datos para gráficos del reporte de productos.
- * @param {Array} visitasFiltradas - Visitas ya filtradas
- * @param {Array} productos - Catálogo de productos
- * @param {Array} categorias - Catálogo de categorías
- * @returns {Object} datosProductos (todos, masVendidos, menosVendidos, masRentables, porCategoria)
- */
+function buscarProductoEnCatalogo(productos, item) {
+    const idProd = item.idProducto;
+    if (idProd != null && idProd !== '') {
+        const porId = productos.find(prod => String(prod.id) === String(idProd));
+        if (porId) return porId;
+    }
+}
+
 export const useDatosProductos = (visitasFiltradas, productos, categorias) => {
     return useMemo(() => {
         const productosVendidos = {};
 
+        const listaProductos = (v) => v.productosConsumidos ?? v.productos ?? [];
         visitasFiltradas.forEach(v => {
-            (v.productos ?? []).forEach(p => {
-                const nombreProd = p.nombreProducto ?? p.NombreProducto ?? '';
-                if (!nombreProd) return;
-                if (!productosVendidos[nombreProd]) {
-                    productosVendidos[nombreProd] = {
-                        nombre: nombreProd,
+            listaProductos(v).forEach(p => {
+                const nombreProd = p.nombre ?? p.nombreProducto ?? '';
+                const key = p.idProducto ?? (nombreProd || `key-${nombreProd}`);
+                if (!productosVendidos[key]) {
+                    const producto = buscarProductoEnCatalogo(productos, p);
+                    productosVendidos[key] = {
+                        nombre: producto ? producto.nombre : nombreProd,
                         cantidad: 0,
                         ingresos: 0,
-                        costo: 0
+                        costo: 0,
+                        idProducto: p.idProducto
                     };
                 }
-                productosVendidos[nombreProd].cantidad += (p.cantidad || 0);
-                productosVendidos[nombreProd].ingresos += (p.precioTotal ?? p.precio ?? p.Precio ?? 0);
-                const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === nombreProd);
-                const costUnit = producto?.costo ?? producto?.CostoProduccion;
+                productosVendidos[key].cantidad += 1;
+                productosVendidos[key].ingresos += p.precio;
+                const producto = buscarProductoEnCatalogo(productos, p);
+                const costUnit = producto?.costo;
                 if (producto && costUnit != null) {
-                    productosVendidos[nombreProd].costo += Number(costUnit) * (p.cantidad || 0);
+                    productosVendidos[key].costo += Number(costUnit);
                 }
             });
         });
@@ -39,14 +43,11 @@ export const useDatosProductos = (visitasFiltradas, productos, categorias) => {
             rentabilidad: p.costo > 0 ? ((p.ingresos - p.costo) / p.costo) * 100 : 0
         }));
 
-        // Por categoría
         const porCategoria = {};
         productosArray.forEach(p => {
-            const producto = productos.find(prod => (prod.nombre ?? prod.Nombre) === (p.nombre ?? p.Nombre));
+            const producto = buscarProductoEnCatalogo(productos, p);
             if (producto) {
-                const idCat = producto.idCategoria ?? producto.IdCategoria;
-                const categoria = categorias.find(c => String(c.id ?? c.Id) === String(idCat));
-                const nombreCategoria = categoria ? (categoria.nombre ?? categoria.Nombre) : 'Sin categoría';
+                const nombreCategoria = (producto.categorias?.length > 0) ? producto.categorias[0] : 'Sin categoría';
                 if (!porCategoria[nombreCategoria]) {
                     porCategoria[nombreCategoria] = {
                         nombre: nombreCategoria,

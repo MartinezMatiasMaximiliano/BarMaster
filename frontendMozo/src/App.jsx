@@ -14,7 +14,6 @@ import Abm_Menus from './pages/Abm_Menus';
 import Abm_Categorias from './pages/Abm_Categorias'
 import Abm_Personas from './pages/Abm_Personas'
 import Abm_TipoPago from './pages/Abm_TipoPago'
-import Graficas from './pages/Graficas'
 import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery from './pages/Delivery'
@@ -334,7 +333,6 @@ function App() {
                             <Route path="/abm_tipo_pago" element={<Control_Login><Abm_TipoPago recargarComponentes={recargarTipoPagos} datos_tipo_pagos={tipoPagos} titulo="Tipos de Pago" /></Control_Login>} />
                             <Route path="/reservas" element={<Control_Login><Abm_Reservas recargarComponentes={recargarReservas} datos_reservas={datos_reservas} titulo="Reservas" /></Control_Login>} />
                             <Route path="/abm_planos" element={<Control_Login><Abm_Planos recargarComponentes={recargarPlanos} datos_planos={datos_planos_abm} titulo="Planos" /></Control_Login>} />
-                            <Route path="/graficas" element={<Control_Login><Graficas /></Control_Login>} />
                             <Route path="/reportes" element={<Control_Login><Reportes /></Control_Login>} />
                             <Route path="/reporte_ventas" element={<Control_Login><ReporteVentas /></Control_Login>} />
                             <Route path="/reporte_productos" element={<Control_Login><ReporteProductos /></Control_Login>} />

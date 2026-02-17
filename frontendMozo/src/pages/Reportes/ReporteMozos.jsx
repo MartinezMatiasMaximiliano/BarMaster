@@ -5,7 +5,6 @@ import { useReportes } from './hooks/useReportes';
 import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
 import GraficaMozos from './reportes/mozos/GraficaMozos';
-import TablaDetallada from './components/TablaDetallada';
 import ExportarReporte from './components/ExportarReporte';
 
 const ReporteMozos = () => {
@@ -57,8 +56,6 @@ const ReporteMozos = () => {
             />
 
             <GraficaMozos datosMozos={reportes.datosMozos} />
-
-            <TablaDetallada visitas={reportes.visitas} tipoReporte="mozos" />
         </Container>
     );
 };

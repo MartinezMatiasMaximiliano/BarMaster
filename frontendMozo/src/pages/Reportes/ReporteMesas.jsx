@@ -5,7 +5,6 @@ import { useReportes } from './hooks/useReportes';
 import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
 import GraficaMesas from './reportes/mesas/GraficaMesas';
-import TablaDetallada from './components/TablaDetallada';
 import ExportarReporte from './components/ExportarReporte';
 
 const ReporteMesas = () => {
@@ -57,8 +56,6 @@ const ReporteMesas = () => {
             />
 
             <GraficaMesas datosMesas={reportes.datosMesas} />
-
-            <TablaDetallada visitas={reportes.visitas} tipoReporte="mesas" />
         </Container>
     );
 };

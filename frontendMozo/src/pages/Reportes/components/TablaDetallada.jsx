@@ -13,9 +13,45 @@ import {
     TableSortLabel,
     TextField,
     Paper,
-    Pagination
+    Pagination,
+    Tooltip,
+    List,
+    ListItem,
+    ListItemText
 } from '@mui/material';
 import { formatearMoneda, formatearFechaHora } from '../utils/formatters';
+
+const tooltipText = { color: 'rgba(255, 255, 255, 0.95)' };
+const tooltipSecondary = { color: 'rgba(255, 255, 255, 0.75)' };
+
+const ContenidoProductosVisita = ({ visita, formatearMonedaFn }) => {
+    const productos = visita?.productos ?? [];
+    if (productos.length === 0) {
+        return <Typography variant="body2" sx={tooltipText}>Sin productos</Typography>;
+    }
+    return (
+        <List dense disablePadding sx={{ maxHeight: 320, overflow: 'auto', minWidth: 260, color: 'white' }}>
+            <Typography variant="subtitle2" sx={{ ...tooltipText, opacity: 0.95, mb: 0.5 }}>
+                Productos de la visita
+            </Typography>
+            {productos.map((p, idx) => {
+                const nombre = p.nombreProducto ?? p.nombre ?? '—';
+                const qty = p.cantidad ?? p.Cantidad ?? 1;
+                const total = p.precioTotal ?? p.precio ?? p.Precio ?? 0;
+                return (
+                    <ListItem key={idx} disablePadding sx={{ py: 0.25 }}>
+                        <ListItemText
+                            primary={`${qty} × ${nombre}`}
+                            secondary={formatearMonedaFn(total)}
+                            primaryTypographyProps={{ variant: 'body2', sx: tooltipText }}
+                            secondaryTypographyProps={{ variant: 'caption', sx: tooltipSecondary }}
+                        />
+                    </ListItem>
+                );
+            })}
+        </List>
+    );
+};
 
 const TablaDetallada = ({ visitas, tipoReporte }) => {
     const [page, setPage] = useState(1);
@@ -128,8 +164,20 @@ const TablaDetallada = ({ visitas, tipoReporte }) => {
                                 <TableRow key={visita.id}>
                                     <TableCell>{formatearFechaHora(visita.fechaHora)}</TableCell>
                                     <TableCell>{visita.numeroMesa || 'N/A'}</TableCell>
-                                    <TableCell>
-                                        {visita.productos?.length || 0} producto(s)
+                                    <TableCell sx={{ cursor: 'default' }}>
+                                        <Tooltip
+                                            title={<ContenidoProductosVisita visita={visita} formatearMonedaFn={formatearMoneda} />}
+                                            enterDelay={400}
+                                            leaveDelay={100}
+                                            placement="right-start"
+                                            slotProps={{
+                                                popper: { sx: { maxWidth: 380 } }
+                                            }}
+                                        >
+                                            <Box component="span" sx={{ display: 'inline-block', cursor: 'help' }}>
+                                                {visita.productos?.length || 0} producto(s)
+                                            </Box>
+                                        </Tooltip>
                                     </TableCell>
                                     <TableCell>{formatearMoneda(visita.total || 0)}</TableCell>
                                     <TableCell>{visita.estado || 'N/A'}</TableCell>

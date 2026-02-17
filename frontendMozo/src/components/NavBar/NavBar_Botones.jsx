@@ -71,7 +71,6 @@ const menuConfig = {
             { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
         ],
         "Finanzas": [
-            { path: "/graficas", label: "Graficas", icon: QueryStatsOutlinedIcon },
             { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
             { path: "/reporte_ventas", label: "Reporte Ventas", icon: AssessmentOutlinedIcon },
             { path: "/reporte_productos", label: "Reporte Productos", icon: AssessmentOutlinedIcon },

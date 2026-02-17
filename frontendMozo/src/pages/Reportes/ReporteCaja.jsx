@@ -4,7 +4,6 @@ import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
 import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
-import TablaDetallada from './components/TablaDetallada';
 import ExportarReporte from './components/ExportarReporte';
 
 const ReporteCaja = () => {
@@ -60,8 +59,6 @@ const ReporteCaja = () => {
                     Esta funcionalidad estará disponible próximamente con análisis detallado de cajas.
                 </Typography>
             </Box>
-
-            <TablaDetallada visitas={reportes.visitas} tipoReporte="caja" />
         </Container>
     );
 };

@@ -50,9 +50,9 @@ export const useDatosVentas = (visitasFiltradas, tipoPagos) => {
         const porTipoPago = {};
         visitasFiltradas.forEach(v => {
             (v.pagos ?? []).forEach(p => {
-                const tipoPago = tipoPagos.find(tp => String(tp.id ?? tp.Id) === String(p.idTipoPago ?? p.IdTipoPago));
-                const nombre = tipoPago ? (tipoPago.nombre ?? tipoPago.Nombre) : `Tipo ${p.idTipoPago ?? p.IdTipoPago}`;
-                porTipoPago[nombre] = (porTipoPago[nombre] || 0) + (p.monto ?? p.Monto ?? 0);
+                const tipoPago = tipoPagos.find(tp => String(tp.id) === String(p.idTipoPago));
+                const nombre = tipoPago ? tipoPago.nombre : `Tipo ${p.idTipoPago}`;
+                porTipoPago[nombre] = (porTipoPago[nombre] || 0) + (p.monto ?? 0);
             });
         });
         const ventasPorTipoPago = Object.entries(porTipoPago).map(([nombre, total]) => ({
