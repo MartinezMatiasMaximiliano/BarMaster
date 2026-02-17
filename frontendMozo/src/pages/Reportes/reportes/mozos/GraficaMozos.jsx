@@ -1,10 +1,9 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ScatterChart, Scatter, ZAxis } from 'recharts';
-import { formatearMoneda } from '../utils/formatters';
+import { formatearMoneda } from '../../utils/formatters';
 
 const GraficaMozos = ({ datosMozos }) => {
-    // Preparar datos para gráficos
     const datosVentas = datosMozos.porVentas.slice(0, 10).map(m => ({
         idMozo: m.idMozo,
         nombreCompleto: m.nombreCompleto || `Mozo ${m.idMozo}`,
@@ -103,4 +102,3 @@ const GraficaMozos = ({ datosMozos }) => {
 };
 
 export default GraficaMozos;
-

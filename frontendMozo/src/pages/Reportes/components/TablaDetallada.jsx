@@ -49,7 +49,7 @@ const TablaDetallada = ({ visitas, tipoReporte }) => {
     const filteredVisitas = sortedVisitas.filter(visita => {
         const searchLower = searchTerm.toLowerCase();
         return (
-            visita.mesa?.nombre?.toLowerCase().includes(searchLower) ||
+            visita.numeroMesa?.toLowerCase().includes(searchLower) ||
             visita.estado?.toLowerCase().includes(searchLower) ||
             visita.total?.toString().includes(searchTerm)
         );
@@ -127,7 +127,7 @@ const TablaDetallada = ({ visitas, tipoReporte }) => {
                             {paginatedVisitas.map((visita) => (
                                 <TableRow key={visita.id}>
                                     <TableCell>{formatearFechaHora(visita.fechaHora)}</TableCell>
-                                    <TableCell>{visita.mesa?.nombre || 'N/A'}</TableCell>
+                                    <TableCell>{visita.numeroMesa || 'N/A'}</TableCell>
                                     <TableCell>
                                         {visita.productos?.length || 0} producto(s)
                                     </TableCell>

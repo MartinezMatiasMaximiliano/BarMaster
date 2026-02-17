@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
-import { formatearMoneda } from '../utils/formatters';
+import { formatearMoneda } from '../../utils/formatters';
 
 const GraficaVentas = ({ datosVentas }) => {
     return (
@@ -95,4 +95,3 @@ const GraficaVentas = ({ datosVentas }) => {
 };
 
 export default GraficaVentas;
-

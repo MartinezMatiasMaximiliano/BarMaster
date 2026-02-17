@@ -2,18 +2,15 @@ import React from 'react';
 import { Box, Typography, Card, CardContent } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { PieChart as MuiPieChart } from '@mui/x-charts/PieChart';
-import { formatearMoneda } from '../utils/formatters';
-
+import { formatearMoneda } from '../../utils/formatters';
 
 const GraficaProductos = ({ datosProductos }) => {
-    // Preparar datos para gráfico de barras horizontales
     const topProductos = datosProductos.masVendidos.slice(0, 10).map(p => ({
         nombre: p.nombre,
         cantidad: p.cantidad,
         ingresos: p.ingresos
     }));
 
-    // Preparar datos para gráfico de torta por categoría
     const datosPorCategoria = datosProductos.porCategoria.map((c, index) => ({
         id: index,
         value: c.ingresos,
@@ -86,4 +83,3 @@ const GraficaProductos = ({ datosProductos }) => {
 };
 
 export default GraficaProductos;
-

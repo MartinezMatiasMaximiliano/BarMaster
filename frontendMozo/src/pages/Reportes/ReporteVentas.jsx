@@ -4,7 +4,7 @@ import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
 import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
-import GraficaVentas from './components/GraficaVentas';
+import GraficaVentas from './reportes/ventas/GraficaVentas';
 import TablaDetallada from './components/TablaDetallada';
 import ExportarReporte from './components/ExportarReporte';
 

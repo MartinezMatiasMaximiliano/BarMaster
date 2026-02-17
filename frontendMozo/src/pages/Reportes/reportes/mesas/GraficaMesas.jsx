@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { formatearMoneda } from '../utils/formatters';
+import { formatearMoneda } from '../../utils/formatters';
 
 const GraficaMesas = ({ datosMesas }) => {
     const datosIngresos = datosMesas.porIngresos.slice(0, 15).map(m => ({
@@ -50,4 +50,3 @@ const GraficaMesas = ({ datosMesas }) => {
 };
 
 export default GraficaMesas;
-

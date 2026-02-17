@@ -1,0 +1,38 @@
+---
+description: Reutilizar estilos existentes y no duplicar código en frontendMozo
+globs: frontendMozo/**/*.jsx
+alwaysApply: true
+---
+
+# Estilos y código mínimo en frontendMozo
+
+## Regla obligatoria
+
+Al agregar o modificar **cualquier componente** en frontendMozo:
+
+1. **PRIMERO** revisar si se pueden aplicar estilos ya existentes.
+2. Solo usar estilos personalizados (inline `sx`, etc.) cuando **no** encaje ningún estilo compartido.
+3. Escribir siempre la **mínima cantidad de código posible**. **Nunca** duplicar código.
+
+## Dónde están los estilos compartidos
+
+- **Box / contenedores / formularios:** `src/styles/boxStyles.js`  
+  (`boxCardBorder`, `boxDividerLine`, `boxDividerLineWithPadding`, `boxDividerLineWithMargin`, `formCentered`, `boxBalanceCard`, `scrollableListContainer`, `boxEmptyMessage`, `boxEmptyMessageFlex`)
+- **Botones / diálogos:** `src/styles/buttonStyles.js`  
+  (`gradientButtonStyles`, `cancelButtonStyles`, `dialogTitleGradientStyles`, `dialogActionsStyles`, etc.)
+- **Tabla:** `src/components/Tabla/Tabla.styles.js`  
+  (`StyledTableCell`, `StyledTableRow`)
+
+## Flujo al crear un componente nuevo
+
+1. ¿Necesita borde tipo card/panel? → Usar o extender `boxCardBorder` (o variante de `boxStyles`).
+2. ¿Es un formulario centrado? → Usar `formCentered`.
+3. ¿Es una línea divisoria? → Usar `boxDividerLine` o variantes.
+4. ¿Es un contenedor con scroll y borde? → Usar `scrollableListContainer`.
+5. ¿Mensaje vacío centrado? → Usar `boxEmptyMessage` o `boxEmptyMessageFlex`.
+6. Si nada encaja → definir estilos propios y, si son reutilizables, **añadirlos** a `boxStyles.js` o `buttonStyles.js` en lugar de dejarlos solo en el componente.
+
+## Principio general
+
+- **Cero duplicación:** si el mismo objeto `sx` o el mismo patrón aparece en más de un sitio, extraerlo a un estilo compartido y usarlo desde ahí.
+- Aplicar esta verificación **siempre**, en cada cambio que toque estilos o componentes.
