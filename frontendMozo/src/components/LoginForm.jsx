@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Alert } from '@mui/material';
+import { formCentered } from '../styles/boxStyles';
 
 const LoginForm = ({ onSubmit }) => {
     const [Dni, setDni] = useState('');
@@ -20,7 +21,7 @@ const LoginForm = ({ onSubmit }) => {
             <Box
                 component="form"
                 onSubmit={handleSubmit}
-                sx={{ maxWidth: 400, mx: 'auto', mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}
+                sx={formCentered}
             >
                 <Typography variant="h6" textAlign="center">
                     Iniciar Sesión

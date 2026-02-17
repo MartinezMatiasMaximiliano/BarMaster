@@ -1,6 +1,6 @@
-// components/PlanoSelector.jsx
 import React from 'react';
 import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { boxDividerLineWithPadding } from '../styles/boxStyles';
 
 /**
  * Componente para seleccionar un plano
@@ -16,7 +16,7 @@ export const PlanoSelector = ({ planos, planoSeleccionado, onChange, disabled })
     }
 
     return (
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Box sx={boxDividerLineWithPadding}>
             <FormControl size="small" sx={{ minWidth: 250 }}>
                 <InputLabel id="plano-select-label">Seleccionar Plano</InputLabel>
                 <Select
@@ -37,4 +37,3 @@ export const PlanoSelector = ({ planos, planoSeleccionado, onChange, disabled })
         </Box>
     );
 };
-

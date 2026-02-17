@@ -16,6 +16,7 @@ import {
 import HistoryIcon from '@mui/icons-material/History';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { currencyFormatter, formatearFechaCompleta } from '../utils/constants';
+import { boxCardBorder } from '../../../styles/boxStyles';
 
 export const Historial = ({ historial, loadingHistorial, cajaSeleccionada, onRefresh, onClickArqueo }) => {
     return (
@@ -53,8 +54,7 @@ export const Historial = ({ historial, loadingHistorial, cajaSeleccionada, onRef
                                     <Box
                                         onClick={() => onClickArqueo(item)}
                                         sx={{
-                                            borderRadius: 1,
-                                            border: '1px solid',
+                                            ...boxCardBorder,
                                             borderColor: estaSeleccionada ? 'primary.main' : 'divider',
                                             backgroundColor: estaSeleccionada ? 'action.selected' : 'transparent',
                                             p: 1.5,

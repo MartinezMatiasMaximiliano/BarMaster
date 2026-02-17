@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, memo } from "react";
 import { Avatar, Box, Skeleton } from "@mui/material";
 import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported';
+import { boxCardBorder } from '../../styles/boxStyles';
 
 /**
  * Componente optimizado para mostrar imágenes con lazy loading
@@ -81,14 +82,12 @@ function ImageCell({ src }) {
         <Box
             ref={imgRef}
             sx={{
+                ...boxCardBorder,
                 width: 80,
                 height: 80,
                 position: 'relative',
-                borderRadius: 1,
                 overflow: 'hidden',
                 boxShadow: 1,
-                border: '1px solid',
-                borderColor: 'divider',
                 bgcolor: 'grey.100',
             }}
         >

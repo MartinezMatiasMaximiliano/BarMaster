@@ -4,6 +4,7 @@ import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import KitchenIcon from '@mui/icons-material/Kitchen';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { boxCardBorder } from '../../../styles/boxStyles';
 
 /**
  * Componente para mostrar estadísticas del KDS
@@ -12,11 +13,10 @@ const EstadisticasKDS = memo(({ estadisticas }) => {
     return (
         <Box
             sx={{
+                ...boxCardBorder,
                 p: 2,
                 borderRadius: 2,
                 bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
                 mb: 3
             }}
         >

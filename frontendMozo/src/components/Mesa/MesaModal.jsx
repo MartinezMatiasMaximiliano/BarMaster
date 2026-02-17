@@ -28,6 +28,7 @@ import { formatearFecha } from './dateFormatter';
 import { useSnackbar } from '../../hooks/useSnackbar.jsx';
 import { useModalVerCuenta } from '../Modals/Modal_Ver_Cuenta/hooks/useModalVerCuenta';
 import TabContent from '../Modals/Modal_Ver_Cuenta/components/TabContent';
+import { boxDividerLine } from '../../styles/boxStyles';
 import { SnackbarWrapper } from '../common/SnackbarWrapper';
 
 export const MesaModal = ({
@@ -183,7 +184,7 @@ export const MesaModal = ({
                 <Tabs
                     value={tabValue}
                     onChange={handleTabChange}
-                    sx={{ borderBottom: 1, borderColor: 'divider', px: 2, flexShrink: 0 }}
+                    sx={{ ...boxDividerLine, px: 2, flexShrink: 0 }}
                 >
                     <Tab
                         label="Resumen"

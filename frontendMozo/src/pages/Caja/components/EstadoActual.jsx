@@ -15,6 +15,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import PaidIcon from '@mui/icons-material/Paid';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { currencyFormatter } from '../utils/constants';
+import { boxBalanceCard } from '../../../styles/boxStyles';
 
 export const EstadoActual = ({ cajaActiva, balanceActual, balanceNoEfectivo = 0, onRecargar }) => {
     return (
@@ -62,22 +63,7 @@ export const EstadoActual = ({ cajaActiva, balanceActual, balanceNoEfectivo = 0,
                             gap: 2
                         }}
                     >
-                        <Box
-                            sx={{
-                                flex: '1 1 50%',
-                                minWidth: 0,
-                                p: 3,
-                                borderRadius: 1,
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                textAlign: 'center',
-                                minHeight: 120,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                boxSizing: 'border-box'
-                            }}
-                        >
+                        <Box sx={boxBalanceCard}>
                             <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
                                 <PaidIcon sx={{ fontSize: 28 }} color="action" />
                                 <Typography variant="subtitle1" fontWeight={600} color="text.secondary">
@@ -88,22 +74,7 @@ export const EstadoActual = ({ cajaActiva, balanceActual, balanceNoEfectivo = 0,
                                 {currencyFormatter.format(balanceActual ?? 0)}
                             </Typography>
                         </Box>
-                        <Box
-                            sx={{
-                                flex: '1 1 50%',
-                                minWidth: 0,
-                                p: 3,
-                                borderRadius: 1,
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                textAlign: 'center',
-                                minHeight: 120,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                boxSizing: 'border-box'
-                            }}
-                        >
+                        <Box sx={boxBalanceCard}>
                             <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
                                 <CreditCardIcon sx={{ fontSize: 28 }} color="action" />
                                 <Typography variant="subtitle1" fontWeight={600} color="text.secondary">

@@ -8,12 +8,12 @@ import {
     DialogActions
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { cancelButtonStyles } from '../../../styles/buttonStyles';
+import { cancelButtonStyles } from '../styles/buttonStyles';
 
-export const ConfirmLogoutDialog = ({ 
-    open, 
-    onClose, 
-    onConfirm 
+export const ConfirmLogoutDialog = ({
+    open,
+    onClose,
+    onConfirm
 }) => {
     return (
         <Dialog
@@ -28,18 +28,18 @@ export const ConfirmLogoutDialog = ({
                 }
             }}
         >
-            <DialogTitle 
+            <DialogTitle
                 id="confirm-dialog-title"
                 sx={{ fontWeight: 600, pb: 1 }}
             >
                 Confirmar salida
             </DialogTitle>
             <DialogContent>
-                <DialogContentText 
+                <DialogContentText
                     id="confirm-dialog-description"
                     sx={{ fontSize: '1rem', color: 'text.primary' }}
                 >
-                    ¿Estás seguro de que deseas salir del sistema? 
+                    ¿Estás seguro de que deseas salir del sistema?
                     <br />
                     Serás redirigido a la página de inicio de sesión.
                 </DialogContentText>
@@ -65,4 +65,3 @@ export const ConfirmLogoutDialog = ({
         </Dialog>
     );
 };
-

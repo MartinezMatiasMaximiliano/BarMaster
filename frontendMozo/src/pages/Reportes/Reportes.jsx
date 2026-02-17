@@ -11,6 +11,7 @@ import GraficaMozos from './components/GraficaMozos';
 import GraficaMesas from './components/GraficaMesas';
 import TablaDetallada from './components/TablaDetallada';
 import ExportarReporte from './components/ExportarReporte';
+import { boxDividerLineWithMargin } from '../../styles/boxStyles';
 
 const Reportes = () => {
     const filtros = useFiltros();
@@ -148,7 +149,7 @@ const Reportes = () => {
                 datos={reportes.visitas}
             />
 
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+            <Box sx={boxDividerLineWithMargin}>
                 <Tabs value={tabValue} onChange={handleTabChange}>
                     <Tab label="Gráficos" />
                     <Tab label="Tabla Detallada" />

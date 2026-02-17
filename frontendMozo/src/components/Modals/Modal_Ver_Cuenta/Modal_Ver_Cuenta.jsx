@@ -23,6 +23,7 @@ import { useModalVerCuenta } from './hooks/useModalVerCuenta';
 import ChipsHeader from './components/ChipsHeader';
 import TabContent from './components/TabContent';
 import Modal_Generico from '../Modal_Generico';
+import { boxDividerLine } from '../../../styles/boxStyles';
 
 /**
  * Modal para ver y gestionar la cuenta de una mesa
@@ -150,7 +151,7 @@ function Modal_Ver_Cuenta(props) {
                     <Tabs
                         value={tabValue}
                         onChange={handleTabChange}
-                        sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}
+                        sx={{ ...boxDividerLine, px: 2 }}
                     >
                         <Tab
                             label="Resumen"

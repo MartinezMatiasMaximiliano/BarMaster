@@ -12,6 +12,7 @@ import {
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import EmailIcon from '@mui/icons-material/Email';
 import SucursalCard from './SucursalCard';
+import { boxCardBorder } from '../../../styles/boxStyles';
 
 /**
  * Componente que representa una tarjeta de empresa con sus sucursales
@@ -20,6 +21,7 @@ const EmpresaCard = ({ empresa, onSucursalEnter }) => {
     return (
         <Card
             sx={{
+                ...boxCardBorder,
                 width: '100%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -27,8 +29,6 @@ const EmpresaCard = ({ empresa, onSucursalEnter }) => {
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 overflow: 'hidden',
-                border: '1px solid',
-                borderColor: 'divider',
                 '&:hover': {
                     transform: 'translateY(-8px)',
                     boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
@@ -86,12 +86,11 @@ const EmpresaCard = ({ empresa, onSucursalEnter }) => {
                 {/* Emails */}
                 {empresa.Emails && empresa.Emails.length > 0 && (
                     <Box sx={{ 
+                        ...boxCardBorder,
                         mb: 3,
                         p: 2,
                         borderRadius: 2,
-                        bgcolor: 'action.hover',
-                        border: '1px solid',
-                        borderColor: 'divider'
+                        bgcolor: 'action.hover'
                     }}>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
                             <EmailIcon fontSize="small" color="primary" />

@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import { LoadingButton } from '../components/common/LoadingButton';
+import { formCentered } from '../styles/boxStyles';
 
 const PasswordChangeForm = () => {
     const [newPassword, setNewPassword] = useState('');
@@ -84,7 +85,7 @@ const PasswordChangeForm = () => {
                         {success}
                     </Alert>
                 )}
-                    <Box component="form" sx={{ maxWidth: 400, mx: 'auto', mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box component="form" sx={formCentered}>
                         <TextField label="Nueva Contraseña" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
                         <TextField label="Confirmar Nueva Contraseña" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                     </Box>

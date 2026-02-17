@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { scrollableListContainer, boxEmptyMessage, boxEmptyMessageFlex, boxCardBorder } from '../../../../styles/boxStyles';
 
 // Componente para mostrar productos disponibles (lista izquierda)
 export const ListaProductosDisponibles = ({ 
@@ -43,7 +44,7 @@ export const ListaProductosDisponibles = ({
 
     if (!productos || productos.length === 0) {
         return (
-            <Box sx={{ p: 3, textAlign: 'center', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={boxEmptyMessageFlex}>
                 <Typography variant="body2" color="text.secondary">
                     No hay productos disponibles
                 </Typography>
@@ -103,18 +104,9 @@ export const ListaProductosDisponibles = ({
             </Typography>
 
             {/* Lista de productos */}
-            <Box
-                sx={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    p: 1
-                }}
-            >
+            <Box sx={scrollableListContainer}>
                 {productosFiltrados.length === 0 ? (
-                    <Box sx={{ p: 3, textAlign: 'center' }}>
+                    <Box sx={boxEmptyMessage}>
                         <Typography variant="body2" color="text.secondary">
                             No se encontraron productos
                         </Typography>
@@ -132,13 +124,11 @@ export const ListaProductosDisponibles = ({
                                     key={productoId}
                                     elevation={0}
                                     sx={{
+                                        ...boxCardBorder,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
                                         p: 1.5,
-                                        borderRadius: 1,
-                                        border: '1px solid',
-                                        borderColor: 'divider',
                                         '&:hover': {
                                             bgcolor: 'action.hover',
                                             borderColor: 'primary.main',
@@ -216,7 +206,7 @@ export const ListaProductosEnMenu = ({
 
     if (!productos || productos.length === 0) {
         return (
-            <Box sx={{ p: 3, textAlign: 'center', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={boxEmptyMessageFlex}>
                 <Typography variant="body2" color="text.secondary">
                     No hay productos en el menú
                 </Typography>
@@ -276,18 +266,9 @@ export const ListaProductosEnMenu = ({
             </Typography>
 
             {/* Lista de productos */}
-            <Box
-                sx={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    p: 1
-                }}
-            >
+            <Box sx={scrollableListContainer}>
                 {productosFiltrados.length === 0 ? (
-                    <Box sx={{ p: 3, textAlign: 'center' }}>
+                    <Box sx={boxEmptyMessage}>
                         <Typography variant="body2" color="text.secondary">
                             No se encontraron productos
                         </Typography>
@@ -305,13 +286,11 @@ export const ListaProductosEnMenu = ({
                                     key={productoId}
                                     elevation={0}
                                     sx={{
+                                        ...boxCardBorder,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
                                         p: 1.5,
-                                        borderRadius: 1,
-                                        border: '1px solid',
-                                        borderColor: 'divider',
                                         bgcolor: 'action.selected',
                                         '&:hover': {
                                             bgcolor: 'error.light',

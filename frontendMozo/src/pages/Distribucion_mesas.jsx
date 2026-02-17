@@ -7,6 +7,7 @@ import "react-resizable/css/styles.css";
 import { BuscarTodosLosPlanos } from "../API/APIPlanos";
 import { ModificarMesa } from "../API/APIMesas";
 import { LoadingButton } from "../components/common/LoadingButton";
+import { boxCardBorder } from '../styles/boxStyles';
 
 const ResponsiveGridLayout = WidthProvider(GridLayout);
 
@@ -236,11 +237,10 @@ function Distribucion_mesas() {
             ) : (
                 <Box
                     sx={{
+                        ...boxCardBorder,
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 2,
-                        border: 1,
-                        borderColor: 'divider',
                         minHeight: '600px'
                     }}
                 >

@@ -17,6 +17,7 @@ import { FormularioApertura } from './components/FormularioApertura';
 import { FormularioCierre } from './components/FormularioCierre';
 import { Movimientos } from './components/Movimientos';
 import { LoadingWrapper } from '../../components/common/LoadingWrapper';
+import { boxDividerLine } from '../../styles/boxStyles';
 
 function Caja() {
     const {
@@ -78,7 +79,7 @@ function Caja() {
                             <Tabs
                                 value={tabValue}
                                 onChange={(e, newValue) => setTabValue(newValue)}
-                                sx={{ borderBottom: 1, borderColor: 'divider' }}
+                                sx={boxDividerLine}
                             >
                                 <Tab label="Arqueo" icon={<HistoryIcon />} iconPosition="start" />
                                 <Tab 

@@ -1,19 +1,20 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
-import { Chip, Box, Typography, Stack, Button } from "@mui/material";
+import { Chip, Box, Typography, Stack, Button } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { GetChipNombreCompleto, formatearFechaCompleta, formatearHoraCompleta } from '../../../Helpers/HelperFunctions';
+import { GetChipNombreCompleto, formatearFechaCompleta, formatearHoraCompleta } from '../Helpers/HelperFunctions';
 import { useDateTime } from '../hooks/useDateTime';
 
-export const BottomBar = ({ 
-    codigoMozo, 
-    handleChange, 
-    mozo, 
-    fechaHora: fechaHoraProp, 
-    onSalirClick 
+export const BottomBar = ({
+    inputRef,
+    codigoMozo,
+    handleChange,
+    mozo,
+    fechaHora: fechaHoraProp,
+    onSalirClick
 }) => {
     const fechaHoraFromHook = useDateTime();
     const fechaHora = fechaHoraProp ?? fechaHoraFromHook;
@@ -22,6 +23,7 @@ export const BottomBar = ({
             <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                 <Form.Label>Código</Form.Label>
                 <Form.Control
+                    ref={inputRef}
                     onChange={handleChange}
                     type="password"
                     value={codigoMozo}
@@ -31,7 +33,7 @@ export const BottomBar = ({
             {mozo?.nombre ? GetChipNombreCompleto(mozo.nombre, mozo.apellido) : (
                 <Chip label="Codigo incorrecto" variant="outlined" color="error" />
             )}
-            
+
             <Box sx={{ ml: 'auto', display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-end' }}>
                 <Stack direction="row" spacing={1} alignItems="center">
                     <CalendarTodayIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14 }} />
@@ -48,7 +50,7 @@ export const BottomBar = ({
                         <Stack direction="row" spacing={0.5} alignItems="center">
                             <PersonIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 14 }} />
                             <Typography variant="caption" color="text.secondary">
-                                {localStorage.getItem("username")}
+                                {localStorage.getItem('username')}
                             </Typography>
                         </Stack>
                         <Button
@@ -82,4 +84,3 @@ export const BottomBar = ({
         </div>
     );
 };
-

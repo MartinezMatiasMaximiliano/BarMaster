@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Box } from '@mui/material';
 import Lista_Items from '../../../Listas/Lista_Items';
+import { boxCardBorder } from '../../../../styles/boxStyles';
 
 /**
  * Componente memoizado para el contenido de cada tab
@@ -10,9 +11,8 @@ const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, fac
     return (
         <Box
             sx={{
+                ...boxCardBorder,
                 borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider',
                 p: 2,
                 bgcolor: estado === false ? 'background.default' : 'transparent',
                 minHeight: '25vh',
