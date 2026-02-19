@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Typography, CircularProgress, Alert, Box, Card, CardContent, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
-import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
 import GraficaVentas from './reportes/ventas/GraficaVentas';
 import TablaDetallada from './components/TablaDetallada';
-import ExportarReporte from './components/ExportarReporte';
 import Mapa_Calor from '../../components/Graficas/Mapa_Calor';
 import { contarMesas } from '../../components/Graficas/Funciones';
 import { filtrarMesasPorPlano } from '../Index2/utils/mesaHelpers';
@@ -31,7 +30,6 @@ function crearLayoutMesas(mesas) {
 const ReporteVentas = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
-    const exportacion = useExportacion();
 
     const [planos, setPlanos] = useState([]);
     const [planoSeleccionado, setPlanoSeleccionado] = useState('');
@@ -77,6 +75,21 @@ const ReporteVentas = () => {
     );
     const layoutMesas = useMemo(() => crearLayoutMesas(mesasParaMapa), [mesasParaMapa]);
 
+    const visitasPorOrigen = useMemo(() => {
+        const conteo = { Local: 0, Takeaway: 0, Delivery: 0 };
+        reportes.visitas.forEach((v) => {
+            const raw = String(v.origen ?? v.Origen ?? '').trim().toLowerCase();
+            if (raw === 'takeaway') conteo.Takeaway++;
+            else if (raw === 'delivery') conteo.Delivery++;
+            else conteo.Local++;
+        });
+        return [
+            { nombre: 'Local', cantidad: conteo.Local },
+            { nombre: 'Takeaway', cantidad: conteo.Takeaway },
+            { nombre: 'Delivery', cantidad: conteo.Delivery }
+        ];
+    }, [reportes.visitas]);
+
     if (reportes.loading) {
         return (
             <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -113,14 +126,36 @@ const ReporteVentas = () => {
                 ocultarTipoReporte={true}
             />
 
-            <ExportarReporte
-                onExportarPDF={exportacion.exportarAPDF}
-                onExportarExcel={exportacion.exportarAExcel}
-                tipoReporte="ventas"
-                datos={reportes.visitas}
-            />
-
             <GraficaVentas datosVentas={reportes.datosVentas} />
+
+            <Box sx={{ mb: 4 }}>
+                <Card>
+                    <CardContent>
+                        <Typography variant="h6" gutterBottom>
+                            Tipo de visitas
+                        </Typography>
+                        <ResponsiveContainer width="100%" height={280}>
+                            <PieChart>
+                                <Pie
+                                    data={visitasPorOrigen}
+                                    dataKey="cantidad"
+                                    nameKey="nombre"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={90}
+                                    label={({ nombre, cantidad }) => (cantidad > 0 ? `${nombre}: ${cantidad}` : null)}
+                                >
+                                    {visitasPorOrigen.map((_, index) => (
+                                        <Cell key={index} fill={['#1976d2', '#388e3c', '#f57c00'][index % 3]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </Box>
 
             <Box sx={{ mb: 4 }}>
                 <Card>

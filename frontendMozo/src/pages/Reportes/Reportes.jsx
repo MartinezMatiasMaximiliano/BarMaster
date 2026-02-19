@@ -2,20 +2,17 @@ import React from 'react';
 import { Box, Container, Typography, CircularProgress, Alert } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
-import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
 import ResumenReporte from './components/ResumenReporte';
 import GraficaVentas from './reportes/ventas/GraficaVentas';
 import GraficaProductos from './reportes/productos/GraficaProductos';
 import GraficaMozos from './reportes/mozos/GraficaMozos';
 import GraficaMesas from './reportes/mesas/GraficaMesas';
-import ExportarReporte from './components/ExportarReporte';
 import { boxDividerLineWithMargin } from '../../styles/boxStyles';
 
 const Reportes = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
-    const exportacion = useExportacion();
 
     const renderContenidoReporte = () => {
         const tipoReporte = filtros.filtros.tipoReporte;
@@ -110,13 +107,6 @@ const Reportes = () => {
             />
 
             <ResumenReporte metricas={reportes.metricas} />
-
-            <ExportarReporte
-                onExportarPDF={exportacion.exportarAPDF}
-                onExportarExcel={exportacion.exportarAExcel}
-                tipoReporte={filtros.filtros.tipoReporte}
-                datos={reportes.visitas}
-            />
 
             <Box sx={boxDividerLineWithMargin}>
                 {renderContenidoReporte()}

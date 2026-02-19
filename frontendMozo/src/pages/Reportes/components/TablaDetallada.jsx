@@ -137,6 +137,7 @@ const TablaDetallada = ({ visitas, tipoReporte }) => {
                                         Mesa
                                     </TableSortLabel>
                                 </TableCell>
+                                <TableCell>Tipo</TableCell>
                                 <TableCell>Productos</TableCell>
                                 <TableCell>
                                     <TableSortLabel
@@ -164,6 +165,13 @@ const TablaDetallada = ({ visitas, tipoReporte }) => {
                                 <TableRow key={visita.id}>
                                     <TableCell>{formatearFechaHora(visita.fechaHora)}</TableCell>
                                     <TableCell>{visita.numeroMesa || 'N/A'}</TableCell>
+                                    <TableCell>
+                                        {(() => {
+                                            const o = (visita.origen ?? visita.Origen ?? '').trim();
+                                            if (!o) return '—';
+                                            return o.charAt(0).toUpperCase() + o.slice(1).toLowerCase();
+                                        })()}
+                                    </TableCell>
                                     <TableCell sx={{ cursor: 'default' }}>
                                         <Tooltip
                                             title={<ContenidoProductosVisita visita={visita} formatearMonedaFn={formatearMoneda} />}

@@ -177,55 +177,42 @@ export const exportarTablaAExcel = async (config) => {
             return;
         }
 
-        // Crear workbook
+        // Crear workbook con una sola hoja: información arriba y tabla debajo (así se ve todo al abrir)
         const wb = XLSX.utils.book_new();
 
-        // Preparar datos para la hoja de información (si hay info adicional)
-        if (infoAdicional.length > 0 || titulo || subtitulo) {
-            const infoData = [];
-            if (titulo) infoData.push([titulo]);
-            if (subtitulo) infoData.push([subtitulo]);
-            if (infoAdicional.length > 0) {
-                infoData.push(['']); // Línea vacía
-                infoAdicional.forEach(info => {
-                    infoData.push([info.label, info.value]);
-                });
-            }
-
-            const wsInfo = XLSX.utils.aoa_to_sheet(infoData);
-            XLSX.utils.book_append_sheet(wb, wsInfo, 'Información');
-        }
-
-        // Preparar datos para la hoja de datos
         const headers = columnas.map(col => col.label || col.key || '');
-        
+
         const filas = datos.map(fila => {
             if (formatearFila && typeof formatearFila === 'function') {
                 return formatearFila(fila, columnas);
             }
-
-            // Formateo por defecto
             return columnas.map(col => {
                 let valor = fila[col.key];
-
-                // Aplicar formatter personalizado si existe
                 if (col.formatter && typeof col.formatter === 'function') {
                     valor = col.formatter(valor, fila);
                 } else if (valor === null || valor === undefined) {
                     valor = '';
                 }
-
-                // Para Excel, mantener números como números
                 return valor;
             });
         });
 
-        // Crear hoja de datos con headers
-        const datosConHeaders = [headers, ...filas];
-        const ws = XLSX.utils.aoa_to_sheet(datosConHeaders);
+        // Una sola hoja: título, subtítulo, info adicional, luego tabla
+        const todasLasFilas = [];
+        if (titulo) todasLasFilas.push([titulo]);
+        if (subtitulo) todasLasFilas.push([subtitulo]);
+        if (infoAdicional.length > 0) {
+            todasLasFilas.push(['']);
+            infoAdicional.forEach(info => {
+                todasLasFilas.push([info.label, info.value]);
+            });
+        }
+        todasLasFilas.push(['']);
+        todasLasFilas.push(headers);
+        filas.forEach(fila => todasLasFilas.push(fila));
 
-        // Ajustar ancho de columnas (opcional, se puede personalizar)
-        const colWidths = columnas.map(() => ({ wch: 20 })); // Ancho por defecto
+        const ws = XLSX.utils.aoa_to_sheet(todasLasFilas);
+        const colWidths = columnas.map(() => ({ wch: 20 }));
         ws['!cols'] = colWidths;
 
         XLSX.utils.book_append_sheet(wb, ws, 'Datos');

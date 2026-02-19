@@ -9,47 +9,6 @@ export const useExportacion = () => {
         }
     };
 
-    const exportarAPDF = async (datos, tipoReporte, titulo) => {
-        try {
-            // Usar pdfmake que ya está instalado en el proyecto
-            const pdfMake = (await import('pdfmake/build/pdfmake')).default;
-            const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
-            
-            pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
-            const docDefinition = {
-                content: [
-                    { text: titulo || 'Reporte', style: 'header' },
-                    { text: `Tipo: ${tipoReporte}`, style: 'subheader' },
-                    { text: `Fecha: ${new Date().toLocaleDateString('es-AR')}`, style: 'subheader' },
-                    { text: '', margin: [0, 10, 0, 10] },
-                    // Aquí se agregarían los datos del reporte
-                    { text: JSON.stringify(datos, null, 2), style: 'data' }
-                ],
-                styles: {
-                    header: {
-                        fontSize: 18,
-                        bold: true,
-                        margin: [0, 0, 0, 10]
-                    },
-                    subheader: {
-                        fontSize: 12,
-                        margin: [0, 5, 0, 5]
-                    },
-                    data: {
-                        fontSize: 10
-                    }
-                }
-            };
-
-            pdfMake.createPdf(docDefinition).download(`${titulo || 'reporte'}_${new Date().toISOString().split('T')[0]}.pdf`);
-        } catch (error) {
-            console.error('Error al exportar a PDF:', error);
-            alert('Error al exportar a PDF. Por favor, verifica que pdfmake esté correctamente instalado.');
-            throw error;
-        }
-    };
-
     const exportarAExcel = async (datos, tipoReporte, titulo) => {
         // NOTA: Para habilitar la exportación a Excel, primero instala xlsx:
         // npm install xlsx
@@ -114,7 +73,6 @@ export const useExportacion = () => {
     };
 
     return {
-        exportarAPDF,
         exportarAExcel,
         exportarTablaAExcel,
         xlsxDisponible: xlsxDisponible()

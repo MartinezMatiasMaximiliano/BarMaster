@@ -7,11 +7,11 @@ import Modal_Generico from '../Modals/Modal_Generico';
 function Lista_Items(props) {
     const ticket = useSelector((state) => state.ticket.value);
 
-    // Función helper para obtener el color del estado
+    // Función helper para obtener el color del estado (distinto de "Pagado" que usa success/verde)
     const getEstadoColor = (estadoPedido) => {
         if (!estadoPedido) return 'default';
-        if (estadoPedido === 'Listo') return 'success';
-        if (estadoPedido === 'En Preparación') return 'info';
+        if (estadoPedido === 'Listo') return 'info';
+        if (estadoPedido === 'En Preparación') return 'warning';
         return 'default';
     };
 
@@ -226,50 +226,67 @@ function Lista_Items(props) {
                 return resultado;
             }
 
-            // Resumen normal sin checkboxes (comportamiento original)
-            // Solo mostrar EstadoPedido si NO es la tab de "Pagos Registrados" (estado === 2)
+            // Resumen normal sin checkboxes: clave por nombre + pagado + estadoPedido para no mezclar y nunca mostrar "Mixto"
             const mostrarEstadoPedido = estado !== 2;
-            
+
             productosCorrespondientes.forEach(producto => {
                 const nombre = producto.nombre || producto.nombreProducto;
                 const precio = producto.precio || producto.precioDelMomento;
-                const estadoPedido = mostrarEstadoPedido ? producto.estadoPedido : null;
-                
-                if (resumen[nombre]) {
-                    resumen[nombre].cantidad++;
-                    resumen[nombre].total += precio;
-                    // Si hay diferentes estados, marcar como mixto (solo si debemos mostrar el estado)
-                    if (mostrarEstadoPedido) {
-                        if (resumen[nombre].estadoPedido && resumen[nombre].estadoPedido !== estadoPedido) {
-                            resumen[nombre].estadoPedido = 'Mixto';
-                        } else if (!resumen[nombre].estadoPedido) {
-                            resumen[nombre].estadoPedido = estadoPedido;
-                        }
-                    }
+                const pagado = producto.estadoPagado === true;
+                const estadoPedido = mostrarEstadoPedido && !pagado ? (producto.estadoPedido ?? '') : '';
+                const clave = `${nombre}|${pagado}|${estadoPedido}`;
+
+                if (resumen[clave]) {
+                    resumen[clave].cantidad++;
+                    resumen[clave].total += precio;
                 } else {
-                    resumen[nombre] = {
+                    resumen[clave] = {
+                        nombreDisplay: nombre,
                         precioUnitario: precio,
                         cantidad: 1,
                         total: precio,
-                        estadoPedido: mostrarEstadoPedido ? estadoPedido : null
+                        estadoPedido: estadoPedido || null,
+                        pagado
                     };
                 }
                 total += precio;
             });
 
-            let texto = Object.entries(resumen).map(([nombre, data], index) => {
+            // Ordenar: 1º Pagado, 2º Listo, 3º En Preparación, 4º Pendiente / otros
+            const ordenEstado = (data) => {
+                if (data.pagado) return 0;
+                const e = data.estadoPedido || '';
+                if (e === 'Listo') return 1;
+                if (e === 'En Preparación') return 2;
+                if (e === 'Pendiente') return 3;
+                return 4;
+            };
+            const entradasOrdenadas = Object.entries(resumen).sort(
+                (a, b) => ordenEstado(a[1]) - ordenEstado(b[1])
+            );
+
+            let texto = entradasOrdenadas.map(([clave, data], index) => {
+                const nombre = data.nombreDisplay;
                 const estadoPedido = mostrarEstadoPedido ? data.estadoPedido : null;
                 return (
                     <Box
-                        key={index}
+                        key={clave}
                         sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}
                     >
-                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                             {`${data.cantidad}x ${nombre} ($${data.precioUnitario} x1)`}
+                            {data.pagado && (
+                                <Chip
+                                    label="Pagado"
+                                    size="small"
+                                    color="success"
+                                    sx={{ height: 20, fontSize: '0.7rem' }}
+                                />
+                            )}
                             {estadoPedido && (
-                                <Chip 
-                                    label={estadoPedido} 
-                                    size="small" 
+                                <Chip
+                                    label={estadoPedido}
+                                    size="small"
                                     color={getEstadoColor(estadoPedido)}
                                     sx={{ height: 20, fontSize: '0.7rem' }}
                                 />

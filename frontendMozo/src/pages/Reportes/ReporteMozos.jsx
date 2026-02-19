@@ -2,15 +2,12 @@ import React from 'react';
 import { Container, Typography, CircularProgress, Alert, Box } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
-import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
 import GraficaMozos from './reportes/mozos/GraficaMozos';
-import ExportarReporte from './components/ExportarReporte';
 
 const ReporteMozos = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
-    const exportacion = useExportacion();
 
     if (reportes.loading) {
         return (
@@ -46,13 +43,6 @@ const ReporteMozos = () => {
                 categorias={reportes.categorias}
                 tipoPagos={reportes.tipoPagos}
                 ocultarTipoReporte={true}
-            />
-
-            <ExportarReporte
-                onExportarPDF={exportacion.exportarAPDF}
-                onExportarExcel={exportacion.exportarAExcel}
-                tipoReporte="mozos"
-                datos={reportes.visitas}
             />
 
             <GraficaMozos datosMozos={reportes.datosMozos} />

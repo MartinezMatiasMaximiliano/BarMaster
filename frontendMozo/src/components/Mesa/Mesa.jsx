@@ -76,8 +76,19 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
             );
         }
 
-        // Si simpleStyle está activo, siempre usar MesaButton para mantener consistencia visual
+        // Si simpleStyle (Index2): sin código correcto → Mesa_Deshabilitada (mismo aspecto que MesaButton); si no → MesaButton + MesaModal
         if (simpleStyle) {
+            if (variant !== "success") {
+                return (
+                    <Mesa_Deshabilitada
+                        visitaMesa={visitaMesa}
+                        estilo={estilo}
+                        datos_mesa={datos_mesa}
+                        deshabilitadaPorCaja={!hayCajaActiva}
+                        simpleStyle={true}
+                    />
+                );
+            }
             return (
                 <>
                     <MesaButton
@@ -88,7 +99,6 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                         simpleStyle={simpleStyle}
                         disabled={!hayCajaActiva}
                     />
-                    
                     <MesaModal
                         show={show}
                         handleClose={handleClose}
@@ -104,14 +114,15 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
             );
         }
 
-        // Mesa deshabilitada (solo cuando simpleStyle es false)
+        // Mesa deshabilitada (Index, sin simpleStyle)
         if (variant !== "success") {
             return (
-                <Mesa_Deshabilitada 
+                <Mesa_Deshabilitada
                     visitaMesa={visitaMesa}
-                    estilo={estilo}  
+                    estilo={estilo}
                     datos_mesa={datos_mesa}
                     deshabilitadaPorCaja={!hayCajaActiva}
+                    simpleStyle={false}
                 />
             );
         }

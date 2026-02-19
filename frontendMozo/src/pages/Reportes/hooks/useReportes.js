@@ -170,7 +170,7 @@ export const useReportes = (filtros) => {
 
     const datosVentas = useDatosVentas(visitasFiltradas, tipoPagos);
     const datosProductos = useDatosProductos(visitasFiltradas, productos, categorias);
-    const datosMozos = useDatosMozos(visitasFiltradas);
+    const datosMozos = useDatosMozos(visitasFiltradas, productos);
     const datosMesas = useDatosMesas(visitasFiltradas);
     const datosRentabilidad = useDatosRentabilidad(visitasFiltradas, productos, datosProductos);
 

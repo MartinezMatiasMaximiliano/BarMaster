@@ -1,82 +1,103 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Button, Typography } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBurger } from '@fortawesome/free-solid-svg-icons';
-import { Button, Modal } from 'react-bootstrap';
-import { useState } from 'react';
+import { Button as BsButton, Modal } from 'react-bootstrap';
 import Lista_Items from './Listas/Lista_Items';
 import Alert from '@mui/material/Alert';
 
 export default function Mesa_Deshabilitada(props) {
-
+    const { estilo, deshabilitadaPorCaja, datos_mesa, visitaMesa, simpleStyle = false } = props;
     const [show, setShow] = useState(false);
 
-    const handleClose = () => {
-        setShow(false);
-    }
+    const handleClose = () => setShow(false);
 
     const handleShow = () => {
-        // No permitir abrir modal si no hay caja activa
-        if (props.deshabilitadaPorCaja) {
-            return;
-        }
+        if (deshabilitadaPorCaja) return;
         setShow(true);
     };
 
     function formatearFecha(fecha) {
         const date = new Date(fecha);
-        const horas = date.getHours().toString().padStart(2, '0'); // Asegura dos dígitos
+        const horas = date.getHours().toString().padStart(2, '0');
         const minutos = date.getMinutes().toString().padStart(2, '0');
-
         return `${horas}:${minutos}`;
     }
 
-    const fechaFormateada = formatearFecha(props.visitaMesa?.fechaHora || null);
-    const totalPrecio = props.visitaMesa?.productosConsumidos 
-        ? props.visitaMesa.productosConsumidos.reduce((acumulador, producto) => 
-            acumulador + parseFloat(producto.precio || producto.precioDelMomento || 0), 0) 
+    const fechaFormateada = formatearFecha(visitaMesa?.fechaHora || null);
+    const totalPrecio = visitaMesa?.productosConsumidos
+        ? visitaMesa.productosConsumidos.reduce((acumulador, producto) =>
+            acumulador + parseFloat(producto.precio || producto.precioDelMomento || 0), 0)
         : 0;
-    // El mozo no viene en visitaMesa desde el backend, se obtiene de datos_mesa si está disponible
-    const datosMozo = props.datos_mesa?.visita?.mozo || null;
+    const datosMozo = datos_mesa?.visita?.mozo || null;
 
-    const modal = (
+    // Mismo aspecto que MesaButton (MUI): azul siempre, mismo layout
+    const botonSx = simpleStyle
+        ? {
+            width: '100%',
+            height: '100%',
+            minWidth: 0,
+            minHeight: 0,
+            padding: '4px 8px',
+            fontSize: '0.75rem',
+            textTransform: 'none',
+            ...estilo,
+        }
+        : {
+            ...estilo,
+            mx: 1,
+            py: 2,
+            px: 3,
+            minWidth: 120,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.5,
+            textTransform: 'none',
+            '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 },
+            transition: 'all 0.2s ease-in-out',
+        };
+
+    return (
         <>
-            <Button 
-                className="boton-mesa mx-2" 
-                style={props.estilo} 
-                onClick={handleShow} 
-                variant={props.variant}
-                disabled={props.deshabilitadaPorCaja}
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleShow}
+                disabled={deshabilitadaPorCaja}
+                sx={botonSx}
             >
-                <FontAwesomeIcon icon={faBurger} />
-                <p>Mesa {props.datos_mesa.nombre}</p>
+                {simpleStyle ? (
+                    <>Mesa {datos_mesa.nombre}</>
+                ) : (
+                    <>
+                        <FontAwesomeIcon icon={faBurger} style={{ fontSize: '1.5rem' }} />
+                        <Typography variant="body2" component="span" sx={{ fontWeight: 500 }}>
+                            Mesa {datos_mesa.nombre}
+                        </Typography>
+                    </>
+                )}
             </Button>
 
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
                     <Modal.Title className="me-3">Pedidos de la Mesa</Modal.Title>
-                    <Alert icon={false} severity="warning" sx={{ fontSize: '1.2rem' }}>{props.datos_mesa.codigoParaPedir}</Alert>
+                    <Alert icon={false} severity="warning" sx={{ fontSize: '1.2rem' }}>{datos_mesa.codigoParaPedir}</Alert>
                 </Modal.Header>
                 <Modal.Body>
                     <Alert severity="info">Atendida por {datosMozo ? datosMozo.nombres + ' ' + datosMozo.apellido : 'No asignado'} - {fechaFormateada} - ${totalPrecio}</Alert>
                     <hr></hr>
-                    {props.visitaMesa ? (
-                        <>
-                            <Lista_Items visitaMesa={props.visitaMesa} titulo="Pedido total" subtitulo="Total" estado={false}></Lista_Items>
-                            <hr></hr>
-                            <Lista_Items visitaMesa={props.visitaMesa} titulo="Pagado" subtitulo="Subtotal" estado={2}></Lista_Items>
-                        </>
+                    {visitaMesa ? (
+                        <Lista_Items visitaMesa={visitaMesa} titulo="Pedido" subtitulo="Total" estado={false} />
                     ) : (
                         <Alert severity="info">No hay visitas activas para esta mesa</Alert>
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="primary" onClick={handleClose}>
+                    <BsButton variant="primary" onClick={handleClose}>
                         Cerrar
-                    </Button>
+                    </BsButton>
                 </Modal.Footer>
             </Modal>
         </>
     );
-
-    return <>{modal}</>;
 }

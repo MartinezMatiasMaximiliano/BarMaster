@@ -2,15 +2,12 @@ import React from 'react';
 import { Container, Typography, CircularProgress, Alert, Box, Card, CardContent } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
-import { useExportacion } from './hooks/useExportacion';
 import FiltrosAvanzados from './components/FiltrosAvanzados';
-import ExportarReporte from './components/ExportarReporte';
 import { formatearMoneda, formatearPorcentaje } from './utils/formatters';
 
 const ReporteRentabilidad = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
-    const exportacion = useExportacion();
 
     if (reportes.loading) {
         return (
@@ -46,13 +43,6 @@ const ReporteRentabilidad = () => {
                 categorias={reportes.categorias}
                 tipoPagos={reportes.tipoPagos}
                 ocultarTipoReporte={true}
-            />
-
-            <ExportarReporte
-                onExportarPDF={exportacion.exportarAPDF}
-                onExportarExcel={exportacion.exportarAExcel}
-                tipoReporte="rentabilidad"
-                datos={reportes.visitas}
             />
 
             <Card sx={{ mb: 4 }}>
