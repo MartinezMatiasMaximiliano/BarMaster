@@ -1,12 +1,11 @@
 // components/Mesa/MesaModal.jsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
     Button,
-    Alert,
     Typography,
     Stack,
     Box,
@@ -17,13 +16,14 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import Modal_Generico from "../Modals/Modal_Generico";
 import Modal_AgregarPedidos from "../Modals/Agregar_Pedidos/Modal_AgregarPedidos";
+import Modal_Facturar from "../Modals/Modal_Facturar/Modal_Facturar";
 import { formatearFecha } from './dateFormatter';
 import { useSnackbar } from '../../hooks/useSnackbar.jsx';
 import { useModalVerCuenta } from '../Modals/Modal_Ver_Cuenta/hooks/useModalVerCuenta';
@@ -47,6 +47,7 @@ export const MesaModal = ({
         tabValue,
         visitaMesa: visitaMesaCuenta,
         productosAPagar,
+        totalPedidos,
         currencyFormatter,
         handleTabChange,
         PagarMesa
@@ -54,6 +55,8 @@ export const MesaModal = ({
 
     // Estado para productos seleccionados en el resumen (para facturar por partes)
     const [productosSeleccionados, setProductosSeleccionados] = useState([]);
+    // Modal facturar: null | 'todo' | 'partes'
+    const [showModalFacturar, setShowModalFacturar] = useState(null);
 
     // Estado para Snackbar de facturación
     const [snackbarFacturacion, setSnackbarFacturacion] = useState({
@@ -64,6 +67,14 @@ export const MesaModal = ({
 
     // Usar visitaMesaCuenta del hook si está disponible, sino usar la prop
     const visitaMesaFinal = visitaMesaCuenta || visitaMesa;
+
+    // Total de los productos seleccionados (para facturar por partes)
+    const totalPartes = useMemo(() => {
+        if (!visitaMesaFinal?.productosConsumidos || productosSeleccionados.length === 0) return 0;
+        return visitaMesaFinal.productosConsumidos
+            .filter(p => productosSeleccionados.includes(p.id))
+            .reduce((acc, p) => acc + (p.precio || p.precioDelMomento || 0), 0);
+    }, [visitaMesaFinal, productosSeleccionados]);
     
     const fechaFormateada = formatearFecha(visitaMesaFinal?.fechaHora || datos_mesa.visita?.fechaHora);
 
@@ -92,19 +103,11 @@ export const MesaModal = ({
         });
     }, []);
 
-    // Manejar facturación por partes
-    const handleFacturarPorPartes = useCallback(() => {
-        if (productosSeleccionados.length === 0) {
-            showSnackbarFacturacion("Por favor, seleccione al menos un producto para facturar", "warning");
-            return;
-        }
-        PagarMesa(productosSeleccionados, showSnackbarFacturacion);
-        setProductosSeleccionados([]);
-    }, [productosSeleccionados, PagarMesa, showSnackbarFacturacion]);
-
-    // Wrapper para PagarMesa que incluye showSnackbar
-    const handlePagarMesa = useCallback((arregloIds) => {
+    // Confirmar facturación desde el modal (todo o por partes)
+    const handleConfirmarFacturacion = useCallback((arregloIds) => {
         PagarMesa(arregloIds, showSnackbarFacturacion);
+        setProductosSeleccionados([]);
+        setShowModalFacturar(null);
     }, [PagarMesa, showSnackbarFacturacion]);
 
     // Limpiar selección al cerrar el modal
@@ -158,15 +161,6 @@ export const MesaModal = ({
                                 Mesa {datos_mesa.nombre}
                             </Typography>
                         </Stack>
-                        {datos_mesa.codigoParaPedir && (
-                            <Alert
-                                icon={<VpnKeyIcon />}
-                                severity="warning"
-                                sx={{ fontSize: '1.2rem', py: 0.5, px: 1 }}
-                            >
-                                {datos_mesa.codigoParaPedir}
-                            </Alert>
-                        )}
                     </Stack>
                     <IconButton
                         aria-label="close"
@@ -269,21 +263,27 @@ export const MesaModal = ({
 
             <DialogActions sx={{ px: 4, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Modal_Generico
-                        textoBoton="Facturar todo"
-                        titulo="Facturar todo"
-                        cuerpo="¿Confirmar el pago de todos los productos pendientes?"
-                        confirmar={true}
-                        func={handlePagarMesa}
-                        param={productosAPagar}
-                        disabled={!(productosAPagar.length > 0)}
+                    <Button
+                        variant="contained"
                         color="success"
-                        buttonSize="small"
-                    />
+                        onClick={() => setShowModalFacturar('todo')}
+                        disabled={!(productosAPagar.length > 0)}
+                        startIcon={<ReceiptIcon />}
+                        size="small"
+                        sx={{ py: 0.75, fontSize: '0.875rem', minWidth: 'auto' }}
+                    >
+                        Facturar todo
+                    </Button>
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={handleFacturarPorPartes}
+                        onClick={() => {
+                            if (productosSeleccionados.length === 0) {
+                                showSnackbarFacturacion("Por favor, seleccione al menos un producto para facturar", "warning");
+                                return;
+                            }
+                            setShowModalFacturar('partes');
+                        }}
                         disabled={productosSeleccionados.length === 0}
                         startIcon={<PlaylistAddCheckIcon />}
                         size="small"
@@ -320,6 +320,30 @@ export const MesaModal = ({
                 severity={snackbarFacturacion.severity}
                 onClose={handleCloseSnackbarFacturacion}
             />
+
+            {/* Modal facturar (todo o por partes) */}
+            {showModalFacturar === 'todo' && (
+                <Modal_Facturar
+                    open={true}
+                    onClose={() => setShowModalFacturar(null)}
+                    titulo="Facturar todo"
+                    total={totalPedidos}
+                    productIds={productosAPagar}
+                    currencyFormatter={currencyFormatter}
+                    onConfirm={handleConfirmarFacturacion}
+                />
+            )}
+            {showModalFacturar === 'partes' && (
+                <Modal_Facturar
+                    open={true}
+                    onClose={() => setShowModalFacturar(null)}
+                    titulo="Facturar por partes"
+                    total={totalPartes}
+                    productIds={productosSeleccionados}
+                    currencyFormatter={currencyFormatter}
+                    onConfirm={handleConfirmarFacturacion}
+                />
+            )}
         </Dialog>
     );
 };

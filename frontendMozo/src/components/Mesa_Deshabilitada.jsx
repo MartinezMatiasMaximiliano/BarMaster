@@ -80,8 +80,7 @@ export default function Mesa_Deshabilitada(props) {
 
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title className="me-3">Pedidos de la Mesa</Modal.Title>
-                    <Alert icon={false} severity="warning" sx={{ fontSize: '1.2rem' }}>{datos_mesa.codigoParaPedir}</Alert>
+                    <Modal.Title>Pedidos de la Mesa</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Alert severity="info">Atendida por {datosMozo ? datosMozo.nombres + ' ' + datosMozo.apellido : 'No asignado'} - {fechaFormateada} - ${totalPrecio}</Alert>

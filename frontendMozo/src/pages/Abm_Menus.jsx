@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Container } from 'react-bootstrap';
-import { Stack, IconButton, Chip } from '@mui/material';
+import { Stack, IconButton, Chip, Alert, Box } from '@mui/material';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import { 
     CrearMenu, 
@@ -131,6 +131,9 @@ function Abm_Menus(props) {
 
     return (
         <Container>
+            <Alert severity="info" sx={{ mb: 2 }}>
+                Para agregar un menú use el botón <strong>+</strong>. Para editar un menú use el lápiz. Clickeando el ícono <Box component="span" sx={{ display: 'inline-flex', verticalAlign: 'middle', mx: 0.25 }}><RestaurantMenuIcon fontSize="small" /></Box> puede agregar y quitar productos de un menú.
+            </Alert>
             <Tabla
                 titulo={props.titulo}
                 filas={filasOrdenadas}
