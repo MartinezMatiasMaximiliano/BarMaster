@@ -22,6 +22,7 @@ import Abm_Reservas from './pages/Abm_Reservas'
 import Abm_Planos from './pages/Abm_Planos'
 import Caja from './pages/Caja/Caja'
 import HistorialCaja from './pages/Caja/Historial'
+import Historial from './pages/Historial/Historial'
 import MovimientoCaja from './pages/MovimientoCaja/MovimientoCaja'
 import KDS from './pages/KDS/KDS'
 import Mi_Plan from './pages/Mi_Plan'
@@ -314,7 +315,7 @@ function App() {
         <LoginContext.Provider value={{ logeadoUsuario, setLogeadoUsuario, rol, setRol }}>
             <AuthTypeContext.Provider value={{ authType, setAuthType }}>
                 <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-                    <Box component="aside" sx={{ width: { xs: 220, md: 260 }, borderRight: 1, borderColor: 'divider', position: 'sticky', top: 0, alignSelf: 'flex-start', minHeight: '100vh', bgcolor: 'background.paper' }}>
+                    <Box component="aside" sx={{ width: { xs: 220, md: 260 }, minWidth: { xs: 220, md: 260 }, flexShrink: 0, borderRight: 1, borderColor: 'divider', position: 'sticky', top: 0, alignSelf: 'flex-start', minHeight: '100vh', bgcolor: 'background.paper' }}>
                         <Navbar />
                     </Box>
                     <Box component="main" sx={{ flexGrow: 1, px: { xs: 2, md: 4 }, py: 2, overflowX: 'hidden' }}>
@@ -322,6 +323,7 @@ function App() {
                             <Route path="/sistema_sucursal" element={<Index mesas={mesas} datos_mozos={datos_mozos_listado} />} />
                             <Route path="/Index2" element={<Index2 mesas={mesas} datos_mozos={datos_mozos_listado} />} />
                             <Route path="/caja" element={<Control_Login><Caja /></Control_Login>} />
+                            <Route path="/historial" element={<Control_Login><Historial /></Control_Login>} />
                             <Route path="/historial_caja" element={<Control_Login><HistorialCaja /></Control_Login>} />
                             <Route path="/movimiento_caja" element={<Control_Login><MovimientoCaja /></Control_Login>} />
                             <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />

@@ -67,10 +67,9 @@ const menuConfig = {
         ],
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
-            { path: "/historial_caja", label: "Historial", icon: HistoryIcon },
             { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
         ],
-        "Finanzas": [
+        "Reportes": [
             { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
             { path: "/reporte_ventas", label: "Reporte Ventas", icon: AssessmentOutlinedIcon },
             { path: "/reporte_productos", label: "Reporte Productos", icon: AssessmentOutlinedIcon },
@@ -78,6 +77,9 @@ const menuConfig = {
             { path: "/reporte_mesas", label: "Reporte Mesas", icon: AssessmentOutlinedIcon },
             { path: "/reporte_rentabilidad", label: "Reporte Rentabilidad", icon: AssessmentOutlinedIcon },
             { path: "/reporte_caja", label: "Reporte Caja", icon: AssessmentOutlinedIcon },
+        ],
+        "Historial": [
+            { path: "/historial", label: "Historial", icon: HistoryIcon },
         ],
         "Configuración": [
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
@@ -103,10 +105,9 @@ const menuConfig = {
         ],
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
-            { path: "/historial_caja", label: "Historial", icon: HistoryIcon },
             { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
         ],
-        "Finanzas": [
+        "Reportes": [
             { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
             { path: "/reporte_ventas", label: "Reporte Ventas", icon: AssessmentOutlinedIcon },
             { path: "/reporte_productos", label: "Reporte Productos", icon: AssessmentOutlinedIcon },
@@ -114,6 +115,9 @@ const menuConfig = {
             { path: "/reporte_mesas", label: "Reporte Mesas", icon: AssessmentOutlinedIcon },
             { path: "/reporte_rentabilidad", label: "Reporte Rentabilidad", icon: AssessmentOutlinedIcon },
             { path: "/reporte_caja", label: "Reporte Caja", icon: AssessmentOutlinedIcon },
+        ],
+        "Historial": [
+            { path: "/historial", label: "Historial", icon: HistoryIcon },
         ],
         "Configuración": [
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
@@ -136,8 +140,9 @@ function NavBar_Botones(props) {
         const iconMap = {
             "Gestión": BusinessOutlinedIcon,
             "Operaciones": WorkOutlineOutlinedIcon,
-            "Finanzas": AttachMoneyOutlinedIcon,
+            "Reportes": AssessmentOutlinedIcon,
             "Caja": AccountBalanceWalletOutlinedIcon,
+            "Historial": HistoryIcon,
             "Configuración": SettingsOutlinedIcon,
         };
         return iconMap[folderName] || SettingsOutlinedIcon;
@@ -163,37 +168,53 @@ function NavBar_Botones(props) {
     return (
         <Stack spacing={2}>
             <List dense disablePadding>
-                {Object.entries(menuSections).map(([folderName, items]) => (
-                    <React.Fragment key={folderName}>
-                        <ListItem disablePadding>
-                            <ListItemButton onClick={() => handleFolderToggle(folderName)}>
-                                <ListItemIcon sx={{ minWidth: 32 }}>
-                                    {React.createElement(getFolderIcon(folderName), { fontSize: "small" })}
-                                </ListItemIcon>
-                                <ListItemText primary={folderName} />
-                                {openFolders[folderName] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                            </ListItemButton>
-                        </ListItem>
-                        <Collapse in={openFolders[folderName]} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding dense>
-                                {items.map(({ path, label, icon: Icon }) => (
-                                    <ListItem disablePadding key={path}>
-                                        <ListItemButton 
-                                            component={Link} 
-                                            to={path}
-                                            sx={{ pl: 4 }}
-                                        >
-                                            <ListItemIcon sx={{ minWidth: 32 }}>
-                                                <Icon fontSize="small" />
-                                            </ListItemIcon>
-                                            <ListItemText primary={label} />
-                                        </ListItemButton>
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Collapse>
-                    </React.Fragment>
-                ))}
+                {Object.entries(menuSections).map(([folderName, items]) => {
+                    const isDirectLink = folderName === "Historial" && items.length === 1;
+                    if (isDirectLink) {
+                        const { path, label, icon: Icon } = items[0];
+                        return (
+                            <ListItem disablePadding key={folderName}>
+                                <ListItemButton component={Link} to={path}>
+                                    <ListItemIcon sx={{ minWidth: 32 }}>
+                                        <Icon fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText primary={label} />
+                                </ListItemButton>
+                            </ListItem>
+                        );
+                    }
+                    return (
+                        <React.Fragment key={folderName}>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={() => handleFolderToggle(folderName)}>
+                                    <ListItemIcon sx={{ minWidth: 32 }}>
+                                        {React.createElement(getFolderIcon(folderName), { fontSize: "small" })}
+                                    </ListItemIcon>
+                                    <ListItemText primary={folderName} />
+                                    {openFolders[folderName] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                </ListItemButton>
+                            </ListItem>
+                            <Collapse in={openFolders[folderName]} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding dense>
+                                    {items.map(({ path, label, icon: Icon }) => (
+                                        <ListItem disablePadding key={path}>
+                                            <ListItemButton 
+                                                component={Link} 
+                                                to={path}
+                                                sx={{ pl: 4 }}
+                                            >
+                                                <ListItemIcon sx={{ minWidth: 32 }}>
+                                                    <Icon fontSize="small" />
+                                                </ListItemIcon>
+                                                <ListItemText primary={label} />
+                                            </ListItemButton>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Collapse>
+                        </React.Fragment>
+                    );
+                })}
             </List>
             <List dense disablePadding>
                 <ListItem disablePadding>
