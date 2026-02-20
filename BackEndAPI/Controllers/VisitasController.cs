@@ -196,44 +196,6 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPost("/Visitas/Pagar")]
-        public async Task<IActionResult> PagarProductos([FromBody] PagarProductosDTO request)
-        {
-            try
-            {
-                if (request == null)
-                {
-                    return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El request no puede ser nulo"));
-                }
-
-                if (request.IdVisita == Guid.Empty)
-                {
-                    return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El IdVisita no puede estar vacío"));
-                }
-
-                if (request.IdsProductos == null || request.IdsProductos.Count == 0)
-                {
-                    return BadRequest(new ErrorDTO(400, "BAD REQUEST", "La lista de IDs de productos no puede estar vacía"));
-                }
-
-                await _visitasServices.PagarProductos(request.IdVisita, request.IdsProductos);
-                
-                return Ok(new { message = "Productos marcados como pagados correctamente" });
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Visita no encontrada":
-                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
-                    case "Lista de IDs de productos vacía":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return StatusCode(500, "Internal server error catch: Pagar productos - " + ex.Message);
-                }
-            }
-        }
-
         [HttpDelete("/Visitas/EliminarProductos")]
         public async Task<IActionResult> EliminarProducto([FromBody] EliminarProductosDTO request)
         {
