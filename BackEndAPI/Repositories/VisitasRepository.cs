@@ -75,23 +75,6 @@ namespace BackEndAPI.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> PagarProductos(Visita visita, ICollection<int> IdsProductos)
-        {
-            decimal sumaPagada = 0;
-            foreach (var producto in visita.Productos)
-            {
-                if (IdsProductos.Contains(producto.Id))
-                {
-                    producto.EstadoPagado = true;
-                    sumaPagada += producto.PrecioDelMomento;
-                }
-            }
-            visita.Total += sumaPagada;
-
-            await db.SaveChangesAsync();
-            return true;
-        }
-
         public async Task<bool> EliminarProductos(Visita visita, ICollection<int> IdsProductos)
         {
             // Eliminar los productos que coincidan con los IDs proporcionados
