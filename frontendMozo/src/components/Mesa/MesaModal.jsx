@@ -11,7 +11,8 @@ import {
     Box,
     IconButton,
     Tab,
-    Tabs
+    Tabs,
+    Tooltip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -51,7 +52,7 @@ export const MesaModal = ({
         currencyFormatter,
         handleTabChange,
         PagarMesa
-    } = useModalVerCuenta(datos_mesa, handleClose);
+    } = useModalVerCuenta(datos_mesa, handleClose, { tabIndexPagosRegistrados: 1 });
 
     // Estado para productos seleccionados en el resumen (para facturar por partes)
     const [productosSeleccionados, setProductosSeleccionados] = useState([]);
@@ -103,9 +104,9 @@ export const MesaModal = ({
         });
     }, []);
 
-    // Confirmar facturación desde el modal (todo o por partes)
-    const handleConfirmarFacturacion = useCallback((arregloIds) => {
-        PagarMesa(arregloIds, showSnackbarFacturacion);
+    // Confirmar facturación desde el modal (todo o por partes). Recibe (arregloIds, idTipoPago, monto) de Modal_Facturar
+    const handleConfirmarFacturacion = useCallback((arregloIds, idTipoPago, monto) => {
+        PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto } : undefined);
         setProductosSeleccionados([]);
         setShowModalFacturar(null);
     }, [PagarMesa, showSnackbarFacturacion]);
@@ -204,17 +205,23 @@ export const MesaModal = ({
                     >
                         Agregar Productos
                     </Button>
-                    <Modal_Generico
-                        confirmar={true}
-                        titulo="¿Seguro que desea cerrar la mesa?"
-                        cuerpo="Todos los pedidos pendientes se marcarán como pagados"
-                        textoBoton="Cerrar Mesa"
-                        func={onCerrarMesa}
-                        param={datos_mesa.id}
-                        cerrar_modal={handleCloseWithCleanup}
-                        disabled={false}
-                        buttonSize="small"
-                    />
+                    <Tooltip
+                        title={productosAPagar.length > 0 ? "Facturá o cancelá los pedidos pendientes antes de cerrar la mesa" : ""}
+                    >
+                        <span style={{ display: 'inline-flex' }}>
+                            <Modal_Generico
+                                confirmar={true}
+                                titulo="¿Seguro que desea cerrar la mesa?"
+                                cuerpo="Todos los pedidos pendientes se marcarán como pagados"
+                                textoBoton="Cerrar Mesa"
+                                func={onCerrarMesa}
+                                param={datos_mesa.id}
+                                cerrar_modal={handleCloseWithCleanup}
+                                disabled={productosAPagar.length > 0}
+                                buttonSize="small"
+                            />
+                        </span>
+                    </Tooltip>
                     <Modal_Generico
                         confirmar={true}
                         titulo="Cancelar pedidos"

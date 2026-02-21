@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
-import { PagarProductosVisita } from '../../../../API/APIVisitas';
+import { PagarItems } from '../../../../API/APIPagos';
+import { BuscarTodosLosTipoPagos } from '../../../../API/APITipoPagos';
 import { GenerarTicketPDF } from '../../../../API/APIPedidos';
 import { cambiarEstadoPagadoProductos } from '../../../../redux/slices/visitasActivasSlice';
 import { eliminar as eliminarTicket } from '../../../../redux/slices/ticketSlice';
@@ -9,8 +10,10 @@ import connection from '../../../../connections/HubConnMozo';
 /**
  * Hook personalizado para manejar toda la lógica de negocio del modal Ver Cuenta
  * Centraliza el estado, cálculos y acciones relacionadas con la cuenta de una mesa
+ * @param {object} options - Opcional. tabIndexPagosRegistrados: índice de la tab "Pagos registrados" (Modal_Ver_Cuenta=2, MesaModal=1)
  */
-export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
+export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
+    const tabIndexPagosRegistrados = options?.tabIndexPagosRegistrados ?? 2;
     const dispatch = useDispatch();
 
     // Selector optimizado con shallowEqual para evitar re-renders innecesarios
@@ -76,7 +79,8 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
     }, []);
 
     // Función para pagar/facturar productos (usada tanto para "Facturar todo" como para "Facturar ticket")
-    const PagarMesa = useCallback(async (arregloIds, showSnackbar) => {
+    // opciones: { idTipoPago, monto } opcional; si no se pasa, se usa el primer tipo de pago y el total de los productos
+    const PagarMesa = useCallback(async (arregloIds, showSnackbar, opciones) => {
         if (!arregloIds || arregloIds.length === 0) {
             if (showSnackbar) {
                 showSnackbar("No hay productos para facturar", "warning");
@@ -93,23 +97,29 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
         }
 
         try {
-            // Marcar productos como pagados en la DB (endpoint Visitas/Pagar)
-            await PagarProductosVisita(idVisita, arregloIds);
+            let idTipoPago = opciones?.idTipoPago;
+            let monto = opciones?.monto;
 
-            // Generar la factura PDF
+            if (idTipoPago == null || monto == null) {
+                const productosAPagarList = visitaMesa?.productosConsumidos?.filter(p => arregloIds.includes(p.id)) ?? [];
+                const totalProductos = productosAPagarList.reduce(
+                    (acc, p) => acc + (p.precio ?? p.precioDelMomento ?? 0),
+                    0
+                );
+                monto = totalProductos;
+                const dataTipos = await BuscarTodosLosTipoPagos();
+                const lista = Array.isArray(dataTipos) ? dataTipos : (dataTipos?.data ?? []);
+                const primer = lista[0];
+                idTipoPago = primer?.id ?? primer?.Id ?? 1;
+            }
+
+            await PagarItems(idVisita, arregloIds, idTipoPago, monto);
+
             GenerarTicketPDF(datosMesa.nombre, arregloIds);
-
-            // Enviar mensaje al cliente para actualizar su cuenta
             connection.send("RecargarTicket", datosMesa.nombre);
-
-            // Actualizar el estado de visitasActivas en Redux - marcar productos como pagados
             dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true }));
-
-            // Si hay un ticket en Redux con estos IDs, eliminarlo (ya fue facturado)
             dispatch(eliminarTicket(arregloIds));
-
-            // Cambiar a la pestaña de "Pagos registrados" para mostrar los productos pagados
-            setTabValue(1);
+            setTabValue(tabIndexPagosRegistrados);
 
             if (showSnackbar) {
                 showSnackbar("Productos facturados correctamente", "success");
@@ -117,10 +127,10 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa) => {
         } catch (error) {
             console.error("Error al facturar:", error);
             if (showSnackbar) {
-                showSnackbar("Error al facturar. Intente de nuevo.", "error");
+                showSnackbar(error.response?.data ?? "Error al facturar. Intente de nuevo.", "error");
             }
         }
-    }, [datosMesa.nombre, dispatch, visitaMesa?.id]);
+    }, [datosMesa.nombre, dispatch, visitaMesa?.id, visitaMesa?.productosConsumidos, tabIndexPagosRegistrados]);
 
     return {
         // Estado

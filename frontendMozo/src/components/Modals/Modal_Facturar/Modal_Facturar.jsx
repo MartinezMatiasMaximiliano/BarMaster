@@ -106,9 +106,10 @@ export default function Modal_Facturar({
             return;
         }
         setError('');
-        onConfirm(productIds);
+        const montoParaBackend = esEfectivo ? montoRecibidoNum : totalFinal;
+        onConfirm(productIds, Number(idTipoPago), montoParaBackend);
         handleClose();
-    }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, productIds, onConfirm, handleClose]);
+    }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, productIds, idTipoPago, onConfirm, handleClose]);
 
     if (!open) return null;
 

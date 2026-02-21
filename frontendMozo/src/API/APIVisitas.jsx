@@ -82,28 +82,6 @@ export async function EliminarProductosVisita(idVisita, idsProductos) {
     }
 }
 
-/** POST /Visitas/Pagar - Marca productos de una visita como pagados */
-export async function PagarProductosVisita(idVisita, idsProductos) {
-    try {
-        const response = await axios.post(
-            `${BASE_URL}Visitas/Pagar`,
-            {
-                IdVisita: idVisita,
-                IdsProductos: idsProductos
-            },
-            authService.getAuthHeaders()
-        );
-        return response.data;
-    } catch (error) {
-        console.error('Error al pagar productos de la visita:', error);
-        if (error.response) {
-            console.error('Response data:', error.response.data);
-            console.error('Response status:', error.response.status);
-        }
-        throw error;
-    }
-}
-
 /** PATCH /Visitas/CambiarEstadoProducto - Cambia el estado de un producto */
 export async function CambiarEstadoProducto(idProducto, estado) {
     try {
