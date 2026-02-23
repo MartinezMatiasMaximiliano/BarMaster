@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
@@ -18,7 +18,7 @@ namespace BackEndAPI.Repositories
             Db = _context.Db;
         }
 
-        public async Task<Pago> CrearPago(Visita visita,Pago pago)
+        public async Task<Pago> CrearPago(Visita visita, Pago pago, decimal totalProductosPagados)
         {
             var transaccion = Db.Database.BeginTransaction();
             var tipoPago = await Db.TipoPagos.FirstOrDefaultAsync(tp => tp.Id == pago.IdTipoPago);
@@ -30,7 +30,7 @@ namespace BackEndAPI.Repositories
                 if (tipoPago.Nombre == "Efectivo")
                 {
                     var caja = await Db.Cajas.FirstOrDefaultAsync(c => c.Id == visita.IdCaja);
-                    caja.MontoActual += pago.Monto;
+                    caja.MontoActual += totalProductosPagados;
                     Db.Entry(caja).State = EntityState.Modified;
                 }
 

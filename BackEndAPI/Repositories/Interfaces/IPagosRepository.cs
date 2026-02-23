@@ -1,9 +1,9 @@
-﻿using BackEndAPI.Models;
+using BackEndAPI.Models;
 
 namespace BackEndAPI.Repositories.Interfaces
 {
     public interface IPagosRepository
     {
-        Task<Pago> CrearPago(Visita visita, Pago pago);
+        Task<Pago> CrearPago(Visita visita, Pago pago, decimal totalProductosPagados);
     }
 }

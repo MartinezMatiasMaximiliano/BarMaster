@@ -8,7 +8,7 @@
         //public Guid IdCadete { get; set; }
         public int? IdTipoEnvio { get; set; }
         public Guid IdVisita { get; set; }
-        public DateTime FechaHora { get; set; } = DateTime.Now;
+        public DateTime FechaHora { get; set; } = DateTime.UtcNow;
         public string NombreCliente { get; set; } = null!;
         public string? Direccion { get; set; } = null;  
         public string? Indicaciones { get; set; } 

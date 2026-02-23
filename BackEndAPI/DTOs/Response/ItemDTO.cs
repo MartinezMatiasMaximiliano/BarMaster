@@ -1,13 +1,16 @@
-﻿using BackEndAPI.Models;
+using BackEndAPI.Models;
 
 namespace BackEndAPI.DTOs.Response
 {
     public class ItemDTO
     {
         public int Id { get; set; }
+        public Guid? IdProducto { get; set; }
         public string? Nombre { get; set; }
         public string? Indicaciones { get; set; }
         public decimal Precio { get; set; }
         public bool EstadoPagado { get; set; }
+        public string? EstadoPedido { get; set; }
+        public DateTime FechaAgregado { get; set; }
     }
 }

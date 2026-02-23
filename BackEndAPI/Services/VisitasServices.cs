@@ -65,6 +65,7 @@ namespace BackEndAPI.Services
                         NombreProducto = producto.Nombre,
                         Detalles = item.Detalles,
                         PrecioDelMomento = producto.Precio,
+                        EstadoPedido = "Pendiente",
 
                     };
                     Total += producto.Precio;
@@ -124,43 +125,40 @@ namespace BackEndAPI.Services
                 throw new Exception($"Los siguientes IDs de productos no pertenecen a esta visita: {string.Join(", ", productosNoEncontrados)}");
             }
 
-            // Si todas las validaciones pasan, proceder con la actualización en la DB
-            // Pasamos la visita ya cargada para evitar una segunda consulta
-            return await _visitasRepository.PagarProductos(visita, IdsProductos);
-        }
-
-        public async Task<bool> EliminarProductos(Guid IdVisita, ICollection<int> IdsProductos)
-        {
-            // Validaciones de negocio
-            if (IdVisita == Guid.Empty)
-            {
-                throw new Exception("El IdVisita no puede estar vacío");
-            }
-
-            if (IdsProductos == null || IdsProductos.Count == 0)
-            {
-                throw new Exception("Lista de IDs de productos vacía");
-            }
-
-            // Verificar que la visita existe y cargarla con sus productos
-            var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
-            if (visita == null)
-            {
-                throw new Exception("Visita no encontrada");
-            }
-
-            // Verificar que los productos existen en la visita
-            var productosEnVisita = visita.Productos?.Select(p => p.Id).ToList() ?? new List<int>();
-            var productosNoEncontrados = IdsProductos.Where(id => !productosEnVisita.Contains(id)).ToList();
-
-            if (productosNoEncontrados.Any())
-            {
-                throw new Exception($"Los siguientes IDs de productos no pertenecen a esta visita: {string.Join(", ", productosNoEncontrados)}");
-            }
-
             // Si todas las validaciones pasan, proceder con la eliminación en la DB
             // Pasamos la visita ya cargada para evitar una segunda consulta
             return await _visitasRepository.EliminarProductos(visita, IdsProductos);
+        }
+
+        public async Task<bool> CambiarEstadoProducto(int idProducto, string estado)
+        {
+            // Validaciones de negocio
+            if (idProducto <= 0)
+            {
+                throw new Exception("El IdProducto debe ser mayor a cero");
+            }
+
+            if (string.IsNullOrWhiteSpace(estado))
+            {
+                throw new Exception("El estado no puede estar vacío");
+            }
+
+            // Validar que el estado sea uno de los permitidos
+            var estadosPermitidos = new[] { "Pendiente", "En Preparación", "Listo" };
+            if (!estadosPermitidos.Contains(estado))
+            {
+                throw new Exception($"El estado '{estado}' no es válido. Los estados permitidos son: {string.Join(", ", estadosPermitidos)}");
+            }
+
+            // Cambiar el estado en la DB
+            var resultado = await _visitasRepository.CambiarEstadoProducto(idProducto, estado);
+            
+            if (!resultado)
+            {
+                throw new Exception("Producto no encontrado");
+            }
+
+            return true;
         }
     }
 }

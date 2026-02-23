@@ -1,4 +1,4 @@
-﻿namespace BackEndAPI.DTOs.Response
+namespace BackEndAPI.DTOs.Response
 {
     public class VisitaDTO
     {
@@ -7,6 +7,7 @@
         public Guid IdMesa { get; set; }
         public Guid IdMozo { get; set; }
         public DateTime FechaHora { get; set; }
-        public string Estado { get; set; }    
+        public string Estado { get; set; }
+        public string? Origen { get; set; }
     }
 }

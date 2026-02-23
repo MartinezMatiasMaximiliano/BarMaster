@@ -12,5 +12,6 @@ namespace BackEndAPI.Services.Interfaces
         Task<decimal> CalcularTotal(Guid IdVisita);
         Task<bool> PagarProductos(Guid IdVisita, ICollection<int> IdsProductos);
         Task<bool> EliminarProductos(Guid IdVisita, ICollection<int> IdsProductos);
+        Task<bool> CambiarEstadoProducto(int idProducto, string estado);
     }
 }

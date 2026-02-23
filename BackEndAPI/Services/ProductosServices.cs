@@ -50,9 +50,11 @@ namespace BackEndAPI.Services
             var listaProductos = productos.Select(producto => new Producto
             {
                 Id = producto.Id,
+                Codigo = producto.Codigo,
                 Nombre = producto.Nombre,
                 Descripcion = producto.Descripcion,
                 Precio = producto.Precio,
+                CostoProduccion = producto.CostoProduccion,
                 Activo = producto.Activo,
                 PathImagen = producto.PathImagen,
                 Categorias = producto.Categorias.ToList()
@@ -102,9 +104,13 @@ namespace BackEndAPI.Services
             var busqueda = await _productosRepository.GetProductoPorId(producto.IdProducto);
             if (busqueda == null) throw new Exception("El producto no existe");
 
+            if (producto.Codigo != null)
+                busqueda.Codigo = producto.Codigo;
             busqueda.Nombre = producto.Nombre ?? busqueda.Nombre;
             busqueda.Descripcion = producto.Descripcion ?? busqueda.Descripcion;
             busqueda.Precio = producto.Precio ?? busqueda.Precio;
+            if (producto.CostoProduccion.HasValue)
+                busqueda.CostoProduccion = producto.CostoProduccion;
             busqueda.Activo = producto.Activo ?? busqueda.Activo;
 
              if (producto.categorias != null && producto.categorias.Count() > 0)

@@ -57,7 +57,7 @@ namespace BackEndAPI.Services
             {
                 throw new Exception("Monto insuficiente");
             }
-            return await _pagosRepository.CrearPago(visita,PagoCreado);
+            return await _pagosRepository.CrearPago(visita, PagoCreado, TotalProductosAPagar);
         }
     }
 }
