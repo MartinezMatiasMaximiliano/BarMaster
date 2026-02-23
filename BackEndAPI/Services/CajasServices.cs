@@ -29,6 +29,11 @@ namespace BackEndAPI.Services
             return _cajasRepository.BuscarCajaAbierta();
         }
 
+        public Task<Caja> BuscarCajaAbiertaPorIdSucursal(Guid IdSucursal)
+        {
+            return _cajasRepository.BuscarCajaAbiertaPorIdSucursal(IdSucursal);
+        }
+
         public async Task<Caja> CerrarCaja(Guid IdCaja)
         {
             var caja = await _cajasRepository.GetCajaPorId(IdCaja);

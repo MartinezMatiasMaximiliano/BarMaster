@@ -27,7 +27,7 @@ namespace BackEndAPI.Services
         }
         public async Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> productos, Guid IdVisita)
         {
-
+            decimal Total = 0;
             if (productos == null || productos.Count <= 0)
             {
                 throw new Exception("Lista de productos vacia");
@@ -67,6 +67,7 @@ namespace BackEndAPI.Services
                         PrecioDelMomento = producto.Precio,
 
                     };
+                    Total += producto.Precio;
                     visita.Productos.Add(productoPorVisita);
                 }
             }
@@ -74,7 +75,6 @@ namespace BackEndAPI.Services
             return await _visitasRepository.ModificarVisita(visita);
         }
         
-
         public async Task<IEnumerable<Visita>> ObtenerVisitasActivas()
         {
             return await _visitasRepository.ObtenerVisitasActivas();
@@ -83,6 +83,16 @@ namespace BackEndAPI.Services
         public async Task<IEnumerable<Visita>> ObtenerTodasLasVisitas()
         {
             return await _visitasRepository.ObtenerTodasLasVisitas();
+        }
+
+        public async Task<decimal> CalcularTotal(Guid IdVisita)
+        {
+            var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
+            if (visita == null)
+            {
+                throw new Exception("Visita no encontrada");
+            }
+            return visita.Productos?.Sum(p => p.PrecioDelMomento) ?? 0;
         }
 
         public async Task<bool> PagarProductos(Guid IdVisita, ICollection<int> IdsProductos)
