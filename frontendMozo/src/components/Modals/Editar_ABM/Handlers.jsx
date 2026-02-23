@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { validarCampos } from "../../../Helpers/HelperFunctions";
 
-export default function Handlers({ id, editValues, setEditValues, modificar, recargarComponentes, handleClose }) {
+export default function Handlers({ id, editValues, setEditValues, modificar, recargarComponentes, handleClose, campos }) {
   
   const [errors, setErrors] = useState({});
   

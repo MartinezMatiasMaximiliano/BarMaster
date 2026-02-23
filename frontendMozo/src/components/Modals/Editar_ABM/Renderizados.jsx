@@ -16,7 +16,6 @@ export const Renderizados = (props, handleChange) => ({
     <Multiple_Select
       key={index}
       campo={campo}
-      itemsTotales={props.categoriasTotales}
       itemsActivos={value || []}
       handleChange={handleChange}
     />

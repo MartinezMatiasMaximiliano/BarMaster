@@ -254,9 +254,9 @@ function App() {
     }
 
     const datos_mozos_listado = useMemo(() => MappearMozos(Array.isArray(mozos) ? mozos : []), [mozos]);
-    const datos_personas_abm = MappearPersonas(personas || [])
-    const datos_mesas_abm = MappearMesas(mesas || [])
-    const datos_menu_abm = MappearMenu(menu || [])
+    const datos_personas_abm = useMemo(() => MappearPersonas(personas || []), [personas]);
+    const datos_mesas_abm = useMemo(() => MappearMesas(mesas || []), [mesas]);
+    const datos_menu_abm = useMemo(() => MappearMenu(menu || []), [menu]);
     const Notificaciones = MappearNotificaciones(notificaciones || [])
     const datos_pedidos = MappearPedidos(visitasActivas || [])
     const datos_reservas = MappearReservas(reservas || [])

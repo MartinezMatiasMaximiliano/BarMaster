@@ -176,8 +176,10 @@ export function MappearMenu(menu) {
         menu.map(item => ({
             imagen: item.imagenUrl,
             id: item.id,
+            codigo: item.codigo,
             nombre: item.nombre,
             precio: item.precio,
+            costoProduccion: item.costo,
             descripcion: item.descripcion,
             categorias: item.categorias,
             activo: item.activo,

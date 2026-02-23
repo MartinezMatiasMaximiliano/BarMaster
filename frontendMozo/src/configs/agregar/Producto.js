@@ -14,14 +14,19 @@ const camposBase = [
 export const inicializarCampos = async () => {
   try {
     const data = await BuscarTodasLasCategorias();
-    const categorias = data
-      .filter(c => c.activo === true)
-      .map(c => c.nombre);
+    // Guardar categorías completas (con id y nombre) como opciones
+    const categoriasCompletas = data.filter(c => c.activo === true);
 
     // Retornar una copia de los campos con las opciones cargadas
-    return camposBase.map((campo, index) => 
-      index === 6 ? { ...campo, options: categorias } : campo
-    );
+    return camposBase.map((campo, index) => {
+      if (index === 6) {
+        return { 
+          ...campo, 
+          options: categoriasCompletas, // Guardar objetos completos con id y nombre
+        };
+      }
+      return campo;
+    });
   } catch (error) {
     console.error("Error al cargar categorías:", error);
     return camposBase;

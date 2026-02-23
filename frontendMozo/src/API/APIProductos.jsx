@@ -4,15 +4,15 @@ const BASE_URL = import.meta.env.VITE_BASE_URL + "Productos/"
 import connection from '../connections/HubConnMozo'
 
 class CrearProductoDTO {
-    constructor(nombre, descripcion, precio, activo, categorias, imagen, codigo, costoProduccion) {
+    constructor(nombre, descripcion, precio, activo, listaIdCategorias, imagen, codigo, costoProduccion) {
         this.Codigo = codigo;
         this.Nombre = nombre;
         this.Descripcion = descripcion;
         this.Precio = precio;
+        this.ListaIdCategorias = listaIdCategorias || [];
         this.CostoProduccion = costoProduccion || 0;
         this.Activo = activo;
         this.Imagen = imagen;
-        // Las categorías y opciones se manejan por separado en el backend
     }
 }
 
@@ -35,6 +35,7 @@ export async function BuscarUnProducto(Id) {
 }
 
 export async function CrearProducto(datos) {
+    console.log("DATOS,", datos);
     try {
         const response = await axios.post(
             BASE_URL,
@@ -43,7 +44,7 @@ export async function CrearProducto(datos) {
                 datos.descripcion, 
                 datos.precio, 
                 true, 
-                datos.categorias, 
+                datos.categorias || [], // Ya viene como array de IDs
                 datos.imagen,
                 datos.codigo,
                 datos.costoProduccion || 0,
@@ -64,63 +65,85 @@ export async function CrearProducto(datos) {
 
 export async function ModificarProducto(datos) {
     try {
-        const response = await axios.put(BASE_URL + datos.id,
-            {
-                nombre: datos.nombre,
-                descripcion: datos.descripcion,
-                precio: datos.precio,
-                categorias: datos.categorias,
-                imagen: datos.imagen,
-            }, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    ...authService.getAuthHeaders().headers
-                }
-            });
+        const modificarDTO = {
+            IdProducto: datos.id,
+            Codigo: datos.codigo,
+            Nombre: datos.nombre,
+            Descripcion: datos.descripcion,
+            Precio: datos.precio,
+            CostoProduccion: datos.costoProduccion,
+            Activo: datos.activo,
+            categorias: datos.categorias,
+            Imagen: datos.imagen,
+        };
+        
+        const response = await axios.patch(BASE_URL, modificarDTO, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                ...authService.getAuthHeaders().headers
+            }
+        });
+        connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
-        return error.response
+        console.error("Error al modificar producto:", error);
+        return error.response;
     }
 }
 
 export async function ActivarProducto(Id) {
     try {
-        const response = await axios.put(BASE_URL + Id, { activo: true }, {
+        const modificarDTO = {
+            IdProducto: Id,
+            Activo: true,
+        };
+        
+        const response = await axios.patch(BASE_URL, modificarDTO, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 ...authService.getAuthHeaders().headers
             }
         });
-        connection.send("RecargarMenu")
+        connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
-        return error.response
+        console.error("Error al activar producto:", error);
+        return error.response;
     }
 }
 
 export async function DesactivarProducto(Id) {
     try {
-        const response = await axios.put(BASE_URL + Id, { activo: false }, {
+        const modificarDTO = {
+            IdProducto: Id,
+            Activo: false,
+        };
+        
+        const response = await axios.patch(BASE_URL, modificarDTO, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 ...authService.getAuthHeaders().headers
             }
         });
-        connection.send("RecargarMenu")
+        connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
-        return error.response
+        console.error("Error al desactivar producto:", error);
+        return error.response;
     }
 }
 
 
 export async function BorrarProducto(Id, Token) {
     try {
-        const response = await axios.delete(BASE_URL + Id, authService.getAuthHeaders());
+        const response = await axios.delete(BASE_URL, {
+            params: { IdProducto: Id },
+            ...authService.getAuthHeaders()
+        });
         connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
-        return error.response
+        return error.response;
     }
 }
 

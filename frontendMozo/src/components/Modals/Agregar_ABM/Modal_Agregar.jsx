@@ -39,6 +39,7 @@ function Modal_Agregar(props) {
         agregar: props.agregar,
         recargarComponentes: props.recargarComponentes,
         handleClose,
+        campos: props.campos,
     });
 
     const renderizados = Renderizados(props, handleChange);

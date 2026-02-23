@@ -55,9 +55,30 @@ function Modal_Editar(props) {
     useEffect(() => {
         if (show) {
             const { id, activo, estado, Estado, ...filaFiltrada } = props.fila;
+            
+            // Convertir nombres de categorías a IDs si es necesario
+            if (filaFiltrada.categorias && Array.isArray(filaFiltrada.categorias) && filaFiltrada.categorias.length > 0) {
+                const campoCategorias = props.campos?.find(campo => campo.name === 'categorias');
+                const categoriasCompletas = campoCategorias?.options || [];
+                
+                // Verificar si son nombres (strings que no son GUIDs)
+                const primerElemento = filaFiltrada.categorias[0];
+                const esGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(primerElemento);
+                
+                if (!esGuid && categoriasCompletas.length > 0) {
+                    // Convertir nombres a IDs
+                    const mapaNombreAId = new Map(
+                        categoriasCompletas.map(cat => [cat.nombre, cat.id])
+                    );
+                    filaFiltrada.categorias = filaFiltrada.categorias
+                        .map(nombre => mapaNombreAId.get(nombre))
+                        .filter(id => id !== undefined);
+                }
+            }
+            
             setEditValues({ ...filaFiltrada });
         }
-    }, [show]);
+    }, [show, props.fila, props.campos]);
 
     const { errors, setErrors, handleChange, handleSave } = Handlers({
             id,
@@ -72,6 +93,7 @@ function Modal_Editar(props) {
                     setShowInterno(false);
                 }
             },
+            campos: props.campos,
         });
 
     const handleClose = () => {
