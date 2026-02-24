@@ -2,17 +2,18 @@ import React, { useState, useEffect } from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
-import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
+import Modal_AgregarDelivery from "../components/Modals/Agregar_Delivery/Modal_AgregarDelivery";
 import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
 import { formatearFecha } from "../Helpers/HelperFunctions"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import Checkbox from '@mui/material/Checkbox';
+import { Button } from "@mui/material";
 import {
-    RegistrarPersona,
     BorrarPersona,
     ModificarPersona
 } from "../API/APIPersonas";
+import { GetDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
 import { Campos, inicializarCampos } from "../configs/agregar/Delivery";
 
 function Delivery(props) {
@@ -27,80 +28,39 @@ function Delivery(props) {
         }
     }, []);
 
-    const [deliveries, setDeliveries] = useState([
-        {
-            "uuid": "a7e25e44-31b2-4d6a-b0e1-8d5a4b7fce14",
-            "IdCaja": 2,
-            "Productos": [
-                {
-                    "id": 10,
-                    "nombre": "Milanesa Napolitana",
-                    "indicaciones": "Con puré en lugar de ensalada",
-                    "precio": 12500,
-                },
-                {
-                    "id": 13,
-                    "nombre": "Paella",
-                    "indicaciones": "",
-                    "precio": 16500,
-                },
-                {
-                    "id": 22,
-                    "nombre": "Paella",
-                    "indicaciones": "",
-                    "precio": 16500,
-                },
-            ],
-            "IdPago": 1,
-            "IdPersonaRegistro": 5,
-            "TipoEnvio": {
-                "Id": 2,
-                "nombre": "Mediano",
-                "precio": 750,
-            },
-            "IdPersonaCadete": 8,
-            "fechaHora": "2025-10-24T13:45:00",
-            "Cliente": "Juan Pérez",
-            "Direccion": "Av. Siempre Viva 742",
-            "Indicaciones": "Tocar timbre A, dejar en portón si no atienden",
-            "Telefono": "3516789012",
-            "PrecioProductos": 45500,
-            "PrecioTotal": 46250
-        },
-        {
-            "uuid": "f83a0b1d-52af-4891-b7f9-5e2a184c1a90",
-            "IdCaja": 3,
-            "Productos": [
-                {
-                    "id": 6,
-                    "nombre": "Paella",
-                    "indicaciones": "",
-                    "precio": 16500,
-                },
-                {
-                    "id": 1,
-                    "nombre": "Bondiola Desmenuzada",
-                    "indicaciones": "",
-                    "precio": 13000,
-                },
-            ],
-            "IdPago": 2,
-            "IdPersonaRegistro": 6,
-            "TipoEnvio": {
-                "Id": 1,
-                "nombre": "Corto",
-                "precio": 500,
-            },
-            "IdPersonaCadete": null,
-            "fechaHora": "2025-10-24T14:10:00",
-            "Cliente": "María Gómez",
-            "Direccion": "Calle Los Álamos 123",
-            "Indicaciones": "Casa con rejas verdes",
-            "Telefono": "3514456789",
-            "PrecioProductos": 950,
-            "PrecioTotal": 1250
-        }
-    ]);
+    const [deliveries, setDeliveries] = useState([]);
+    const [showModalAgregar, setShowModalAgregar] = useState(false);
+
+    // Cargar datos desde la API al montar y cuando se pide recargar
+    const cargarDeliveries = React.useCallback(async () => {
+        if (!localStorage.getItem('token')) return;
+        const data = await GetDeliveryTakeaway();
+        const filas = (Array.isArray(data) ? data : []).map((item) => {
+            const productosRaw = item.productos ?? item.Productos ?? [];
+            const productos = Array.isArray(productosRaw) ? productosRaw : [];
+            return {
+                uuid: item.id ?? item.Id,
+                fechaHora: item.fechaHora ?? item.FechaHora ?? '',
+                Cliente: item.nombreCliente ?? item.NombreCliente ?? '-',
+                Direccion: item.direccion ?? item.Direccion ?? '-',
+                Telefono: item.telefono ?? item.Telefono ?? '-',
+                Indicaciones: item.indicaciones ?? item.Indicaciones ?? '-',
+                TipoEnvio: item.tipoEnvio ?? item.TipoEnvio ?? null,
+                PrecioTotal: item.precioTotal ?? item.PrecioTotal ?? 0,
+                entregado: item.entregado ?? item.Entregado ?? false,
+                Productos: productos.map((p) => ({
+                    nombre: p.nombre ?? p.Nombre ?? '-',
+                    precio: p.precio ?? p.Precio ?? 0,
+                    indicaciones: p.indicaciones ?? p.Indicaciones ?? '',
+                })),
+            };
+        });
+        setDeliveries(filas);
+    }, []);
+
+    useEffect(() => {
+        cargarDeliveries();
+    }, [cargarDeliveries]);
 
     const toggleEntregadoDelivery = (uuid) => {
         setDeliveries((prev) =>
@@ -113,7 +73,6 @@ function Delivery(props) {
     };
 
     const api = {
-        crear: RegistrarPersona,
         eliminar: BorrarPersona,
         modificar: ModificarPersona,
     };
@@ -144,7 +103,7 @@ function Delivery(props) {
         {
             key: "fechaHora",
             label: "Fecha",
-            render: (fila) => (formatearFecha(fila.fechaHora))
+            render: (fila) => (fila.fechaHora ? formatearFecha(fila.fechaHora) : '-')
         }, 
         { key: "Cliente", label: "Cliente" },
         { key: "Direccion", label: "Direccion" },
@@ -153,9 +112,12 @@ function Delivery(props) {
         {
             key: "TipoEnvio",
             label: "Envío",
-            render: (fila) => (
-                '$' + fila.TipoEnvio.precio
-            )
+            render: (fila) => {
+                const tipo = fila.TipoEnvio;
+                if (!tipo) return '-';
+                const precio = tipo.precio ?? tipo.Precio;
+                return precio != null ? '$' + precio : (tipo.nombre ?? tipo.Nombre ?? '-');
+            }
         },
         {
             key: "PrecioTotal",
@@ -205,18 +167,22 @@ function Delivery(props) {
                 titulo="Delivery"
                 filas={deliveries}
                 columnas={columnasDelivery}
-                onRefresh={props.recargarComponentes}
+                onRefresh={cargarDeliveries}
                 renderAgregar={() => (
-                    <Modal_Agregar
-                        recargarComponentes={props.recargarComponentes}
-                        columnas={['Cliente', 'Dirección', 'Telefono', 'Indicaciones', 'Envio', 'Productos']}
-                        configSelect={configSelect}
-                        agregar={api.crear}
-                        campos={campos}
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setShowModalAgregar(true)}
+                        startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
                     >
-                        <FontAwesomeIcon icon={faSquarePlus} />
-                    </Modal_Agregar>
+                        Agregar
+                    </Button>
                 )}
+            />
+            <Modal_AgregarDelivery
+                open={showModalAgregar}
+                onClose={() => setShowModalAgregar(false)}
+                onSuccess={cargarDeliveries}
             />
         </Container>
     );

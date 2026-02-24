@@ -2,23 +2,20 @@ import React, { useState, useEffect } from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
-import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
+import Modal_AgregarDelivery from "../components/Modals/Agregar_Delivery/Modal_AgregarDelivery";
 import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
-import { formatearFecha } from "../Helpers/HelperFunctions"
+import { formatearFecha } from "../Helpers/HelperFunctions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import Checkbox from '@mui/material/Checkbox';
-import {
-    RegistrarPersona,
-    BorrarPersona,
-    ModificarPersona
-} from "../API/APIPersonas";
+import { Button } from "@mui/material";
+import { BorrarPersona, ModificarPersona } from "../API/APIPersonas";
+import { GetDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
 import { Campos, inicializarCampos } from "../configs/agregar/TakeAway";
 
 function TakeAway(props) {
     const [campos, setCampos] = useState(Campos);
 
-    // Inicializar campos solo cuando el componente se monte y haya token
     useEffect(() => {
         if (localStorage.getItem('token')) {
             inicializarCampos().then(camposInicializados => {
@@ -27,54 +24,42 @@ function TakeAway(props) {
         }
     }, []);
 
-    const [takeAways, setTakeAways] = useState([
-        {
-            "uuid": "b8f36e55-42c3-5e7b-c1f2-9e6b5c8d0f25",
-            "IdCaja": 1,
-            "Productos": [
-                {
-                    "id": 5,
-                    "nombre": "Pizza Margarita",
-                    "indicaciones": "Sin aceitunas",
-                    "precio": 12000,
-                },
-                {
-                    "id": 8,
-                    "nombre": "Hamburguesa Clásica",
-                    "indicaciones": "Sin cebolla",
-                    "precio": 8500,
-                },
-            ],
-            "IdPago": 1,
-            "IdPersonaRegistro": 4,
-            "fechaHora": "2025-10-24T15:30:00",
-            "Cliente": "Carlos Rodríguez",
-            "Telefono": "3515567890",
-            "Indicaciones": "Retirar en 30 minutos",
-            "PrecioProductos": 20500,
-            "PrecioTotal": 20500
-        },
-        {
-            "uuid": "c9g47f66-53d4-6f8c-d2g3-0f7c6d9e1g36",
-            "IdCaja": 2,
-            "Productos": [
-                {
-                    "id": 15,
-                    "nombre": "Sushi Roll",
-                    "indicaciones": "",
-                    "precio": 18000,
-                },
-            ],
-            "IdPago": 2,
-            "IdPersonaRegistro": 7,
-            "fechaHora": "2025-10-24T16:00:00",
-            "Cliente": "Ana Martínez",
-            "Telefono": "3516678901",
-            "Indicaciones": "Retirar en mostrador",
-            "PrecioProductos": 18000,
-            "PrecioTotal": 18000
-        }
-    ]);
+    const [takeAways, setTakeAways] = useState([]);
+    const [showModalAgregar, setShowModalAgregar] = useState(false);
+
+    const cargarTakeAways = React.useCallback(async () => {
+        if (!localStorage.getItem('token')) return;
+        const data = await GetDeliveryTakeaway();
+        const todos = Array.isArray(data) ? data : [];
+        const soloTakeaway = todos.filter(
+            (item) => (item.idTipoEnvio ?? item.IdTipoEnvio) == null
+        );
+        const filas = soloTakeaway.map((item) => {
+            const productosRaw = item.productos ?? item.Productos ?? [];
+            const productos = Array.isArray(productosRaw) ? productosRaw : [];
+            return {
+                uuid: item.id ?? item.Id,
+                fechaHora: item.fechaHora ?? item.FechaHora ?? '',
+                Cliente: item.nombreCliente ?? item.NombreCliente ?? '-',
+                Direccion: item.direccion ?? item.Direccion ?? '-',
+                Telefono: item.telefono ?? item.Telefono ?? '-',
+                Indicaciones: item.indicaciones ?? item.Indicaciones ?? '-',
+                TipoEnvio: item.tipoEnvio ?? item.TipoEnvio ?? null,
+                PrecioTotal: item.precioTotal ?? item.PrecioTotal ?? 0,
+                entregado: item.entregado ?? item.Entregado ?? false,
+                Productos: productos.map((p) => ({
+                    nombre: p.nombre ?? p.Nombre ?? '-',
+                    precio: p.precio ?? p.Precio ?? 0,
+                    indicaciones: p.indicaciones ?? p.Indicaciones ?? '',
+                })),
+            };
+        });
+        setTakeAways(filas);
+    }, []);
+
+    useEffect(() => {
+        cargarTakeAways();
+    }, [cargarTakeAways]);
 
     const toggleEntregadoTakeAway = (uuid) => {
         setTakeAways((prev) =>
@@ -87,7 +72,6 @@ function TakeAway(props) {
     };
 
     const api = {
-        crear: RegistrarPersona,
         eliminar: BorrarPersona,
         modificar: ModificarPersona,
     };
@@ -96,16 +80,16 @@ function TakeAway(props) {
         {
             key: "fechaHora",
             label: "Fecha",
-            render: (fila) => (formatearFecha(fila.fechaHora))
-        }, 
+            render: (fila) => (fila.fechaHora ? formatearFecha(fila.fechaHora) : '-'),
+        },
         { key: "Cliente", label: "Cliente" },
         { key: "Telefono", label: "Telefono" },
         { key: "Indicaciones", label: "Indicaciones" },
         {
             key: "PrecioTotal",
             label: "Total",
-            render: (fila) => ('$' + fila.PrecioTotal)
-        }, 
+            render: (fila) => '$' + fila.PrecioTotal,
+        },
         {
             key: "entregado",
             label: "Entregado",
@@ -116,7 +100,7 @@ function TakeAway(props) {
                     onChange={() => toggleEntregadoTakeAway(fila.uuid)}
                 />
             ),
-        }, 
+        },
         {
             key: "__acciones",
             label: "Acciones",
@@ -138,7 +122,7 @@ function TakeAway(props) {
             label: "Productos",
             render: (fila) => (
                 <Modal_Detalles_Pedido titulo="Detalles" cuerpo={fila.Productos} />
-            )
+            ),
         },
     ];
 
@@ -148,21 +132,26 @@ function TakeAway(props) {
                 titulo="Take Away"
                 filas={takeAways}
                 columnas={columnasTakeAway}
-                onRefresh={props.recargarComponentes}
+                onRefresh={cargarTakeAways}
                 renderAgregar={() => (
-                    <Modal_Agregar
-                        recargarComponentes={props.recargarComponentes}
-                        columnas={['Cliente', 'Telefono', 'Indicaciones', 'Productos']}
-                        agregar={api.crear}
-                        campos={campos}
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setShowModalAgregar(true)}
+                        startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
                     >
-                        <FontAwesomeIcon icon={faSquarePlus} />
-                    </Modal_Agregar>
+                        Agregar
+                    </Button>
                 )}
+            />
+            <Modal_AgregarDelivery
+                open={showModalAgregar}
+                onClose={() => setShowModalAgregar(false)}
+                onSuccess={cargarTakeAways}
+                origen="Takeaway"
             />
         </Container>
     );
 }
 
 export default TakeAway;
-

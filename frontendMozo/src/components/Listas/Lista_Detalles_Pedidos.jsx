@@ -7,10 +7,11 @@ import Avatar from '@mui/material/Avatar';
 import FastfoodIcon from '@mui/icons-material/Fastfood';
 
 export default function Lista_Detalles_Pedidos(props) {
+    const items = Array.isArray(props.items) ? props.items : [];
 
     return (
         <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-            {props.items.map((item, index) => (
+            {items.map((item, index) => (
                 <ListItem key={index} alignItems="flex-start">
                     <ListItemAvatar>
                         <Avatar>
