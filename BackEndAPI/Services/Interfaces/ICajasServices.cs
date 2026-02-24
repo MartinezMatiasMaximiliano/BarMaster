@@ -8,6 +8,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<Caja> CrearCaja(CrearCajaDTO request,Guid IdSucursal);
 
         Task<Caja> BuscarCajaAbierta();
+        Task<Caja> BuscarCajaAbiertaPorIdSucursal(Guid IdSucursal);
 
         Task<Caja> CerrarCaja(Guid IdCaja);
         

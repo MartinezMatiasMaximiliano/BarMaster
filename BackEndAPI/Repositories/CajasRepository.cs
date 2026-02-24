@@ -28,6 +28,10 @@ namespace BackEndAPI.Repositories
         {
             return await Db.Cajas.Where(c => c.FechaCierre == null).FirstOrDefaultAsync();
         }
+        public async Task<Caja> BuscarCajaAbiertaPorIdSucursal(Guid IdSucursal)
+        {
+            return await Db.Cajas.Where(c => c.FechaCierre == null && c.IdSucursal == IdSucursal).FirstOrDefaultAsync();
+        }
 
         public async Task<Caja?> GetCajaPorId(Guid id)
         {
