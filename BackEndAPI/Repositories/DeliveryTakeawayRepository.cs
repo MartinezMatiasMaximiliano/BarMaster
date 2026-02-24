@@ -45,8 +45,17 @@ namespace BackEndAPI.Repositories
         public async Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdSucursal(Guid idSucursal)
         {
             return await Db.DeliveriesTakeaways
+                .Include(d => d.Visita)
+                .ThenInclude(v => v.Productos)
                 .Where(d => d.IdSucursal == idSucursal)
                 .ToListAsync();
+        }
+
+        public async Task<decimal> GetPrecioEnvioPorId(int? id)
+        {
+            if (!id.HasValue) return 0;
+            var tipo = await Db.TipoEnvios.FindAsync(id.Value);
+            return tipo?.Precio ?? 0;
         }
     }
 }

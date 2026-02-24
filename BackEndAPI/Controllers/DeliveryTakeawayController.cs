@@ -1,4 +1,6 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Response;
+using BackEndAPI.Models;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -26,7 +28,32 @@ namespace BackEndAPI.Controllers
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
                 var result = await _deliveryTakeawayServices.GetDeliveryTakeaway(IdSucursal);
                 if (result == null) throw new Exception("Error al obtener los pedidos");
-                return Ok(result);
+                var response = result.Select(r => new DeliveryTakeawayResponseDTO
+                {
+                    Id = r.Id,
+                    IdSucursal = r.IdSucursal,
+                    IdTipoEnvio = r.IdTipoEnvio,
+                    IdVisita = r.IdVisita,
+                    FechaHora = r.FechaHora,
+                    NombreCliente = r.NombreCliente ?? "",
+                    Direccion = r.Direccion,
+                    Indicaciones = r.Indicaciones,
+                    Telefono = r.Telefono ?? "",
+                    PrecioTotal = r.PrecioTotal,
+                    Entregado = r.Entregado,
+                    Productos = (r.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
+                    {
+                        Id = p.Id,
+                        IdProducto = p.IdProducto,
+                        Nombre = p.NombreProducto,
+                        Indicaciones = p.Detalles,
+                        Precio = p.PrecioDelMomento,
+                        EstadoPagado = p.EstadoPagado,
+                        EstadoPedido = p.EstadoPedido,
+                        FechaAgregado = p.FechaAgregado
+                    }).ToList()
+                }).ToList();
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -52,7 +79,21 @@ namespace BackEndAPI.Controllers
 
                 var result = await _deliveryTakeawayServices.CrearDeliveryTakeaway(IdSucursal, request);
                 if (result == null) throw new Exception("Error al crear el pedido");
-                return Ok(result);
+                var response = new DeliveryTakeawayResponseDTO
+                {
+                    Id = result.Id,
+                    IdSucursal = result.IdSucursal,
+                    IdTipoEnvio = result.IdTipoEnvio,
+                    IdVisita = result.IdVisita,
+                    FechaHora = result.FechaHora,
+                    NombreCliente = result.NombreCliente ?? "",
+                    Direccion = result.Direccion,
+                    Indicaciones = result.Indicaciones,
+                    Telefono = result.Telefono ?? "",
+                    PrecioTotal = result.PrecioTotal,
+                    Entregado = result.Entregado
+                };
+                return Ok(response);
 
             }
             catch (Exception ex)
