@@ -39,26 +39,34 @@ namespace BackEndAPI.Services
             var DeliveryTakeaway = new DeliveryAndTakeaway
             {
                 IdSucursal = Idsucursal,
-                IdVisita = visita.Id,
-                NombreCliente = request.NombreCliente
+                IdVisita = visitaCreada.Id,
+                NombreCliente = request.NombreCliente,
             };
 
             if (request.Origen == "Delivery")
             {
                 DeliveryTakeaway.Direccion = request.Direccion;
                 DeliveryTakeaway.Indicaciones = request.Indicaciones;
-                DeliveryTakeaway.Telefono = request.Telefono;
+                DeliveryTakeaway.Telefono = request.Telefono ?? "";
                 DeliveryTakeaway.IdTipoEnvio = request.IdTipoEnvio;
             }
 
             if (request.Origen == "Takeaway")
             {
                 DeliveryTakeaway.Direccion = null;
+                DeliveryTakeaway.Indicaciones = request.Indicaciones;
+                DeliveryTakeaway.Telefono = request.Telefono ?? "";
                 DeliveryTakeaway.IdTipoEnvio = null;
             }
 
             await _visitasServices.AgregarProductos(request.ListaIDProductos, visitaCreada.Id);
-            visitaCreada.Total = await _visitasServices.CalcularTotal(visitaCreada.Id);
+            var totalProductos = await _visitasServices.CalcularTotal(visitaCreada.Id);
+            visitaCreada.Total = totalProductos;
+            var precioEnvio = request.Origen == "Delivery" && request.IdTipoEnvio.HasValue
+                ? await _deliveryTakeawayRepository.GetPrecioEnvioPorId(request.IdTipoEnvio)
+                : 0m;
+            DeliveryTakeaway.PrecioTotal = totalProductos + precioEnvio;
+            await _visitasRepository.ModificarVisita(visitaCreada);
             return await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
         }
 
