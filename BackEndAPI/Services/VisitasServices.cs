@@ -96,7 +96,7 @@ namespace BackEndAPI.Services
             return visita.Productos?.Sum(p => p.PrecioDelMomento) ?? 0;
         }
 
-        public async Task<bool> PagarProductos(Guid IdVisita, ICollection<int> IdsProductos)
+        public async Task<bool> EliminarProductos(Guid IdVisita, ICollection<int> IdsProductos)
         {
             // Validaciones de negocio
             if (IdVisita == Guid.Empty)

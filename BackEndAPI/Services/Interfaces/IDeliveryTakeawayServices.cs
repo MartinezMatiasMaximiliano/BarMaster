@@ -7,5 +7,6 @@ namespace BackEndAPI.Services.Interfaces
     {
         Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(Guid Idsucursal, CrearDeliveryTakeawayDTO request);
         Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid IdDeliveryTakeaway);
+        Task<IEnumerable<DeliveryAndTakeaway>?> GetDeliveryTakeaway(Guid IdSucursal);
     }
 }
