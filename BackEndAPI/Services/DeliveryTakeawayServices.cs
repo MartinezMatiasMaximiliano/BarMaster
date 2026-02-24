@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -60,6 +60,16 @@ namespace BackEndAPI.Services
             await _visitasServices.AgregarProductos(request.ListaIDProductos, visitaCreada.Id);
             visitaCreada.Total = await _visitasServices.CalcularTotal(visitaCreada.Id);
             return await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
+        }
+
+        public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid IdDeliveryTakeaway)
+        {
+            return await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
+        }
+
+        public async Task<IEnumerable<DeliveryAndTakeaway>?> GetDeliveryTakeaway(Guid IdSucursal)
+        {
+            return await _deliveryTakeawayRepository.ObtenerPorIdSucursal(IdSucursal);
         }
     }
 }

@@ -95,6 +95,8 @@ builder.Services.AddScoped<IPagosRepository, PagosRepository>();
 builder.Services.AddScoped<IPagosServices, PagosServices>();
 builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
 builder.Services.AddScoped<IVisitasServices, VisitasServices>();    
+builder.Services.AddScoped<IDeliveryTakeawayRepository, DeliveryTakeawayRepository>();
+builder.Services.AddScoped<IDeliveryTakeawayServices, DeliveryTakeawayServices>();
 builder.Services.AddScoped<IMenuServices, MenuServices>();
 builder.Services.AddScoped<ICajasRepository, CajasRepository>();    
 builder.Services.AddScoped<ICajasServices, CajasServices>();
