@@ -169,7 +169,10 @@ namespace BackEndAPI.Services
         {
             var mesas = (await _mesasRepository.ObtenerTodasLasMesas()).ToList();
             var visitasActivas = (await _visitasRepository.ObtenerVisitasActivas()).ToList();
-            var visitaPorMesa = visitasActivas.ToDictionary(v => v.IdMesa, v => v);
+            // Solo visitas con mesa (IdMesa no null); las de delivery/takeaway no tienen mesa
+            var visitaPorMesa = visitasActivas
+                .Where(v => v.IdMesa.HasValue)
+                .ToDictionary(v => v.IdMesa!.Value, v => v);
             return mesas.Select(m => (m, visitaPorMesa.TryGetValue(m.Id, out var vis) ? vis : null));
         }
 
