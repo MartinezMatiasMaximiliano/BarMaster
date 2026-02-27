@@ -48,6 +48,7 @@ namespace BackEndAPI.Services
                 {
                     TotalProductosAPagar = TotalProductosAPagar + productoPorVisita.PrecioDelMomento;
                     productoPorVisita.EstadoPagado = true;
+                    productoPorVisita.IdPago = PagoCreado.Id;
                 }
             }
 
