@@ -86,5 +86,19 @@ public class AuthServices : IAuthServices
 
     }
 
+    //public async Task<> CambiarContraseña(CambiarContraseñaDTO request)
+    //{
+    //    //CREAR DTO que pida, contraseña actual, nueva contraseña y confirmación de nueva contraseña
+    //    //Traer de la DB usando _personasRepository, el hash y salt del usuario (empresa, sucursal o persona) dependiendo del claim que venga en el token
+    //    //Verificar que la contraseña actual sea correcta
+    //    //_passwordService.VerificarPasswordHash(request.ContraseñaActual, hash, salt);
+    //    //si la contraseña actual es correcta, verificar que la nueva contraseña y la confirmación de nueva contraseña sean iguales
+    //    //_passwordService.CrearPasswordHash(request.ContraseñaNueva, out byte[] hash, out byte[] salt)
+    //     //persona.establecerContrasena(hash, salt);
+    //    //si todo es correcto, generar nuevo hash y salt para la nueva contraseña y actualizar en la DB
+    //      // _personasRepository.UpdatePersona(persona);
+    //    //retornar un mensaje de éxito o error dependiendo del resultado
+    //}
+
 }
 

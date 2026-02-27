@@ -2,6 +2,7 @@ using BackEndAPI.DTOs.Request;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Policy;
 
 namespace BackEndAPI.Controllers
 {
@@ -75,6 +76,29 @@ namespace BackEndAPI.Controllers
             return Ok();
         }
 
+        //[Authorize]
+        //[HttpPut("/CambiarContraseña")] 
+        //public async Task<IActionResult> CambiarContraseña([FromBody] CambiarContraseñaDTO request)
+        //{
+        //    try
+        //    {
+        //        var result = await _authServices.CambiarContraseña(request);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        switch (ex.Message)
+        //        {
+        //            case "Contraseña actual incorrecta":
+        //                return BadRequest("Contraseña actual incorrecta");
+        //            case "La nueva contraseña y la confirmación de nueva contraseña no coinciden":
+        //                return BadRequest("La nueva contraseña y la confirmación de nueva contraseña no coinciden");
+        //            default:
+        //                return StatusCode(500, "Error interno del servidor");
+        //        }
+        //    }
 
-    }
+
+
+        }
 }
