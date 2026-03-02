@@ -76,29 +76,29 @@ namespace BackEndAPI.Controllers
             return Ok();
         }
 
-        //[Authorize]
-        //[HttpPut("/CambiarContraseña")] 
-        //public async Task<IActionResult> CambiarContraseña([FromBody] CambiarContraseñaDTO request)
-        //{
-        //    try
-        //    {
-        //        var result = await _authServices.CambiarContraseña(request);
-        //        return Ok(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        switch (ex.Message)
-        //        {
-        //            case "Contraseña actual incorrecta":
-        //                return BadRequest("Contraseña actual incorrecta");
-        //            case "La nueva contraseña y la confirmación de nueva contraseña no coinciden":
-        //                return BadRequest("La nueva contraseña y la confirmación de nueva contraseña no coinciden");
-        //            default:
-        //                return StatusCode(500, "Error interno del servidor");
-        //        }
-        //    }
-
-
-
+        [Authorize]
+        [HttpPut("/CambiarContraseña")]
+        public async Task<IActionResult> CambiarContraseña([FromBody] CambiarContraseñaDTO request)
+        {
+            try
+            {
+                await _authServices.CambiarContraseña(request, User);
+                return Ok("Contraseña actualizada correctamente");
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Contraseña actual incorrecta":
+                        return BadRequest("Contraseña actual incorrecta");
+                    case "La nueva contraseña y la confirmación no coinciden":
+                        return BadRequest("La nueva contraseña y la confirmación no coinciden");
+                    case "usuario no encontrado":
+                        return BadRequest("usuario no encontrado");
+                    default:
+                        return StatusCode(500, "Error interno del servidor");
+                }
+            }
         }
+    }
 }

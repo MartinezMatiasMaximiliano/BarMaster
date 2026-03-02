@@ -89,10 +89,10 @@ namespace BackEndAPI.Services.Global
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
+                new Claim("IdPersona", persona.Id.ToString()),
                 new Claim("RequestedBy",$"{persona.Apellido},{persona.Nombres}"),
                 new Claim("RequestedRole",$"{persona.Rol}"),
                 new Claim("TipoAuth","admin"),
-
             };
 
             var key = _key;
