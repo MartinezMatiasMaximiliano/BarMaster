@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Repositories.Interfaces;
@@ -8,6 +8,7 @@ using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 
 namespace BackEndAPI.Services;
 
@@ -15,13 +16,15 @@ public class AuthServices : IAuthServices
 {
     private readonly ITenantServices _tenantServices;
     private readonly IEmpresasRepository _empresasRepository;
+    private readonly ISucursalRepository _sucursalRepository;
     private readonly IPersonasRepository _personasRepository;
     private readonly PasswordService _passwordService;
     private readonly JWTServices _jwtServices;
-    public AuthServices(ITenantServices tenantProvider, IEmpresasRepository empresasRepository, IPersonasRepository personasRepository, PasswordService passwordService, JWTServices jwtServices)
+    public AuthServices(ITenantServices tenantProvider, IEmpresasRepository empresasRepository, ISucursalRepository sucursalRepository, IPersonasRepository personasRepository, PasswordService passwordService, JWTServices jwtServices)
     {
         _tenantServices = tenantProvider;
         _empresasRepository = empresasRepository;
+        _sucursalRepository = sucursalRepository;
         _personasRepository = personasRepository;
         _passwordService = passwordService;
         _jwtServices = jwtServices;
@@ -86,5 +89,50 @@ public class AuthServices : IAuthServices
 
     }
 
+    public async Task CambiarContraseña(CambiarContraseñaDTO request, ClaimsPrincipal user)
+    {
+        if (request.ContraseñaNueva != request.ConfirmacionContraseña)
+            throw new Exception("La nueva contraseña y la confirmación no coinciden");
+
+        var tipoAuth = user.Claims.FirstOrDefault(c => c.Type == "TipoAuth")?.Value;
+
+        switch (tipoAuth)
+        {
+            case "empresa":
+                var idEmpresa = Guid.Parse(user.Claims.First(c => c.Type == "IdEmpresa").Value);
+                var empresa = await _empresasRepository.GetEmpresaById(idEmpresa);
+                if (empresa == null) throw new Exception("usuario no encontrado");
+                if (!_passwordService.VerificarPasswordHash(request.ContraseñaActual, empresa.PasswordHash, empresa.PasswordSalt))
+                    throw new Exception("Contraseña actual incorrecta");
+                _passwordService.CrearPasswordHash(request.ContraseñaNueva, out byte[] hashE, out byte[] saltE);
+                empresa.EstablecerContrasena(hashE, saltE);
+                await _empresasRepository.UpdateEmpresa(empresa);
+                break;
+
+            case "sucursal":
+                var idSucursal = Guid.Parse(user.Claims.First(c => c.Type == "IdSucursal").Value);
+                var sucursal = await _sucursalRepository.GetSucursalById(idSucursal);
+                if (sucursal == null) throw new Exception("usuario no encontrado");
+                if (!_passwordService.VerificarPasswordHash(request.ContraseñaActual, sucursal.PasswordHash, sucursal.PasswordSalt))
+                    throw new Exception("Contraseña actual incorrecta");
+                _passwordService.CrearPasswordHash(request.ContraseñaNueva, out byte[] hashS, out byte[] saltS);
+                sucursal.EstablecerContrasena(hashS, saltS);
+                await _sucursalRepository.ActualizarSucursal(sucursal);
+                break;
+
+            default:
+                var idPersona = Guid.Parse(user.Claims.First(c => c.Type == "IdPersona").Value);
+                var persona = await _personasRepository.GetPersonaPorId(idPersona);
+                if (persona == null) throw new Exception("usuario no encontrado");
+                if (!_passwordService.VerificarPasswordHash(request.ContraseñaActual, persona.PasswordHash, persona.PasswordSalt))
+                    throw new Exception("Contraseña actual incorrecta");
+                _passwordService.CrearPasswordHash(request.ContraseñaNueva, out byte[] hashP, out byte[] saltP);
+                persona.EstablecerContrasena(hashP, saltP);
+                await _personasRepository.ActualizarPersona(persona);
+                break;
+        }
+    }
+
 }
+
 
