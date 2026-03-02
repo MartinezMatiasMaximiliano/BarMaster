@@ -14,6 +14,7 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PaidIcon from '@mui/icons-material/Paid';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { currencyFormatter } from '../utils/constants';
 import { boxBalanceCard } from '../../../styles/boxStyles';
 
@@ -83,6 +84,17 @@ export const EstadoActual = ({ cajaActiva, balanceActual, balanceNoEfectivo = 0,
                             </Stack>
                             <Typography variant="h4" component="div" fontWeight={700} sx={{ width: '100%' }}>
                                 {currencyFormatter.format(balanceNoEfectivo ?? 0)}
+                            </Typography>
+                        </Box>
+                        <Box sx={boxBalanceCard}>
+                            <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
+                                <AccountBalanceWalletIcon sx={{ fontSize: 28 }} color="action" />
+                                <Typography variant="subtitle1" fontWeight={600} color="text.secondary">
+                                    Balance total
+                                </Typography>
+                            </Stack>
+                            <Typography variant="h4" component="div" fontWeight={700} sx={{ width: '100%' }}>
+                                {currencyFormatter.format((balanceActual ?? 0) + (balanceNoEfectivo ?? 0))}
                             </Typography>
                         </Box>
                     </Box>
