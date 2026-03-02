@@ -25,7 +25,8 @@ import HistorialCaja from './pages/Caja/Historial'
 import Historial from './pages/Historial/Historial'
 import MovimientoCaja from './pages/MovimientoCaja/MovimientoCaja'
 import KDS from './pages/KDS/KDS'
-import Mi_Plan from './pages/Mi_Plan'
+import Documentacion_Uso from './pages/Documentacion_Uso'
+import Enviar_Comentarios from './pages/Enviar_Comentarios'
 import Reportes from './pages/Reportes/Reportes'
 import ReporteVentas from './pages/Reportes/ReporteVentas'
 import ReporteProductos from './pages/Reportes/ReporteProductos'
@@ -348,7 +349,8 @@ function App() {
                             <Route path="/takeaway" element={<Control_Login><TakeAway recargarComponentes={recargarDeliveryTakeAway} titulo="Take Away" /></Control_Login>} />
                             <Route path="/kds" element={<Control_Login><KDS /></Control_Login>} />
                             <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
-                            <Route path="/mi_plan" element={<Control_Login><Mi_Plan /></Control_Login>} />
+                            <Route path="/documentacion" element={<Control_Login><Documentacion_Uso /></Control_Login>} />
+                            <Route path="/comentarios" element={<Control_Login><Enviar_Comentarios /></Control_Login>} />
                             <Route path="/panel_sucursales" element={<Control_Login><PanelSucursales /></Control_Login>} />
                             <Route path="/sucursal/:idEmpresa/:idSucursal" element={<Control_Login><DetalleSucursal /></Control_Login>} />
                             <Route path="/login" element={<LoginUsuarios />} />

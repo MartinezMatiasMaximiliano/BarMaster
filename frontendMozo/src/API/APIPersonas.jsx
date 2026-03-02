@@ -93,24 +93,18 @@ export async function ModificarPersona(datos) {
     }
 }
 
-export async function ModificarPassword(id, nuevoPassword) {
+export async function ModificarPassword(contraseñaActual, contraseñaNueva, confirmacionContraseña) {
     try {
         const response = await axios.put(
-            `${BASE_URL}Personas/password/${id}`,
-            JSON.stringify(nuevoPassword),
+            `${BASE_URL}CambiarContraseña`,
             {
-                headers: {
-                    "Content-Type": "application/json",
-                    ...authService.getAuthHeaders().headers
-                }
-            }
+                contraseñaActual,
+                contraseñaNueva,
+                confirmacionContraseña,
+            }, authService.getAuthHeaders('USER_token')
         );
         return response.data;
     } catch (error) {
-        const errorMessage = error.response?.data?.error?.mensaje || 
-                           error.response?.data?.mensaje || 
-                           'Error al modificar la contraseña';
-        alert(errorMessage);
         throw error;
     }
 }

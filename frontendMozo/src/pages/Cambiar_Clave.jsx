@@ -23,6 +23,7 @@ import { LoadingButton } from '../components/common/LoadingButton';
 import { formCentered } from '../styles/boxStyles';
 
 const PasswordChangeForm = () => {
+    const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
@@ -33,13 +34,8 @@ const PasswordChangeForm = () => {
         setError('');
         setSuccess('');
 
-        if (!newPassword || !confirmPassword) {
+        if (!currentPassword || !newPassword || !confirmPassword) {
             setError('Todos los campos son obligatorios.');
-            return;
-        }
-
-        if (newPassword.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres.');
             return;
         }
 
@@ -48,23 +44,22 @@ const PasswordChangeForm = () => {
             return;
         }
 
-        const id = localStorage.getItem('id');
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('USER_token');
 
-        if (!id || !token) {
+        if (!token) {
             setError('No se encontró información de sesión. Por favor, inicia sesión nuevamente.');
             return;
         }
 
         try {
-            await ModificarPassword(id, newPassword, token);
+            await ModificarPassword(currentPassword, newPassword, confirmPassword);
             setSuccess('Contraseña cambiada exitosamente.');
+            setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
         } catch (error) {
-            const errorMessage = error.response?.data?.error?.mensaje 
-                || error.response?.data?.title 
-                || error.message 
+            const errorMessage = error.response?.data
+                || error.message
                 || 'Error al cambiar la contraseña. Por favor, intenta nuevamente.';
             setError(errorMessage);
         }
@@ -86,6 +81,7 @@ const PasswordChangeForm = () => {
                     </Alert>
                 )}
                     <Box component="form" sx={formCentered}>
+                        <TextField label="Contraseña Actual" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
                         <TextField label="Nueva Contraseña" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
                         <TextField label="Confirmar Nueva Contraseña" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                     </Box>

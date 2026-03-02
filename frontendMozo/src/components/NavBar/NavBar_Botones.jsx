@@ -45,6 +45,9 @@ import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 import HistoryIcon from '@mui/icons-material/History';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
+import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
 
 const menuConfig = {
     admin: {
@@ -83,7 +86,10 @@ const menuConfig = {
         ],
         "Configuración": [
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
-            { path: "/mi_plan", label: "Mi Plan", icon: StarOutlineOutlinedIcon },
+        ],
+        "Ayuda": [
+            { path: "/documentacion", label: "Documentación de uso", icon: ArticleOutlinedIcon },
+            { path: "/comentarios", label: "Enviar Comentarios", icon: FeedbackOutlinedIcon },
         ],
     },
     cajero: {
@@ -122,6 +128,10 @@ const menuConfig = {
         "Configuración": [
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         ],
+        "Ayuda": [
+            { path: "/documentacion", label: "Documentación de uso", icon: ArticleOutlinedIcon },
+            { path: "/comentarios", label: "Enviar Comentarios", icon: FeedbackOutlinedIcon },
+        ],
     },
 };
 
@@ -144,6 +154,7 @@ function NavBar_Botones(props) {
             "Caja": AccountBalanceWalletOutlinedIcon,
             "Historial": HistoryIcon,
             "Configuración": SettingsOutlinedIcon,
+            "Ayuda": HelpOutlineOutlinedIcon,
         };
         return iconMap[folderName] || SettingsOutlinedIcon;
     };

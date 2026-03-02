@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Alert, TextField, InputAdornment } from '@mui/material';
+import { Box, CircularProgress, Alert, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { GetDeliveryTakeaway } from '../../API/APIDeliveryTakeaway';
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
 import Filtros from '../../components/Filtros/Filtros';
@@ -13,21 +14,14 @@ const COLUMNAS = [
     { key: 'telefono', label: 'Teléfono', align: 'left' },
     { key: 'indicaciones', label: 'Indicaciones', align: 'left' },
     { key: 'precioTotal', label: 'Total', align: 'right' },
-    { key: 'tipoPago', label: 'Tipo de pago', align: 'left' },
     { key: 'entregado', label: 'Entregado', align: 'center' },
 ];
 
-const COLUMNAS_KEYS = ['fechaHora', 'nombreCliente', 'direccion', 'telefono', 'indicaciones', 'precioTotal', 'tipoPago', 'entregado'];
+const COLUMNAS_KEYS = ['fechaHora', 'nombreCliente', 'direccion', 'telefono', 'indicaciones', 'precioTotal', 'entregado'];
 
-/**
- * Convierte un ítem del backend (DeliveriesTakeaways) al formato de fila de la tabla.
- * Cuando exista el endpoint, usar este mapper sobre la respuesta.
- */
 export function mapearDeliveryTakeawayARow(item) {
     const fecha = item.fechaHora ?? item.FechaHora ?? '';
     const fechaStr = typeof fecha === 'string' ? fecha.substring(0, 19).replace('T', ' ') : '-';
-    const tipoPago = item.tipoPago ?? item.TipoPago ?? item.visita?.pagos?.[0]?.tipoPago?.nombre ?? item.visita?.Pagos?.[0]?.TipoPago?.Nombre ?? '-';
-    const tipoPagoStr = typeof tipoPago === 'string' ? tipoPago : (tipoPago?.nombre ?? tipoPago?.Nombre ?? '-');
     return {
         id: item.id ?? item.Id,
         fechaHora: fechaStr,
@@ -36,20 +30,46 @@ export function mapearDeliveryTakeawayARow(item) {
         telefono: (item.telefono ?? item.Telefono ?? '-').toString().trim(),
         indicaciones: (item.indicaciones ?? item.Indicaciones ?? '-').toString().trim() || '-',
         precioTotal: Number(item.precioTotal ?? item.PrecioTotal ?? 0).toFixed(2),
-        tipoPago: tipoPagoStr || '-',
-        entregado: item.entregado ?? item.Entregado ?? false ? 'Sí' : 'No',
+        entregado: (item.entregado ?? item.Entregado ?? false) ? 'Sí' : 'No',
     };
 }
 
 /**
  * Pestaña de historial para Delivery o Take Away.
- * Por ahora no existe el endpoint en el backend; se muestra la tabla vacía y un aviso.
+ * @param {string} titulo - Título de la tabla
+ * @param {string} tipo - "delivery" o "takeaway"
  */
-export default function HistorialTabDeliveryTakeaway({ titulo }) {
-    const [filas] = useState([]);
+export default function HistorialTabDeliveryTakeaway({ titulo, tipo }) {
+    const [datos, setDatos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [busqueda, setBusqueda] = useState('');
     const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
+
+    useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setError('');
+        GetDeliveryTakeaway()
+            .then((data) => {
+                if (!cancelled) setDatos(Array.isArray(data) ? data : []);
+            })
+            .catch((err) => {
+                if (!cancelled) setError(err?.message || 'Error al cargar el historial.');
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, []);
+
+    const filas = useMemo(() => {
+        const filtrados = tipo === 'delivery'
+            ? datos.filter(item => (item.idTipoEnvio ?? item.IdTipoEnvio) != null)
+            : datos.filter(item => (item.idTipoEnvio ?? item.IdTipoEnvio) == null);
+        return filtrados.map(mapearDeliveryTakeawayARow);
+    }, [datos, tipo]);
 
     const filasConBusqueda = useMemo(
         () => filtrarPorBusqueda(filas, busqueda, COLUMNAS_KEYS),
@@ -71,7 +91,6 @@ export default function HistorialTabDeliveryTakeaway({ titulo }) {
         telefono: { tipo: 'text' },
         indicaciones: { tipo: 'text' },
         precioTotal: { tipo: 'number' },
-        tipoPago: { tipo: 'text' },
         entregado: { tipo: 'select', opciones: [{ id: 'Sí', nombre: 'Sí' }, { id: 'No', nombre: 'No' }] },
     }), []);
 
@@ -79,16 +98,21 @@ export default function HistorialTabDeliveryTakeaway({ titulo }) {
         { label: 'Fecha y hora', campo: 'fechaHora', tipoOrden: 'texto' },
         { label: 'Cliente', campo: 'nombreCliente', tipoOrden: 'texto' },
         { label: 'Total', campo: 'precioTotal', tipoOrden: 'numero' },
-        { label: 'Tipo de pago', campo: 'tipoPago', tipoOrden: 'texto' },
     ], []);
 
-    const mensajeEndpoint = 'El endpoint para obtener este historial aún no está implementado en el backend. La tabla mostrará los registros cuando esté disponible.';
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+    if (error) {
+        return <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>;
+    }
 
     return (
         <Box sx={{ pt: 2 }}>
-            <Alert severity="info" sx={{ mb: 2 }}>
-                {mensajeEndpoint}
-            </Alert>
             <Box sx={{ mb: 2 }}>
                 <TextField
                     size="small"

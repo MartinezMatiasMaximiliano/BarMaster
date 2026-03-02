@@ -51,10 +51,10 @@ export default function Historial() {
                 {tabValue === TAB_LOCAL && <HistorialTabLocal />}
             </Box>
             <Box role="tabpanel" hidden={tabValue !== TAB_DELIVERY}>
-                {tabValue === TAB_DELIVERY && <HistorialTabDeliveryTakeaway titulo="Historial de Delivery" />}
+                {tabValue === TAB_DELIVERY && <HistorialTabDeliveryTakeaway titulo="" tipo="delivery" />}
             </Box>
             <Box role="tabpanel" hidden={tabValue !== TAB_TAKEAWAY}>
-                {tabValue === TAB_TAKEAWAY && <HistorialTabDeliveryTakeaway titulo="Historial de Take Away" />}
+                {tabValue === TAB_TAKEAWAY && <HistorialTabDeliveryTakeaway titulo="" tipo="takeaway" />}
             </Box>
             <Box role="tabpanel" hidden={tabValue !== TAB_RESERVAS}>
                 {tabValue === TAB_RESERVAS && <HistorialTabReservas />}

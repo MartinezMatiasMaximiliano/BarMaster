@@ -34,8 +34,8 @@ export const authService = {
     },
 
     // Función helper para obtener los headers de autorización y tenant
-    getAuthHeaders: () => {
-        const token = localStorage.getItem('token');
+    getAuthHeaders: (key = 'token') => {
+        const token = localStorage.getItem(key);
         const tenantId = localStorage.getItem('tenantId');
         return {
             headers: {
