@@ -12,13 +12,30 @@ import {
     Button,
     Chip,
     Stack,
-    Grid
+    Grid,
+    IconButton,
+    Tooltip
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
+import CloseIcon from '@mui/icons-material/Close';
+import HistoryIcon from '@mui/icons-material/History';
 
-const FiltrosAvanzados = ({ filtros, actualizarFiltro, limpiarFiltros, mesas, categorias, tipoPagos, ocultarTipoReporte = false }) => {
+const FiltrosAvanzados = ({ filtros, actualizarFiltro, limpiarFiltros, mesas, categorias, tipoPagos, ocultarTipoReporte = false, onBuscar, onHistorico }) => {
     const [isSticky, setIsSticky] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
+    const prevFechasRef = useRef({ fechaInicio: '', fechaFin: '' });
+
+    // Auto-cargar cuando ambas fechas están seleccionadas
+    useEffect(() => {
+        if (onBuscar && filtros.fechaInicio && filtros.fechaFin) {
+            const prev = prevFechasRef.current;
+            if (prev.fechaInicio !== filtros.fechaInicio || prev.fechaFin !== filtros.fechaFin) {
+                prevFechasRef.current = { fechaInicio: filtros.fechaInicio, fechaFin: filtros.fechaFin };
+                onBuscar();
+            }
+        }
+    }, [filtros.fechaInicio, filtros.fechaFin]);
     const [stickyStyle, setStickyStyle] = useState({});
     const [cardHeight, setCardHeight] = useState(0);
     const cardRef = useRef(null);
@@ -41,8 +58,7 @@ const FiltrosAvanzados = ({ filtros, actualizarFiltro, limpiarFiltros, mesas, ca
             if (scrollThresholdRef.current !== null) {
                 const scrollY = window.scrollY || window.pageYOffset;
                 const shouldBeSticky = scrollY >= scrollThresholdRef.current;
-                
-                // Solo actualizar si cambió el estado
+
                 if (shouldBeSticky !== isStickyRef.current) {
                     isStickyRef.current = shouldBeSticky;
                     setIsSticky(shouldBeSticky);
@@ -106,31 +122,62 @@ const FiltrosAvanzados = ({ filtros, actualizarFiltro, limpiarFiltros, mesas, ca
 
     const estados = ['Pagado', 'Pendiente', 'Cancelado'];
 
+    const stickyActive = isSticky && !collapsed;
+
+    if (collapsed) {
+        return (
+            <Card sx={{ mb: 4, boxShadow: 1 }}>
+                <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <FilterListIcon sx={{ mr: 1, color: 'primary.main' }} />
+                            <Typography variant="body1" color="text.secondary">
+                                Filtros ocultos
+                            </Typography>
+                        </Box>
+                        <Tooltip title="Mostrar filtros">
+                            <IconButton size="small" onClick={() => setCollapsed(false)}>
+                                <FilterListIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <>
             {/* Placeholder para mantener el espacio cuando está sticky */}
-            {isSticky && <Box sx={{ height: cardHeight || 0, mb: 4 }} />}
-            
-            <Card 
+            {stickyActive && <Box sx={{ height: cardHeight || 0, mb: 4 }} />}
+
+            <Card
                 ref={cardRef}
-                sx={{ 
-                    position: isSticky ? 'fixed' : 'relative',
-                    top: isSticky ? 16 : 'auto',
-                    left: isSticky ? stickyStyle.left : 'auto',
-                    width: isSticky ? stickyStyle.width : '100%',
-                    zIndex: isSticky ? 1000 : 1,
+                sx={{
+                    position: stickyActive ? 'fixed' : 'relative',
+                    top: stickyActive ? 16 : 'auto',
+                    left: stickyActive ? stickyStyle.left : 'auto',
+                    width: stickyActive ? stickyStyle.width : '100%',
+                    zIndex: stickyActive ? 1000 : 1,
                     mb: 4,
-                    boxShadow: isSticky ? 6 : 4,
+                    boxShadow: stickyActive ? 6 : 4,
                     backgroundColor: 'background.paper',
-                    transition: isSticky ? 'none' : 'all 0.2s ease-in-out'
+                    transition: stickyActive ? 'none' : 'all 0.2s ease-in-out'
                 }}
             >
                 <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <FilterListIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6" component="div">
-                        Filtros
-                    </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <FilterListIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography variant="h6" component="div">
+                            Filtros
+                        </Typography>
+                    </Box>
+                    <Tooltip title="Ocultar filtros">
+                        <IconButton size="small" onClick={() => setCollapsed(true)}>
+                            <CloseIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
                 </Box>
 
                 <Grid container spacing={3}>
@@ -311,6 +358,15 @@ const FiltrosAvanzados = ({ filtros, actualizarFiltro, limpiarFiltros, mesas, ca
 
                 {/* Botones */}
                 <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                    {onHistorico && (
+                        <Button
+                            variant="outlined"
+                            startIcon={<HistoryIcon />}
+                            onClick={onHistorico}
+                        >
+                            Histórico
+                        </Button>
+                    )}
                     <Button
                         variant="outlined"
                         startIcon={<ClearIcon />}

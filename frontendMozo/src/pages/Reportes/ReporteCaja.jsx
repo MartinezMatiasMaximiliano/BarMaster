@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Container, Typography, CircularProgress, Alert, Box } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
@@ -7,6 +7,13 @@ import FiltrosAvanzados from './components/FiltrosAvanzados';
 const ReporteCaja = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
+
+    const handleBuscar = useCallback(() => reportes.cargarVisitas(), [reportes.cargarVisitas]);
+    const handleHistorico = useCallback(() => {
+        filtros.actualizarFiltro('fechaInicio', '');
+        filtros.actualizarFiltro('fechaFin', '');
+        reportes.cargarVisitas();
+    }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
 
     if (reportes.loading) {
         return (
@@ -42,6 +49,8 @@ const ReporteCaja = () => {
                 categorias={reportes.categorias}
                 tipoPagos={reportes.tipoPagos}
                 ocultarTipoReporte={true}
+                onBuscar={handleBuscar}
+                onHistorico={handleHistorico}
             />
 
             <Box sx={{ mb: 4, p: 3, bgcolor: 'info.light', borderRadius: 2 }}>
@@ -54,4 +63,3 @@ const ReporteCaja = () => {
 };
 
 export default ReporteCaja;
-

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Box, Container, Typography, CircularProgress, Alert } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
@@ -13,6 +13,13 @@ import { boxDividerLineWithMargin } from '../../styles/boxStyles';
 const Reportes = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
+
+    const handleBuscar = useCallback(() => reportes.cargarVisitas(), [reportes.cargarVisitas]);
+    const handleHistorico = useCallback(() => {
+        filtros.actualizarFiltro('fechaInicio', '');
+        filtros.actualizarFiltro('fechaFin', '');
+        reportes.cargarVisitas();
+    }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
 
     const renderContenidoReporte = () => {
         const tipoReporte = filtros.filtros.tipoReporte;
@@ -104,13 +111,24 @@ const Reportes = () => {
                 mesas={reportes.mesas}
                 categorias={reportes.categorias}
                 tipoPagos={reportes.tipoPagos}
+                onBuscar={handleBuscar}
+                onHistorico={handleHistorico}
             />
 
-            <ResumenReporte metricas={reportes.metricas} />
-
-            <Box sx={boxDividerLineWithMargin}>
-                {renderContenidoReporte()}
-            </Box>
+            {!reportes.datosCargados ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                        Seleccioná un rango de fechas para ver los datos, o presioná "Histórico" para ver todo.
+                    </Typography>
+                </Box>
+            ) : (
+                <>
+                    <ResumenReporte metricas={reportes.metricas} />
+                    <Box sx={boxDividerLineWithMargin}>
+                        {renderContenidoReporte()}
+                    </Box>
+                </>
+            )}
         </Container>
     );
 };

@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Box, CircularProgress, Alert, TextField, InputAdornment, Chip } from '@mui/material';
+import React, { useState, useMemo } from 'react';
+import { Box, CircularProgress, Alert, TextField, InputAdornment, Chip, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { BuscarTodasLasReservas } from '../../API/APIReservas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
 import Filtros from '../../components/Filtros/Filtros';
+import FiltroFechas from '../../components/FiltroFechas/FiltroFechas';
 import { filtrarPorBusqueda } from './utils';
 
 const COLUMNAS_KEYS = ['fechaHora', 'nombreReserva', 'cantidadDePersonas', 'estado', 'tipoPago'];
@@ -13,33 +14,56 @@ const COLORES_ESTADO_RESERVA = { 1: 'warning', 2: 'info', 3: 'error', 4: 'succes
 
 export default function HistorialTabReservas() {
     const [reservas, setReservas] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [busqueda, setBusqueda] = useState('');
     const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
+    const [datosCargados, setDatosCargados] = useState(false);
+    const [filtroFechaInicio, setFiltroFechaInicio] = useState('');
+    const [filtroFechaFin, setFiltroFechaFin] = useState('');
 
-    useEffect(() => {
-        let cancelled = false;
+    const cargarDatos = async () => {
         setLoading(true);
         setError('');
-        BuscarTodasLasReservas()
-            .then((data) => {
-                if (cancelled) return;
-                const raw = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
-                setReservas(raw);
-            })
-            .catch((err) => {
-                if (!cancelled) setError(err?.message || 'Error al cargar el historial de reservas.');
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
-        return () => { cancelled = true; };
-    }, []);
+        try {
+            const data = await BuscarTodasLasReservas();
+            const raw = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
+            setReservas(raw);
+            setDatosCargados(true);
+        } catch (err) {
+            setError(err?.message || 'Error al cargar el historial de reservas.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleBuscar = async (fechaInicio, fechaFin) => {
+        setFiltroFechaInicio(fechaInicio);
+        setFiltroFechaFin(fechaFin);
+        await cargarDatos();
+    };
+
+    const handleHistorico = async () => {
+        setFiltroFechaInicio('');
+        setFiltroFechaFin('');
+        await cargarDatos();
+    };
 
     const filas = useMemo(() => {
-        return reservas.map((r) => {
+        let filtradas = [...reservas];
+
+        if (filtroFechaInicio) {
+            const inicio = new Date(filtroFechaInicio);
+            filtradas = filtradas.filter(r => new Date(r.fechaHora ?? r.FechaHora) >= inicio);
+        }
+        if (filtroFechaFin) {
+            const fin = new Date(filtroFechaFin);
+            fin.setHours(23, 59, 59, 999);
+            filtradas = filtradas.filter(r => new Date(r.fechaHora ?? r.FechaHora) <= fin);
+        }
+
+        return filtradas.map((r) => {
             const estadoObj = r.estado ?? r.Estado;
             const idEstado = estadoObj?.id ?? estadoObj?.Id ?? r.IdEstadoReserva ?? r.idEstadoReserva;
             const nombreEstado = estadoObj?.nombre ?? estadoObj?.Nombre ?? r.estado ?? r.Estado ?? '-';
@@ -58,18 +82,18 @@ export default function HistorialTabReservas() {
                 tipoPago: tipoPagoStr || '-',
             };
         });
-    }, [reservas]);
+    }, [reservas, filtroFechaInicio, filtroFechaFin]);
 
     const filasConBusqueda = useMemo(
         () => filtrarPorBusqueda(filas, busqueda, COLUMNAS_KEYS),
         [filas, busqueda]
     );
 
-    useEffect(() => {
+    React.useEffect(() => {
         setFilasFiltradas(filasConBusqueda);
     }, [filasConBusqueda]);
 
-    useEffect(() => {
+    React.useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
@@ -108,58 +132,69 @@ export default function HistorialTabReservas() {
         { label: 'Estado', campo: 'estado', tipoOrden: 'texto' },
     ], []);
 
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-    if (error) {
-        return <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>;
-    }
-
     return (
         <Box sx={{ pt: 2 }}>
-            <Box sx={{ mb: 2 }}>
-                <TextField
-                    size="small"
-                    placeholder="Buscar en todas las columnas..."
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon fontSize="small" />
-                            </InputAdornment>
-                        ),
-                    }}
-                    sx={{ minWidth: 260 }}
-                />
-            </Box>
-            <Tabla
-                titulo=""
-                filas={filasOrdenadas}
-                columnas={columnas}
-                paginacion={true}
-                rowsPerPage={10}
-                mostrarExportacion={true}
-                renderFiltros={() => (
-                    <Filtros
-                        filas={filasConBusqueda}
-                        columnas={columnas}
-                        configuracionFiltros={configFiltros}
-                        onFiltrar={setFilasFiltradas}
-                    />
-                )}
-                renderOrdenar={() => (
-                    <Ordenar
-                        filas={filasFiltradas}
-                        opcionesOrdenamiento={opcionesOrden}
-                        onOrdenar={setFilasOrdenadas}
-                    />
-                )}
+            <FiltroFechas
+                onBuscar={handleBuscar}
+                onHistorico={handleHistorico}
+                loading={loading}
             />
+            {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
+                    <CircularProgress />
+                </Box>
+            )}
+            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+            {!loading && !error && !datosCargados && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                        Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.
+                    </Typography>
+                </Box>
+            )}
+            {!loading && !error && datosCargados && (
+                <>
+                    <Box sx={{ mb: 2 }}>
+                        <TextField
+                            size="small"
+                            placeholder="Buscar en todas las columnas..."
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                ),
+                            }}
+                            sx={{ minWidth: 260 }}
+                        />
+                    </Box>
+                    <Tabla
+                        titulo=""
+                        filas={filasOrdenadas}
+                        columnas={columnas}
+                        paginacion={true}
+                        rowsPerPage={10}
+                        mostrarExportacion={true}
+                        renderFiltros={() => (
+                            <Filtros
+                                filas={filasConBusqueda}
+                                columnas={columnas}
+                                configuracionFiltros={configFiltros}
+                                onFiltrar={setFilasFiltradas}
+                            />
+                        )}
+                        renderOrdenar={() => (
+                            <Ordenar
+                                filas={filasFiltradas}
+                                opcionesOrdenamiento={opcionesOrden}
+                                onOrdenar={setFilasOrdenadas}
+                            />
+                        )}
+                    />
+                </>
+            )}
         </Box>
     );
 }

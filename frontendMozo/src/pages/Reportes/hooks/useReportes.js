@@ -34,6 +34,10 @@ function normalizarVisitaParaReportes(visita) {
 /**
  * Hook orquestador: carga datos crudos, aplica filtros y expone datos por tipo de reporte.
  * La lógica específica de cada reporte está en reportes/<tipo>/useDatos*.js
+ *
+ * Las visitas NO se cargan al montar — se cargan cuando el usuario usa los filtros de fecha
+ * o presiona "Histórico". Los catálogos (mesas, productos, categorías, tipoPagos) sí se
+ * cargan al montar porque son necesarios para los dropdowns de filtros.
  */
 export const useReportes = (filtros) => {
     const [visitas, setVisitas] = useState([]);
@@ -41,46 +45,55 @@ export const useReportes = (filtros) => {
     const [productos, setProductos] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [tipoPagos, setTipoPagos] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [loadingCatalogos, setLoadingCatalogos] = useState(true);
     const [error, setError] = useState(null);
+    const [datosCargados, setDatosCargados] = useState(false);
 
-    const filtrosAPI = useMemo(() => filtros.obtenerFiltrosParaAPI(), [
-        filtros.filtros.fechaInicio,
-        filtros.filtros.fechaFin,
-        filtros.filtros.idMesas?.join(','),
-        filtros.filtros.estados?.join(',')
-    ]);
-
+    // Cargar catálogos al montar (necesarios para dropdowns de filtros)
     useEffect(() => {
-        const cargarDatos = async () => {
-            setLoading(true);
-            setError(null);
+        const cargarCatalogos = async () => {
+            setLoadingCatalogos(true);
             try {
-                const [visitasData, mesasData, productosData, categoriasData, tipoPagosData] = await Promise.all([
-                    BuscarTodasLasVisitas({}),
+                const [mesasData, productosData, categoriasData, tipoPagosData] = await Promise.all([
                     BuscarTodasLasMesas(),
                     BuscarTodosLosProductos(),
                     BuscarTodasLasCategorias(),
                     BuscarTodosLosTipoPagos()
                 ]);
-
-                setVisitas((Array.isArray(visitasData) ? visitasData : []).map(normalizarVisitaParaReportes));
                 setMesas(normalizarMesasParaReportes(Array.isArray(mesasData) ? mesasData : []));
                 setProductos(Array.isArray(productosData) ? productosData : []);
                 setCategorias(Array.isArray(categoriasData) ? categoriasData : []);
                 setTipoPagos(Array.isArray(tipoPagosData) ? tipoPagosData : []);
             } catch (err) {
-                console.error('Error al cargar datos:', err);
-                setError('Error al cargar los datos. Por favor, intenta nuevamente.');
+                console.error('Error al cargar catálogos:', err);
+                setError('Error al cargar los datos auxiliares.');
             } finally {
-                setLoading(false);
+                setLoadingCatalogos(false);
             }
         };
-
-        cargarDatos();
+        cargarCatalogos();
     }, []);
 
+    // Función para cargar visitas (llamada por el usuario via "Buscar" o "Histórico")
+    const cargarVisitas = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const visitasData = await BuscarTodasLasVisitas({});
+            setVisitas((Array.isArray(visitasData) ? visitasData : []).map(normalizarVisitaParaReportes));
+            setDatosCargados(true);
+        } catch (err) {
+            console.error('Error al cargar datos:', err);
+            setError('Error al cargar los datos. Por favor, intenta nuevamente.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const visitasFiltradas = useMemo(() => {
+        if (!datosCargados) return [];
+
         let filtradas = [...visitas];
 
         if (filtros.filtros.fechaInicio) {
@@ -128,6 +141,7 @@ export const useReportes = (filtros) => {
         visitas,
         mesas,
         productos,
+        datosCargados,
         filtros.filtros.fechaInicio,
         filtros.filtros.fechaFin,
         filtros.filtros.idMozos?.join(','),
@@ -186,7 +200,9 @@ export const useReportes = (filtros) => {
         datosMozos,
         datosMesas,
         datosRentabilidad,
-        loading,
-        error
+        loading: loading || loadingCatalogos,
+        error,
+        datosCargados,
+        cargarVisitas
     };
 };

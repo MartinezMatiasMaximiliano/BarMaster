@@ -77,16 +77,6 @@ function Historial() {
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Stack spacing={3}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <div>
-                        <Typography variant="h4" gutterBottom>
-                            Historial de Cajas
-                        </Typography>
-                        <Typography variant="body1" color="text.secondary">
-                            Consultá los movimientos de cajas cerradas anteriormente.
-                        </Typography>
-                    </div>
-                </Box>
 
                 {error && (
                     <Alert severity="error" onClose={() => setError('')}>

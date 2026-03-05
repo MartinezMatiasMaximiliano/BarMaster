@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Container, Typography, CircularProgress, Alert, Box } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
@@ -8,6 +8,13 @@ import GraficaMozos from './reportes/mozos/GraficaMozos';
 const ReporteMozos = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
+
+    const handleBuscar = useCallback(() => reportes.cargarVisitas(), [reportes.cargarVisitas]);
+    const handleHistorico = useCallback(() => {
+        filtros.actualizarFiltro('fechaInicio', '');
+        filtros.actualizarFiltro('fechaFin', '');
+        reportes.cargarVisitas();
+    }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
 
     if (reportes.loading) {
         return (
@@ -43,12 +50,21 @@ const ReporteMozos = () => {
                 categorias={reportes.categorias}
                 tipoPagos={reportes.tipoPagos}
                 ocultarTipoReporte={true}
+                onBuscar={handleBuscar}
+                onHistorico={handleHistorico}
             />
 
-            <GraficaMozos datosMozos={reportes.datosMozos} />
+            {!reportes.datosCargados ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                        Seleccioná un rango de fechas para ver los datos, o presioná "Histórico" para ver todo.
+                    </Typography>
+                </Box>
+            ) : (
+                <GraficaMozos datosMozos={reportes.datosMozos} />
+            )}
         </Container>
     );
 };
 
 export default ReporteMozos;
-

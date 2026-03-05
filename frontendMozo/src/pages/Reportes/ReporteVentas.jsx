@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Container, Typography, CircularProgress, Alert, Box, Card, CardContent, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useFiltros } from './hooks/useFiltros';
@@ -30,6 +30,13 @@ function crearLayoutMesas(mesas) {
 const ReporteVentas = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
+
+    const handleBuscar = useCallback(() => reportes.cargarVisitas(), [reportes.cargarVisitas]);
+    const handleHistorico = useCallback(() => {
+        filtros.actualizarFiltro('fechaInicio', '');
+        filtros.actualizarFiltro('fechaFin', '');
+        reportes.cargarVisitas();
+    }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
 
     const [planos, setPlanos] = useState([]);
     const [planoSeleccionado, setPlanoSeleccionado] = useState('');
@@ -124,8 +131,18 @@ const ReporteVentas = () => {
                 categorias={reportes.categorias}
                 tipoPagos={reportes.tipoPagos}
                 ocultarTipoReporte={true}
+                onBuscar={handleBuscar}
+                onHistorico={handleHistorico}
             />
 
+            {!reportes.datosCargados ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                        Seleccioná un rango de fechas para ver los datos, o presioná "Histórico" para ver todo.
+                    </Typography>
+                </Box>
+            ) : (
+            <>
             <GraficaVentas datosVentas={reportes.datosVentas} />
 
             <Box sx={{ mb: 4 }}>
@@ -200,6 +217,8 @@ const ReporteVentas = () => {
             </Box>
 
             <TablaDetallada visitas={reportes.visitas} tipoReporte="ventas" />
+            </>
+            )}
         </Container>
     );
 };
