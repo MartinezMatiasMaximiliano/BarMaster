@@ -5,8 +5,8 @@ namespace BackEndAPI.Repositories.Interfaces
     public interface ICajasRepository
     {
         Task<Caja> CrearCaja(Caja caja);
-        Task<Caja> BuscarCajaAbierta();
-        Task<Caja> BuscarCajaAbiertaPorIdSucursal(Guid IdSucursal);
+        Task<Caja?> BuscarCajaAbierta();
+        Task<Caja?> BuscarCajaAbiertaPorIdSucursal(Guid IdSucursal);
         Task<Caja?> GetCajaPorId(Guid id);
         Task<List<Caja>> BuscarListaCajas();
         Task<Caja> ActualizarCaja(Caja caja);

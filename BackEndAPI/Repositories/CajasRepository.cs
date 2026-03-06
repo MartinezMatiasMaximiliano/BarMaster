@@ -24,11 +24,11 @@ namespace BackEndAPI.Repositories
             return caja;
         }
 
-        public async Task<Caja> BuscarCajaAbierta()
+        public async Task<Caja?> BuscarCajaAbierta()
         {
             return await Db.Cajas.Where(c => c.FechaCierre == null).FirstOrDefaultAsync();
         }
-        public async Task<Caja> BuscarCajaAbiertaPorIdSucursal(Guid IdSucursal)
+        public async Task<Caja?> BuscarCajaAbiertaPorIdSucursal(Guid IdSucursal)
         {
             return await Db.Cajas.Where(c => c.FechaCierre == null && c.IdSucursal == IdSucursal).FirstOrDefaultAsync();
         }
