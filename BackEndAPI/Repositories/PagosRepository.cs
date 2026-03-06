@@ -21,13 +21,13 @@ namespace BackEndAPI.Repositories
         public async Task<Pago> CrearPago(Visita visita, Pago pago, decimal totalProductosPagados)
         {
             var transaccion = Db.Database.BeginTransaction();
-            var tipoPago = await Db.TipoPagos.FirstOrDefaultAsync(tp => tp.Id == pago.IdTipoPago);
+            var tipoMovimientoCaja = await Db.TipoMovimientosCajas.FirstOrDefaultAsync(tp => tp.Id == pago.IdMovimientoCaja);
             try
             {
                 await Db.Pagos.AddAsync(pago);
                 Db.Entry(visita).State = EntityState.Modified;
 
-                if (tipoPago.Nombre == "Efectivo")
+                if (tipoMovimientoCaja.Nombre == "Efectivo")
                 {
                     var caja = await Db.Cajas.FirstOrDefaultAsync(c => c.Id == visita.IdCaja);
                     caja.MontoActual += totalProductosPagados;

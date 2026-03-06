@@ -41,12 +41,12 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpGet("/TipoMovimientosCaja/{id}")]
-        public async Task<IActionResult> GetTipoMovimientoCajaPorId(int id)
+        [HttpGet("/TipoMovimientosCaja/{Id}")]
+        public async Task<IActionResult> GetTipoMovimientoCajaPorId(int Id)
         {
             try
             {
-                var tipo = await _tipoMovimientosCajaServices.BuscarTipoMovimientoCajaPorId(id);
+                var tipo = await _tipoMovimientosCajaServices.BuscarTipoMovimientoCajaPorId(Id);
                 if (tipo == null)
                 {
                     return NotFound(new { message = "Tipo de movimiento de caja no encontrado" });

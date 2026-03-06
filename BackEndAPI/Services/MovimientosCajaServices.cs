@@ -38,6 +38,7 @@ namespace BackEndAPI.Services
                 {
                     IdTipoMovimientoCaja = request.IdTipoMovimientoCaja,
                     IdCaja = request.IdCaja,
+                    IdVisita = null,
                     Monto = request.Monto,
                     Descripcion = request.Descripcion,
                     FechaMovimiento = DateTime.UtcNow,
