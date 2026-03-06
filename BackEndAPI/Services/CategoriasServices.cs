@@ -28,8 +28,7 @@ namespace BackEndAPI.Services
 
             Categoria nuevaCategoria = new Categoria
             {
-                Nombre = request.Nombre,
-                Activo = request.Activo
+                Nombre = request.Nombre
             };
 
             return await _categoriasRepository.CrearCategoria(nuevaCategoria);
@@ -57,32 +56,25 @@ namespace BackEndAPI.Services
                 throw new Exception("El nombre es obligatorio");
             }
 
-            var categoria = await _categoriasRepository.GetCategoriaPorId(id);
+            var nombreYaExiste = await _categoriasRepository.CategoriaExiste(request.Nombre);
+
+            if (nombreYaExiste)
+            {
+                    throw new Exception("Ya existe una categoria con ese nombre");
+            }
+
+            var categoriaModificada = await _categoriasRepository.GetCategoriaPorId(id);
             
-            if (categoria == null)
+            if (categoriaModificada == null)
             {
                 throw new Exception("La categoria no existe");
             }
 
-            var categoriaExiste = await _categoriasRepository.CategoriaExiste(request.Nombre);
 
-            if (categoriaExiste)
-            {
-                if (categoria.Nombre != request.Nombre)
-                {
-                    throw new Exception("Ya existe una categoria con ese nombre");
-                }
-            }
+            categoriaModificada.Nombre = request.Nombre;
 
-            if (request.Activo.HasValue)
-            {
-                categoria.Activo = request.Activo.Value;
-            }
-
-            categoria.Nombre = request.Nombre;
-
-            await _categoriasRepository.ActualizarCategoria(categoria);
-            return categoria;
+            await _categoriasRepository.ActualizarCategoria(categoriaModificada);
+            return categoriaModificada;
         }
 
         public async Task<Categoria?> EliminarCategoria(Guid id)
