@@ -142,7 +142,7 @@ namespace BackEndAPI.Controllers
                     throw new Exception("Sucursal no encontrada");
                 }
 
-                var caja = _cajasServices.BuscarCajaAbiertaPorIdSucursal(IdSucursal);
+                var caja = await _cajasServices.BuscarCajaAbiertaPorIdSucursal(IdSucursal);
                 if (caja != null)
                 {
                     return BadRequest(new { message = "Ya hay una caja abierta para esta sucursal" });
