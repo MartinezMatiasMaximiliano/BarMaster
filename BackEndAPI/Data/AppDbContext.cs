@@ -32,7 +32,8 @@ namespace BackEndAPI.Data
         public DbSet<Rol> Roles => Set<Rol>();
         public DbSet<EstadoReserva> EstadoReservas => Set<EstadoReserva>();
         public DbSet<Pago> Pagos => Set<Pago>();
-        public DbSet<TipoPago> TipoPagos => Set<TipoPago>();
+        public DbSet<CuentaCorriente> CuentasCorrientes => Set<CuentaCorriente>();
+        public DbSet<MovimientosCuentaCorriente> MovimientosCuentaCorriente => Set<MovimientosCuentaCorriente>();
         public DbSet<Auditorias> Auditorias => Set<Auditorias>();
         public DbSet<Plano> Planos => Set<Plano>();
         public DbSet<DeliveryAndTakeaway> DeliveriesTakeaways => Set<DeliveryAndTakeaway>();
@@ -41,16 +42,10 @@ namespace BackEndAPI.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            modelBuilder.Entity<TipoPago>().HasData(
-                new TipoPago { Id = 1, Nombre = "Efectivo" },
-                new TipoPago { Id = 2, Nombre = "Tarjeta de Crédito" },
-                new TipoPago { Id = 3, Nombre = "Tarjeta de Débito" },
-                new TipoPago { Id = 4, Nombre = "Transferencia Bancaria" }
-            );
-
             modelBuilder.Entity<Rol>().HasData(
                 new Rol { Id = 1, Nombre = "Admin" },
-                new Rol { Id = 2, Nombre = "Empleado" }
+                new Rol { Id = 2, Nombre = "Empleado" },
+                new Rol { Id = 3, Nombre = "Cadete" }
             );
 
             modelBuilder.Entity<EstadoReserva>().HasData(
@@ -61,22 +56,25 @@ namespace BackEndAPI.Data
             );
 
             modelBuilder.Entity<TipoMovimientoCaja>().HasData(
-                new TipoMovimientoCaja { Id = 1, Nombre = "Ingreso de Efectivo", EsIngreso = true ,EsEfectivo = true },
-                new TipoMovimientoCaja { Id = 2, Nombre = "Retiro de Efectivo", EsIngreso = false ,EsEfectivo = true },
-                new TipoMovimientoCaja { Id = 3, Nombre = "Cobro Cuenta Corriente Efectivo",EsIngreso = true, EsEfectivo = true },
-                new TipoMovimientoCaja { Id = 4, Nombre = "Cobro Cuenta Corriente Transferencia", EsIngreso = true, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 5, Nombre = "Cobro Cuenta Corriente Tarjeta De Credito/Debito", EsIngreso = true, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 6, Nombre = "Pago Proveedor Efectivo", EsIngreso = false, EsEfectivo = true },
-                new TipoMovimientoCaja { Id = 7, Nombre = "Pago Proveedor Transferencia", EsIngreso = false, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 8, Nombre = "Pago Proveedor Tarjeta De Credito/Debito", EsIngreso = false, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 9, Nombre = "Pago Sueldos Efectivo", EsIngreso = false, EsEfectivo = true },
-                new TipoMovimientoCaja { Id = 10, Nombre = "Pago Sueldos Transferencia", EsIngreso = false, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 11, Nombre = "Pago Sueldos Cuenta Corriente", EsIngreso = false, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 12, Nombre = "Pago Sueldos Tarjeta De Credito/Debito", EsIngreso = false, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 13, Nombre = "Gastos Efectivo", EsIngreso = false, EsEfectivo = true },
-                new TipoMovimientoCaja { Id = 14, Nombre = "Gastos Transferencia", EsIngreso = false, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 15, Nombre = "Gastos Tarjeta de Credito/Debito", EsIngreso = false, EsEfectivo = false },
-                new TipoMovimientoCaja { Id = 16, Nombre = "Gastos Cuenta Corriente", EsIngreso = false, EsEfectivo = false }
+                new TipoMovimientoCaja { Id = 1, Nombre = "Ingreso de Efectivo", EsIngreso = true ,EsEfectivo = true, Entorno="Movimiento" },
+                new TipoMovimientoCaja { Id = 2, Nombre = "Retiro de Efectivo", EsIngreso = false ,EsEfectivo = true, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 3, Nombre = "Pago Proveedor Efectivo", EsIngreso = false, EsEfectivo = true, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 4, Nombre = "Pago Proveedor Transferencia", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 5, Nombre = "Pago Proveedor Tarjeta De Credito/Debito", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 6, Nombre = "Pago Sueldos Efectivo", EsIngreso = false, EsEfectivo = true, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 7, Nombre = "Pago Sueldos Transferencia", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 8, Nombre = "Pago Sueldos Cuenta Corriente", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 9, Nombre = "Pago Sueldos Tarjeta De Credito/Debito", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 10, Nombre = "Gastos Efectivo", EsIngreso = false, EsEfectivo = true, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 11, Nombre = "Gastos Transferencia", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 12, Nombre = "Gastos Tarjeta de Credito/Debito", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 13, Nombre = "Cobro Cuenta Corriente Efectivo", EsIngreso = true, EsEfectivo = true, Entorno = "CuentaCorriente" },
+                new TipoMovimientoCaja { Id = 14, Nombre = "Cobro Cuenta Corriente Transferencia", EsIngreso = true, EsEfectivo = false, Entorno = "CuentaCorriente" },
+                new TipoMovimientoCaja { Id = 15, Nombre = "Cobro Cuenta Corriente Tarjeta De Credito/Debito", EsIngreso = true, EsEfectivo = false, Entorno = "CuentaCorriente" },
+                new TipoMovimientoCaja { Id = 16, Nombre = "Gastos Cuenta Corriente", EsIngreso = false, EsEfectivo = false, Entorno = "CuentaCorriente" },
+                new TipoMovimientoCaja { Id = 17, Nombre = "Cobro Venta Efectivo", EsIngreso = true, EsEfectivo = true, Entorno = "Ventas" },
+                new TipoMovimientoCaja { Id = 18, Nombre = "Cobro Venta Tarjeta de Credito/Debito", EsIngreso = true, EsEfectivo = false, Entorno = "Ventas" },
+                new TipoMovimientoCaja { Id = 19, Nombre = "Cobro Venta Transferencia bancaria", EsIngreso = true, EsEfectivo = false, Entorno = "Ventas" }
                 );
 
 
@@ -118,9 +116,21 @@ namespace BackEndAPI.Data
                 .HasMany(s => s.Reservas)
                 .WithOne(r => r.Sucursal)
                 .HasForeignKey(r => r.IdSucursal)
-                .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus reservas
+                .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus reservas              
 
-            
+            modelBuilder.Entity<MovimientosCuentaCorriente>()
+        .HasKey(x => new { x.IdCuentaCorriente, x.IdMovimientoCaja });
+
+            modelBuilder.Entity<MovimientosCuentaCorriente>()
+                .HasOne(x => x.CuentaCorriente)
+                .WithMany(c => c.Movimientos)
+                .HasForeignKey(x => x.IdCuentaCorriente);
+
+            modelBuilder.Entity<MovimientosCuentaCorriente>()
+                .HasOne(x => x.MovimientoCaja)
+                .WithMany() // no navigation in MovimientosCaja
+                .HasForeignKey(x => x.IdMovimientoCaja);
+
 
             modelBuilder.Entity<Reserva>()
                 .HasOne(r => r.Estado)
@@ -180,11 +190,11 @@ namespace BackEndAPI.Data
                .OnDelete(DeleteBehavior.SetNull);
 
 
-            // Relacion TipoPago 1:N Pagos
+            // Relacion TipoMovimientoCaja 1:N Pagos
             modelBuilder.Entity<Pago>()
-                .HasOne(p => p.TipoPago)
+                .HasOne(p => p.TipoMovimientoPago)
                 .WithMany()
-                .HasForeignKey(p => p.IdTipoPago)
+                .HasForeignKey(p => p.IdMovimientoCaja)
                 .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un tipo de pago si tiene pagos asociados
 
 

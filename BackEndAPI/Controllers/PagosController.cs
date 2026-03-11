@@ -33,10 +33,8 @@ namespace BackEndAPI.Controllers
                     FechaCreacion = visitaActualizada.FechaHora,
                     IdVisita = visitaActualizada.IdVisita,
                     Monto = visitaActualizada.Monto,
-                    tipoPago = visitaActualizada.TipoPago
-                };
-                    
-                    
+                    tipoMovimientoCaja = visitaActualizada.TipoMovimientoPago
+                };  
                 return Ok(Response);
             }
             catch (Exception ex)

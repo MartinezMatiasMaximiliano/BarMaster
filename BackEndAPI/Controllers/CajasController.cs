@@ -38,11 +38,22 @@ namespace BackEndAPI.Controllers
                     Diferencia = caja.Diferencia
                 }).ToList();
 
+                if (listaCajas.Count == 0)
+                {
+                    return NotFound(new { message = "No se encontraron cajas" });
+                }
+
                 return Ok(listaCajas);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+                switch (ex.Message)
+                {
+                    case "No se encontraron cajas":
+                        return NotFound(new { message = ex.Message });
+                    default:
+                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+                }
             }
         }
 
@@ -51,7 +62,12 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var caja = await _cajasServices.BuscarCajaAbierta();
+                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
+                if (IdSucursal == Guid.Empty)
+                {
+                    throw new Exception("Sucursal no encontrada");
+                }
+                var caja = await _cajasServices.BuscarCajaAbiertaPorIdSucursal(IdSucursal);
                 
                 if (caja == null)
                 {
@@ -74,7 +90,13 @@ namespace BackEndAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+                switch (ex.Message)
+                {
+                    case "Sucursal no encontrada":
+                        return NotFound(new { message = ex.Message });
+                    default:
+                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+                }
             }
         }
 
@@ -120,6 +142,12 @@ namespace BackEndAPI.Controllers
                     throw new Exception("Sucursal no encontrada");
                 }
 
+                var caja = _cajasServices.BuscarCajaAbiertaPorIdSucursal(IdSucursal);
+                if (caja != null)
+                {
+                    return BadRequest(new { message = "Ya hay una caja abierta para esta sucursal" });
+                }
+
                 var result = await _cajasServices.CrearCaja(request, IdSucursal);
                 return Ok(result);
 
@@ -142,7 +170,8 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var result = await _cajasServices.CerrarCaja(request.IdCaja);
+                var caja = await _cajasServices.BuscarCajaPorId(request.IdCaja);
+                var result = await _cajasServices.CerrarCaja(caja.Id);
                 return Ok(result);
             }
             catch (Exception ex)

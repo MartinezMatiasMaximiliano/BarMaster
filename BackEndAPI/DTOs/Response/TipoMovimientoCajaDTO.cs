@@ -6,6 +6,7 @@ namespace BackEndAPI.DTOs.Response
         public string Nombre { get; set; } = string.Empty;
         public bool EsIngreso { get; set; }
         public bool EsEfectivo { get; set; }
+        public string Entorno { get; set; }
     }
 }
 

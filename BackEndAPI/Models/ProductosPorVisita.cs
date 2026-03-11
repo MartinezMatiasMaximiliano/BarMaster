@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public Guid IdVisita { get; set; }
         public Guid? IdProducto { get; set; }
-        //public Guid? IdPago { get; set; } = null; TODO:
+        public Guid? IdMovimientoCaja { get; set; } = null;
         public string NombreProducto { get; set; } = null!;
         public string? Detalles { get; set; }
         public decimal PrecioDelMomento { get; set; }

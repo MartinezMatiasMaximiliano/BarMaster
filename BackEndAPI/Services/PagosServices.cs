@@ -36,7 +36,7 @@ namespace BackEndAPI.Services
 
             var PagoCreado = new Pago
             {
-                IdTipoPago = InfoPago.IdTipoPago,
+                IdMovimientoCaja = InfoPago.IdTipoMovimiento,
                 IdVisita = InfoPago.IdVisita,
                 Monto = InfoPago.Monto
             };
@@ -48,6 +48,7 @@ namespace BackEndAPI.Services
                 {
                     TotalProductosAPagar = TotalProductosAPagar + productoPorVisita.PrecioDelMomento;
                     productoPorVisita.EstadoPagado = true;
+                    productoPorVisita.IdMovimientoCaja = PagoCreado.Id;
                 }
             }
 
