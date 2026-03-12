@@ -4,6 +4,6 @@ namespace BackEndAPI.Repositories.Interfaces
 {
     public interface IPagosRepository
     {
-        Task<Pago> CrearPago(Visita visita, Pago pago, decimal totalProductosPagados);
+        Task<MovimientoCaja> CrearPago(Visita visita, MovimientoCaja pago, decimal totalProductosPagados);
     }
 }

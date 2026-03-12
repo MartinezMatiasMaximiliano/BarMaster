@@ -17,6 +17,6 @@
         public Persona? Mozo { get; set; }
         public Mesa? Mesa { get; set; } = null!;
         public ICollection<ProductosPorVisita> Productos { get; set; } = new List<ProductosPorVisita>();
-        public ICollection<Pago> Pagos { get; set; } = new List<Pago>();
+        public ICollection<MovimientoCaja> Pagos { get; set; } = new List<MovimientoCaja>();
     }
 }

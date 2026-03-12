@@ -31,7 +31,6 @@ namespace BackEndAPI.Data
         public DbSet<ProductosPorVisita> ProductosPorVisita => Set<ProductosPorVisita>();
         public DbSet<Rol> Roles => Set<Rol>();
         public DbSet<EstadoReserva> EstadoReservas => Set<EstadoReserva>();
-        public DbSet<Pago> Pagos => Set<Pago>();
         public DbSet<CuentaCorriente> CuentasCorrientes => Set<CuentaCorriente>();
         public DbSet<MovimientosCuentaCorriente> MovimientosCuentaCorriente => Set<MovimientosCuentaCorriente>();
         public DbSet<Auditorias> Auditorias => Set<Auditorias>();
@@ -44,7 +43,7 @@ namespace BackEndAPI.Data
 
             modelBuilder.Entity<Rol>().HasData(
                 new Rol { Id = 1, Nombre = "Admin" },
-                new Rol { Id = 2, Nombre = "Empleado" },
+                new Rol { Id = 2, Nombre = "Mozo" },
                 new Rol { Id = 3, Nombre = "Cadete" }
             );
 
@@ -190,15 +189,15 @@ namespace BackEndAPI.Data
                .OnDelete(DeleteBehavior.SetNull);
 
 
-            // Relacion TipoMovimientoCaja 1:N Pagos
-            modelBuilder.Entity<Pago>()
-                .HasOne(p => p.TipoMovimientoPago)
-                .WithMany()
-                .HasForeignKey(p => p.IdMovimientoCaja)
-                .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un tipo de pago si tiene pagos asociados
+            //// Relacion TipoMovimientoCaja 1:N Pagos
+            //modelBuilder.Entity<Pago>()
+            //    .HasOne(p => p.TipoMovimientoPago)
+            //    .WithMany()
+            //    .HasForeignKey(p => p.IdMovimientoCaja)
+            //    .OnDelete(DeleteBehavior.Restrict); // Evita el borrado de un tipo de pago si tiene pagos asociados
 
 
-            modelBuilder.Entity<Pago>()
+            modelBuilder.Entity<MovimientoCaja>()
                 .HasOne(p => p.Visita)
                 .WithMany(v => v.Pagos)
                 .HasForeignKey(p => p.IdVisita)

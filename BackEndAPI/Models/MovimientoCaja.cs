@@ -13,6 +13,7 @@
 
         //navegacion
         public TipoMovimientoCaja TipoMovimientoCaja { get; set; } = null!;
+        public Visita? Visita { get; set; }
         public Caja Caja { get; set; } = null!;
 
     }

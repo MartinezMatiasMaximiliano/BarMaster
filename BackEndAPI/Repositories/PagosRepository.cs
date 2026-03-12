@@ -18,16 +18,20 @@ namespace BackEndAPI.Repositories
             Db = _context.Db;
         }
 
-        public async Task<Pago> CrearPago(Visita visita, Pago pago, decimal totalProductosPagados)
+        public async Task<MovimientoCaja> CrearPago(Visita visita, MovimientoCaja pago, decimal totalProductosPagados)
         {
             var transaccion = Db.Database.BeginTransaction();
-            var tipoMovimientoCaja = await Db.TipoMovimientosCajas.FirstOrDefaultAsync(tp => tp.Id == pago.IdMovimientoCaja);
+            var tipoMovimientoCaja = await Db.TipoMovimientosCajas.FirstOrDefaultAsync(tp => tp.Id == pago.IdTipoMovimientoCaja);
+            if (tipoMovimientoCaja == null)
+            {
+                throw new Exception("Tipo de movimiento de caja no encontrado");
+            }
             try
             {
-                await Db.Pagos.AddAsync(pago);
+                await Db.MovimientosCajas.AddAsync(pago);
                 Db.Entry(visita).State = EntityState.Modified;
 
-                if (tipoMovimientoCaja.Nombre == "Efectivo")
+                if (tipoMovimientoCaja.EsEfectivo == true)
                 {
                     var caja = await Db.Cajas.FirstOrDefaultAsync(c => c.Id == visita.IdCaja);
                     caja.MontoActual += totalProductosPagados;
