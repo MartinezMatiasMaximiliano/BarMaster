@@ -27,27 +27,11 @@
             return 0;
         }
     public decimal CalcularTotalMovimientos()
-        {
-
-
-            // TODO: Implementar la lógica para calcular el total de movimientos de caja
-            // los movimientos calculados tienen que ser solo efectivo (IdTipoMovimientoCaja = 1)
-            // tanto de los movimientos como de las visitas
-
-            //var totalMovimientos = 0.0;
-
-            //var movimientosEfectivo = MovimientosCaja
-            //    .Where(m => m.TipoMovimientoCaja.EsEfectivo == true)
-            //    .Sum(m => m.Monto);
-
-            //var visitasEfectivo = 
-
-
-            //return totalMovimientos;
-
-
-
-            throw new NotImplementedException();
+        { 
+            var movimientosEfectivo = MovimientosCaja
+                .Where(m => m.TipoMovimientoCaja.EsEfectivo == true)
+                .Sum(m => m.Monto);
+            return movimientosEfectivo;
         }
     }
 }

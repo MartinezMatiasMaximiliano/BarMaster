@@ -23,10 +23,10 @@ namespace BackEndAPI.Controllers
         [HttpPost("/PagarItems")]
         public async Task<IActionResult> PagarItemsDeVisita([FromBody] CrearPagoDTO request)
         {
-            //TODO: terminar esta funcion, se necesita continuar con el proceso de pagar items, todo o por separado
             try
             {
                 var visitaActualizada = await _PagosServices.PagarProductos(request);
+                //TODO: terminar esta funcion, se necesita crear la factura
                 var Response = new PagoDTO
                 {
                     Id = visitaActualizada.Id,

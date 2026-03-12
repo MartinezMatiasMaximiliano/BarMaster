@@ -26,7 +26,6 @@ namespace BackEndAPI.Controllers
             {
                 var reservas = await _ReservasServices.BuscarReservas();
                 var ListaReservas = reservas.Select(reserva => new ReservaDTO
-                //ToDo: agregar la sucursal y estadoreserva en el DTO 
                 {
                     Id = reserva.Id,
                     FechaHora = reserva.FechaHora,
