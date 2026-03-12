@@ -5,6 +5,6 @@ namespace BackEndAPI.Services.Interfaces
 {
     public interface IPagosServices
     {
-        Task<Pago> PagarProductos(CrearPagoDTO InfoPago);
+        Task<MovimientoCaja> PagarProductos(CrearPagoDTO InfoPago);
     }
 }

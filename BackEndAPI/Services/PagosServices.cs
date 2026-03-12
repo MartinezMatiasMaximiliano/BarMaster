@@ -17,7 +17,7 @@ namespace BackEndAPI.Services
             _pagosRepository = pagosRepository;
         }
 
-        public async Task<Pago> PagarProductos(CrearPagoDTO InfoPago)
+        public async Task<MovimientoCaja> PagarProductos(CrearPagoDTO InfoPago)
         {
             decimal TotalProductosAPagar = 0;
             if (InfoPago.ListaIdsProductos == null || InfoPago.ListaIdsProductos.Count <= 0)
@@ -34,11 +34,13 @@ namespace BackEndAPI.Services
                 throw new Exception("Visita no encontrada");
             }
 
-            var PagoCreado = new Pago
+            var PagoCreado = new MovimientoCaja
             {
-                IdMovimientoCaja = InfoPago.IdTipoMovimiento,
+                IdTipoMovimientoCaja = InfoPago.IdTipoMovimiento,
+                IdCaja = visita.IdCaja,
                 IdVisita = InfoPago.IdVisita,
-                Monto = InfoPago.Monto
+                Monto = InfoPago.Monto,
+                Descripcion = $"Pago por productos de la visita con id {InfoPago.IdVisita}"
             };
 
             foreach (var id in InfoPago.ListaIdsProductos)

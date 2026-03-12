@@ -30,10 +30,10 @@ namespace BackEndAPI.Controllers
                 var Response = new PagoDTO
                 {
                     Id = visitaActualizada.Id,
-                    FechaCreacion = visitaActualizada.FechaHora,
-                    IdVisita = visitaActualizada.IdVisita,
+                    IdVisita = visitaActualizada.IdVisita ?? Guid.Empty,
+                    FechaCreacion = visitaActualizada.FechaMovimiento,
                     Monto = visitaActualizada.Monto,
-                    tipoMovimientoCaja = visitaActualizada.TipoMovimientoPago
+                    tipoMovimientoCaja = visitaActualizada.TipoMovimientoCaja
                 };  
                 return Ok(Response);
             }

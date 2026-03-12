@@ -65,8 +65,8 @@ namespace BackEndAPI.Services
                         NombreProducto = producto.Nombre,
                         Detalles = item.Detalles,
                         PrecioDelMomento = producto.Precio,
+                        EstadoPagado = false,
                         EstadoPedido = "Pendiente",
-
                     };
                     Total += producto.Precio;
                     visita.Productos.Add(productoPorVisita);

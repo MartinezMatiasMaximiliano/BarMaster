@@ -161,7 +161,6 @@ namespace BackEndAPI.Controllers
             {
                 var visitaActualizada = await _visitasServices.AgregarProductos(listaProductos, IdVisita);
                 
-                // Mapear a DTO para evitar referencias circulares
                 var response = new VisitaResponseDTO
                 {
                     Id = visitaActualizada.Id,
