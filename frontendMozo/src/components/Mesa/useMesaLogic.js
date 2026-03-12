@@ -91,14 +91,14 @@ export const useMesaLogic = () => {
             
             // Adaptar respuesta del backend al formato de visita para Redux
             const datosVisita = {
-                id: response.id,
-                fechaHora: response.fechaHora,
-                idMesa: response.idMesa,
-                idCaja: response.idCaja,
-                idMozo: response.idMozo,
-                estado: response.estado,
+                id: response.id || response.Id,
+                fechaHora: response.fechaHora || response.FechaHora,
+                idMesa: response.idMesa || response.IdMesa,
+                idCaja: response.idCaja || response.IdCaja,
+                idMozo: response.idMozo || response.IdMozo,
+                estado: response.estado || response.Estado,
                 mesa: {
-                    id: response.idMesa,
+                    id: response.idMesa || response.IdMesa,
                     numero: numeroMesa // Lo obtenemos del request
                 }
             };

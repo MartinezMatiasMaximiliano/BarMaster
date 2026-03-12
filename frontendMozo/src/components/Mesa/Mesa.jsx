@@ -69,7 +69,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                     estilo={estilo}
                     variant="secondary"
                     onClick={handleAbrirMesa}
-                    disabled={!mozo || !hayCajaActiva}
+                    disabled={!mozo?.codigoDeServicio || !hayCajaActiva}
                     prefix="Abrir"
                     simpleStyle={simpleStyle}
                 />

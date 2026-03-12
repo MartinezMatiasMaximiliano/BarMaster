@@ -19,11 +19,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { BuscarTodosLosTipoPagos } from '../../../API/APITipoPagos';
+import { BuscarTipoMovimientosPorEntorno } from '../../../API/APITipoMovimientosCaja';
 import { boxCardBorder } from '../../../styles/boxStyles';
 import { cancelButtonStyles, dialogTitleGradientStyles, dialogActionsStyles } from '../../../styles/buttonStyles';
-
-const NOMBRE_EFECTIVO = 'Efectivo';
 
 /**
  * Modal para facturar con método de pago, efectivo/vuelto, cuenta corriente (placeholder) y descuento.
@@ -48,7 +46,7 @@ export default function Modal_Facturar({
     const [error, setError] = useState('');
 
     const tipoPagoSeleccionado = tiposPago.find(t => String(t.id) === String(idTipoPago));
-    const esEfectivo = tipoPagoSeleccionado?.nombre?.trim()?.toLowerCase() === NOMBRE_EFECTIVO.toLowerCase();
+    const esEfectivo = tipoPagoSeleccionado?.esEfectivo === true;
     const totalNum = Number(total) || 0;
     const descuentoNum = Math.min(Number(montoDescuento) || 0, totalNum);
     const totalFinal = Math.max(0, totalNum - descuentoNum);
@@ -57,13 +55,14 @@ export default function Modal_Facturar({
 
     const cargarTiposPago = useCallback(async () => {
         try {
-            const data = await BuscarTodosLosTipoPagos();
+            const data = await BuscarTipoMovimientosPorEntorno('Ventas');
             const raw = Array.isArray(data)
                 ? data
                 : (data?.data && Array.isArray(data.data) ? data.data : []);
             const lista = raw.map((t) => ({
                 id: t.id ?? t.Id,
-                nombre: (t.nombre ?? t.Nombre ?? '').toString().trim()
+                nombre: (t.nombre ?? t.Nombre ?? '').toString().trim(),
+                esEfectivo: t.esEfectivo ?? t.EsEfectivo ?? false,
             })).filter((t) => t.id != null && t.nombre !== '');
             setTiposPago(lista);
         } catch (e) {

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { PagarItems } from '../../../../API/APIPagos';
-import { BuscarTodosLosTipoPagos } from '../../../../API/APITipoPagos';
+import { BuscarTipoMovimientosPorEntorno } from '../../../../API/APITipoMovimientosCaja';
 import { GenerarTicketPDF } from '../../../../API/APIPedidos';
 import { cambiarEstadoPagadoProductos } from '../../../../redux/slices/visitasActivasSlice';
 import { eliminar as eliminarTicket } from '../../../../redux/slices/ticketSlice';
@@ -88,7 +88,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
             return;
         }
 
-        const idVisita = visitaMesa?.id;
+        const idVisita = visitaMesa?.id || visitaMesa?.Id || datosMesa.visita?.id || datosMesa.visita?.Id;
         if (!idVisita) {
             if (showSnackbar) {
                 showSnackbar("No se pudo identificar la visita de la mesa", "error");
@@ -107,7 +107,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
                     0
                 );
                 monto = totalProductos;
-                const dataTipos = await BuscarTodosLosTipoPagos();
+                const dataTipos = await BuscarTipoMovimientosPorEntorno('Ventas');
                 const lista = Array.isArray(dataTipos) ? dataTipos : (dataTipos?.data ?? []);
                 const primer = lista[0];
                 idTipoPago = primer?.id ?? primer?.Id ?? 1;

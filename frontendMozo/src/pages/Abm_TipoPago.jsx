@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Container } from 'react-bootstrap'
-import { CrearTipoPago, BorrarTipoPago } from "../API/APITipoPagos";
+import { CrearTipoMovimientoCaja, EliminarTipoMovimientoCaja } from "../API/APITipoMovimientosCaja";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
@@ -26,8 +26,8 @@ function Abm_TipoPago(props) {
     }, [filasFiltradas]);
 
     const api = {
-        crear: CrearTipoPago,
-        eliminar: BorrarTipoPago,
+        crear: CrearTipoMovimientoCaja,
+        eliminar: EliminarTipoMovimientoCaja,
     };
 
     const columnas = [

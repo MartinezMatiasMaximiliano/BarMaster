@@ -20,15 +20,16 @@ function Modal_Cambiar_Codigo_Mozo(props) {
 
     const handleShow = () => setShow(true);
 
-    const handleSave = () => {
+    const handleSave = async () => {
 
         if (Object.keys(errors).length === 0) {
 
             // Modifica el registro en la DB
-            ModificarCodigoMozo({id: datos.id, nuevoCodigo: value})
+            await ModificarCodigoMozo({...datos, nuevoCodigo: value});
 
             // Cerrar el modal después de guardar
             handleClose();
+            await props.recargarComponentes();
         }
     };
 

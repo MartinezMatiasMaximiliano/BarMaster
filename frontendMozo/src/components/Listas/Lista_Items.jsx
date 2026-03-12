@@ -75,12 +75,12 @@ function Lista_Items(props) {
                                         key={index}
                                         sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}
                                     >
-                                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography component="div" variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             {`${data.cantidad}x ${nombre} ($${data.precioUnitario} x1)`}
                                             {estadoPedido && (
-                                                <Chip 
-                                                    label={estadoPedido} 
-                                                    size="small" 
+                                                <Chip
+                                                    label={estadoPedido}
+                                                    size="small"
                                                     color={getEstadoColor(estadoPedido)}
                                                     sx={{ height: 20, fontSize: '0.7rem' }}
                                                 />
@@ -175,16 +175,17 @@ function Lista_Items(props) {
                                     sx={{ mr: 1 }}
                                     inputProps={{ 'aria-labelledby': labelId }}
                                 />
-                                <Typography 
-                                    variant="body2" 
+                                <Typography
+                                    component="div"
+                                    variant="body2"
                                     id={labelId}
                                     sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}
                                 >
                                     {nombre}
                                     {estadoPedido && (
-                                        <Chip 
-                                            label={estadoPedido} 
-                                            size="small" 
+                                        <Chip
+                                            label={estadoPedido}
+                                            size="small"
                                             color={getEstadoColor(estadoPedido)}
                                             sx={{ height: 20, fontSize: '0.7rem' }}
                                         />
@@ -273,7 +274,7 @@ function Lista_Items(props) {
                         key={clave}
                         sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}
                     >
-                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                        <Typography component="div" variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                             {`${data.cantidad}x ${nombre} ($${data.precioUnitario} x1)`}
                             {data.pagado && (
                                 <Chip
@@ -301,7 +302,7 @@ function Lista_Items(props) {
 
             const resultado = <>
                 <h4>{props.titulo}</h4>
-                <pre>{texto}</pre>
+                <Box>{texto}</Box>
                 <Alert severity="success"><b>{props.subtitulo}</b>: ${total}</Alert>
             </>;
 

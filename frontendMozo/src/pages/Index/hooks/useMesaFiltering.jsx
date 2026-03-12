@@ -36,11 +36,11 @@ export const useMesaFiltering = (mesas, datosMozos, hayCajaActiva = true) => {
         return ordenadas.map((mesa, i) => {
             
             // Determinar el variant según el mozo asignado
-            const variant = mesa.visita 
-                ? mesa.visita.mozo.codigoDeServicio === mozo?.codigoDeServicio 
-                    ? "success" 
-                    : "primary" 
-                : "secondary";
+            const variant = !mesa.visita || !mesa.visita.mozo
+                ? "secondary"
+                : mozo && mesa.visita.mozo.codigoDeServicio === mozo.codigoDeServicio
+                    ? "success"
+                    : "primary";
             
             return (
                 <Mesa

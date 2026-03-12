@@ -3,7 +3,7 @@ import { BuscarTodasLasVisitas } from '../../../API/APIVisitas';
 import { BuscarTodasLasMesas } from '../../../API/APIMesas';
 import { BuscarTodosLosProductos } from '../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../API/APICategorias';
-import { BuscarTodosLosTipoPagos } from '../../../API/APITipoPagos';
+import { BuscarTipoMovimientosPorEntorno } from '../../../API/APITipoMovimientosCaja';
 import { useDatosVentas } from '../reportes/ventas/useDatosVentas';
 import { useDatosProductos } from '../reportes/productos/useDatosProductos';
 import { useDatosMozos } from '../reportes/mozos/useDatosMozos';
@@ -59,7 +59,7 @@ export const useReportes = (filtros) => {
                     BuscarTodasLasMesas(),
                     BuscarTodosLosProductos(),
                     BuscarTodasLasCategorias(),
-                    BuscarTodosLosTipoPagos()
+                    BuscarTipoMovimientosPorEntorno('Ventas')
                 ]);
                 setMesas(normalizarMesasParaReportes(Array.isArray(mesasData) ? mesasData : []));
                 setProductos(Array.isArray(productosData) ? productosData : []);

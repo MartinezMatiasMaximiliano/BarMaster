@@ -151,6 +151,7 @@ export function MappearMozos(mozos) {
         mozos.map(mozo => ({
             id: mozo.id,
             codigoDeServicio: mozo.codigoDeServicio,
+            idRol: mozo.rol?.id,
             nombre: mozo.datosPersonales.nombres,
             apellido: mozo.datosPersonales.apellido,
             dni: mozo.datosPersonales.dni,

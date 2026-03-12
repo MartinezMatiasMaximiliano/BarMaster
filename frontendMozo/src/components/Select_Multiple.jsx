@@ -36,9 +36,12 @@ export default function Select_Multiple(props) {
     // Verificar si las opciones son objetos (con id y nombre) o strings simples
     const esObjeto = itemsTotales.length > 0 && typeof itemsTotales[0] === 'object' && itemsTotales[0].id;
 
-    // Actualizar itemsActivos cuando cambien desde props (útil para edición)
+    // Actualizar itemsActivos cuando cambien desde props (útil para edición).
+    // Solo se aplica si hay valores reales para no pisar la selección local del usuario.
     useEffect(() => {
-        setItemsActivos(props.itemsActivos || []);
+        if (props.itemsActivos && props.itemsActivos.length > 0) {
+            setItemsActivos(props.itemsActivos);
+        }
     }, [props.itemsActivos]);
 
     const handleChange = (event) => {

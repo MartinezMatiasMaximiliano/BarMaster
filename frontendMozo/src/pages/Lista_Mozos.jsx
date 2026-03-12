@@ -16,7 +16,7 @@ function Abm_Mozos(props) {
             label: "Acciones",
             align: "right",
             render: (fila) => (
-                <Modal_Cambiar_Codigo_Mozo datos={fila} ></Modal_Cambiar_Codigo_Mozo>
+                <Modal_Cambiar_Codigo_Mozo datos={fila} recargarComponentes={props.recargarComponentes} />
             ),
         },
     ];

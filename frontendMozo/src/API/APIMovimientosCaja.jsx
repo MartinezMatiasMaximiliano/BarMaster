@@ -7,7 +7,10 @@ const TIPOS_URL = `${import.meta.env.VITE_BASE_URL}TipoMovimientosCaja`;
 
 export async function ObtenerTiposMovimientoCaja() {
     try {
-        const response = await axios.get(TIPOS_URL, authService.getAuthHeaders());
+        const response = await axios.get(TIPOS_URL, {
+            ...authService.getAuthHeaders(),
+            params: { Entorno: 'Movimiento' }
+        });
         const tipos = response.data || [];
         
         // Transformar los tipos al formato esperado (normalizar camelCase/PascalCase)
@@ -27,7 +30,7 @@ export async function CrearMovimientoCaja(datos) {
     try {
         // Primero obtener la caja activa para usar su ID
         const cajaActiva = await ObtenerCajaActiva();
-        
+
         if (!cajaActiva || !cajaActiva.id) {
             throw new Error('No hay una caja abierta. Debes abrir una caja primero.');
         }
@@ -36,7 +39,9 @@ export async function CrearMovimientoCaja(datos) {
             idTipoMovimientoCaja: datos.idTipoMovimientoCaja,
             idCaja: cajaActiva.id,
             monto: Number(datos.monto),
-            descripcion: datos.descripcion || ''
+            descripcion: datos.descripcion || '',
+            idVisita: datos.idVisita ?? null,
+            listaIdsProductos: datos.listaIdsProductos ?? []
         };
 
         const response = await axios.post(BASE_URL, payload, authService.getAuthHeaders());

@@ -14,6 +14,8 @@ export const visitasActivasSlice = createSlice({
             const visitas = Array.isArray(action.payload) ? action.payload : [];
             const estadoANumero = (s) => (s === 'Listo' ? 2 : s === 'En Preparación' ? 1 : 0);
             visitas.forEach(visita => {
+                // Normalizar id (el backend puede devolver Id en PascalCase)
+                visita.id = visita.id || visita.Id;
                 (visita.productosConsumidos || []).forEach(p => {
                     const ep = p.estadoPedido ?? p.EstadoPedido ?? 'Pendiente';
                     p.estadoPedido = ep;

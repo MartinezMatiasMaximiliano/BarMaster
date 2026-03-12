@@ -47,7 +47,7 @@ import { BuscarTodasLasPersonas } from './API/APIPersonas'
 import { BuscarTodosLosRoles } from './API/APIRoles'
 import { BuscarVisitaPorId, BuscarVisitasActivas } from './API/APIVisitas'
 import { BuscarTodasLasReservas } from './API/APIReservas'
-import { BuscarTodosLosTipoPagos } from './API/APITipoPagos'
+import { BuscarTipoMovimientosPorEntorno } from './API/APITipoMovimientosCaja'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { BuscarTodosLosMenus } from './API/APIMenus'
@@ -130,7 +130,7 @@ function App() {
                 BuscarTodasLasReservas()
                     .then(data => SetReservas(Array.isArray(data) ? data : []))
                     .catch(() => SetReservas([]));
-                BuscarTodosLosTipoPagos()
+                BuscarTipoMovimientosPorEntorno('Ventas')
                     .then(data => SetTipoPagos(Array.isArray(data) ? data : []))
                     .catch(() => SetTipoPagos([]));
                 BuscarTodosLosPlanos()
@@ -200,7 +200,7 @@ function App() {
     }
 
     async function recargarTipoPagos() {
-        await BuscarTodosLosTipoPagos().then(data => SetTipoPagos(data));
+        await BuscarTipoMovimientosPorEntorno('Ventas').then(data => SetTipoPagos(data));
     }
 
     async function recargarPlanos() {

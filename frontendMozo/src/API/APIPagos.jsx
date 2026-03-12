@@ -16,7 +16,7 @@ export async function PagarItems(idVisita, listaIdsProductos, idTipoPago, monto)
         const response = await axios.post(
             `${BASE_URL}PagarItems`,
             {
-                idTipoPago,
+                idTipoMovimiento: idTipoPago,
                 idVisita,
                 monto: Number(monto),
                 listaIdsProductos: Array.isArray(listaIdsProductos) ? listaIdsProductos : []
