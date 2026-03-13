@@ -12,5 +12,6 @@ namespace BackEndAPI.DTOs.Response
         public bool EstadoPagado { get; set; }
         public string? EstadoPedido { get; set; }
         public DateTime FechaAgregado { get; set; }
+        public Guid? IdMovimientoCaja { get; set; }
     }
 }

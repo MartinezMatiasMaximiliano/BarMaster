@@ -58,6 +58,7 @@ namespace BackEndAPI.Controllers
                         EstadoPagado = item.EstadoPagado,
                         EstadoPedido = item.EstadoPedido,
                         FechaAgregado = item.FechaAgregado,
+                        IdMovimientoCaja = item.IdMovimientoCaja,
                     }).ToList() ?? new List<ItemDTO>(),
                 }).ToList();
 
@@ -101,6 +102,7 @@ namespace BackEndAPI.Controllers
                         EstadoPagado = item.EstadoPagado,
                         EstadoPedido = item.EstadoPedido,
                         FechaAgregado = item.FechaAgregado,
+                        IdMovimientoCaja = item.IdMovimientoCaja,
                     }).ToList() ?? new List<ItemDTO>(),
                 }).ToList();
 
@@ -137,6 +139,7 @@ namespace BackEndAPI.Controllers
                         EstadoPagado = item.EstadoPagado,
                         EstadoPedido = item.EstadoPedido,
                         FechaAgregado = item.FechaAgregado,
+                        IdMovimientoCaja = item.IdMovimientoCaja,
                     }).ToList(),
                 };
 
@@ -178,6 +181,7 @@ namespace BackEndAPI.Controllers
                         EstadoPagado = item.EstadoPagado,
                         EstadoPedido = item.EstadoPedido,
                         FechaAgregado = item.FechaAgregado,
+                        IdMovimientoCaja = item.IdMovimientoCaja,
                     }).ToList(),
                 };
                 

@@ -50,7 +50,8 @@ namespace BackEndAPI.Controllers
                         Precio = p.PrecioDelMomento,
                         EstadoPagado = p.EstadoPagado,
                         EstadoPedido = p.EstadoPedido,
-                        FechaAgregado = p.FechaAgregado
+                        FechaAgregado = p.FechaAgregado,
+                        IdMovimientoCaja = p.IdMovimientoCaja
                     }).ToList()
                 }).ToList();
                 return Ok(response);
