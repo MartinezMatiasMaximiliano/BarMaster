@@ -38,9 +38,9 @@ function Index(props) {
         const cargarEstadoCaja = async () => {
             try {
                 const caja = await ObtenerCajaActiva();
-                dispatch(setCajaActiva(!!caja?.id));
+                dispatch(setCajaActiva(caja || null));
             } catch (error) {
-                dispatch(setCajaActiva(false));
+                dispatch(setCajaActiva(null));
             }
         };
         cargarEstadoCaja();

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-    value: false, // false por defecto (no hay caja activa)
+    value: null, // null = no hay caja activa, objeto = caja activa con sus datos
 }
 
 export const cajaActivaSlice = createSlice({
@@ -9,7 +9,7 @@ export const cajaActivaSlice = createSlice({
     initialState,
     reducers: {
         setCajaActiva: (state, action) => {
-            state.value = action.payload // true o false
+            state.value = action.payload // objeto caja o null
         },
     },
 })

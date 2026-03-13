@@ -355,9 +355,16 @@ export const Movimientos = ({
                                                                     variant="outlined"
                                                                 />
                                                             )}
-                                                            <Typography variant="body2">
-                                                                {movimiento.descripcion}
-                                                            </Typography>
+                                                            <Box>
+                                                                <Typography variant="body2">
+                                                                    {(movimiento.descripcion || '').split(' | Vuelto: ')[0]}
+                                                                </Typography>
+                                                                {movimiento.descripcion?.includes(' | Vuelto: ') && (
+                                                                    <Typography variant="caption" color="text.secondary">
+                                                                        Vuelto: {currencyFormatter.format(Number(movimiento.descripcion.split(' | Vuelto: ')[1]))}
+                                                                    </Typography>
+                                                                )}
+                                                            </Box>
                                                         </Stack>
                                                     )}
                                                 </TableCell>

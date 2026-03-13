@@ -27,8 +27,8 @@ export const useCaja = () => {
             setFormCierre((prev) => ({ ...prev, ...buildTimestampDefaults() }));
             
             // Actualizar estado global de caja activa
-            dispatch(setCajaActivaGlobal(!!caja?.id));
-            
+            dispatch(setCajaActivaGlobal(caja || null));
+
             // Si hay una caja activa, cargar sus movimientos para calcular el balance
             if (caja?.id) {
                 // Pasar el monto inicial directamente para evitar problemas de timing con el estado
@@ -36,7 +36,7 @@ export const useCaja = () => {
             }
         } catch (err) {
             setCajaActiva(null);
-            dispatch(setCajaActivaGlobal(false)); // Actualizar estado global
+            dispatch(setCajaActivaGlobal(null)); // Actualizar estado global
             setError(obtenerMensajeError(err, 'No pudimos obtener el estado de la caja.'));
         } finally {
             setLoadingCaja(false);
@@ -157,7 +157,7 @@ export const useCaja = () => {
             };
             const caja = await AbrirCaja(payload);
             setCajaActiva(caja);
-            dispatch(setCajaActivaGlobal(true)); // Actualizar estado global
+            dispatch(setCajaActivaGlobal(caja || null)); // Actualizar estado global
             setFormCierre(initialCierre());
             setMensaje('La caja se abrió correctamente.');
         } catch (err) {
@@ -190,7 +190,7 @@ export const useCaja = () => {
             });
             setMensaje('La caja se cerró correctamente.');
             setCajaActiva(null);
-            dispatch(setCajaActivaGlobal(false)); // Actualizar estado global
+            dispatch(setCajaActivaGlobal(null)); // Actualizar estado global
             setFormApertura(initialApertura());
             setFormCierre(initialCierre());
             await cargarDatos();

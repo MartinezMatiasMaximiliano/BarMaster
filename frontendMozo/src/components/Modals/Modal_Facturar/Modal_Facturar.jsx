@@ -19,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { useSelector } from 'react-redux';
 import { BuscarTipoMovimientosPorEntorno } from '../../../API/APITipoMovimientosCaja';
 import { boxCardBorder } from '../../../styles/boxStyles';
 import { cancelButtonStyles, dialogTitleGradientStyles, dialogActionsStyles } from '../../../styles/buttonStyles';
@@ -44,6 +45,8 @@ export default function Modal_Facturar({
     const [descripcionDescuento, setDescripcionDescuento] = useState('');
     const [showOpcionesExtra, setShowOpcionesExtra] = useState(false);
     const [error, setError] = useState('');
+    const cajaActiva = useSelector((state) => state.cajaActiva.value);
+    const montoCaja = cajaActiva?.montoActual ?? null;
 
     const tipoPagoSeleccionado = tiposPago.find(t => String(t.id) === String(idTipoPago));
     const esEfectivo = tipoPagoSeleccionado?.esEfectivo === true;
@@ -52,6 +55,7 @@ export default function Modal_Facturar({
     const totalFinal = Math.max(0, totalNum - descuentoNum);
     const montoRecibidoNum = Number(montoRecibido) || 0;
     const vuelto = esEfectivo && montoRecibidoNum >= totalFinal ? montoRecibidoNum - totalFinal : null;
+    const cajaInsuficiente = vuelto !== null && vuelto > 0 && montoCaja !== null && vuelto > montoCaja;
 
     const cargarTiposPago = useCallback(async () => {
         try {
@@ -96,19 +100,23 @@ export default function Modal_Facturar({
     }, [onClose]);
 
     const handleConfirm = useCallback(() => {
-        if (esEfectivo && montoRecibidoNum < totalFinal) {
-            setError('El monto recibido no puede ser menor al total a pagar.');
-            return;
-        }
         if (esEfectivo && (montoRecibido === '' || isNaN(montoRecibidoNum))) {
             setError('Ingrese el monto recibido en efectivo.');
             return;
         }
+        if (esEfectivo && montoRecibidoNum < totalFinal) {
+            setError('El monto recibido no puede ser menor al total a pagar.');
+            return;
+        }
+        if (cajaInsuficiente) {
+            setError(`La caja no tiene suficiente efectivo para dar el vuelto. Disponible: ${currencyFormatter.format(montoCaja)}`);
+            return;
+        }
         setError('');
-        const montoParaBackend = esEfectivo ? montoRecibidoNum : totalFinal;
+        const montoParaBackend = totalFinal;
         onConfirm(productIds, Number(idTipoPago), montoParaBackend);
         handleClose();
-    }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, productIds, idTipoPago, onConfirm, handleClose]);
+    }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, cajaInsuficiente, montoCaja, currencyFormatter, productIds, idTipoPago, onConfirm, handleClose]);
 
     if (!open) return null;
 
@@ -163,10 +171,11 @@ export default function Modal_Facturar({
                                 inputProps={{ min: 0, step: 0.01 }}
                                 value={montoRecibido}
                                 onChange={(e) => setMontoRecibido(e.target.value)}
-                                error={montoRecibido !== '' && montoRecibidoNum < totalFinal}
+                                error={(montoRecibido !== '' && montoRecibidoNum < totalFinal) || cajaInsuficiente}
+                                helperText={cajaInsuficiente ? `La caja no tiene suficiente efectivo (disponible: ${currencyFormatter.format(montoCaja)})` : ''}
                             />
                             {vuelto !== null && vuelto >= 0 && (
-                                <Typography variant="body2" color="success.main" sx={{ mt: 0.5, fontWeight: 600 }}>
+                                <Typography variant="body2" color={cajaInsuficiente ? 'error.main' : 'success.main'} sx={{ mt: 0.5, fontWeight: 600 }}>
                                     Vuelto: {currencyFormatter.format(vuelto)}
                                 </Typography>
                             )}
