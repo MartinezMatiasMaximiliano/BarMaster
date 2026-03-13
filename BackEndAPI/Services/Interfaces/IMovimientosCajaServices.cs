@@ -10,6 +10,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<MovimientoCaja> BuscarMovimientoCajaPorId(Guid id);
         Task<IEnumerable<MovimientoCaja>> BuscarMovimientosCajaPorCaja(Guid idCaja);
         Task<MovimientoCaja?> EliminarMovimientoCaja(Guid id);
+        Task<MovimientoCaja> BuscarTicketCompleto(Guid id);
     }
 }
 

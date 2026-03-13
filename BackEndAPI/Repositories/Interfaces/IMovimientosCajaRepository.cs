@@ -10,6 +10,7 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<IEnumerable<MovimientoCaja>> GetMovimientosCajaPorCaja(Guid idCaja);
         Task<MovimientoCaja?> ActualizarMovimientoCaja(MovimientoCaja movimientoCaja);
         Task<MovimientoCaja?> EliminarMovimientoCaja(MovimientoCaja movimientoCaja);
+        Task<MovimientoCaja?> GetTicketCompleto(Guid id);
     }
 }
 
