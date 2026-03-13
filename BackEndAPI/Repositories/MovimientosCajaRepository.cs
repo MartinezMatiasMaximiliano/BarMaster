@@ -78,6 +78,20 @@ namespace BackEndAPI.Repositories
             return movimientoCaja;
         }
 
+        public async Task<MovimientoCaja?> GetTicketCompleto(Guid id)
+        {
+            return await db.MovimientosCajas
+                .Include(m => m.TipoMovimientoCaja)
+                .Include(m => m.Caja)
+                    .ThenInclude(c => c.Sucursal)
+                .Include(m => m.Visita)
+                    .ThenInclude(v => v!.Mesa)
+                .Include(m => m.Visita)
+                    .ThenInclude(v => v!.Mozo)
+                .Include(m => m.Visita)
+                    .ThenInclude(v => v!.Productos)
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
 
     }
 }

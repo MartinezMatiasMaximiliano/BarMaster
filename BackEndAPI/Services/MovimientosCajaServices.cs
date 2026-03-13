@@ -91,6 +91,16 @@ namespace BackEndAPI.Services
             return await _movimientosCajaRepository.GetMovimientosCajaPorCaja(idCaja);
         }
 
+        public async Task<MovimientoCaja> BuscarTicketCompleto(Guid id)
+        {
+            var movimientoCaja = await _movimientosCajaRepository.GetTicketCompleto(id);
+            if (movimientoCaja == null)
+            {
+                throw new Exception("El ticket no existe");
+            }
+            return movimientoCaja;
+        }
+
         public async Task<MovimientoCaja?> EliminarMovimientoCaja(Guid id)
         {
             var movimientoCajaAEliminar = await _movimientosCajaRepository.GetMovimientoCajaPorId(id);
