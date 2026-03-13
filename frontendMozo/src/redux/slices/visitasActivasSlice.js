@@ -20,6 +20,8 @@ export const visitasActivasSlice = createSlice({
                     const ep = p.estadoPedido ?? p.EstadoPedido ?? 'Pendiente';
                     p.estadoPedido = ep;
                     p.estadoPreparacion = p.estadoPreparacion ?? estadoANumero(ep);
+                    p.idMovimientoCaja = p.idMovimientoCaja || p.IdMovimientoCaja || null;
+                    p.fechaAgregado = p.fechaAgregado || p.FechaAgregado || null;
                 });
             });
             state.value = visitas;
@@ -31,13 +33,16 @@ export const visitasActivasSlice = createSlice({
         },
 
 
-        // cambiarEstadoPagadoProductos - Marca productos como pagados
+        // cambiarEstadoPagadoProductos - Marca productos como pagados y les asigna el idMovimientoCaja
         cambiarEstadoPagadoProductos: (state, action) => {
-            const { idsProductos, pagado } = action.payload;
+            const { idsProductos, pagado, idMovimientoCaja } = action.payload;
             state.value.forEach(visita => {
                 visita.productosConsumidos?.forEach(producto => {
                     if (idsProductos.includes(producto.id)) {
                         producto.estadoPagado = pagado;
+                        if (idMovimientoCaja) {
+                            producto.idMovimientoCaja = idMovimientoCaja;
+                        }
                     }
                 });
             });
@@ -110,7 +115,9 @@ export const visitasActivasSlice = createSlice({
                         precioDelMomento: p.precioDelMomento || p.Precio || p.precio || 0,
                         estadoPagado: p.estadoPagado !== undefined ? p.estadoPagado : (p.EstadoPagado !== undefined ? p.EstadoPagado : false),
                         estadoPedido,
-                        estadoPreparacion: p.estadoPreparacion ?? estadoPedidoANumero(estadoPedido)
+                        estadoPreparacion: p.estadoPreparacion ?? estadoPedidoANumero(estadoPedido),
+                        idMovimientoCaja: p.idMovimientoCaja || p.IdMovimientoCaja || null,
+                        fechaAgregado: p.fechaAgregado || p.FechaAgregado || null
                     };
                 })
             };

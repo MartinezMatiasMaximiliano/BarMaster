@@ -58,6 +58,7 @@ import { cambiarEstadoPagadoProductos, cargarVisitasActivas } from './redux/slic
 import { agregar as agregarNotificaciones } from './redux/slices/notificacionesSlice'
 import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
+import TicketVirtual from './pages/TicketVirtual/TicketVirtual';
 
 export const LoginContext = createContext();
 export const SucursalContext = createContext();
@@ -262,6 +263,15 @@ function App() {
     const datos_pedidos = MappearPedidos(visitasActivas || [])
     const datos_reservas = MappearReservas(reservas || [])
     const datos_planos_abm = MappearPlanos(planos || [])
+
+    // Ruta pública: ticket virtual (accesible sin autenticación)
+    if (location.pathname.startsWith('/ticket/')) {
+        return (
+            <Routes>
+                <Route path="/ticket/:tenant/:id" element={<TicketVirtual />} />
+            </Routes>
+        );
+    }
 
     // Si no está logeado, mostrar SOLO el login, sin ningún layout adicional
     if (!logeadoEmpresaSucursal) {

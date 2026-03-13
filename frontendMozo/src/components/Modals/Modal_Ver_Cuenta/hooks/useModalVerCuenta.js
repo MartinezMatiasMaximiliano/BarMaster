@@ -113,11 +113,12 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
                 idTipoPago = primer?.id ?? primer?.Id ?? 1;
             }
 
-            await PagarItems(idVisita, arregloIds, idTipoPago, monto);
+            const pagoCreado = await PagarItems(idVisita, arregloIds, idTipoPago, monto);
+            const idMovimientoCaja = pagoCreado?.id || pagoCreado?.Id;
 
             GenerarTicketPDF(datosMesa.nombre, arregloIds);
             connection.send("RecargarTicket", datosMesa.nombre);
-            dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true }));
+            dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true, idMovimientoCaja }));
             dispatch(eliminarTicket(arregloIds));
             setTabValue(tabIndexPagosRegistrados);
 
