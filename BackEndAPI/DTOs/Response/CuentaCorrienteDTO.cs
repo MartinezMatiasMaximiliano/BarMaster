@@ -1,16 +1,16 @@
-﻿namespace BackEndAPI.Models
+﻿using BackEndAPI.Models;
+
+namespace BackEndAPI.DTOs.Response
 {
-    public class CuentaCorriente
-    {
+    public class CuentaCorrienteDTO
+    { 
         public Guid Id { get; set; }
         public string Nombre { get; set; }
         public string Telefono { get; set; }
         public string Domicilo { get; set; }
         public decimal Balance { get; set; } = 0;
-        public decimal Descuento { get; set; } = 0; 
+        public decimal Descuento { get; set; } = 0;
 
-        //navegacion
         public ICollection<MovimientosCuentaCorriente> Movimientos { get; set; } = new List<MovimientosCuentaCorriente>();
-
     }
 }
