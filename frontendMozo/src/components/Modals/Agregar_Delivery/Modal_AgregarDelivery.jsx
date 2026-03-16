@@ -94,8 +94,9 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
             }
         } catch (error) {
             const label = origen === 'Takeaway' ? 'take away' : 'delivery';
-            const msg = error.response?.data?.message ?? error.response?.data ?? `Error al crear el ${label}.`;
-            showSnackbar(typeof msg === 'string' ? msg : `Error al crear el ${label}.`, 'error');
+            const raw = error.response?.data?.message ?? error.response?.data;
+            const msg = typeof raw === 'string' ? raw : `Error al crear el ${label}. Intente nuevamente.`;
+            showSnackbar(msg, 'error');
         } finally {
             setLoading(false);
         }

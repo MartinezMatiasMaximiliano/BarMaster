@@ -1,7 +1,4 @@
-import axios from 'axios'
-import { authService } from '../services/authService'
-
-const BASE_URL = import.meta.env.VITE_BASE_URL + "Mesa/"
+import api from '../services/axiosInstance'
 
 class CrearMesaDTO {
     constructor(nombre, idPlano, capacidad = 0, x = 0, y = 0, w = 0, h = 0) {
@@ -18,36 +15,25 @@ class CrearMesaDTO {
 export async function CrearMesa(datos) {
     try {
         const capacidad = datos.capacidad ? parseInt(datos.capacidad) : 0;
-        const response = await axios.post(
-            BASE_URL, 
-            new CrearMesaDTO(datos.numero, datos.idPlano, capacidad), 
-            authService.getAuthHeaders()
+        const response = await api.post(
+            'Mesa/',
+            new CrearMesaDTO(datos.numero, datos.idPlano, capacidad)
         );
         return response.data;
     } catch (error) {
-        if (error.response?.data?.error?.mensaje) {
-            alert(error.response.data.error.mensaje);
-        } else if (error.response?.data) {
-            alert(error.response.data);
-        } else {
-            alert("Error al crear la mesa");
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje || "Error al crear la mesa";
+        throw new Error(mensaje);
     }
 }
 
 export async function AbrirCerrarMesa(request) {
     try {
-        const response = await axios.patch(`${BASE_URL}AbrirCerrar`, request, authService.getAuthHeaders());
+        const response = await api.patch('Mesa/AbrirCerrar', request);
         return response.data;
     } catch (error) {
         console.error("Error:", error);
-        if (error.response?.data?.error?.mensaje) {
-            alert(error.response.data.error.mensaje);
-        } else if (error.response?.data) {
-            alert(error.response.data);
-        }
-        throw error;
+        const mensaje = error.response?.data?.error?.mensaje || "Error al abrir/cerrar la mesa";
+        throw new Error(mensaje);
     }
 }
 
@@ -72,15 +58,11 @@ export async function ModificarMesa(datos) {
             body.h = datos.h;
         }
         // El backend usa PATCH /Mesa con el Id en el body
-        const response = await axios.patch(import.meta.env.VITE_BASE_URL + "Mesa", body, authService.getAuthHeaders());
+        const response = await api.patch('Mesa', body);
         return response.data;
     } catch (error) {
-        if (error.response?.data?.error?.mensaje) {
-            alert(error.response.data.error.mensaje);
-        } else if (error.response?.data) {
-            alert(error.response.data);
-        }
-        return error.response
+        const mensaje = error.response?.data?.error?.mensaje || "Error al modificar la mesa";
+        throw new Error(mensaje);
     }
 }
 
@@ -95,7 +77,7 @@ export async function ModificarMesa(datos) {
 
 export async function PonerMozoEnNull(MesaId) {
     try {
-        const response = await axios.put(BASE_URL + MesaId, { MozoId: -1 }, authService.getAuthHeaders());
+        const response = await api.put('Mesa/' + MesaId, { MozoId: -1 });
         return response.data;
     } catch (error) {
         return error.response
@@ -104,7 +86,7 @@ export async function PonerMozoEnNull(MesaId) {
 
 export async function DesactivarMesa(Id) {
     try {
-        const response = await axios.put(BASE_URL + Id, { activo: false }, authService.getAuthHeaders());
+        const response = await api.put('Mesa/' + Id, { activo: false });
         return response.data;
     } catch (error) {
         return error.response
@@ -113,7 +95,7 @@ export async function DesactivarMesa(Id) {
 
 export async function ActivarMesa(Id) {
     try {
-        const response = await axios.put(BASE_URL + Id, { activo: true }, authService.getAuthHeaders());
+        const response = await api.put('Mesa/' + Id, { activo: true });
         return response.data;
     } catch (error) {
         return error.response
@@ -122,40 +104,28 @@ export async function ActivarMesa(Id) {
 
 export async function BorrarMesa(idMesa) {
     try {
-        const response = await axios.delete(
-            import.meta.env.VITE_BASE_URL + "Mesa",
+        const response = await api.delete(
+            'Mesa',
             {
-                params: { IdMesa: idMesa },
-                ...authService.getAuthHeaders()
+                params: { IdMesa: idMesa }
             }
         );
         return response.data;
     } catch (error) {
         console.error("Error al borrar mesa:", error);
-        if (error.response?.data?.error?.mensaje) {
-            alert(error.response.data.error.mensaje);
-        } else if (error.response?.data?.mensaje) {
-            alert(error.response.data.mensaje);
-        }
-        throw error;
+        const mensaje = error.response?.data?.error?.mensaje
+            || error.response?.data?.mensaje
+            || "Error al eliminar la mesa";
+        throw new Error(mensaje);
     }
 }
 
 export async function BuscarTodasLasMesas() {
     try {
-        const response = await axios.get(
-            import.meta.env.VITE_BASE_URL + "Mesas",
-            authService.getAuthHeaders()
-        );
+        const response = await api.get('Mesas');
         return response.data;
     } catch (error) {
         console.error("Error al obtener mesas:", error);
-        if (error.response?.data?.error?.mensaje) {
-            alert(error.response.data.error.mensaje);
-        }
         return [];
     }
 }
-
-
-

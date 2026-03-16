@@ -128,7 +128,8 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
         } catch (error) {
             console.error("Error al facturar:", error);
             if (showSnackbar) {
-                showSnackbar(error.response?.data ?? "Error al facturar. Intente de nuevo.", "error");
+                const msg = error.response?.data;
+                showSnackbar(typeof msg === 'string' ? msg : "Error al facturar. Intente de nuevo.", "error");
             }
         }
     }, [datosMesa.nombre, dispatch, visitaMesa?.id, visitaMesa?.productosConsumidos, tabIndexPagosRegistrados]);

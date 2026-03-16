@@ -1,11 +1,8 @@
-import axios from 'axios'
-import { authService } from '../services/authService'
-
-const BASE_URL = import.meta.env.VITE_BASE_URL + "Reservas"
+import api from '../services/axiosInstance'
 
 export async function BuscarTodasLasReservas() {
     try {
-        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
+        const response = await api.get('Reservas');
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -15,7 +12,7 @@ export async function BuscarTodasLasReservas() {
 
 export async function BuscarUnaReserva(Id) {
     try {
-        const response = await axios.get(`${BASE_URL}/${Id}`, authService.getAuthHeaders());
+        const response = await api.get(`Reservas/${Id}`);
         return response.data;
     } catch (error) {
         return error.response;
@@ -24,7 +21,7 @@ export async function BuscarUnaReserva(Id) {
 
 export async function CrearReserva(datos) {
     try {
-        const response = await axios.post(BASE_URL, datos, authService.getAuthHeaders());
+        const response = await api.post('Reservas', datos);
         return response.data;
     } catch (error) {
         return error.response;
@@ -32,32 +29,25 @@ export async function CrearReserva(datos) {
 }
 
 export async function ModificarReserva(datos) {
-    try {        
-        const response = await axios.put(BASE_URL, datos, authService.getAuthHeaders());
+    try {
+        const response = await api.put('Reservas', datos);
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string' 
-                ? error.response.data 
-                : error.response.data.error?.mensaje || "Error al modificar la reserva";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al modificar la reserva";
+        throw new Error(mensaje);
     }
 }
 
 export async function BorrarReserva(Id) {
     try {
-        const response = await axios.delete(`${BASE_URL}?Id=${Id}`, authService.getAuthHeaders());
+        const response = await api.delete(`Reservas?Id=${Id}`);
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string' 
-                ? error.response.data 
-                : error.response.data.error?.mensaje || "Error al eliminar la reserva";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al eliminar la reserva";
+        throw new Error(mensaje);
     }
 }
-

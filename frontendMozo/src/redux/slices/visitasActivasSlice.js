@@ -108,26 +108,30 @@ export const visitasActivasSlice = createSlice({
                 productosConsumidos: (visitaActualizada.productosConsumidos || visitaActualizada.ProductosConsumidos || []).map(p => {
                     const estadoPedido = p.estadoPedido ?? p.EstadoPedido ?? 'Pendiente';
                     return {
-                        id: p.id || p.Id,
-                        nombre: p.nombre || p.Nombre,
-                        indicaciones: p.indicaciones || p.Indicaciones || '',
-                        precio: p.precio || p.Precio || 0,
-                        precioDelMomento: p.precioDelMomento || p.Precio || p.precio || 0,
+                        id: p.id ?? p.Id,
+                        nombre: p.nombre ?? p.Nombre,
+                        indicaciones: p.indicaciones ?? p.Indicaciones ?? '',
+                        precio: p.precio ?? p.Precio ?? 0,
+                        precioDelMomento: p.precioDelMomento ?? p.Precio ?? p.precio ?? 0,
                         estadoPagado: p.estadoPagado !== undefined ? p.estadoPagado : (p.EstadoPagado !== undefined ? p.EstadoPagado : false),
                         estadoPedido,
                         estadoPreparacion: p.estadoPreparacion ?? estadoPedidoANumero(estadoPedido),
-                        idMovimientoCaja: p.idMovimientoCaja || p.IdMovimientoCaja || null,
-                        fechaAgregado: p.fechaAgregado || p.FechaAgregado || null
+                        idMovimientoCaja: p.idMovimientoCaja ?? p.IdMovimientoCaja ?? null,
+                        fechaAgregado: p.fechaAgregado ?? p.FechaAgregado ?? null
                     };
                 })
             };
 
-            // Buscar la visita por id o por numeroMesa
-            const index = state.value.findIndex(
-                v => v.id === visitaNormalizada.id || 
-                v.numeroMesa === visitaNormalizada.numeroMesa ||
-                (v.mesa?.numero === visitaNormalizada.numeroMesa)
-            );
+            // Buscar la visita: priorizar por id, fallback por numeroMesa
+            let index = visitaNormalizada.id
+                ? state.value.findIndex(v => v.id === visitaNormalizada.id)
+                : -1;
+            if (index === -1 && visitaNormalizada.numeroMesa) {
+                index = state.value.findIndex(
+                    v => v.numeroMesa === visitaNormalizada.numeroMesa ||
+                    v.mesa?.numero === visitaNormalizada.numeroMesa
+                );
+            }
 
             if (index !== -1) {
                 // Mantener la estructura existente (como mesa) pero actualizar con los nuevos datos

@@ -1,11 +1,8 @@
-import axios from 'axios'
-import { authService } from '../services/authService'
-
-const BASE_URL = import.meta.env.VITE_BASE_URL
+import api from '../services/axiosInstance'
 
 export async function BuscarTodosLosPlanos() {
     try {
-        const response = await axios.get(`${BASE_URL}ListaPlanosSucursal`, authService.getAuthHeaders());
+        const response = await api.get('ListaPlanosSucursal');
         return response.data;
     } catch (error) {
         console.error("Error al buscar planos:", error);
@@ -20,7 +17,7 @@ export async function BuscarTodosLosPlanos() {
 
 export async function BuscarUnPlano(IdPlano) {
     try {
-        const response = await axios.get(`${BASE_URL}Plano?IdPlano=${IdPlano}`, authService.getAuthHeaders());
+        const response = await api.get(`Plano?IdPlano=${IdPlano}`);
         return response.data;
     } catch (error) {
         return error.response;
@@ -29,19 +26,16 @@ export async function BuscarUnPlano(IdPlano) {
 
 export async function CrearPlano(datos) {
     try {
-        const response = await axios.post(`${BASE_URL}Plano`, {
+        const response = await api.post('Plano', {
             Nombre: datos.nombre,
             Detalles: datos.detalles || ''
-        }, authService.getAuthHeaders());
+        });
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string' 
-                ? error.response.data 
-                : error.response.data.error?.mensaje || "Error al crear el plano";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al crear el plano";
+        throw new Error(mensaje);
     }
 }
 
@@ -56,33 +50,26 @@ export async function ModificarPlano(datos) {
         if (datos.detalles !== undefined) {
             body.Detalles = datos.detalles;
         }
-        
-        const response = await axios.put(`${BASE_URL}Plano`, body, authService.getAuthHeaders());
+
+        const response = await api.put('Plano', body);
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string' 
-                ? error.response.data 
-                : error.response.data.error?.mensaje || "Error al modificar el plano";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al modificar el plano";
+        throw new Error(mensaje);
     }
 }
 
 export async function BorrarPlano(IdPlano, Token) {
     // Token se mantiene como parámetro para compatibilidad, pero se obtiene de localStorage
     try {
-        const response = await axios.delete(`${BASE_URL}Plano?IdPlano=${IdPlano}`, authService.getAuthHeaders());
+        const response = await api.delete(`Plano?IdPlano=${IdPlano}`);
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string' 
-                ? error.response.data 
-                : error.response.data.error?.mensaje || "Error al eliminar el plano";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al eliminar el plano";
+        throw new Error(mensaje);
     }
 }
-

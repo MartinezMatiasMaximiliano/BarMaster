@@ -1,7 +1,4 @@
-import axios from 'axios';
-import { authService } from '../services/authService';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import api from '../services/axiosInstance';
 
 /**
  * POST /PagarItems - Registra un pago de productos de una visita (crea registro en tabla Pagos).
@@ -13,15 +10,14 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
  */
 export async function PagarItems(idVisita, listaIdsProductos, idTipoPago, monto) {
     try {
-        const response = await axios.post(
-            `${BASE_URL}PagarItems`,
+        const response = await api.post(
+            'PagarItems',
             {
                 idTipoMovimiento: idTipoPago,
                 idVisita,
                 monto: Number(monto),
                 listaIdsProductos: Array.isArray(listaIdsProductos) ? listaIdsProductos : []
-            },
-            authService.getAuthHeaders()
+            }
         );
         return response.data;
     } catch (error) {

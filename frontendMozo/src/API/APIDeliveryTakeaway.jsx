@@ -1,7 +1,4 @@
-import axios from 'axios';
-import { authService } from '../services/authService';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import api from '../services/axiosInstance';
 
 /**
  * GET /DeliveryTakeaway - Lista de deliveries/takeaway de la sucursal (según token).
@@ -9,7 +6,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
  */
 export async function GetDeliveryTakeaway() {
     try {
-        const response = await axios.get(`${BASE_URL}DeliveryTakeaway`, authService.getAuthHeaders());
+        const response = await api.get('DeliveryTakeaway');
         return response.data ?? [];
     } catch (error) {
         console.error('Error al obtener deliveries/takeaway:', error);
@@ -53,11 +50,9 @@ function mapFormToCrearDTO(values, origen = 'Delivery') {
 export async function CrearDeliveryTakeaway(values, origen = 'Delivery') {
     try {
         const body = mapFormToCrearDTO(values, origen);
-        console.log("BODY:", body);
-        const response = await axios.post(
-            `${BASE_URL}DeliveryTakeaway`,
-            body,
-            authService.getAuthHeaders()
+        const response = await api.post(
+            'DeliveryTakeaway',
+            body
         );
         return response.data ?? null;
     } catch (error) {
@@ -90,10 +85,9 @@ export async function CrearDeliveryTakeawayFromComanda(formValues, comanda, orig
                 Cantidad: item.cantidad,
             })),
         };
-        const response = await axios.post(
-            `${BASE_URL}DeliveryTakeaway`,
-            body,
-            authService.getAuthHeaders()
+        const response = await api.post(
+            'DeliveryTakeaway',
+            body
         );
         return response.data ?? null;
     } catch (error) {

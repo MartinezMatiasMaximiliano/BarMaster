@@ -15,7 +15,7 @@ export const useMozoCode = (datosMozos) => {
         if (!mismoMozo) {
             dispatch(modificarMozo(mozoEncontrado));
         }
-    }, [codigoMozo, datosMozos, dispatch]);
+    }, [codigoMozo, datosMozos, dispatch, mozo?.id]);
 
     return { codigoMozo, mozo };
 };

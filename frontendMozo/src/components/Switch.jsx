@@ -5,9 +5,16 @@ export default function Switch(props) {
     const [checked, setChecked] = useState(props.activo);
     const id = props.id;
 
-    const handleChange = (event) => {
-        setChecked(event.target.checked);
-        event.target.checked ? props.activar(id) : props.desactivar(id);
+    const handleChange = async (event) => {
+        const nuevoEstado = event.target.checked;
+        setChecked(nuevoEstado);
+        try {
+            nuevoEstado ? await props.activar(id) : await props.desactivar(id);
+        } catch (error) {
+            // Revertir el switch si la API falla
+            setChecked(!nuevoEstado);
+            console.error(error.message);
+        }
     };
 
     return (
@@ -20,4 +27,3 @@ export default function Switch(props) {
         />
     );
 }
-

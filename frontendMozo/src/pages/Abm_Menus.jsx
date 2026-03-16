@@ -66,8 +66,7 @@ function Abm_Menus(props) {
         }
         
         if (!idSucursal) {
-            alert('No se pudo obtener el IdSucursal. Por favor, inicie sesión nuevamente.');
-            return;
+            throw new Error('No se pudo obtener la sucursal. Por favor, inicie sesión nuevamente.');
         }
         
         return await CrearMenu({

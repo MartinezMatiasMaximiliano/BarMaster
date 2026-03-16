@@ -1,5 +1,4 @@
-import axios from 'axios'
-const BASE_URL = import.meta.env.VITE_BASE_URL
+import api from '../services/axiosInstance'
 
 // TODO: Este archivo está deprecado. El endpoint "Pedidos" ya no existe.
 // Ahora se usa el endpoint "Visitas". Ver APIVisitas.jsx
@@ -18,7 +17,7 @@ export async function PostItems(ListaPedidos, numeroMesa) {
     try {
         const ListaItemsDTO = ListaPedidos.map(item => new ItemDTO(item.id, item.indicaciones));
 
-        const response = await axios.post(`${BASE_URL}Items/${numeroMesa}`, ListaItemsDTO);
+        const response = await api.post(`Items/${numeroMesa}`, ListaItemsDTO);
 
         return response.data; // Esto ahora sí devuelve la respuesta esperada
     } catch (error) {
@@ -29,7 +28,7 @@ export async function PostItems(ListaPedidos, numeroMesa) {
 // TODO: Verificar si esta función todavía se usa y actualizar al nuevo endpoint si es necesario
 export async function GenerarTicketPDF(NumeroMesa,ListaItems) {
     try {
-        const response = await axios.post(`${BASE_URL}Pedidos/GenerarTicketPDF`, { NumeroMesa: NumeroMesa,ListaItems:ListaItems }, {
+        const response = await api.post('Pedidos/GenerarTicketPDF', { NumeroMesa: NumeroMesa,ListaItems:ListaItems }, {
             responseType: 'blob', 
         });
 

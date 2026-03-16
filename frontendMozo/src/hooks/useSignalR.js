@@ -1,23 +1,28 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import connection from '../connections/HubConnMozo'
 
 export default function useSignalR(handlers = {}) {
+    const handlersRef = useRef(handlers);
+    handlersRef.current = handlers;
+
     useEffect(() => {
         if (!connection) return;
 
-        const { onRegistrarProducto, onRegistrarNotificacion, onPagarMesa, onPagarMesaSeparado } = handlers;
+        const onRegistrarProducto = (...args) => handlersRef.current.onRegistrarProducto?.(...args);
+        const onRegistrarNotificacion = (...args) => handlersRef.current.onRegistrarNotificacion?.(...args);
+        const onPagarMesa = (...args) => handlersRef.current.onPagarMesa?.(...args);
+        const onPagarMesaSeparado = (...args) => handlersRef.current.onPagarMesaSeparado?.(...args);
 
-        if (onRegistrarProducto) connection.on('RegistrarProducto', onRegistrarProducto);
-        if (onRegistrarNotificacion) connection.on('RegistrarNotificacion', onRegistrarNotificacion);
-        if (onPagarMesa) connection.on('PagarMesa', onPagarMesa);
-        if (onPagarMesaSeparado) connection.on('PagarMesaSeparado', onPagarMesaSeparado);
+        connection.on('RegistrarProducto', onRegistrarProducto);
+        connection.on('RegistrarNotificacion', onRegistrarNotificacion);
+        connection.on('PagarMesa', onPagarMesa);
+        connection.on('PagarMesaSeparado', onPagarMesaSeparado);
 
         return () => {
-            if (!connection) return;
-            if (onRegistrarProducto) connection.off('RegistrarProducto', onRegistrarProducto);
-            if (onRegistrarNotificacion) connection.off('RegistrarNotificacion', onRegistrarNotificacion);
-            if (onPagarMesa) connection.off('PagarMesa', onPagarMesa);
-            if (onPagarMesaSeparado) connection.off('PagarMesaSeparado', onPagarMesaSeparado);
+            connection.off('RegistrarProducto', onRegistrarProducto);
+            connection.off('RegistrarNotificacion', onRegistrarNotificacion);
+            connection.off('PagarMesa', onPagarMesa);
+            connection.off('PagarMesaSeparado', onPagarMesaSeparado);
         }
     }, []);
 

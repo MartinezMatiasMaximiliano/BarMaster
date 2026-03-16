@@ -34,8 +34,11 @@ const LoginUsuarios = () => {
             }
         } catch (error) {
             console.error('Error durante el login:', error);
-            const errorMessage = error.message || 'Hubo un problema al intentar iniciar sesión';
-            showSnackbar(errorMessage, 'error');
+            if (error.message === 'Usuario o contraseña incorrectos' || error.message === 'Usuario no encontrado') {
+                showSnackbar(error.message, 'error');
+            } else {
+                showSnackbar('Hubo un problema al intentar iniciar sesión. Intente nuevamente.', 'error');
+            }
         }
     };
 

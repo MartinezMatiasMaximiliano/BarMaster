@@ -94,7 +94,6 @@ function App() {
     const [menu, SetMenu] = useState([])
     const [personas, SetPersonas] = useState([])
     const [roles, SetRoles] = useState([])
-    const [visitas, SetVisitas] = useState([])
     const [reservas, SetReservas] = useState([])
     const [tipoPagos, SetTipoPagos] = useState([])
     const [planos, SetPlanos] = useState([])
@@ -104,45 +103,46 @@ function App() {
     // Es mucho más rápido que usar window.location.reload() al abrir/cerrar mesa
 
     useEffect(() => {
+        let cancelled = false;
         const esVistaMesas = location.pathname === '/sistema_sucursal' || location.pathname === '/Index2';
         if (esVistaMesas) {
             if (localStorage.getItem('token')) {
                 BuscarTodasLasMesas()
-                    .then(data => SetMesas(Array.isArray(data) ? data : []))
-                    .catch(() => SetMesas([]));
+                    .then(data => { if (!cancelled) SetMesas(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetMesas([]); });
                 BuscarTodosLosMozos()
-                    .then(data => SetMozos(Array.isArray(data) ? data : []))
-                    .catch(() => SetMozos([]));
+                    .then(data => { if (!cancelled) SetMozos(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetMozos([]); });
                 BuscarTodosLosProductos()
-                    .then(data => SetMenu(Array.isArray(data) ? data : []))
-                    .catch(() => SetMenu([]));
+                    .then(data => { if (!cancelled) SetMenu(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetMenu([]); });
                 BuscarTodasLasPersonas()
-                    .then(data => SetPersonas(Array.isArray(data) ? data : []))
-                    .catch(() => SetPersonas([]));
+                    .then(data => { if (!cancelled) SetPersonas(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetPersonas([]); });
                 BuscarTodosLosRoles()
-                    .then(data => SetRoles(Array.isArray(data) ? data : []))
-                    .catch(() => SetRoles([]));
+                    .then(data => { if (!cancelled) SetRoles(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetRoles([]); });
                 BuscarVisitasActivas()
-                    .then(data => dispatch(cargarVisitasActivas(Array.isArray(data) ? data : [])))
-                    .catch(() => dispatch(cargarVisitasActivas([])));
+                    .then(data => { if (!cancelled) dispatch(cargarVisitasActivas(Array.isArray(data) ? data : [])); })
+                    .catch(() => { if (!cancelled) dispatch(cargarVisitasActivas([])); });
                 BuscarTodasLasCategorias()
-                    .then(data => SetCategorias(Array.isArray(data) ? data : []))
-                    .catch(() => SetCategorias([]));    
+                    .then(data => { if (!cancelled) SetCategorias(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetCategorias([]); });
                 BuscarTodasLasReservas()
-                    .then(data => SetReservas(Array.isArray(data) ? data : []))
-                    .catch(() => SetReservas([]));
+                    .then(data => { if (!cancelled) SetReservas(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetReservas([]); });
                 BuscarTipoMovimientosPorEntorno('Ventas')
-                    .then(data => SetTipoPagos(Array.isArray(data) ? data : []))
-                    .catch(() => SetTipoPagos([]));
+                    .then(data => { if (!cancelled) SetTipoPagos(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetTipoPagos([]); });
                 BuscarTodosLosPlanos()
-                    .then(data => SetPlanos(Array.isArray(data) ? data : []))
-                    .catch(() => SetPlanos([]));
+                    .then(data => { if (!cancelled) SetPlanos(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetPlanos([]); });
                 // Cargar menús - necesitamos IdSucursal
                 const idSucursal = localStorage.getItem('idSucursal') || authService.getIdSucursal();
                 if (idSucursal) {
                     BuscarTodosLosMenus(idSucursal)
-                        .then(data => SetMenus(Array.isArray(data) ? data : []))
-                        .catch(() => SetMenus([]));
+                        .then(data => { if (!cancelled) SetMenus(Array.isArray(data) ? data : []); })
+                        .catch(() => { if (!cancelled) SetMenus([]); });
                 }
             } else {
                 // Si no hay sucursal activa, limpiar datos
@@ -151,7 +151,6 @@ function App() {
                 SetMenu([]);
                 SetPersonas([]);
                 SetRoles([]);
-                SetVisitas([]);
                 SetCategorias([]);
                 SetReservas([]);
                 SetTipoPagos([]);
@@ -159,8 +158,9 @@ function App() {
                 SetMenus([]);
             }
         }
-        
-    }, [location.search, location.pathname])
+
+        return () => { cancelled = true; };
+    }, [location.search, location.pathname, dispatch])
 
     const { sendRecargarTicket } = useSignalR({
         onRegistrarProducto: (pedido, numeroMesa) => { AgregarItemsAPedido(pedido, numeroMesa) },
@@ -172,19 +172,23 @@ function App() {
     // Las visitas activas se cargan con GET /VisitasActivas en el useEffect de sistema_sucursal
 
     async function recargarMesas() {
-        await BuscarTodasLasMesas().then(data => SetMesas(data));
+        const data = await BuscarTodasLasMesas().catch(() => []);
+        SetMesas(Array.isArray(data) ? data : []);
     }
 
     async function recargarProductos() {
-        await BuscarTodosLosProductos().then(data => SetMenu(data));
+        const data = await BuscarTodosLosProductos().catch(() => []);
+        SetMenu(Array.isArray(data) ? data : []);
     }
 
     async function recargarPersonas() {
-        await BuscarTodasLasPersonas().then(data => SetPersonas(data));
+        const data = await BuscarTodasLasPersonas().catch(() => []);
+        SetPersonas(Array.isArray(data) ? data : []);
     }
 
     async function recargarCategorias() {
-        await BuscarTodasLasCategorias().then(data => SetCategorias(data));
+        const data = await BuscarTodasLasCategorias().catch(() => []);
+        SetCategorias(Array.isArray(data) ? data : []);
     }
 
     //TODO: Recargar Delivery/Take Away
@@ -193,65 +197,73 @@ function App() {
     }
 
     async function recargarListadoMozos() {
-        await BuscarTodosLosMozos().then(data => SetMozos(data));
+        const data = await BuscarTodosLosMozos().catch(() => []);
+        SetMozos(Array.isArray(data) ? data : []);
     }
 
     async function recargarReservas() {
-        await BuscarTodasLasReservas().then(data => SetReservas(data));
+        const data = await BuscarTodasLasReservas().catch(() => []);
+        SetReservas(Array.isArray(data) ? data : []);
     }
 
     async function recargarTipoPagos() {
-        await BuscarTipoMovimientosPorEntorno('Ventas').then(data => SetTipoPagos(data));
+        const data = await BuscarTipoMovimientosPorEntorno('Ventas').catch(() => []);
+        SetTipoPagos(Array.isArray(data) ? data : []);
     }
 
     async function recargarPlanos() {
-        await BuscarTodosLosPlanos().then(data => SetPlanos(data));
+        const data = await BuscarTodosLosPlanos().catch(() => []);
+        SetPlanos(Array.isArray(data) ? data : []);
     }
 
     async function recargarMenus() {
         const idSucursal = localStorage.getItem('idSucursal') || authService.getIdSucursal();
         if (idSucursal) {
-            await BuscarTodosLosMenus(idSucursal).then(data => SetMenus(Array.isArray(data) ? data : []));
+            const data = await BuscarTodosLosMenus(idSucursal).catch(() => []);
+            SetMenus(Array.isArray(data) ? data : []);
         }
     }
 
     async function pagarTotal(IdVisita) {
+        try {
+            const visita = await BuscarVisitaPorId(IdVisita);
 
-        const visita = await BuscarVisitaPorId(IdVisita);
+            if (visita) {
+                const ListaProductosPendientes = visita.productosConsumidos?.filter(p => !p.estadoPagado).map(p => p.id) || [];
 
-        if (visita) {
-            const ListaProductosPendientes = visita.productosConsumidos?.filter(p => !p.estadoPagado).map(p => p.id) || [];
+                if (ListaProductosPendientes.length > 0) {
+                    // Hacer la actualización en la base de datos primero
+                    await CambiarEstadoItems(ListaProductosPendientes, "Procesando");
 
-            if (ListaProductosPendientes.length > 0) {
-                // Hacer la actualización en la base de datos
-                CambiarEstadoItems(ListaProductosPendientes, "Procesando");
-
-                // Agrego el ticket
-                dispatch(agregarTicket(ListaProductosPendientes));
-
-                // Actualizar el estado en Redux - marcar como pagado
-                dispatch(cambiarEstadoPagadoProductos({ idsProductos: ListaProductosPendientes, pagado: true }));
+                    // Solo actualizar Redux si la API tuvo éxito
+                    dispatch(agregarTicket(ListaProductosPendientes));
+                    dispatch(cambiarEstadoPagadoProductos({ idsProductos: ListaProductosPendientes, pagado: true }));
+                }
             }
+        } catch (error) {
+            console.error("Error al procesar pago total:", error);
         }
     }
 
-    function pagarSeparado(ArrayIdsProductos) {
-        // Hago los cambios en la DB
-        CambiarEstadoItems(ArrayIdsProductos, "Procesando");
+    async function pagarSeparado(ArrayIdsProductos) {
+        try {
+            // Hacer los cambios en la DB primero
+            await CambiarEstadoItems(ArrayIdsProductos, "Procesando");
 
-        // Agrego el ticket
-        dispatch(agregarTicket(ArrayIdsProductos));
-
-        // Actualizo el estado - marcar como pagado
-        dispatch(cambiarEstadoPagadoProductos({ idsProductos: ArrayIdsProductos, pagado: true }));
-    };
+            // Solo actualizar Redux si la API tuvo éxito
+            dispatch(agregarTicket(ArrayIdsProductos));
+            dispatch(cambiarEstadoPagadoProductos({ idsProductos: ArrayIdsProductos, pagado: true }));
+        } catch (error) {
+            console.error("Error al procesar pago separado:", error);
+        }
+    }
 
     async function AgregarItemsAPedido(Pedido, numeroMesa) {
-
         try {
-            const productosCreados = await PostItems(Pedido, numeroMesa);
+            await PostItems(Pedido, numeroMesa);
             sendRecargarTicket(numeroMesa);
         } catch (error) {
+            console.error("Error al agregar items al pedido:", error);
         }
     }
 
@@ -259,10 +271,10 @@ function App() {
     const datos_personas_abm = useMemo(() => MappearPersonas(personas || []), [personas]);
     const datos_mesas_abm = useMemo(() => MappearMesas(mesas || []), [mesas]);
     const datos_menu_abm = useMemo(() => MappearMenu(menu || []), [menu]);
-    const Notificaciones = MappearNotificaciones(notificaciones || [])
-    const datos_pedidos = MappearPedidos(visitasActivas || [])
-    const datos_reservas = MappearReservas(reservas || [])
-    const datos_planos_abm = MappearPlanos(planos || [])
+    const Notificaciones = useMemo(() => MappearNotificaciones(notificaciones || []), [notificaciones])
+    const datos_pedidos = useMemo(() => MappearPedidos(visitasActivas || []), [visitasActivas])
+    const datos_reservas = useMemo(() => MappearReservas(reservas || []), [reservas])
+    const datos_planos_abm = useMemo(() => MappearPlanos(planos || []), [planos])
 
     // Ruta pública: ticket virtual (accesible sin autenticación)
     if (location.pathname.startsWith('/ticket/')) {
@@ -368,7 +380,7 @@ function App() {
                         </Routes>
                     </Box>
                     <Box component="aside" sx={{ width: { xs: 0, md: 260 }, borderLeft: { md: 1 }, borderColor: 'divider', display: { xs: 'none', md: 'block' }, bgcolor: 'background.paper', px: 2, py: 3 }} className="container-notificaciones">
-                        {Notificaciones.reverse()}
+                        {[...Notificaciones].reverse()}
                     </Box>
                 </Box>
             </AuthTypeContext.Provider>

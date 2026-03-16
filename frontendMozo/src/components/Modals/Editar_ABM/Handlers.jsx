@@ -37,10 +37,14 @@ export default function Handlers({ id, editValues, setEditValues, modificar, rec
 
   const handleSave = async () => {
     if (Object.keys(errors).length === 0) {
-        await modificar({ ...editValues, id: id });
-        setErrors({});
-        handleClose();
-        await recargarComponentes();
+        try {
+            await modificar({ ...editValues, id: id });
+            setErrors({});
+            handleClose();
+            await recargarComponentes();
+        } catch (error) {
+            setErrors(prev => ({ ...prev, servidor: error.message || 'Ocurrió un error. Intente nuevamente.' }));
+        }
     }
   };
 

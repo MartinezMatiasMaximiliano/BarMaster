@@ -1,11 +1,10 @@
 import axios from 'axios'
+import api from '../services/axiosInstance'
 import { authService } from '../services/authService'
-
-const BASE_URL = import.meta.env.VITE_BASE_URL
 
 export async function BuscarTodosLosMozos() {
     try {
-        const response = await axios.get(`${BASE_URL}Mozos`, authService.getAuthHeaders());
+        const response = await api.get('Mozos');
         return response.data;
     } catch (error) {
         console.error("Error al buscar mozos:", error);
@@ -15,7 +14,7 @@ export async function BuscarTodosLosMozos() {
 
 export async function BuscarTodasLasPersonas() {
     try {
-        const response = await axios.get(`${BASE_URL}ListaEmpleados`, authService.getAuthHeaders());
+        const response = await api.get('ListaEmpleados');
         return response.data;
     } catch (error) {
         console.error("Error al buscar personas:", error);
@@ -25,7 +24,7 @@ export async function BuscarTodasLasPersonas() {
 
 export async function RegistrarPersona(datos) {
     try {
-        const response = await axios.post(`${BASE_URL}Registrar`, {
+        const response = await api.post('Registrar', {
             nombres: datos.nombre,
             apellido: datos.apellido,
             dni: datos.dni,
@@ -35,20 +34,19 @@ export async function RegistrarPersona(datos) {
             email: datos.email || '',
             activo: true,
             idRol: datos.rol
-        }, authService.getAuthHeaders());
+        });
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.error?.mensaje || 
                            error.response?.data?.mensaje || 
                            'Error al registrar la persona';
-        alert(errorMessage);
-        throw error;
+        throw new Error(errorMessage);
     }
 }
 
 export async function RegistrarMozo(datos) {
     try {
-        const response = await axios.post(`${BASE_URL}Registrar`, {
+        const response = await api.post('Registrar', {
             nombres: datos.nombre,
             apellido: datos.apellido,
             dni: datos.dni,
@@ -58,20 +56,19 @@ export async function RegistrarMozo(datos) {
             email: datos.email || '',
             activo: true,
             idRol: -2 // ID especial para mozos
-        }, authService.getAuthHeaders());
+        });
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.error?.mensaje || 
                            error.response?.data?.mensaje || 
                            'Error al registrar el mozo';
-        alert(errorMessage);
-        throw error;
+        throw new Error(errorMessage);
     }
 }
 
 export async function ModificarPersona(datos) {
     try {
-        const response = await axios.put(`${BASE_URL}Modificar`, {
+        const response = await api.put('Modificar', {
             id: datos.id,
             nombres: datos.nombre,
             apellido: datos.apellido,
@@ -82,38 +79,33 @@ export async function ModificarPersona(datos) {
             idRol: datos.rol,
             codigoDeServicio: datos.codigoDeServicio || '',
             activo: datos.activo !== undefined ? datos.activo : true
-        }, authService.getAuthHeaders());
+        });
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.error?.mensaje || 
                            error.response?.data?.mensaje || 
                            'Error al modificar la persona';
-        alert(errorMessage);
-        throw error;
+        throw new Error(errorMessage);
     }
 }
 
 export async function ModificarPassword(contraseñaActual, contraseñaNueva, confirmacionContraseña) {
-    try {
-        const response = await axios.put(
-            `${BASE_URL}CambiarContraseña`,
-            {
-                contraseñaActual,
-                contraseñaNueva,
-                confirmacionContraseña,
-            }, authService.getAuthHeaders('USER_token')
-        );
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await axios.put(
+        import.meta.env.VITE_BASE_URL + 'CambiarContraseña',
+        {
+            contraseñaActual,
+            contraseñaNueva,
+            confirmacionContraseña,
+        }, authService.getAuthHeaders('USER_token')
+    );
+    return response.data;
 }
 
 
 
 export async function ModificarCodigoMozo(datos) {
     try {
-        const response = await axios.put(`${BASE_URL}Modificar`, {
+        const response = await api.put('Modificar', {
             id: datos.id,
             nombres: datos.nombres || '',
             apellido: datos.apellido || '',
@@ -124,55 +116,51 @@ export async function ModificarCodigoMozo(datos) {
             idRol: datos.idRol || datos.rol || 0,
             codigoDeServicio: datos.nuevoCodigo,
             activo: datos.activo !== undefined ? datos.activo : true
-        }, authService.getAuthHeaders());
+        });
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.error?.mensaje || 
                            error.response?.data?.mensaje || 
                            'Error al modificar el código del mozo';
-        alert(errorMessage);
-        throw error;
+        throw new Error(errorMessage);
     }
 }
 
 export async function ActivarPersona(Id) {
     try {
-        const response = await axios.put(`${BASE_URL}activarDesactivar/${Id}`, {}, authService.getAuthHeaders());
+        const response = await api.put(`activarDesactivar/${Id}`, {});
         return response.data;
     } catch (error) {
-        const errorMessage = error.response?.data?.error?.mensaje || 
-                           error.response?.data?.mensaje || 
+        const errorMessage = error.response?.data?.error?.mensaje ||
+                           error.response?.data?.mensaje ||
                            'Error al activar la persona';
-        alert(errorMessage);
-        throw error;
+        throw new Error(errorMessage);
     }
 }
 
 export async function DesactivarPersona(Id) {
     try {
         // El mismo endpoint cambia el estado, así que llamamos al mismo endpoint
-        const response = await axios.put(`${BASE_URL}activarDesactivar/${Id}`, {}, authService.getAuthHeaders());
+        const response = await api.put(`activarDesactivar/${Id}`, {});
         return response.data;
     } catch (error) {
-        const errorMessage = error.response?.data?.error?.mensaje || 
-                           error.response?.data?.mensaje || 
+        const errorMessage = error.response?.data?.error?.mensaje ||
+                           error.response?.data?.mensaje ||
                            'Error al desactivar la persona';
-        alert(errorMessage);
-        throw error;
+        throw new Error(errorMessage);
     }
 }
 
 
 export async function BorrarPersona(Id) {
     try {
-        const response = await axios.delete(`${BASE_URL}Eliminar/${Id}`, authService.getAuthHeaders());
+        const response = await api.delete(`Eliminar/${Id}`);
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.error?.mensaje || 
                            error.response?.data?.mensaje || 
                            'Error al eliminar la persona';
-        alert(errorMessage);
-        throw error;
+        throw new Error(errorMessage);
     }
 }
 

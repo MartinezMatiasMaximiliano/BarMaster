@@ -3,7 +3,7 @@ import { exportarTablaAPDF, exportarTablaAExcel } from '../utils/exportacionTabl
 
 /**
  * Hook reutilizable para facilitar la exportación de tablas
- * 
+ *
  * @param {Object} config
  * @param {Array} config.datos - Datos de la tabla a exportar
  * @param {Array} config.columnas - Configuración de columnas
@@ -12,7 +12,8 @@ import { exportarTablaAPDF, exportarTablaAExcel } from '../utils/exportacionTabl
  * @param {Array} [config.infoAdicional] - Información adicional a mostrar
  * @param {string} [config.nombreArchivo] - Nombre del archivo (sin extensión)
  * @param {Function} [config.formatearFila] - Función personalizada para formatear filas
- * 
+ * @param {Function} [config.showSnackbar] - Función para mostrar mensajes al usuario (msg, severity)
+ *
  * @returns {Object} Objeto con funciones handleExportarPDF y handleExportarExcel
  */
 export const useExportacionTabla = (config) => {
@@ -21,6 +22,9 @@ export const useExportacionTabla = (config) => {
             await exportarTablaAPDF(config);
         } catch (error) {
             console.error('Error en handleExportarPDF:', error);
+            if (config.showSnackbar) {
+                config.showSnackbar(error.message, 'error');
+            }
         }
     }, [config]);
 
@@ -29,6 +33,9 @@ export const useExportacionTabla = (config) => {
             await exportarTablaAExcel(config);
         } catch (error) {
             console.error('Error en handleExportarExcel:', error);
+            if (config.showSnackbar) {
+                config.showSnackbar(error.message, 'error');
+            }
         }
     }, [config]);
 
@@ -37,4 +44,3 @@ export const useExportacionTabla = (config) => {
         handleExportarExcel
     };
 };
-

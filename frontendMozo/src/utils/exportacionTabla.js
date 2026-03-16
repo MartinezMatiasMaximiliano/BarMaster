@@ -1,8 +1,11 @@
 /**
  * Utilidades genéricas para exportar tablas a PDF y Excel
- * 
+ *
  * Este módulo proporciona funciones reutilizables para exportar cualquier tabla
  * del sistema a formatos PDF y Excel.
+ *
+ * Las funciones lanzan errores con mensajes amigables para el usuario.
+ * El caller (hook o componente) es responsable de mostrarlos al usuario.
  */
 
 import pdfMake from 'pdfmake/build/pdfmake';
@@ -15,7 +18,7 @@ if (pdfMake && !pdfMake.vfs) {
 
 /**
  * Exporta una tabla a PDF
- * 
+ *
  * @param {Object} config - Configuración de la exportación
  * @param {Array} config.datos - Array de objetos con los datos de la tabla
  * @param {Array} config.columnas - Array de configuración de columnas { key, label, formatter }
@@ -26,27 +29,25 @@ if (pdfMake && !pdfMake.vfs) {
  * @param {Function} [config.formatearFila] - Función personalizada para formatear cada fila
  */
 export const exportarTablaAPDF = async (config) => {
+    const {
+        datos,
+        columnas,
+        titulo,
+        subtitulo,
+        infoAdicional = [],
+        nombreArchivo,
+        formatearFila
+    } = config;
+
+    if (!datos || !Array.isArray(datos) || datos.length === 0) {
+        throw new Error('No hay datos para exportar.');
+    }
+
+    if (!columnas || !Array.isArray(columnas) || columnas.length === 0) {
+        throw new Error('No hay columnas definidas para exportar.');
+    }
+
     try {
-        const {
-            datos,
-            columnas,
-            titulo,
-            subtitulo,
-            infoAdicional = [],
-            nombreArchivo,
-            formatearFila
-        } = config;
-
-        if (!datos || !Array.isArray(datos) || datos.length === 0) {
-            alert('No hay datos para exportar.');
-            return;
-        }
-
-        if (!columnas || !Array.isArray(columnas) || columnas.length === 0) {
-            alert('No hay columnas definidas para exportar.');
-            return;
-        }
-
         // Preparar encabezados de la tabla
         const headers = columnas.map(col => ({
             text: col.label || col.key || '',
@@ -131,14 +132,13 @@ export const exportarTablaAPDF = async (config) => {
         pdfMake.createPdf(docDefinition).download(`${nombre}.pdf`);
     } catch (error) {
         console.error('Error al exportar a PDF:', error);
-        alert(`Error al exportar a PDF: ${error.message || 'Error desconocido'}\n\nPor favor, verifica que pdfmake esté correctamente instalado.`);
-        throw error;
+        throw new Error('Error al exportar a PDF. Intente nuevamente.');
     }
 };
 
 /**
  * Exporta una tabla a Excel
- * 
+ *
  * @param {Object} config - Configuración de la exportación
  * @param {Array} config.datos - Array de objetos con los datos de la tabla
  * @param {Array} config.columnas - Array de configuración de columnas { key, label, formatter }
@@ -149,34 +149,31 @@ export const exportarTablaAPDF = async (config) => {
  * @param {Function} [config.formatearFila] - Función personalizada para formatear cada fila
  */
 export const exportarTablaAExcel = async (config) => {
+    // Importar xlsx dinámicamente
+    const XLSX = await import('xlsx').catch(error => {
+        console.error('Error al importar xlsx:', error);
+        throw new Error('La exportación a Excel no está disponible en este momento.');
+    });
+
+    const {
+        datos,
+        columnas,
+        titulo,
+        subtitulo,
+        infoAdicional = [],
+        nombreArchivo,
+        formatearFila
+    } = config;
+
+    if (!datos || !Array.isArray(datos) || datos.length === 0) {
+        throw new Error('No hay datos para exportar.');
+    }
+
+    if (!columnas || !Array.isArray(columnas) || columnas.length === 0) {
+        throw new Error('No hay columnas definidas para exportar.');
+    }
+
     try {
-        // Importar xlsx dinámicamente
-        const XLSX = await import('xlsx').catch(error => {
-            console.error('Error al importar xlsx:', error);
-            alert('La funcionalidad de exportación a Excel requiere instalar la dependencia xlsx.\n\nPor favor, ejecuta en la terminal:\nnpm install xlsx');
-            throw new Error('xlsx no está instalado.');
-        });
-
-        const {
-            datos,
-            columnas,
-            titulo,
-            subtitulo,
-            infoAdicional = [],
-            nombreArchivo,
-            formatearFila
-        } = config;
-
-        if (!datos || !Array.isArray(datos) || datos.length === 0) {
-            alert('No hay datos para exportar.');
-            return;
-        }
-
-        if (!columnas || !Array.isArray(columnas) || columnas.length === 0) {
-            alert('No hay columnas definidas para exportar.');
-            return;
-        }
-
         // Crear workbook con una sola hoja: información arriba y tabla debajo (así se ve todo al abrir)
         const wb = XLSX.utils.book_new();
 
@@ -221,10 +218,6 @@ export const exportarTablaAExcel = async (config) => {
         XLSX.writeFile(wb, `${nombre}.xlsx`);
     } catch (error) {
         console.error('Error al exportar a Excel:', error);
-        if (!error.message || !error.message.includes('xlsx no está instalado')) {
-            alert('Error al exportar a Excel. Por favor, verifica la consola para más detalles.');
-        }
-        throw error;
+        throw new Error('Error al exportar a Excel. Intente nuevamente.');
     }
 };
-

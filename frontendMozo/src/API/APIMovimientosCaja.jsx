@@ -1,14 +1,9 @@
-import axios from 'axios';
-import { authService } from '../services/authService';
+import api from '../services/axiosInstance';
 import { ObtenerCajaActiva } from './APICaja';
-
-const BASE_URL = `${import.meta.env.VITE_BASE_URL}MovimientosCaja`;
-const TIPOS_URL = `${import.meta.env.VITE_BASE_URL}TipoMovimientosCaja`;
 
 export async function ObtenerTiposMovimientoCaja() {
     try {
-        const response = await axios.get(TIPOS_URL, {
-            ...authService.getAuthHeaders(),
+        const response = await api.get('TipoMovimientosCaja', {
             params: { Entorno: 'Movimiento' }
         });
         const tipos = response.data || [];
@@ -44,7 +39,7 @@ export async function CrearMovimientoCaja(datos) {
             listaIdsProductos: datos.listaIdsProductos ?? []
         };
 
-        const response = await axios.post(BASE_URL, payload, authService.getAuthHeaders());
+        const response = await api.post('MovimientosCaja', payload);
         return response.data;
     } catch (error) {
         console.error('Error al crear movimiento de caja:', error);

@@ -1,12 +1,9 @@
-import axios from 'axios';
-import { authService } from '../services/authService';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import api from '../services/axiosInstance';
 
 /** GET /TodasLasVisitas - Obtiene todas las visitas (activas y cerradas) para reportes y gráficas */
 export async function ObtenerTodasLasVisitas() {
     try {
-        const response = await axios.get(`${BASE_URL}TodasLasVisitas`, authService.getAuthHeaders());
+        const response = await api.get('TodasLasVisitas');
         return response.data ?? [];
     } catch (error) {
         console.error('Error al obtener todas las visitas:', error);
@@ -16,7 +13,7 @@ export async function ObtenerTodasLasVisitas() {
 
 export async function ObtenerVisitaPorId(idVisita) {
     try {
-        const response = await axios.get(`${BASE_URL}Visita?IdVisita=${idVisita}`, authService.getAuthHeaders());
+        const response = await api.get(`Visita?IdVisita=${idVisita}`);
         return response.data;
     } catch (error) {
         console.error('Error al obtener caja activa:', error);
@@ -26,7 +23,7 @@ export async function ObtenerVisitaPorId(idVisita) {
 /** GET /VisitasActivas - Obtiene todas las visitas con estado "Abierta" */
 export async function BuscarVisitasActivas() {
     try {
-        const response = await axios.get(`${BASE_URL}VisitasActivas`, authService.getAuthHeaders());
+        const response = await api.get('VisitasActivas');
         return response.data;
     } catch (error) {
         console.error('Error al obtener visitas activas:', error);
@@ -36,11 +33,9 @@ export async function BuscarVisitasActivas() {
 
 export async function AgregarProductosAVisita(idVisita, productos) {
     try {
-        console.log("PRODUCTOS: ", productos);
-        const response = await axios.post(
-            `${BASE_URL}AgregarProductoAVisita?IdVisita=${idVisita}`,
-            productos,
-            authService.getAuthHeaders()
+        const response = await api.post(
+            `AgregarProductoAVisita?IdVisita=${idVisita}`,
+            productos
         );
         
         return response.data;
@@ -61,10 +56,9 @@ export async function AgregarProductosAVisita(idVisita, productos) {
 /** DELETE /Visitas/EliminarProductos - Elimina productos de una visita */
 export async function EliminarProductosVisita(idVisita, idsProductos) {
     try {
-        const response = await axios.delete(
-            `${BASE_URL}Visitas/EliminarProductos`,
+        const response = await api.delete(
+            'Visitas/EliminarProductos',
             {
-                ...authService.getAuthHeaders(),
                 data: {
                     IdVisita: idVisita,
                     IdsProductos: idsProductos
@@ -85,13 +79,12 @@ export async function EliminarProductosVisita(idVisita, idsProductos) {
 /** PATCH /Visitas/CambiarEstadoProducto - Cambia el estado de un producto */
 export async function CambiarEstadoProducto(idProducto, estado) {
     try {
-        const response = await axios.patch(
-            `${BASE_URL}Visitas/CambiarEstadoProducto`,
+        const response = await api.patch(
+            'Visitas/CambiarEstadoProducto',
             {
                 IdProducto: idProducto,
                 Estado: estado
-            },
-            authService.getAuthHeaders()
+            }
         );
         return response.data;
     } catch (error) {
@@ -197,17 +190,12 @@ export async function BuscarProductosPorVisita(idVisita) {
 }
 
 export async function BuscarPagosPorVisita(idVisita) {
-    try {
-        return [];
-    } catch (error) {
-        console.error('Error al obtener pagos por visita:', error);
-        return [];
-    }
+    return [];
 }
 
 export async function BuscarVisitaPorId(idVisita) {
     try {
-        const response = await axios.get(`${BASE_URL}Visitas/${idVisita}`, authService.getAuthHeaders());
+        const response = await api.get(`Visitas/${idVisita}`);
         return response.data;
     } catch (error) {
         console.error('Error al obtener visita por ID:', error);

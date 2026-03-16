@@ -1,6 +1,4 @@
-import axios from 'axios'
-import { authService } from '../services/authService'
-const BASE_URL = import.meta.env.VITE_BASE_URL + "Productos/"
+import api from '../services/axiosInstance'
 import connection from '../connections/HubConnMozo'
 
 class CrearProductoDTO {
@@ -18,7 +16,7 @@ class CrearProductoDTO {
 
 export async function BuscarTodosLosProductos() {
     try {
-        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
+        const response = await api.get('Productos/');
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -27,7 +25,7 @@ export async function BuscarTodosLosProductos() {
 
 export async function BuscarUnProducto(Id) {
     try {
-        const response = await axios.get(BASE_URL + Id, authService.getAuthHeaders());
+        const response = await api.get('Productos/' + Id);
         return response.data;
     } catch (error) {
         console.error("Error:", error);
@@ -35,31 +33,29 @@ export async function BuscarUnProducto(Id) {
 }
 
 export async function CrearProducto(datos) {
-    console.log("DATOS,", datos);
     try {
-        const response = await axios.post(
-            BASE_URL,
+        const response = await api.post(
+            'Productos/',
             new CrearProductoDTO(
-                datos.nombre, 
-                datos.descripcion, 
-                datos.precio, 
-                true, 
+                datos.nombre,
+                datos.descripcion,
+                datos.precio,
+                true,
                 datos.categorias || [], // Ya viene como array de IDs
                 datos.imagen,
                 datos.codigo,
                 datos.costoProduccion || 0,
             ), {
             headers: {
-                "Content-Type": "multipart/form-data",
-                ...authService.getAuthHeaders().headers
+                "Content-Type": "multipart/form-data"
             }
         });
         connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error("Error al crear producto:", error);
-        alert(error.response?.data?.error?.mensaje || "Error al crear el producto");
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje || "Error al crear el producto";
+        throw new Error(mensaje);
     }
 }
 
@@ -77,10 +73,9 @@ export async function ModificarProducto(datos) {
             Imagen: datos.imagen,
         };
         
-        const response = await axios.patch(BASE_URL, modificarDTO, {
+        const response = await api.patch('Productos/', modificarDTO, {
             headers: {
-                "Content-Type": "multipart/form-data",
-                ...authService.getAuthHeaders().headers
+                "Content-Type": "multipart/form-data"
             }
         });
         connection.send("RecargarMenu");
@@ -98,10 +93,9 @@ export async function ActivarProducto(Id) {
             Activo: true,
         };
         
-        const response = await axios.patch(BASE_URL, modificarDTO, {
+        const response = await api.patch('Productos/', modificarDTO, {
             headers: {
-                "Content-Type": "multipart/form-data",
-                ...authService.getAuthHeaders().headers
+                "Content-Type": "multipart/form-data"
             }
         });
         connection.send("RecargarMenu");
@@ -119,10 +113,9 @@ export async function DesactivarProducto(Id) {
             Activo: false,
         };
         
-        const response = await axios.patch(BASE_URL, modificarDTO, {
+        const response = await api.patch('Productos/', modificarDTO, {
             headers: {
-                "Content-Type": "multipart/form-data",
-                ...authService.getAuthHeaders().headers
+                "Content-Type": "multipart/form-data"
             }
         });
         connection.send("RecargarMenu");
@@ -136,9 +129,8 @@ export async function DesactivarProducto(Id) {
 
 export async function BorrarProducto(Id, Token) {
     try {
-        const response = await axios.delete(BASE_URL, {
-            params: { IdProducto: Id },
-            ...authService.getAuthHeaders()
+        const response = await api.delete('Productos/', {
+            params: { IdProducto: Id }
         });
         connection.send("RecargarMenu");
         return response.data;

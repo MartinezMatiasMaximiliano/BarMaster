@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL + "Empresas/";
+// import api from '../services/axiosInstance'
+// TODO: Descomentar cuando se implementen las llamadas reales a la API
 
 // DATOS DE PRUEBA - Simular respuesta de la API
 const datosPruebaPlan = {

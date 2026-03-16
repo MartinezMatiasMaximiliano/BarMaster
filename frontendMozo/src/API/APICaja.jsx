@@ -1,8 +1,4 @@
-import axios from 'axios';
-import { authService } from '../services/authService';
-
-const BASE_URL = `${import.meta.env.VITE_BASE_URL}Cajas`;
-const MOVIMIENTOS_URL = `${import.meta.env.VITE_BASE_URL}MovimientosCaja`;
+import api from '../services/axiosInstance';
 
 // Función auxiliar para formatear fecha y hora desde DateTime
 function formatearFechaHora(dateTimeString) {
@@ -41,7 +37,7 @@ function MappearCaja(caja) {
 
 export async function ObtenerCajaActiva() {
     try {
-        const response = await axios.get(`${BASE_URL}/Activa`, authService.getAuthHeaders());
+        const response = await api.get('Cajas/Activa');
         
         // Si no hay caja activa, el endpoint retorna 404
         if (response.status === 404) {
@@ -65,7 +61,7 @@ export async function AbrirCaja(datos) {
             montoApertura: datos.montoInicial
         };
         
-        const response = await axios.post(`${BASE_URL}/Abrir`, payload, authService.getAuthHeaders());
+        const response = await api.post('Cajas/Abrir', payload);
         const cajaCreada = response.data;
         
         // Transformar la respuesta al formato esperado
@@ -87,10 +83,9 @@ export async function CerrarCaja(idCaja, datos) {
             montoCierre: Number(datos.montoFinal) || 0
         };
         
-        const response = await axios.patch(
-            `${BASE_URL}/Cerrar`,
-            payload,
-            authService.getAuthHeaders()
+        const response = await api.patch(
+            'Cajas/Cerrar',
+            payload
         );
         
         return response.data;
@@ -106,7 +101,7 @@ export async function CerrarCaja(idCaja, datos) {
 
 export async function ObtenerHistorialCaja(params = {}) {
     try {
-        const response = await axios.get(BASE_URL, authService.getAuthHeaders());
+        const response = await api.get('Cajas');
         const cajas = response.data || [];
         
         // Filtrar solo las cajas cerradas (con fecha de cierre)
@@ -180,9 +175,7 @@ export async function ObtenerMovimientosCaja(idCaja) {
         }
         
         const idCajaString = typeof idCaja === 'string' ? idCaja : idCaja.toString();
-        const url = `${MOVIMIENTOS_URL}/Caja/${idCajaString}`;
-        
-        const response = await axios.get(url, authService.getAuthHeaders());
+        const response = await api.get(`MovimientosCaja/Caja/${idCajaString}`);
         const movimientos = response.data || [];
         
         // Transformar los movimientos al formato esperado

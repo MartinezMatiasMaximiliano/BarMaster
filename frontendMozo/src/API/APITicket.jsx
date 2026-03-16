@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import api from '../services/axiosInstance';
 
 /**
  * GET /Ticket/{idMovimientoCaja} - Obtiene los datos públicos de un ticket de pago
@@ -9,11 +7,15 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
  * @returns {Promise<object>} Datos del ticket (productos, fecha, mesa, total, etc.)
  */
 export async function ObtenerTicket(tenantId, idMovimientoCaja) {
-    const response = await axios.get(`${BASE_URL}Ticket/${idMovimientoCaja}`,{
+    try {
+        const response = await api.get(`Ticket/${idMovimientoCaja}`, {
             headers: {
                 'X-Tenant-ID': tenantId
             }
-        }
-    );
-    return response.data;
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error al obtener ticket:", error);
+        throw error;
+    }
 }

@@ -1,20 +1,27 @@
 import * as SignalR from '@microsoft/signalr';
 
-
 //HUB CONNECTION MOZO
 const hubURL = import.meta.env.VITE_BASE_URL + "NotificacionesHub"
 
 const connection = new SignalR.HubConnectionBuilder().withUrl(hubURL, {
     withCredentials: false
 })
+    .withAutomaticReconnect()
     .build();
 
-const ConectarAHub = async () => {
-    await connection.start()
-        .catch(err => console.error("Connection error:", err));
-
-    connection.send("RegistrarMozoAGrupo", connection.connectionId)
+export async function ConectarAHub() {
+    try {
+        await connection.start();
+        connection.send("RegistrarMozoAGrupo", connection.connectionId);
+    } catch (err) {
+        console.error("Connection error:", err);
+    }
 }
 
-ConectarAHub()
+connection.onreconnected(() => {
+    connection.send("RegistrarMozoAGrupo", connection.connectionId)
+        .catch(err => console.error("Error re-registering after reconnect:", err));
+});
+
+ConectarAHub();
 export default connection;

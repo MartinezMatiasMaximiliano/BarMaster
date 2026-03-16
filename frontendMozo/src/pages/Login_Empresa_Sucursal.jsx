@@ -78,14 +78,20 @@ const LoginEmpresaSucursal = () => {
      */
     const handleLoginError = (error) => {
         if (error.response) {
-            setError(
-                error.response.data?.message || 
-                `Error ${error.response.status}: ${error.response.statusText}`
-            );
+            const status = error.response.status;
+            if (status === 400 || status === 401) {
+                setError('Usuario o contraseña incorrectos');
+            } else if (status === 404) {
+                setError('No se encontró la empresa o sucursal ingresada');
+            } else if (status >= 500) {
+                setError('El servidor no está disponible en este momento. Intente más tarde.');
+            } else {
+                setError('No se pudo iniciar sesión. Intente nuevamente.');
+            }
         } else if (error.request) {
             setError('No se pudo conectar al servidor. Verifique su conexión.');
         } else {
-            setError(error.message || 'Error al realizar el login');
+            setError('Ocurrió un error inesperado. Intente nuevamente.');
         }
         console.error('Error en login:', error);
     };

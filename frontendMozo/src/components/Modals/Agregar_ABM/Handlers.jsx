@@ -33,9 +33,13 @@ export default function Handlers({ agregar, recargarComponentes, handleClose, ca
 
   const handleSave = async () => {
     if (Object.keys(errors).length === 0) {
-      await agregar(values);
-      handleClose();
-      await recargarComponentes();
+      try {
+        await agregar(values);
+        handleClose();
+        await recargarComponentes();
+      } catch (error) {
+        setErrors(prev => ({ ...prev, servidor: error.message || 'Ocurrió un error. Intente nuevamente.' }));
+      }
     }
   };
 

@@ -104,8 +104,7 @@ export default function Modal_GestionarProductosMenu({
                 handleClose();
             }, 1000);
         } catch (error) {
-            const errorMessage = error.message || 'Error al guardar los cambios';
-            showSnackbar(errorMessage, 'error');
+            showSnackbar('Error al guardar los cambios. Intente nuevamente.', 'error');
         }
     }, [showSnackbar, menu, idsProductosEnMenu, recargar, handleClose]);
 

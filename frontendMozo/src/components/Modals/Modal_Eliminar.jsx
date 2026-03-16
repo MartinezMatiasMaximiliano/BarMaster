@@ -1,5 +1,6 @@
 import { React, useState } from "react"
 import {
+    Alert,
     Button,
     Dialog,
     DialogTitle,
@@ -22,12 +23,17 @@ function Modal_Eliminar(props) {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const handleSave = async () => {
-        await props.eliminar(idFila);
+    const [error, setError] = useState('');
 
-        // Cerrar el modal después de guardar
-        handleClose();
-        await props.recargarComponentes();
+    const handleSave = async () => {
+        try {
+            setError('');
+            await props.eliminar(idFila);
+            handleClose();
+            await props.recargarComponentes();
+        } catch (err) {
+            setError(err.message || 'Ocurrió un error al eliminar. Intente nuevamente.');
+        }
     };
 
     return (
@@ -66,6 +72,11 @@ function Modal_Eliminar(props) {
                     <Typography variant="body1">
                         ¿Está seguro que desea borrar el registro?
                     </Typography>
+                    {error && (
+                        <Alert severity="error" sx={{ mt: 2 }} onClose={() => setError('')}>
+                            {error}
+                        </Alert>
+                    )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, py: 2 }}>
                     <Button onClick={handleClose} variant="outlined">

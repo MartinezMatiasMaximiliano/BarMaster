@@ -1,13 +1,8 @@
-import axios from 'axios';
-import { authService } from '../services/authService';
-
-const BASE_URL_API = import.meta.env.VITE_BASE_URL;
-
-const BASE_URL = import.meta.env.VITE_BASE_URL + "Menu";
+import api from '../services/axiosInstance';
 
 export async function BuscarTodosLosMenus(idSucursal) {
     try {
-        const response = await axios.get(`${BASE_URL_API}ListaMenu?IdSucursal=${idSucursal}`, authService.getAuthHeaders());
+        const response = await api.get(`ListaMenu?IdSucursal=${idSucursal}`);
         return response.data;
     } catch (error) {
         console.error("Error al buscar menús:", error);
@@ -17,7 +12,7 @@ export async function BuscarTodosLosMenus(idSucursal) {
 
 export async function BuscarUnMenu(idMenu) {
     try {
-        const response = await axios.get(`${BASE_URL}?id=${idMenu}`, authService.getAuthHeaders());
+        const response = await api.get(`Menu?id=${idMenu}`);
         return response.data;
     } catch (error) {
         console.error("Error al buscar menú:", error);
@@ -27,23 +22,19 @@ export async function BuscarUnMenu(idMenu) {
 
 export async function CrearMenu(datos) {
     try {
-        const response = await axios.post(
-            `${BASE_URL}/Menu`,
+        const response = await api.post(
+            'Menu/Menu',
             {
                 Nombre: datos.nombre,
                 IdSucursal: datos.idSucursal
-            },
-            authService.getAuthHeaders()
+            }
         );
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string'
-                ? error.response.data
-                : error.response.data.error?.mensaje || "Error al crear el menú";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al crear el menú";
+        throw new Error(mensaje);
     }
 }
 
@@ -59,35 +50,28 @@ export async function ModificarMenu(datos) {
             body.Activo = datos.activo;
         }
 
-        const response = await axios.patch(`${BASE_URL}`, body, authService.getAuthHeaders());
+        const response = await api.patch('Menu', body);
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string'
-                ? error.response.data
-                : error.response.data.error?.mensaje || "Error al modificar el menú";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al modificar el menú";
+        throw new Error(mensaje);
     }
 }
 
 export async function ActivarMenu(idMenu, activar) {
     try {
-        const response = await axios.patch(
-            `${BASE_URL_API}ActivarMenu?IdMenu=${idMenu}&Activar=${activar}`,
-            {},
-            authService.getAuthHeaders()
+        const response = await api.patch(
+            `ActivarMenu?IdMenu=${idMenu}&Activar=${activar}`,
+            {}
         );
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string'
-                ? error.response.data
-                : error.response.data.error?.mensaje || "Error al activar/desactivar el menú";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al activar/desactivar el menú";
+        throw new Error(mensaje);
     }
 }
 
@@ -97,41 +81,33 @@ export async function DesactivarMenu(idMenu) {
 
 export async function BorrarMenu(idMenu) {
     try {
-        const response = await axios.delete(
-            `${BASE_URL}?IdMenu=${idMenu}`,
-            authService.getAuthHeaders()
+        const response = await api.delete(
+            `Menu?IdMenu=${idMenu}`
         );
         return response.data;
     } catch (error) {
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string'
-                ? error.response.data
-                : error.response.data.error?.mensaje || "Error al eliminar el menú";
-            alert(errorMessage);
-        }
-        return error.response;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al eliminar el menú";
+        throw new Error(mensaje);
     }
 }
 
 export async function ModificarProductosMenu(idMenu, idsProductos) {
     try {
-        const response = await axios.post(
-            `${BASE_URL_API}Menu/ModificarProductos`,
+        const response = await api.post(
+            'Menu/ModificarProductos',
             {
                 IdMenu: idMenu,
                 IdsProductos: idsProductos
-            },
-            authService.getAuthHeaders()
+            }
         );
         return response.data;
     } catch (error) {
         console.error("Error al modificar productos del menú:", error);
-        if (error.response?.data) {
-            const errorMessage = typeof error.response.data === 'string'
-                ? error.response.data
-                : error.response.data.error?.mensaje || "Error al modificar productos del menú";
-            throw new Error(errorMessage);
-        }
-        throw error;
+        const mensaje = error.response?.data?.error?.mensaje
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || "Error al modificar productos del menú";
+        throw new Error(mensaje);
     }
 }
