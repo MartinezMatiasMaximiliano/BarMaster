@@ -12,7 +12,7 @@
         public string NombreCliente { get; set; } = null!;
         public string? Direccion { get; set; } = null;  
         public string? Indicaciones { get; set; } 
-        public string Telefono { get; set; } = null!;
+        public string? Telefono { get; set; } = null!;
         public decimal PrecioTotal { get; set; }
         public bool Entregado { get; set; }
         
