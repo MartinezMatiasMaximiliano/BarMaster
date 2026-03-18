@@ -549,3 +549,4 @@ bin/
 # End of https://www.toptal.com/developers/gitignore/api/aspnetcore,visualstudiocode,visualstudio
 /BackEndAPI/wwwroot/uploads/ImagenesDeProductos
 /BackEndAPI/wwwroot/uploads/ImagenesProductos
+.claude/settings.local.json

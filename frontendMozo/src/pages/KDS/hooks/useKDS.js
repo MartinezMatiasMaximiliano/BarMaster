@@ -52,7 +52,7 @@ export const useKDS = () => {
                         indicaciones: producto.indicaciones,
                         fechaHora: visita.fechaHora,
                         fechaAgregado, // Fecha en que se agregó este producto (para antigüedad del pedido)
-                        numeroMesa: visita.mesa?.numero,
+                        numeroMesa: visita.numeroMesa,
                         estado, // "Pendiente" | "En Preparación" | "Listo"
                         precio: producto.precio
                     });
