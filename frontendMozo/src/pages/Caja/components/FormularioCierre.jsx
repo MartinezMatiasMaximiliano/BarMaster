@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Alert,
     Box,
     Button,
     Card,
@@ -14,7 +15,7 @@ import {
 import LockIcon from '@mui/icons-material/Lock';
 import { currencyFormatter } from '../utils/constants';
 
-export const FormularioCierre = ({ formCierre, diferencia, guardando, onChange, onSubmit }) => {
+export const FormularioCierre = ({ formCierre, diferencia, guardando, onChange, onSubmit, mesasAbiertas = 0 }) => {
     return (
         <Card variant="outlined">
             <CardHeader title="Cierre de caja" subheader="Detalla el monto final y observaciones." />
@@ -82,13 +83,18 @@ export const FormularioCierre = ({ formCierre, diferencia, guardando, onChange, 
                             </strong>
                         </Typography>
                     </Stack>
+                    {mesasAbiertas > 0 && (
+                        <Alert severity="warning" sx={{ mt: 2 }}>
+                            No se puede cerrar la caja mientras haya mesas abiertas ({mesasAbiertas} {mesasAbiertas === 1 ? 'mesa abierta' : 'mesas abiertas'}).
+                        </Alert>
+                    )}
                     <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3}>
                         <Button
                             type="submit"
                             variant="contained"
                             color="success"
                             startIcon={guardando ? <CircularProgress size={20} color="inherit" /> : <LockIcon />}
-                            disabled={guardando}
+                            disabled={guardando || mesasAbiertas > 0}
                         >
                             {guardando ? 'Cerrando...' : 'Cerrar caja'}
                         </Button>

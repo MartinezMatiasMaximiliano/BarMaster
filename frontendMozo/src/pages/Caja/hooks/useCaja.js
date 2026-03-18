@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AbrirCaja, CerrarCaja, ObtenerCajaActiva, ObtenerMovimientosCaja } from '../../../API/APICaja';
 import { buildTimestampDefaults, initialApertura, initialCierre, obtenerMensajeError } from '../utils/constants';
 import { setCajaActiva as setCajaActivaGlobal } from '../../../redux/slices/cajaActivaSlice';
 
 export const useCaja = () => {
     const dispatch = useDispatch();
+    const visitasActivas = useSelector(state => state.visitasActivas.value);
     const [cajaActiva, setCajaActiva] = useState(null);
     const [movimientos, setMovimientos] = useState([]);
     const [movimientosCajaActiva, setMovimientosCajaActiva] = useState([]);
@@ -128,7 +129,13 @@ export const useCaja = () => {
         return true;
     };
 
+    const mesasAbiertas = visitasActivas?.length ?? 0;
+
     const validarCierre = () => {
+        if (mesasAbiertas > 0) {
+            setError(`No se puede cerrar la caja mientras haya mesas abiertas (${mesasAbiertas} ${mesasAbiertas === 1 ? 'mesa abierta' : 'mesas abiertas'}).`);
+            return false;
+        }
         if (formCierre.montoFinal === '' || Number.isNaN(Number(formCierre.montoFinal))) {
             setError('Debes indicar el monto final real.');
             return false;
@@ -310,6 +317,7 @@ export const useCaja = () => {
         diferencia,
         balanceActual,
         balanceNoEfectivo,
+        mesasAbiertas,
         // Setters
         setTabValue,
         setError,

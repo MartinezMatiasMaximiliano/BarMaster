@@ -34,6 +34,7 @@ function Caja() {
         diferencia,
         balanceActual,
         balanceNoEfectivo,
+        mesasAbiertas,
         setTabValue,
         setError,
         setMensaje,
@@ -99,6 +100,7 @@ function Caja() {
                                                 guardando={guardando}
                                                 onChange={handleChange(setFormCierre)}
                                                 onSubmit={onCerrarCaja}
+                                                mesasAbiertas={mesasAbiertas}
                                             />
                                         ) : (
                                             <FormularioApertura
