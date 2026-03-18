@@ -3,6 +3,7 @@ using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
 using BackEndAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndAPI.Controllers
@@ -15,6 +16,48 @@ namespace BackEndAPI.Controllers
         public EmpresasController(IEmpresasServices empresasServices)
         {
             _empresasServices = empresasServices;
+        }
+
+        [Authorize]
+        [HttpGet("/Empresa")]
+        public async Task<IActionResult> ObtenerEmpresaConSucursales()
+        {
+            try
+            {
+                var idClaim = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa");
+                if (idClaim == null)
+                    return Unauthorized(new ErrorDTO(401, "UNAUTHORIZED", "Token inválido"));
+
+                var idEmpresa = Guid.Parse(idClaim.Value);
+                var empresa = await _empresasServices.GetEmpresaById(idEmpresa);
+
+                if (empresa == null)
+                    return NotFound(new ErrorDTO(404, "NOT FOUND", "Empresa no encontrada"));
+
+                var response = new EmpresaConSucursalesDTO
+                {
+                    Id = empresa.Id,
+                    Nombre = empresa.Nombre,
+                    Telefonos = empresa.Telefonos,
+                    Emails = empresa.Emails,
+                    Activo = empresa.Activo,
+                    FechaInscripcion = empresa.FechaInscripcion,
+                    Sucursales = empresa.Sucursales?.Select(s => new SucursalSimpleDTO
+                    {
+                        Id = s.Id,
+                        Nombre = s.Nombre,
+                        Direccion = s.Direccion,
+                        Telefono = s.Telefono,
+                        Username = s.Username
+                    }).ToList() ?? []
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", ex.Message));
+            }
         }
 
         [HttpPost()]
