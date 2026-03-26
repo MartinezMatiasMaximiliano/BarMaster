@@ -17,12 +17,27 @@ namespace BackEndAPI.Repositories
             Db = context.Db;
         }
 
+        public async Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdSucursal(Guid idSucursal)
+        {
+            return await Db.DeliveriesTakeaways
+                .Include(d => d.Visita)
+                .ThenInclude(v => v.Productos)
+                .Where(d => d.IdSucursal == idSucursal)
+                .ToListAsync();
+        }
+        public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid id)
+        {
+            return await Db.DeliveriesTakeaways
+                 .Include(d => d.Visita)
+                 .ThenInclude(v => v.Productos)
+                 .FirstOrDefaultAsync(d => d.Id == id);
+        }
         public async Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(DeliveryAndTakeaway deliveryAndTakeaway, Visita visita)
         {
             var transaccion = await Db.Database.BeginTransactionAsync();
             try
             {
-                Db.Entry(visita).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                await Db.Visitas.AddAsync(visita);
                 await Db.DeliveriesTakeaways.AddAsync(deliveryAndTakeaway);
                 await Db.SaveChangesAsync();
 
@@ -36,26 +51,23 @@ namespace BackEndAPI.Repositories
 
             }
         }
-
-        public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid id)
+        public async Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeaway(Guid IdDeliveryTakeaway, DeliveryAndTakeaway deliveryTakeaway)
         {
-            return await Db.DeliveriesTakeaways.FindAsync(id);
+            Db.Entry(deliveryTakeaway).State = EntityState.Modified;
+            await Db.SaveChangesAsync();
+            return deliveryTakeaway;
         }
-
-        public async Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdSucursal(Guid idSucursal)
-        {
-            return await Db.DeliveriesTakeaways
-                .Include(d => d.Visita)
-                .ThenInclude(v => v.Productos)
-                .Where(d => d.IdSucursal == idSucursal)
-                .ToListAsync();
-        }
-
         public async Task<decimal> GetPrecioEnvioPorId(int? id)
         {
             if (!id.HasValue) return 0;
             var tipo = await Db.TipoEnvios.FindAsync(id.Value);
             return tipo?.Precio ?? 0;
+        }
+        public async Task<bool> EliminarDeliveryTakeaway(DeliveryAndTakeaway deliveryTakeaway)
+        {
+            Db.DeliveriesTakeaways.Remove(deliveryTakeaway);
+            await Db.SaveChangesAsync();
+            return true;
         }
     }
 }

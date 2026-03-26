@@ -28,22 +28,13 @@ namespace BackEndAPI.Services
         public async Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> productos, Guid IdVisita)
         {
             decimal Total = 0;
-            if (productos == null || productos.Count <= 0)
-            {
-                throw new Exception("Lista de productos vacia");
-            }
-
-            if (IdVisita == Guid.Empty)
-            {
-                throw new Exception("IdVisita vacio");
-            }
+            if (productos == null || productos.Count <= 0) throw new Exception("Lista de productos vacia");
+            if (IdVisita == Guid.Empty) throw new Exception("IdVisita vacio");
 
             var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
 
-            if (visita == null)
-            {
-                throw new Exception("Visita no encontrada");
-            }
+            if (visita == null)throw new Exception("Visita no encontrada");
+            
 
             foreach (var item in productos)
             {

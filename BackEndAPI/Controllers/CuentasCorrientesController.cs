@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 namespace BackEndAPI.Controllers
 {
     [Authorize]
-    [Route("[controller]")]
+    [Route("/[controller]")]
     [ApiController]
     public class CuentasCorrientesController : ControllerBase
     {
@@ -55,7 +55,7 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpGet("/{IdCuenta}")]
+        [HttpGet("{IdCuenta}")]
         public async Task<IActionResult> GetListaCuentasCorrientes(Guid IdCuenta)
         {
             try
@@ -91,7 +91,7 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPost("/Crear")]
+        [HttpPost("Crear")]
         public async Task<IActionResult> CrearCuentaCorriente([FromBody] CrearCuentaCorrienteDTO request)
         {
             try
@@ -115,7 +115,7 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPost("/Modificar")]
+        [HttpPost("Modificar")]
         public async Task<IActionResult> ActualizarDatosCuentaCorriente([FromBody] ModificarCuentaCorrienteDTO request)
         {
             try
@@ -137,7 +137,7 @@ namespace BackEndAPI.Controllers
 
         }
 
-        [HttpPost("/CrearMovimiento")]
+        [HttpPost("CrearMovimiento")]
         public async Task<IActionResult> CrearMovimientoCuentaCorriente([FromQuery] Guid IdCuenta,[FromBody] CrearMovimientoCajaDTO request) {
             try
             {
