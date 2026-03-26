@@ -8,11 +8,11 @@ export default function Errores({errors}) {
             <List dense sx={{ py: 0 }}>
                     {Object.entries(errors).map(([key, value]) => (
                     <ListItem key={key} sx={{ py: 0.5 }}>
-                        <ListItemText 
+                        <ListItemText
                             primary={
-                                <>
-                                    Campo <strong>{key}</strong>: {value}
-                                </>
+                                key === 'servidor'
+                                    ? 'Error en el servidor, intente nuevamente más tarde.'
+                                    : <> Campo <strong>{key}</strong>: {value} </>
                             }
                         />
                     </ListItem>

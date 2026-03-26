@@ -13,7 +13,6 @@ import Abm_Productos from './pages/Abm_Productos';
 import Abm_Menus from './pages/Abm_Menus';
 import Abm_Categorias from './pages/Abm_Categorias'
 import Abm_Personas from './pages/Abm_Personas'
-import Abm_TipoPago from './pages/Abm_TipoPago'
 import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery from './pages/Delivery'
@@ -47,7 +46,6 @@ import { BuscarTodasLasPersonas } from './API/APIPersonas'
 import { BuscarTodosLosRoles } from './API/APIRoles'
 import { BuscarVisitaPorId, BuscarVisitasActivas } from './API/APIVisitas'
 import { BuscarTodasLasReservas } from './API/APIReservas'
-import { BuscarTipoMovimientosPorEntorno } from './API/APITipoMovimientosCaja'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { BuscarTodosLosMenus } from './API/APIMenus'
@@ -95,7 +93,6 @@ function App() {
     const [personas, SetPersonas] = useState([])
     const [roles, SetRoles] = useState([])
     const [reservas, SetReservas] = useState([])
-    const [tipoPagos, SetTipoPagos] = useState([])
     const [planos, SetPlanos] = useState([])
     const [menus, SetMenus] = useState([])
 
@@ -131,9 +128,6 @@ function App() {
                 BuscarTodasLasReservas()
                     .then(data => { if (!cancelled) SetReservas(Array.isArray(data) ? data : []); })
                     .catch(() => { if (!cancelled) SetReservas([]); });
-                BuscarTipoMovimientosPorEntorno('Ventas')
-                    .then(data => { if (!cancelled) SetTipoPagos(Array.isArray(data) ? data : []); })
-                    .catch(() => { if (!cancelled) SetTipoPagos([]); });
                 BuscarTodosLosPlanos()
                     .then(data => { if (!cancelled) SetPlanos(Array.isArray(data) ? data : []); })
                     .catch(() => { if (!cancelled) SetPlanos([]); });
@@ -153,7 +147,6 @@ function App() {
                 SetRoles([]);
                 SetCategorias([]);
                 SetReservas([]);
-                SetTipoPagos([]);
                 SetPlanos([]);
                 SetMenus([]);
             }
@@ -204,11 +197,6 @@ function App() {
     async function recargarReservas() {
         const data = await BuscarTodasLasReservas().catch(() => []);
         SetReservas(Array.isArray(data) ? data : []);
-    }
-
-    async function recargarTipoPagos() {
-        const data = await BuscarTipoMovimientosPorEntorno('Ventas').catch(() => []);
-        SetTipoPagos(Array.isArray(data) ? data : []);
     }
 
     async function recargarPlanos() {
@@ -355,7 +343,6 @@ function App() {
                             <Route path="/abm_productos" element={<Control_Login><Abm_Productos recargarComponentes={recargarProductos} datos_productos={datos_menu_abm} categorias={categorias} titulo="Productos" /></Control_Login>} />
                             <Route path="/abm_menus" element={<Control_Login><Abm_Menus recargarComponentes={recargarMenus} datos_menus={menus} productos={menu} categorias={categorias} idSucursal={localStorage.getItem('idSucursal') || authService.getIdSucursal()} titulo="Menús" /></Control_Login>} />
                             <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
-                            <Route path="/abm_tipo_pago" element={<Control_Login><Abm_TipoPago recargarComponentes={recargarTipoPagos} datos_tipo_pagos={tipoPagos} titulo="Tipos de Pago" /></Control_Login>} />
                             <Route path="/reservas" element={<Control_Login><Abm_Reservas recargarComponentes={recargarReservas} datos_reservas={datos_reservas} titulo="Reservas" /></Control_Login>} />
                             <Route path="/abm_planos" element={<Control_Login><Abm_Planos recargarComponentes={recargarPlanos} datos_planos={datos_planos_abm} titulo="Planos" /></Control_Login>} />
                             <Route path="/reportes" element={<Control_Login><Reportes /></Control_Login>} />

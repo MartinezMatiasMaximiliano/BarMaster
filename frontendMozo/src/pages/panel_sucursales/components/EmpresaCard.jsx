@@ -6,182 +6,113 @@ import {
     Box,
     Typography,
     Divider,
-    Grid,
     Chip
 } from '@mui/material';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import EmailIcon from '@mui/icons-material/Email';
 import SucursalCard from './SucursalCard';
-import { boxCardBorder } from '../../../styles/boxStyles';
 
-/**
- * Componente que representa una tarjeta de empresa con sus sucursales
- */
 const EmpresaCard = ({ empresa, onSucursalEnter }) => {
     return (
         <Card
             sx={{
-                ...boxCardBorder,
                 width: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                borderRadius: 3,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                 overflow: 'hidden',
-                '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                    borderColor: 'primary.main'
-                }
             }}
         >
-            <CardContent sx={{ 
-                flexGrow: 1, 
-                p: { xs: 3, sm: 4, md: 5 },
-                '&:last-child': { pb: { xs: 3, sm: 4, md: 5 } }
+            <CardContent sx={{
+                flexGrow: 1,
+                p: { xs: 2.5, sm: 3, md: 4 },
+                '&:last-child': { pb: { xs: 2.5, sm: 3, md: 4 } }
             }}>
-                {/* Header de la Empresa */}
-                <Stack 
-                    direction="row" 
-                    spacing={2} 
-                    alignItems="center" 
-                    sx={{ 
-                        mb: 3,
-                        pb: 2,
-                        borderBottom: 2,
-                        borderColor: 'divider'
-                    }}
+                {/* Header */}
+                <Stack
+                    direction="row"
+                    spacing={1.5}
+                    alignItems="center"
+                    sx={{ mb: 2.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}
                 >
-                    <Box
-                        sx={{
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'primary.light',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
+                    <StorefrontIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                    <Typography
+                        variant="h5"
+                        component="h2"
+                        sx={{ fontWeight: 700, color: 'text.primary' }}
                     >
-                        <StorefrontIcon 
-                            sx={{ 
-                                fontSize: { xs: 28, sm: 32 },
-                                color: 'primary.main'
-                            }} 
-                        />
-                    </Box>
-                    <Typography 
-                        variant="h4" 
-                        component="h2" 
-                        sx={{ 
-                            fontWeight: 700,
-                            color: 'text.primary',
-                            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
-                        }}
-                    >
-                        {empresa.Nombre}
+                        {empresa.nombre}
                     </Typography>
                 </Stack>
 
                 {/* Emails */}
-                {empresa.Emails && empresa.Emails.length > 0 && (
-                    <Box sx={{ 
-                        ...boxCardBorder,
-                        mb: 3,
-                        p: 2,
-                        borderRadius: 2,
-                        bgcolor: 'action.hover'
-                    }}>
-                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-                            <EmailIcon fontSize="small" color="primary" />
-                            <Typography 
-                                variant="subtitle2" 
-                                color="text.secondary" 
-                                sx={{ fontWeight: 600, fontSize: '0.9rem' }}
-                            >
-                                Emails de contacto:
+                {empresa.emails && empresa.emails.length > 0 && (
+                    <Box sx={{ mb: 2.5 }}>
+                        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 1 }}>
+                            <EmailIcon fontSize="small" color="action" />
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 0.5 }}>
+                                Emails de contacto
                             </Typography>
                         </Stack>
                         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                            {empresa.Emails.map((email, index) => (
+                            {empresa.emails.map((email, index) => (
                                 <Chip
                                     key={index}
                                     label={email}
-                                    size="medium"
+                                    size="small"
                                     variant="outlined"
-                                    icon={<EmailIcon fontSize="small" />}
-                                    sx={{
-                                        borderColor: 'primary.main',
-                                        color: 'primary.main',
-                                        '&:hover': {
-                                            bgcolor: 'primary.light',
-                                            color: 'primary.dark'
-                                        }
-                                    }}
+                                    sx={{ fontSize: '0.8rem' }}
                                 />
                             ))}
                         </Stack>
                     </Box>
                 )}
 
-                <Divider sx={{ my: 3 }} />
+                <Divider sx={{ mb: 2.5 }} />
 
                 {/* Sucursales */}
                 <Box>
-                    <Typography 
-                        variant="h6" 
-                        sx={{ 
-                            fontWeight: 600, 
-                            mb: 3,
-                            color: 'text.primary',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1
-                        }}
-                    >
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            Sucursales
+                        </Typography>
                         <Box
                             component="span"
                             sx={{
-                                px: 1.5,
-                                py: 0.5,
+                                px: 1,
+                                py: 0.25,
                                 borderRadius: 1,
                                 bgcolor: 'primary.main',
                                 color: 'white',
-                                fontSize: '0.875rem',
-                                fontWeight: 700
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                lineHeight: 1.5
                             }}
                         >
-                            {empresa.Sucursales?.length || 0}
+                            {empresa.sucursales?.length || 0}
                         </Box>
-                        Sucursal{empresa.Sucursales?.length !== 1 ? 'es' : ''}
-                    </Typography>
-                    {empresa.Sucursales && empresa.Sucursales.length > 0 ? (
-                        <Grid container spacing={2} sx={{ width: '100%' }}>
-                            {empresa.Sucursales.map((sucursal, index) => (
-                                <Grid key={index} sx={{ width: '100%', maxWidth: '100%' }}>
-                                    <SucursalCard 
-                                        sucursal={sucursal} 
-                                        onEnter={onSucursalEnter}
-                                    />
-                                </Grid>
+                    </Stack>
+
+                    {empresa.sucursales && empresa.sucursales.length > 0 ? (
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+                            gap: 2
+                        }}>
+                            {empresa.sucursales.map((sucursal, index) => (
+                                <SucursalCard
+                                    key={sucursal.id || index}
+                                    sucursal={sucursal}
+                                    onEnter={(suc) => onSucursalEnter(suc, empresa.id)}
+                                />
                             ))}
-                        </Grid>
+                        </Box>
                     ) : (
-                        <Box
-                            sx={{
-                                p: 4,
-                                textAlign: 'center',
-                                borderRadius: 2,
-                                bgcolor: 'action.hover',
-                                border: '2px dashed',
-                                borderColor: 'divider'
-                            }}
-                        >
-                            <Typography 
-                                variant="body1" 
-                                color="text.secondary" 
-                                sx={{ fontStyle: 'italic' }}
-                            >
+                        <Box sx={{ p: 3, textAlign: 'center', borderRadius: 1.5, border: '1px dashed', borderColor: 'divider' }}>
+                            <Typography variant="body2" color="text.secondary">
                                 No hay sucursales registradas para esta empresa.
                             </Typography>
                         </Box>
@@ -193,4 +124,3 @@ const EmpresaCard = ({ empresa, onSucursalEnter }) => {
 };
 
 export default EmpresaCard;
-

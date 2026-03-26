@@ -55,8 +55,8 @@ namespace BackEndAPI.Data
             );
 
             modelBuilder.Entity<TipoMovimientoCaja>().HasData(
-                new TipoMovimientoCaja { Id = 1, Nombre = "Ingreso de Efectivo", EsIngreso = true ,EsEfectivo = true, Entorno="Movimiento" },
-                new TipoMovimientoCaja { Id = 2, Nombre = "Retiro de Efectivo", EsIngreso = false ,EsEfectivo = true, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 1, Nombre = "Ingreso de Efectivo", EsIngreso = true, EsEfectivo = true, Entorno = "Movimiento" },
+                new TipoMovimientoCaja { Id = 2, Nombre = "Retiro de Efectivo", EsIngreso = false, EsEfectivo = true, Entorno = "Movimiento" },
                 new TipoMovimientoCaja { Id = 3, Nombre = "Pago Proveedor Efectivo", EsIngreso = false, EsEfectivo = true, Entorno = "Movimiento" },
                 new TipoMovimientoCaja { Id = 4, Nombre = "Pago Proveedor Transferencia", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
                 new TipoMovimientoCaja { Id = 5, Nombre = "Pago Proveedor Tarjeta De Credito/Debito", EsIngreso = false, EsEfectivo = false, Entorno = "Movimiento" },
@@ -73,7 +73,11 @@ namespace BackEndAPI.Data
                 new TipoMovimientoCaja { Id = 16, Nombre = "Gastos Cuenta Corriente", EsIngreso = false, EsEfectivo = false, Entorno = "CuentaCorriente" },
                 new TipoMovimientoCaja { Id = 17, Nombre = "Cobro Venta Efectivo", EsIngreso = true, EsEfectivo = true, Entorno = "Ventas" },
                 new TipoMovimientoCaja { Id = 18, Nombre = "Cobro Venta Tarjeta de Credito/Debito", EsIngreso = true, EsEfectivo = false, Entorno = "Ventas" },
-                new TipoMovimientoCaja { Id = 19, Nombre = "Cobro Venta Transferencia bancaria", EsIngreso = true, EsEfectivo = false, Entorno = "Ventas" }
+                new TipoMovimientoCaja { Id = 19, Nombre = "Cobro Venta Transferencia bancaria", EsIngreso = true, EsEfectivo = false, Entorno = "Ventas" },
+                new TipoMovimientoCaja { Id = 20, Nombre = "Reembolso Efectivo", EsIngreso = false, EsEfectivo = true, Entorno = "Ventas" },
+                new TipoMovimientoCaja { Id = 21, Nombre = "Reembolso Tarjeta de Credito/Debito", EsIngreso = false, EsEfectivo = false, Entorno = "Ventas" },
+                new TipoMovimientoCaja { Id = 22, Nombre = "Reembolso Transferencia bancaria", EsIngreso = false, EsEfectivo = false, Entorno = "Ventas" }
+
                 );
 
 
@@ -118,7 +122,7 @@ namespace BackEndAPI.Data
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra una sucursal, se borran sus reservas              
 
             modelBuilder.Entity<MovimientosCuentaCorriente>()
-        .HasKey(x => new { x.IdCuentaCorriente, x.IdMovimientoCaja });
+         .HasKey(x => new { x.IdCuentaCorriente, x.IdMovimientoCaja });
 
             modelBuilder.Entity<MovimientosCuentaCorriente>()
                 .HasOne(x => x.CuentaCorriente)
@@ -127,7 +131,7 @@ namespace BackEndAPI.Data
 
             modelBuilder.Entity<MovimientosCuentaCorriente>()
                 .HasOne(x => x.MovimientoCaja)
-                .WithMany() // no navigation in MovimientosCaja
+                .WithMany()
                 .HasForeignKey(x => x.IdMovimientoCaja);
 
 
@@ -150,7 +154,7 @@ namespace BackEndAPI.Data
                 .WithMany(c => c.Visitas)
                 .HasForeignKey(v => v.IdCaja)
                 .OnDelete(DeleteBehavior.SetNull); // si se borra una caja, se pone a null en la visita
-                                                   
+
             // Relacion Caja N:1 Sucursal
             modelBuilder.Entity<Caja>()
                 .HasOne(c => c.Sucursal)

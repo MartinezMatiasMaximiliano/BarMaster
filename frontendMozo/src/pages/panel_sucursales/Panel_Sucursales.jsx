@@ -1,20 +1,18 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Alert } from '@mui/material';
+import { Box, Alert, CircularProgress, Typography } from '@mui/material';
 import { LoginContext, AuthTypeContext } from '../../App';
-import { datosPrueba, datosFacturacion } from './utils/mockData';
+import { ObtenerEmpresaConSucursales } from '../../API/APIEmpresas';
 import { useFacturacion } from './hooks/useFacturacion';
 import Header from './components/Header';
 import ConfirmExitDialog from './components/ConfirmExitDialog';
 import PlanDialog from './components/PlanDialog';
 import EmpresaCard from './components/EmpresaCard';
 
-/**
- * Componente principal del Panel de Sucursales
- * Muestra todas las empresas y sus sucursales con información detallada
- */
 function PanelSucursales() {
-    const [empresas] = useState(datosPrueba);
+    const [empresas, setEmpresas] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [openPlanDialog, setOpenPlanDialog] = useState(false);
     const navigate = useNavigate();
@@ -23,42 +21,39 @@ function PanelSucursales() {
 
     const { desgloseFacturacion, totalCalculado } = useFacturacion(empresas);
 
-    const handleAbrirConfirmacion = () => {
-        setOpenConfirmDialog(true);
-    };
+    useEffect(() => {
+        ObtenerEmpresaConSucursales()
+            .then(data => {
+                setEmpresas(Array.isArray(data) ? data : [data]);
+            })
+            .catch(() => {
+                setError('No se pudo cargar la información de las sucursales.');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, []);
 
-    const handleCerrarConfirmacion = () => {
-        setOpenConfirmDialog(false);
-    };
-
-    const handleAbrirPlanDialog = () => {
-        setOpenPlanDialog(true);
-    };
-
-    const handleCerrarPlanDialog = () => {
-        setOpenPlanDialog(false);
-    };
-
-    const handleSucursalEnter = (sucursal) => {
-        // TODO: Implementar funcionalidad de entrada a la sucursal
+    const handleSucursalEnter = (sucursal, idEmpresa) => {
+        navigate(`/sucursal/${idEmpresa}/${sucursal.id}`);
     };
 
     return (
-        <Box sx={{ 
-            width: '100%', 
-            minHeight: '100%', 
-            display: 'flex', 
+        <Box sx={{
+            width: '100%',
+            minHeight: '100%',
+            display: 'flex',
             flexDirection: 'column',
             py: 2
         }}>
-            <Header 
-                onOpenPlanDialog={handleAbrirPlanDialog}
-                onOpenConfirmDialog={handleAbrirConfirmacion}
+            <Header
+                onOpenPlanDialog={() => setOpenPlanDialog(true)}
+                onOpenConfirmDialog={() => setOpenConfirmDialog(true)}
             />
 
             <ConfirmExitDialog
                 open={openConfirmDialog}
-                onClose={handleCerrarConfirmacion}
+                onClose={() => setOpenConfirmDialog(false)}
                 loginContext={loginContext}
                 authTypeContext={authTypeContext}
                 navigate={navigate}
@@ -66,36 +61,34 @@ function PanelSucursales() {
 
             <PlanDialog
                 open={openPlanDialog}
-                onClose={handleCerrarPlanDialog}
-                datosFacturacion={datosFacturacion}
+                onClose={() => setOpenPlanDialog(false)}
                 desgloseFacturacion={desgloseFacturacion}
                 totalCalculado={totalCalculado}
             />
 
-            {empresas.length === 0 ? (
-                <Alert 
-                    severity="info" 
-                    sx={{ 
-                        mb: 3, 
-                        width: '100%',
-                        borderRadius: 2,
-                        fontSize: '1rem',
-                        py: 2
-                    }}
-                >
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+                    <CircularProgress />
+                </Box>
+            ) : error ? (
+                <Alert severity="error" sx={{ borderRadius: 2 }}>
+                    {error}
+                </Alert>
+            ) : empresas.length === 0 ? (
+                <Alert severity="info" sx={{ borderRadius: 2 }}>
                     No se encontraron empresas con sucursales.
                 </Alert>
             ) : (
-                <Box sx={{ 
-                    flexGrow: 1, 
+                <Box sx={{
+                    flexGrow: 1,
                     width: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 3
                 }}>
                     {empresas.map((empresa) => (
-                        <EmpresaCard 
-                            key={empresa.Id}
+                        <EmpresaCard
+                            key={empresa.id}
                             empresa={empresa}
                             onSucursalEnter={handleSucursalEnter}
                         />
@@ -107,4 +100,3 @@ function PanelSucursales() {
 }
 
 export default PanelSucursales;
-

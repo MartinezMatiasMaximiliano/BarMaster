@@ -11,15 +11,15 @@ export const useFacturacion = (empresas) => {
         const desglose = [];
         
         empresas.forEach(empresa => {
-            empresa.Sucursales?.forEach(sucursal => {
+            empresa.sucursales?.forEach(sucursal => {
                 const items = [];
                 let subtotal = 0;
 
                 // Agregar plan
-                if (sucursal.Plan) {
-                    const precioPlan = preciosPlanes[sucursal.Plan.nombre] || 0;
+                if (sucursal.plan) {
+                    const precioPlan = preciosPlanes[sucursal.plan.nombre] || 0;
                     items.push({
-                        concepto: sucursal.Plan.nombre,
+                        concepto: sucursal.plan.nombre,
                         tipo: 'Plan',
                         precio: precioPlan
                     });
@@ -27,8 +27,8 @@ export const useFacturacion = (empresas) => {
                 }
 
                 // Agregar módulos
-                if (sucursal.Modulos && sucursal.Modulos.length > 0) {
-                    sucursal.Modulos.forEach(modulo => {
+                if (sucursal.modulos && sucursal.modulos.length > 0) {
+                    sucursal.modulos.forEach(modulo => {
                         const precioModulo = preciosModulos[modulo] || 0;
                         items.push({
                             concepto: modulo,
@@ -40,7 +40,7 @@ export const useFacturacion = (empresas) => {
                 }
 
                 desglose.push({
-                    sucursal: sucursal.Direccion,
+                    sucursal: sucursal.direccion,
                     items: items,
                     subtotal: subtotal
                 });

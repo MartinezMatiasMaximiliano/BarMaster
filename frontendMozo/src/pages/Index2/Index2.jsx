@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoSlice';
 import { ObtenerCajaActiva } from '../../API/APICaja';
 import { setCajaActiva } from '../../redux/slices/cajaActivaSlice';
-import { useKeyboardInput } from './hooks/useKeyboardInput';
 import { useMozoCode } from './hooks/useMozoCode';
 import { BottomBar } from '../../components/BottomBar';
 import { ConfirmLogoutDialog } from '../../components/ConfirmLogoutDialog';
@@ -44,7 +43,6 @@ function Index2(props) {
     const { layout, obtenerMesaPorId, obtenerDatosMesa } = useMesasGrid(mesas, planoSeleccionado);
 
     // Hooks para BottomBar
-    const { inputRef } = useKeyboardInput();
     const { codigoMozo, mozo } = useMozoCode(props.datos_mozos || []);
 
     // Hooks para logout
@@ -106,7 +104,6 @@ function Index2(props) {
             {renderContenido()}
             
             <BottomBar
-                inputRef={inputRef}
                 codigoMozo={codigoMozo}
                 handleChange={handleChange}
                 mozo={mozo}
