@@ -148,13 +148,13 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPost("ModificarDatos")]
+        [HttpPatch("ModificarDatos")]
         public async Task<IActionResult> ModificarDatosDeliveryTakeaway(ModificarDeliveryTakeawayDTO request)
         {
             try
             {
                 if (request.IdDeliveryTakeaway == Guid.Empty) throw new Exception("Id del pedido nulo");
-                var result = await _deliveryTakeawayServices.ModificarDatosDeliveryTakeaway(request.IdDeliveryTakeaway, request);
+                var result = await _deliveryTakeawayServices.ModificarDatosDeliveryTakeaway(request);
                 if (result == null) throw new Exception("Error al modificar el pedido");
                 var response = new DeliveryTakeawayResponseDTO
                 {
@@ -180,50 +180,19 @@ namespace BackEndAPI.Controllers
                         return BadRequest("Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'.");
                     case "Error al modificar el pedido":
                         return BadRequest("Error al modificar el pedido. Verifica los datos enviados y vuelve a intentarlo.");
+                    case "No hay productos para remover":
+                        return BadRequest("No hay productos para remover. Asegúrate de que el pedido tenga productos antes de intentar removerlos.");
+                    case "No se pueden modificar pedidos entregados":
+                        return BadRequest("No se pueden modificar pedidos entregados. Verifica el estado del pedido antes de intentar modificarlo.");
+                    case "No se pueden modificar pedidos cerrados":
+                        return BadRequest("No se pueden modificar pedidos cerrados. Verifica el estado del pedido antes de intentar modificarlo.");
+                    case "No se pueden modificar pedidos cancelados":
+                        return BadRequest("No se pueden modificar pedidos cancelados. Verifica el estado del pedido antes de intentar modificarlo.");
                     default:
                         return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
             }
         }
-
-        //[HttpPost("/ModificarProductos")]
-        //public async Task<IActionResult> ModificarProductosDeliveryTakeaway(ModificarProductosDeliveryTakeawayDTO request)
-        //{
-        //    try
-        //    {
-        //        if (request.IdDeliveryTakeaway == Guid.Empty) throw new Exception("Id del pedido nulo");
-        //        var result = await _deliveryTakeawayServices.ModificarProductosDeliveryTakeaway(request.IdDeliveryTakeaway, request);
-        //        if (result == null) throw new Exception("Error al modificar los productos del pedido");
-        //        var response = new DeliveryTakeawayResponseDTO
-        //        {
-        //            Id = result.Id,
-        //            IdSucursal = result.IdSucursal,
-        //            IdTipoEnvio = result.IdTipoEnvio,
-        //            IdVisita = result.IdVisita,
-        //            FechaHora = result.FechaHora,
-        //            NombreCliente = result.NombreCliente ?? "",
-        //            Direccion = result.Direccion,
-        //            Indicaciones = result.Indicaciones,
-        //            Telefono = result.Telefono ?? "",
-        //            PrecioTotal = result.PrecioTotal,
-        //            Entregado = result.Entregado
-        //        };
-        //        return Ok(response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        switch (ex.Message)
-        //        {
-        //            case "Id del pedido nulo":
-        //                return BadRequest("Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'.");
-        //            case "Error al modificar los productos del pedido":
-        //                return BadRequest("Error al modificar los productos del pedido. Verifica los datos enviados y vuelve a intentarlo.");
-        //            default:
-        //                return StatusCode(500, $"Internal server error: {ex.Message}");
-        //        }
-        //    }
-        //}
-
         [HttpDelete]
         public async Task<IActionResult> EliminarDeliveryTakeaway(Guid id)
         {

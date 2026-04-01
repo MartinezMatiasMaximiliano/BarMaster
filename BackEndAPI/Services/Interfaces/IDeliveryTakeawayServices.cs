@@ -10,7 +10,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid IdDeliveryTakeaway);
         Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(Guid Idsucursal, CrearDeliveryTakeawayDTO request);
         Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway);
-        Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeaway(Guid IdDeliveryTakeaway, ModificarDeliveryTakeawayDTO request);
+        Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeaway(ModificarDeliveryTakeawayDTO request);
         Task<bool> EliminarDeliveryTakeaway(Guid IdDeliveryTakeaway);
 
     }

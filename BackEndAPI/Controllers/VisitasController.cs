@@ -191,6 +191,8 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
+                    case "No se encontró el registro de Delivery/Takeaway asociado a esta visita":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     default:
                         return StatusCode(500, "Internal server error catch: Agregar productos a visita - " + ex.Message);
 
