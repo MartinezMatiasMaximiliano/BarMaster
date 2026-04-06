@@ -32,6 +32,13 @@ namespace BackEndAPI.Repositories
                  .ThenInclude(v => v.Productos)
                  .FirstOrDefaultAsync(d => d.Id == id);
         }
+        public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorIdVisita(Guid IdVisita)
+        {
+            return await Db.DeliveriesTakeaways
+                 .Include(d => d.Visita)
+                 .ThenInclude(v => v.Productos)
+                 .FirstOrDefaultAsync(d => d.IdVisita == IdVisita);
+        }
         public async Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(DeliveryAndTakeaway deliveryAndTakeaway, Visita visita)
         {
             var transaccion = await Db.Database.BeginTransactionAsync();
@@ -51,7 +58,7 @@ namespace BackEndAPI.Repositories
 
             }
         }
-        public async Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeaway(Guid IdDeliveryTakeaway, DeliveryAndTakeaway deliveryTakeaway)
+        public async Task<DeliveryAndTakeaway?> ModificarDeliveryTakeaway(DeliveryAndTakeaway deliveryTakeaway)
         {
             Db.Entry(deliveryTakeaway).State = EntityState.Modified;
             await Db.SaveChangesAsync();

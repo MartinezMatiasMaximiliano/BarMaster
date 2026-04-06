@@ -21,7 +21,6 @@ namespace BackEndAPI.Services
             _cajasServices = cajasServices;
             _productosRepository = productosRepository;
         }
-
         public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeaways(Guid IdSucursal)
         {
             return await _deliveryTakeawayRepository.ObtenerPorIdSucursal(IdSucursal);
@@ -105,27 +104,24 @@ namespace BackEndAPI.Services
         {
             throw new NotImplementedException();
         }
-        public async Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeaway(Guid IdDeliveryTakeaway, ModificarDeliveryTakeawayDTO request)
+        public async Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeaway(ModificarDeliveryTakeawayDTO request)
         {
-            var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
+            var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(request.IdDeliveryTakeaway);
             if (deliveryTakeawayExistente == null) throw new Exception("No se encontró el pedido");
 
             request.NombreCliente = request.NombreCliente ?? deliveryTakeawayExistente.NombreCliente;
             request.Telefono = request.Telefono ?? deliveryTakeawayExistente.Telefono;
             request.Direccion = request.Direccion ?? deliveryTakeawayExistente.Direccion;
             request.Indicaciones = request.Indicaciones ?? deliveryTakeawayExistente.Indicaciones;
-            return await _deliveryTakeawayRepository.ModificarDatosDeliveryTakeaway(IdDeliveryTakeaway, deliveryTakeawayExistente);
-
-
-
-
-
+            return await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(deliveryTakeawayExistente);
         }
+        
         public async Task<bool> EliminarDeliveryTakeaway(Guid IdDeliveryTakeaway)
         {
             var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
             if (deliveryTakeawayExistente == null) throw new Exception("No se encontró el pedido");
             return await _deliveryTakeawayRepository.EliminarDeliveryTakeaway(deliveryTakeawayExistente);
         }
+
     }
 }
