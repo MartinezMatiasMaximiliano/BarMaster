@@ -104,6 +104,8 @@ builder.Services.AddScoped<IMovimientosCajaRepository, MovimientosCajaRepository
 builder.Services.AddScoped<IMovimientosCajaServices, MovimientosCajaServices>();
 builder.Services.AddScoped<ITipoMovimientosCajaRepository, TipoMovimientosCajaRepository>();
 builder.Services.AddScoped<ITipoMovimientosCajaServices, TipoMovimientosCajaServices>();
+builder.Services.AddScoped<ITipoEnviosRepository, TipoEnviosRepository>();
+builder.Services.AddScoped<ITipoEnviosServices, TipoEnviosServices>();
 builder.Services.AddScoped<ICurrentDbContext, CurrentDbContext>();
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
