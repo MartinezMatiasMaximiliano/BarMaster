@@ -1,14 +1,15 @@
 import api from '../services/axiosInstance'
+import { construirError } from './APIError';
 
 export async function BuscarTodosLosPlanos() {
     try {
         const response = await api.get('ListaPlanosSucursal');
         return response.data;
     } catch (error) {
-        console.error("Error al buscar planos:", error);
+        console.error("Error al buscar planos:", construirError(error, 'Error al buscar planos'));
         // Si hay un error en la respuesta, lanzarlo para que se maneje en el componente
         if (error.response) {
-            throw error;
+            throw construirError(error, 'Error al buscar planos');
         }
         // Si no hay respuesta, retornar array vacío
         return [];
@@ -20,6 +21,7 @@ export async function BuscarUnPlano(IdPlano) {
         const response = await api.get(`Plano?IdPlano=${IdPlano}`);
         return response.data;
     } catch (error) {
+        console.error('Error al buscar plano:', construirError(error, 'Error al buscar el plano'));
         return error.response;
     }
 }
@@ -32,10 +34,7 @@ export async function CrearPlano(datos) {
         });
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al crear el plano";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al crear el plano");
     }
 }
 
@@ -54,10 +53,7 @@ export async function ModificarPlano(datos) {
         const response = await api.put('Plano', body);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al modificar el plano";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al modificar el plano");
     }
 }
 
@@ -67,9 +63,6 @@ export async function BorrarPlano(IdPlano, Token) {
         const response = await api.delete(`Plano?IdPlano=${IdPlano}`);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al eliminar el plano";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al eliminar el plano");
     }
 }

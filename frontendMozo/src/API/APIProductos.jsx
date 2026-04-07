@@ -1,5 +1,6 @@
 import api from '../services/axiosInstance'
 import connection from '../connections/HubConnMozo'
+import { construirError } from './APIError';
 
 class CrearProductoDTO {
     constructor(nombre, descripcion, precio, activo, listaIdCategorias, imagen, codigo, costoProduccion) {
@@ -19,7 +20,7 @@ export async function BuscarTodosLosProductos() {
         const response = await api.get('Productos/');
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error:", construirError(error, 'Error al buscar productos'));
     }
 }
 
@@ -28,7 +29,7 @@ export async function BuscarUnProducto(Id) {
         const response = await api.get('Productos/' + Id);
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error:", construirError(error, 'Error al buscar el producto'));
     }
 }
 
@@ -53,9 +54,8 @@ export async function CrearProducto(datos) {
         connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
-        console.error("Error al crear producto:", error);
-        const mensaje = error.response?.data?.error?.mensaje || "Error al crear el producto";
-        throw new Error(mensaje);
+        console.error("Error al crear producto:", construirError(error, 'Error al crear el producto'));
+        throw construirError(error, "Error al crear el producto");
     }
 }
 
@@ -81,7 +81,7 @@ export async function ModificarProducto(datos) {
         connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
-        console.error("Error al modificar producto:", error);
+        console.error("Error al modificar producto:", construirError(error, 'Error al modificar el producto'));
         return error.response;
     }
 }
@@ -101,7 +101,7 @@ export async function ActivarProducto(Id) {
         connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
-        console.error("Error al activar producto:", error);
+        console.error("Error al activar producto:", construirError(error, 'Error al activar el producto'));
         return error.response;
     }
 }
@@ -121,7 +121,7 @@ export async function DesactivarProducto(Id) {
         connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
-        console.error("Error al desactivar producto:", error);
+        console.error("Error al desactivar producto:", construirError(error, 'Error al desactivar el producto'));
         return error.response;
     }
 }
@@ -135,6 +135,7 @@ export async function BorrarProducto(Id, Token) {
         connection.send("RecargarMenu");
         return response.data;
     } catch (error) {
+        console.error('Error al borrar producto:', construirError(error, 'Error al eliminar el producto'));
         return error.response;
     }
 }

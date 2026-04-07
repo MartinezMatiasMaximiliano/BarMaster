@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Box, CircularProgress, Alert, TextField, InputAdornment, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { GetDeliveryTakeaway } from '../../API/APIDeliveryTakeaway';
+import { esDelivery, esTakeaway, GetDeliveryTakeaway, normalizarDeliveryTakeaway } from '../../API/APIDeliveryTakeaway';
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
 import Filtros from '../../components/Filtros/Filtros';
@@ -21,18 +21,19 @@ const COLUMNAS = [
 const COLUMNAS_KEYS = ['fechaHora', 'nombreCliente', 'direccion', 'telefono', 'indicaciones', 'precioTotal', 'entregado'];
 
 export function mapearDeliveryTakeawayARow(item) {
-    const fecha = item.fechaHora ?? item.FechaHora ?? '';
+    const normalizado = normalizarDeliveryTakeaway(item);
+    const fecha = normalizado.fechaHora ?? '';
     const fechaStr = typeof fecha === 'string' ? fecha.substring(0, 19).replace('T', ' ') : '-';
     return {
-        id: item.id ?? item.Id,
+        id: normalizado.id,
         fechaHora: fechaStr,
         fechaHoraRaw: fecha,
-        nombreCliente: (item.nombreCliente ?? item.NombreCliente ?? '-').toString().trim(),
-        direccion: (item.direccion ?? item.Direccion ?? '-').toString().trim(),
-        telefono: (item.telefono ?? item.Telefono ?? '-').toString().trim(),
-        indicaciones: (item.indicaciones ?? item.Indicaciones ?? '-').toString().trim() || '-',
-        precioTotal: Number(item.precioTotal ?? item.PrecioTotal ?? 0).toFixed(2),
-        entregado: (item.entregado ?? item.Entregado ?? false) ? 'Sí' : 'No',
+        nombreCliente: (normalizado.cliente ?? '-').toString().trim(),
+        direccion: (normalizado.direccion ?? '-').toString().trim(),
+        telefono: (normalizado.telefono ?? '-').toString().trim(),
+        indicaciones: (normalizado.indicaciones ?? '-').toString().trim() || '-',
+        precioTotal: normalizado.precioTotal.toFixed(2),
+        entregado: normalizado.entregado ? 'Sí' : 'No',
     };
 }
 
@@ -80,8 +81,8 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo }) {
 
     const filas = useMemo(() => {
         const filtrados = tipo === 'delivery'
-            ? datos.filter(item => (item.idTipoEnvio ?? item.IdTipoEnvio) != null)
-            : datos.filter(item => (item.idTipoEnvio ?? item.IdTipoEnvio) == null);
+            ? datos.filter(esDelivery)
+            : datos.filter(esTakeaway);
 
         let rows = filtrados.map(mapearDeliveryTakeawayARow);
 

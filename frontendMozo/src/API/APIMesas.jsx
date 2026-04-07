@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance'
+import { construirError } from './APIError';
 
 class CrearMesaDTO {
     constructor(nombre, idPlano, capacidad = 0, x = 0, y = 0, w = 0, h = 0) {
@@ -21,8 +22,7 @@ export async function CrearMesa(datos) {
         );
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje || "Error al crear la mesa";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al crear la mesa");
     }
 }
 
@@ -31,9 +31,8 @@ export async function AbrirCerrarMesa(request) {
         const response = await api.patch('Mesa/AbrirCerrar', request);
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
-        const mensaje = error.response?.data?.error?.mensaje || "Error al abrir/cerrar la mesa";
-        throw new Error(mensaje);
+        console.error("Error:", construirError(error, 'Error al abrir/cerrar la mesa'));
+        throw construirError(error, "Error al abrir/cerrar la mesa");
     }
 }
 
@@ -61,8 +60,7 @@ export async function ModificarMesa(datos) {
         const response = await api.patch('Mesa', body);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje || "Error al modificar la mesa";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al modificar la mesa");
     }
 }
 
@@ -80,6 +78,7 @@ export async function PonerMozoEnNull(MesaId) {
         const response = await api.put('Mesa/' + MesaId, { MozoId: -1 });
         return response.data;
     } catch (error) {
+        console.error('Error al poner mozo en null:', construirError(error, 'Error al actualizar la mesa'));
         return error.response
     }
 }
@@ -89,6 +88,7 @@ export async function DesactivarMesa(Id) {
         const response = await api.put('Mesa/' + Id, { activo: false });
         return response.data;
     } catch (error) {
+        console.error('Error al desactivar mesa:', construirError(error, 'Error al desactivar la mesa'));
         return error.response
     }
 }
@@ -98,6 +98,7 @@ export async function ActivarMesa(Id) {
         const response = await api.put('Mesa/' + Id, { activo: true });
         return response.data;
     } catch (error) {
+        console.error('Error al activar mesa:', construirError(error, 'Error al activar la mesa'));
         return error.response
     }
 }
@@ -112,11 +113,8 @@ export async function BorrarMesa(idMesa) {
         );
         return response.data;
     } catch (error) {
-        console.error("Error al borrar mesa:", error);
-        const mensaje = error.response?.data?.error?.mensaje
-            || error.response?.data?.mensaje
-            || "Error al eliminar la mesa";
-        throw new Error(mensaje);
+        console.error("Error al borrar mesa:", construirError(error, 'Error al eliminar la mesa'));
+        throw construirError(error, "Error al eliminar la mesa");
     }
 }
 
@@ -125,7 +123,7 @@ export async function BuscarTodasLasMesas() {
         const response = await api.get('Mesas');
         return response.data;
     } catch (error) {
-        console.error("Error al obtener mesas:", error);
+        console.error("Error al obtener mesas:", construirError(error, 'Error al obtener mesas'));
         return [];
     }
 }

@@ -7,73 +7,66 @@ import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
 import { formatearFecha } from "../Helpers/HelperFunctions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
-import Checkbox from '@mui/material/Checkbox';
-import { Button } from "@mui/material";
-import { BorrarPersona, ModificarPersona } from "../API/APIPersonas";
-import { GetDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
-import { Campos, inicializarCampos } from "../configs/agregar/TakeAway";
+import { Button, Checkbox } from "@mui/material";
+import { CambiarEstadoEntregaDeliveryTakeaway, EliminarDeliveryTakeaway, esTakeaway, GetDeliveryTakeaway, normalizarDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
 
-function TakeAway(props) {
-    const [campos, setCampos] = useState(Campos);
-
-    useEffect(() => {
-        if (localStorage.getItem('token')) {
-            inicializarCampos().then(camposInicializados => {
-                setCampos(camposInicializados);
-            });
-        }
-    }, []);
-
+function TakeAway() {
     const [takeAways, setTakeAways] = useState([]);
     const [showModalAgregar, setShowModalAgregar] = useState(false);
+    const [actualizandoEntregaIds, setActualizandoEntregaIds] = useState([]);
 
     const cargarTakeAways = React.useCallback(async () => {
         if (!localStorage.getItem('token')) return;
-        const data = await GetDeliveryTakeaway();
-        const todos = Array.isArray(data) ? data : [];
-        const soloTakeaway = todos.filter(
-            (item) => (item.idTipoEnvio ?? item.IdTipoEnvio) == null
-        );
-        const filas = soloTakeaway.map((item) => {
-            const productosRaw = item.productos ?? item.Productos ?? [];
-            const productos = Array.isArray(productosRaw) ? productosRaw : [];
-            return {
-                uuid: item.id ?? item.Id,
-                fechaHora: item.fechaHora ?? item.FechaHora ?? '',
-                Cliente: item.nombreCliente ?? item.NombreCliente ?? '-',
-                Direccion: item.direccion ?? item.Direccion ?? '-',
-                Telefono: item.telefono ?? item.Telefono ?? '-',
-                Indicaciones: item.indicaciones ?? item.Indicaciones ?? '-',
-                TipoEnvio: item.tipoEnvio ?? item.TipoEnvio ?? null,
-                PrecioTotal: item.precioTotal ?? item.PrecioTotal ?? 0,
-                entregado: item.entregado ?? item.Entregado ?? false,
-                Productos: productos.map((p) => ({
-                    nombre: p.nombre ?? p.Nombre ?? '-',
-                    precio: p.precio ?? p.Precio ?? 0,
-                    indicaciones: p.indicaciones ?? p.Indicaciones ?? '',
-                })),
-            };
-        });
-        setTakeAways(filas);
+        try {
+            const data = await GetDeliveryTakeaway();
+            const filas = (Array.isArray(data) ? data : [])
+                .map(normalizarDeliveryTakeaway)
+                .filter(esTakeaway)
+                .map((item) => ({
+                    id: item.id,
+                    fechaHora: item.fechaHora,
+                    Cliente: item.cliente,
+                    Telefono: item.telefono || '-',
+                    Indicaciones: item.indicaciones || '-',
+                    PrecioTotal: item.precioTotal,
+                    entregado: item.entregado,
+                    Productos: item.productos.map((producto) => ({
+                        nombre: producto.nombre,
+                        precio: producto.precio,
+                        indicaciones: producto.indicaciones,
+                    })),
+                }));
+            setTakeAways(filas);
+        } catch (error) {
+            console.error("Error al cargar take away:", error);
+            setTakeAways([]);
+        }
     }, []);
 
     useEffect(() => {
         cargarTakeAways();
     }, [cargarTakeAways]);
 
-    const toggleEntregadoTakeAway = (uuid) => {
-        setTakeAways((prev) =>
-            prev.map((takeAway) =>
-                takeAway.uuid === uuid
-                    ? { ...takeAway, entregado: !takeAway.entregado }
-                    : takeAway
-            )
-        );
+    const manejarCambioEntregado = async (fila, checked) => {
+        if (!fila?.id) return;
+
+        setActualizandoEntregaIds((prev) => [...prev, fila.id]);
+        try {
+            await CambiarEstadoEntregaDeliveryTakeaway(fila.id, checked);
+            setTakeAways((prev) =>
+                prev.map((takeAway) =>
+                    takeAway.id === fila.id ? { ...takeAway, entregado: checked } : takeAway
+                )
+            );
+        } catch (error) {
+            console.error("Error al actualizar estado de entrega:", error);
+        } finally {
+            setActualizandoEntregaIds((prev) => prev.filter((id) => id !== fila.id));
+        }
     };
 
     const api = {
-        eliminar: BorrarPersona,
-        modificar: ModificarPersona,
+        eliminar: EliminarDeliveryTakeaway,
     };
 
     const columnasTakeAway = [
@@ -93,11 +86,13 @@ function TakeAway(props) {
         {
             key: "entregado",
             label: "Entregado",
-            align: "right",
+            align: "center",
             render: (fila) => (
                 <Checkbox
-                    checked={!!fila.entregado}
-                    onChange={() => toggleEntregadoTakeAway(fila.uuid)}
+                    checked={Boolean(fila.entregado)}
+                    disabled={actualizandoEntregaIds.includes(fila.id)}
+                    onChange={(event) => manejarCambioEntregado(fila, event.target.checked)}
+                    inputProps={{ 'aria-label': 'Pedido entregado' }}
                 />
             ),
         },
@@ -109,11 +104,10 @@ function TakeAway(props) {
                 <Fila_Acciones
                     fila={fila}
                     api={api}
-                    recargar={props.recargarComponentes}
-                    deleteLabel="Producto"
+                    recargar={cargarTakeAways}
+                    deleteLabel="pedido"
                     showToggle={() => false}
-                    showEditar={true}
-                    campos={campos}
+                    showEditar={false}
                 />
             ),
         },

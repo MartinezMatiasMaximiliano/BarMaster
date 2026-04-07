@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance';
+import { construirError } from './APIError';
 
 // Función auxiliar para formatear fecha y hora desde DateTime
 function formatearFechaHora(dateTimeString) {
@@ -50,8 +51,8 @@ export async function ObtenerCajaActiva() {
         if (error.response?.status === 404) {
             return null;
         }
-        console.error('Error al obtener caja activa:', error);
-        throw error;
+        console.error('Error al obtener caja activa:', construirError(error, 'Error al obtener caja activa'));
+        throw construirError(error, 'Error al obtener caja activa');
     }
 }
 
@@ -67,8 +68,8 @@ export async function AbrirCaja(datos) {
         // Transformar la respuesta al formato esperado
         return MappearCaja(cajaCreada);
     } catch (error) {
-        console.error('Error al abrir la caja:', error);
-        throw error;
+        console.error('Error al abrir la caja:', construirError(error, 'Error al abrir la caja'));
+        throw construirError(error, 'Error al abrir la caja');
     }
 }
 
@@ -90,12 +91,12 @@ export async function CerrarCaja(idCaja, datos) {
         
         return response.data;
     } catch (error) {
-        console.error('Error al cerrar la caja:', error);
+        console.error('Error al cerrar la caja:', construirError(error, 'Error al cerrar la caja'));
         if (error.response) {
             console.error('Response status:', error.response.status);
             console.error('Response data:', error.response.data);
         }
-        throw error;
+        throw construirError(error, 'Error al cerrar la caja');
     }
 }
 
@@ -140,7 +141,7 @@ export async function ObtenerHistorialCaja(params = {}) {
                     };
                 } catch (error) {
                     // Si hay error al obtener movimientos, usar la diferencia del backend
-                    console.warn(`Error al obtener movimientos para caja ${cajaTransformada.id}:`, error);
+                    console.warn(`Error al obtener movimientos para caja ${cajaTransformada.id}:`, construirError(error, 'Error al obtener movimientos de caja'));
                     return cajaTransformada;
                 }
             })
@@ -162,8 +163,8 @@ export async function ObtenerHistorialCaja(params = {}) {
         const limite = params.limite || 10;
         return cajasCerradas.slice(0, limite);
     } catch (error) {
-        console.error('Error al obtener el historial de caja:', error);
-        throw error;
+        console.error('Error al obtener el historial de caja:', construirError(error, 'Error al obtener el historial de caja'));
+        throw construirError(error, 'Error al obtener el historial de caja');
     }
 }
 
@@ -202,11 +203,11 @@ export async function ObtenerMovimientosCaja(idCaja) {
         
         return movimientosTransformados;
     } catch (error) {
-        console.error('Error al obtener movimientos de la caja:', error);
+        console.error('Error al obtener movimientos de la caja:', construirError(error, 'Error al obtener movimientos de la caja'));
         if (error.response) {
             console.error('Response status:', error.response.status);
             console.error('Response data:', error.response.data);
         }
-        throw error;
+        throw construirError(error, 'Error al obtener movimientos de la caja');
     }
 }

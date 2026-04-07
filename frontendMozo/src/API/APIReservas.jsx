@@ -1,11 +1,12 @@
 import api from '../services/axiosInstance'
+import { construirError } from './APIError';
 
 export async function BuscarTodasLasReservas() {
     try {
         const response = await api.get('Reservas');
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error:", construirError(error, 'Error al buscar reservas'));
         return error.response;
     }
 }
@@ -15,6 +16,7 @@ export async function BuscarUnaReserva(Id) {
         const response = await api.get(`Reservas/${Id}`);
         return response.data;
     } catch (error) {
+        console.error('Error al buscar reserva:', construirError(error, 'Error al buscar la reserva'));
         return error.response;
     }
 }
@@ -24,6 +26,7 @@ export async function CrearReserva(datos) {
         const response = await api.post('Reservas', datos);
         return response.data;
     } catch (error) {
+        console.error('Error al crear reserva:', construirError(error, 'Error al crear la reserva'));
         return error.response;
     }
 }
@@ -33,10 +36,7 @@ export async function ModificarReserva(datos) {
         const response = await api.put('Reservas', datos);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al modificar la reserva";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al modificar la reserva");
     }
 }
 
@@ -45,9 +45,6 @@ export async function BorrarReserva(Id) {
         const response = await api.delete(`Reservas?Id=${Id}`);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al eliminar la reserva";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al eliminar la reserva");
     }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -19,25 +19,61 @@ import { useComandaProductos } from './hooks/useComandaProductos';
 import { FiltrosProductos } from '../Agregar_Pedidos/components/FiltrosProductos';
 import { ListaProductos } from '../Agregar_Pedidos/components/ListaProductos';
 import { Comanda } from '../Agregar_Pedidos/components/Comanda';
-import { CrearDeliveryTakeawayFromComanda } from '../../../API/APIDeliveryTakeaway';
+import { CrearDeliveryTakeawayFromComanda, ModificarDeliveryTakeaway } from '../../../API/APIDeliveryTakeaway';
+import { BuscarTodosLosTipoEnvios } from '../../../API/APITipoEnvios';
 import { useSnackbar } from '../../../hooks/useSnackbar';
 
-const tiposDeEnvio = [
-    { id: 1, nombre: 'Corto', precio: 500 },
-    { id: 2, nombre: 'Mediano', precio: 750 },
-    { id: 3, nombre: 'Largo', precio: 1000 },
-];
+function construirComandaInicial(initialData) {
+    const productos = Array.isArray(initialData?.productos) ? initialData.productos : [];
+    const agrupados = new Map();
 
-export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen = 'Delivery' }) {
-    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
-    const [loading, setLoading] = useState(false);
-    const [formValues, setFormValues] = useState({
-        Cliente: '',
-        Direccion: '',
-        Telefono: '',
-        Indicaciones: '',
-        TipoEnvio: '',
+    productos.forEach((producto) => {
+        const idProducto = producto.idProducto ?? producto.id;
+        const indicaciones = producto.indicaciones ?? '';
+        const key = `${idProducto}-${indicaciones}`;
+        const existente = agrupados.get(key);
+
+        if (existente) {
+            existente.cantidad += 1;
+            return;
+        }
+
+        agrupados.set(key, {
+            producto: {
+                id: idProducto,
+                nombre: producto.nombre ?? '-',
+                precio: Number(producto.precio ?? 0),
+                imagenUrl: producto.imagenUrl ?? null,
+            },
+            cantidad: 1,
+            indicaciones,
+        });
     });
+
+    return Array.from(agrupados.values());
+}
+
+const formInicial = {
+    Cliente: '',
+    Direccion: '',
+    Telefono: '',
+    Indicaciones: '',
+    TipoEnvio: '',
+};
+
+export default function Modal_AgregarDelivery({
+    open,
+    onClose,
+    onSuccess,
+    origen = 'Delivery',
+    modo = 'crear',
+    initialData = null,
+}) {
+    const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const esEdicion = modo === 'editar';
+    const [loading, setLoading] = useState(false);
+    const [tiposDeEnvio, setTiposDeEnvio] = useState([]);
+    const [formValues, setFormValues] = useState(formInicial);
 
     const {
         productos,
@@ -54,10 +90,11 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
         actualizarCantidad,
         actualizarIndicaciones,
         limpiarComanda,
+        setComanda,
     } = useComandaProductos(open);
 
     const handleClose = () => {
-        setFormValues({ Cliente: '', Direccion: '', Telefono: '', Indicaciones: '', TipoEnvio: '' });
+        setFormValues(formInicial);
         limpiarComanda();
         onClose();
     };
@@ -66,14 +103,66 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
         setFormValues((prev) => ({ ...prev, [field]: e.target.value }));
     };
 
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!open || origen !== 'Delivery') {
+            return () => { cancelled = true; };
+        }
+
+        BuscarTodosLosTipoEnvios()
+            .then((data) => {
+                if (!cancelled) {
+                    setTiposDeEnvio(Array.isArray(data) ? data : []);
+                }
+            })
+            .catch((error) => {
+                console.error('Error al cargar tipos de envío:', error);
+                if (!cancelled) {
+                    setTiposDeEnvio([]);
+                }
+            });
+
+        return () => { cancelled = true; };
+    }, [open, origen]);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        if (!esEdicion || !initialData) {
+            setFormValues(formInicial);
+            setComanda([]);
+            return;
+        }
+
+        setFormValues({
+            Cliente: initialData.cliente ?? '',
+            Direccion: initialData.direccion ?? '',
+            Telefono: initialData.telefono ?? '',
+            Indicaciones: initialData.indicaciones ?? '',
+            TipoEnvio: initialData.idTipoEnvio ?? '',
+        });
+        setComanda(construirComandaInicial(initialData));
+    }, [open, esEdicion, initialData, setComanda]);
+
     const handleEnviar = async () => {
-        const { Cliente, Telefono } = formValues;
+        const { Cliente, Direccion, TipoEnvio } = formValues;
         if (!Cliente?.trim()) {
             showSnackbar('Ingresá el nombre del cliente.', 'warning');
             return;
         }
-        if (!Telefono?.trim()) {
-            showSnackbar('Ingresá el teléfono del cliente.', 'warning');
+        if (origen === 'Delivery' && !Direccion?.trim()) {
+            showSnackbar('Ingresá la dirección del delivery.', 'warning');
+            return;
+        }
+        if (origen === 'Delivery' && (TipoEnvio === '' || TipoEnvio == null)) {
+            showSnackbar('Seleccioná un tipo de envío.', 'warning');
+            return;
+        }
+        if (origen === 'Delivery' && tiposDeEnvio.length === 0) {
+            showSnackbar('No hay tipos de envío disponibles. Cargalos desde el ABM primero.', 'warning');
             return;
         }
         if (comanda.length === 0) {
@@ -83,24 +172,51 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
 
         setLoading(true);
         try {
-            const result = await CrearDeliveryTakeawayFromComanda(formValues, comanda, origen);
+            const result = esEdicion
+                ? await ModificarDeliveryTakeaway({
+                    id: initialData?.id,
+                    idVisita: initialData?.idVisita,
+                    productosOriginales: initialData?.productos ?? [],
+                    ...formValues,
+                    comanda,
+                })
+                : await CrearDeliveryTakeawayFromComanda(formValues, comanda, origen);
+
             const label = origen === 'Takeaway' ? 'Take Away' : 'Delivery';
             if (result) {
-                showSnackbar(`${label} creado correctamente.`, 'success');
+                showSnackbar(`${label} ${esEdicion ? 'modificado' : 'creado'} correctamente.`, 'success');
                 handleClose();
                 onSuccess?.();
             } else {
-                showSnackbar(`Error al crear el ${label.toLowerCase()}. Intentá de nuevo.`, 'error');
+                showSnackbar(`Error al ${esEdicion ? 'modificar' : 'crear'} el ${label.toLowerCase()}. Intentá de nuevo.`, 'error');
             }
         } catch (error) {
             const label = origen === 'Takeaway' ? 'take away' : 'delivery';
             const raw = error.response?.data?.message ?? error.response?.data;
-            const msg = typeof raw === 'string' ? raw : `Error al crear el ${label}. Intente nuevamente.`;
+            const esErrorPersistencia = typeof raw === 'string'
+                && raw.includes('An error occurred while saving the entity changes');
+
+            let msg = typeof raw === 'string'
+                ? raw
+                : `Error al ${esEdicion ? 'modificar' : 'crear'} el ${label}. Intente nuevamente.`;
+
+            if (esErrorPersistencia && origen === 'Delivery') {
+                msg = `No se pudo ${esEdicion ? 'modificar' : 'crear'} el delivery. Verificá que el tipo de envío exista en la base de datos de BackEndAPI y que la dirección esté completa.`;
+            }
+
             showSnackbar(msg, 'error');
         } finally {
             setLoading(false);
         }
     };
+
+    const titulo = esEdicion
+        ? (origen === 'Takeaway' ? 'Editar Take Away' : 'Editar Delivery')
+        : (origen === 'Takeaway' ? 'Nuevo Take Away' : 'Nuevo Delivery');
+
+    const textoBoton = loading
+        ? (esEdicion ? 'Guardando...' : 'Creando...')
+        : `${esEdicion ? 'Guardar cambios' : `Crear ${origen === 'Takeaway' ? 'take away' : 'delivery'}`}${totalItems > 0 ? ` (${totalItems} item${totalItems !== 1 ? 's' : ''})` : ''}`;
 
     return (
         <Dialog
@@ -113,7 +229,7 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
         >
             <DialogTitle>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6">{origen === 'Takeaway' ? 'Nuevo Take Away' : 'Nuevo Delivery'}</Typography>
+                    <Typography variant="h6">{titulo}</Typography>
                     <IconButton aria-label="close" onClick={handleClose} sx={{ color: (t) => t.palette.grey[500] }}>
                         <CloseIcon />
                     </IconButton>
@@ -121,7 +237,6 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
             </DialogTitle>
 
             <DialogContent dividers>
-                {/* Datos del cliente y envío */}
                 <Stack spacing={2} sx={{ mb: 3 }}>
                     <Typography variant="subtitle2" color="text.secondary">Datos del pedido</Typography>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap">
@@ -150,7 +265,6 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
                             onChange={handleFormChange('Telefono')}
                             variant="outlined"
                             size="small"
-                            required
                             sx={{ minWidth: 140 }}
                         />
                         <TextField
@@ -172,10 +286,10 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
                                 size="small"
                                 sx={{ minWidth: 160 }}
                             >
-                                <MenuItem value="">—</MenuItem>
+                                <MenuItem value="">-</MenuItem>
                                 {tiposDeEnvio.map((t) => (
                                     <MenuItem key={t.id} value={t.id}>
-                                        {t.nombre} ($ {t.precio})
+                                        {t.nombre} ($ {Number(t.precio ?? 0)})
                                     </MenuItem>
                                 ))}
                             </TextField>
@@ -183,9 +297,8 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
                     </Stack>
                 </Stack>
 
-                {/* Título sección productos */}
                 <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                    Productos — hacé clic en un producto para agregarlo a la comanda
+                    Productos - hacé clic en un producto para agregarlo a la comanda
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 2, minWidth: 0, overflow: 'hidden', flex: 1 }}>
@@ -227,10 +340,7 @@ export default function Modal_AgregarDelivery({ open, onClose, onSuccess, origen
                     disabled={comanda.length === 0 || loading}
                     startIcon={<ShoppingCartIcon />}
                 >
-                    {loading
-                        ? 'Creando...'
-                        : `Crear ${origen === 'Takeaway' ? 'take away' : 'delivery'}${totalItems > 0 ? ` (${totalItems} item${totalItems !== 1 ? 's' : ''})` : ''}`
-                    }
+                    {textoBoton}
                 </Button>
             </DialogActions>
 

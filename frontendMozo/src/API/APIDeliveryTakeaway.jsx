@@ -1,4 +1,49 @@
 import api from '../services/axiosInstance';
+import { construirError } from './APIError';
+import { AgregarProductosAVisita, EliminarProductosVisita } from './APIVisitas';
+
+export function normalizarDeliveryTakeaway(item) {
+    const idTipoEnvio = item.idTipoEnvio ?? item.IdTipoEnvio ?? null;
+    const productosRaw = item.productos ?? item.Productos ?? [];
+    const productos = Array.isArray(productosRaw) ? productosRaw : [];
+    const tipoEnvioRaw = item.tipoEnvio ?? item.TipoEnvio ?? null;
+
+    return {
+        id: item.id ?? item.Id,
+        idVisita: item.idVisita ?? item.IdVisita ?? null,
+        fechaHora: item.fechaHora ?? item.FechaHora ?? '',
+        cliente: item.nombreCliente ?? item.NombreCliente ?? '-',
+        direccion: item.direccion ?? item.Direccion ?? null,
+        telefono: item.telefono ?? item.Telefono ?? null,
+        indicaciones: item.indicaciones ?? item.Indicaciones ?? null,
+        precioTotal: Number(item.precioTotal ?? item.PrecioTotal ?? 0),
+        entregado: Boolean(item.entregado ?? item.Entregado ?? false),
+        idTipoEnvio,
+        tipoEnvio: tipoEnvioRaw ? {
+            id: tipoEnvioRaw.id ?? tipoEnvioRaw.Id ?? idTipoEnvio,
+            nombre: tipoEnvioRaw.nombre ?? tipoEnvioRaw.Nombre ?? '',
+            precio: Number(tipoEnvioRaw.precio ?? tipoEnvioRaw.Precio ?? 0),
+            vehiculo: tipoEnvioRaw.vehiculo ?? tipoEnvioRaw.Vehiculo ?? '',
+        } : null,
+        productos: productos.map((producto) => ({
+            id: producto.id ?? producto.Id,
+            idProducto: producto.idProducto ?? producto.IdProducto,
+            nombre: producto.nombre ?? producto.Nombre ?? '-',
+            precio: Number(producto.precio ?? producto.Precio ?? 0),
+            indicaciones: producto.indicaciones ?? producto.Indicaciones ?? '',
+            estadoPedido: producto.estadoPedido ?? producto.EstadoPedido ?? '',
+            estadoPagado: producto.estadoPagado ?? producto.EstadoPagado ?? false,
+        })),
+    };
+}
+
+export function esTakeaway(item) {
+    return normalizarDeliveryTakeaway(item).idTipoEnvio === null;
+}
+
+export function esDelivery(item) {
+    return !esTakeaway(item);
+}
 
 /**
  * GET /DeliveryTakeaway - Lista de deliveries/takeaway de la sucursal (según token).
@@ -9,8 +54,8 @@ export async function GetDeliveryTakeaway() {
         const response = await api.get('DeliveryTakeaway');
         return response.data ?? [];
     } catch (error) {
-        console.error('Error al obtener deliveries/takeaway:', error);
-        return [];
+        console.error('Error al obtener deliveries/takeaway:', construirError(error, 'Error al obtener deliveries/takeaway'));
+        throw construirError(error, 'Error al obtener deliveries/takeaway');
     }
 }
 
@@ -28,16 +73,34 @@ function mapFormToCrearDTO(values, origen = 'Delivery') {
         Cantidad: 1,
     }));
 
+    const esPedidoTakeaway = origen === 'Takeaway';
+    const telefonoNormalizado = values.Telefono?.trim() || '';
+
     return {
         Origen: origen,
         NombreCliente: values.Cliente ?? '',
-        Direccion: values.Direccion ?? null,
-        Telefono: values.Telefono ?? null,
+        Direccion: esPedidoTakeaway ? '' : (values.Direccion?.trim() || ''),
+        Telefono: telefonoNormalizado,
         Indicaciones: values.Indicaciones ?? null,
-        IdTipoEnvio: values.TipoEnvio != null && values.TipoEnvio !== '' ? parseInt(values.TipoEnvio, 10) : null,
+        IdTipoEnvio: esPedidoTakeaway
+            ? null
+            : (values.TipoEnvio != null && values.TipoEnvio !== '' ? parseInt(values.TipoEnvio, 10) : null),
         IdPersonaRegistro: null,
         IdCadete: null,
         ListaIDProductos,
+    };
+}
+
+function mapComandaToCrearDTO(formValues, comanda, origen = 'Delivery') {
+    const body = mapFormToCrearDTO(formValues, origen);
+
+    return {
+        ...body,
+        ListaIDProductos: comanda.map((item) => ({
+            IdProducto: item.producto.id,
+            Detalles: item.indicaciones || '',
+            Cantidad: item.cantidad,
+        })),
     };
 }
 
@@ -51,14 +114,13 @@ export async function CrearDeliveryTakeaway(values, origen = 'Delivery') {
     try {
         const body = mapFormToCrearDTO(values, origen);
         const response = await api.post(
-            'DeliveryTakeaway',
+            'DeliveryTakeaway/Crear',
             body
         );
         return response.data ?? null;
     } catch (error) {
-        console.error('Error al crear delivery/takeaway:', error);
-        if (error.response?.data) throw error;
-        throw error;
+        console.error('Error al crear delivery/takeaway:', construirError(error, 'Error al crear delivery/takeaway'));
+        throw construirError(error, 'Error al crear delivery/takeaway');
     }
 }
 
@@ -70,29 +132,107 @@ export async function CrearDeliveryTakeaway(values, origen = 'Delivery') {
  */
 export async function CrearDeliveryTakeawayFromComanda(formValues, comanda, origen = 'Delivery') {
     try {
-        const body = {
-            Origen: origen,
-            NombreCliente: formValues.Cliente ?? '',
-            Direccion: formValues.Direccion ?? null,
-            Telefono: formValues.Telefono ?? null,
-            Indicaciones: formValues.Indicaciones ?? null,
-            IdTipoEnvio: formValues.TipoEnvio != null && formValues.TipoEnvio !== '' ? parseInt(formValues.TipoEnvio, 10) : null,
-            IdPersonaRegistro: null,
-            IdCadete: null,
-            ListaIDProductos: comanda.map((item) => ({
-                IdProducto: item.producto.id,
-                Detalles: item.indicaciones || '',
-                Cantidad: item.cantidad,
-            })),
-        };
+        const body = mapComandaToCrearDTO(formValues, comanda, origen);
         const response = await api.post(
-            'DeliveryTakeaway',
+            'DeliveryTakeaway/Crear',
             body
         );
         return response.data ?? null;
     } catch (error) {
-        console.error('Error al crear delivery/takeaway:', error);
-        if (error.response?.data) throw error;
-        throw error;
+        console.error('Error al crear delivery/takeaway:', construirError(error, 'Error al crear delivery/takeaway'));
+        throw construirError(error, 'Error al crear delivery/takeaway');
+    }
+}
+
+export async function ModificarDeliveryTakeaway(values) {
+    try {
+        const idVisita = values.idVisita ?? values.IdVisita;
+        if (!idVisita) {
+            throw new Error('La visita asociada al pedido no está disponible');
+        }
+
+        const productosOriginales = Array.isArray(values.productosOriginales) ? values.productosOriginales : [];
+        const comandaActual = Array.isArray(values.comanda) ? values.comanda : [];
+
+        const originalesPorClave = new Map();
+        productosOriginales.forEach((producto) => {
+            const key = `${producto.idProducto ?? producto.id}-${producto.indicaciones ?? ''}`;
+            const lista = originalesPorClave.get(key) ?? [];
+            lista.push(producto.id);
+            originalesPorClave.set(key, lista);
+        });
+
+        const deseadosPorClave = new Map();
+        comandaActual.forEach((item) => {
+            const key = `${item.producto.id}-${item.indicaciones || ''}`;
+            deseadosPorClave.set(key, {
+                idProducto: item.producto.id,
+                detalles: item.indicaciones || '',
+                cantidad: item.cantidad,
+            });
+        });
+
+        const idsARemover = [];
+        const productosAAgregar = [];
+        const claves = new Set([...originalesPorClave.keys(), ...deseadosPorClave.keys()]);
+
+        claves.forEach((key) => {
+            const idsOriginales = originalesPorClave.get(key) ?? [];
+            const deseado = deseadosPorClave.get(key);
+            const cantidadDeseada = deseado?.cantidad ?? 0;
+
+            if (cantidadDeseada < idsOriginales.length) {
+                idsARemover.push(...idsOriginales.slice(0, idsOriginales.length - cantidadDeseada));
+            }
+
+            if (cantidadDeseada > idsOriginales.length && deseado) {
+                productosAAgregar.push({
+                    IdProducto: deseado.idProducto,
+                    Detalles: deseado.detalles,
+                    Cantidad: cantidadDeseada - idsOriginales.length,
+                });
+            }
+        });
+
+        if (idsARemover.length > 0) {
+            await EliminarProductosVisita(idVisita, idsARemover);
+        }
+
+        if (productosAAgregar.length > 0) {
+            await AgregarProductosAVisita(idVisita, productosAAgregar);
+        }
+
+        return {
+            id: values.id ?? values.IdDeliveryTakeaway,
+            idVisita,
+        };
+    } catch (error) {
+        console.error('Error al modificar delivery/takeaway:', construirError(error, 'Error al modificar delivery/takeaway'));
+        throw construirError(error, 'Error al modificar delivery/takeaway');
+    }
+}
+
+export async function CambiarEstadoEntregaDeliveryTakeaway(id, entregado) {
+    try {
+        const response = await api.patch('DeliveryTakeaway/ModificarDatos', {
+            IdDeliveryTakeaway: id,
+            Entregado: entregado,
+        });
+        return response.data ?? null;
+    } catch (error) {
+        console.error('Error al cambiar estado de entrega:', construirError(error, 'Error al cambiar estado de entrega'));
+        throw construirError(error, 'Error al cambiar estado de entrega');
+    }
+}
+
+export async function EliminarDeliveryTakeaway(id) {
+    try {
+        const response = await api.delete('DeliveryTakeaway', {
+            params: { id },
+        });
+        return response.data ?? null;
+    } catch (error) {
+        console.error('Error al eliminar delivery/takeaway:', construirError(error, 'Error al eliminar delivery/takeaway'));
+        throw construirError(error, 'Error al eliminar delivery/takeaway');
     }
 }

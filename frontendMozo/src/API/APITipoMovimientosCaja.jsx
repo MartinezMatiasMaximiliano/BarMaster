@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance'
+import { construirError } from './APIError';
 
 export async function BuscarTipoMovimientosPorEntorno(entorno) {
     try {
@@ -7,7 +8,7 @@ export async function BuscarTipoMovimientosPorEntorno(entorno) {
         });
         return response.data;
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error:", construirError(error, 'Error al buscar tipos de movimiento de caja'));
         return error.response;
     }
 }
@@ -26,10 +27,7 @@ export async function CrearTipoMovimientoCaja(datos) {
         });
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.message
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al crear el tipo de movimiento";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al crear el tipo de movimiento");
     }
 }
 
@@ -38,9 +36,6 @@ export async function EliminarTipoMovimientoCaja(id) {
         const response = await api.delete(`TipoMovimientosCaja/${id}`);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.message
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al eliminar el tipo de movimiento";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al eliminar el tipo de movimiento");
     }
 }

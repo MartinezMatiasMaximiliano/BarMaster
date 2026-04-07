@@ -1,11 +1,12 @@
 import api from '../services/axiosInstance'
+import { construirError } from './APIError';
 
 export async function BuscarTodasLasCategorias() {
     try {
         const response = await api.get('Categorias');
         return response.data;
     } catch (error) {
-        console.error("Error al buscar categorías:", error);
+        console.error("Error al buscar categorías:", construirError(error, 'Error al buscar categorías'));
         return [];
     }
 }
@@ -18,10 +19,7 @@ export async function CrearCategoria(datos) {
         });
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al crear la categoría";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al crear la categoría");
     }
 }
 
@@ -30,6 +28,7 @@ export async function BuscarUnaCategoria(Id) {
         const response = await api.get(`Categorias/${Id}`);
         return response.data;
     } catch (error) {
+        console.error('Error al buscar categoría:', construirError(error, 'Error al buscar la categoría'));
         return error.response;
     }
 }
@@ -48,10 +47,7 @@ export async function ModificarCategoria(datos) {
         const response = await api.put(`Categorias/${datos.id}`, body);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al modificar la categoría";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al modificar la categoría");
     }
 }
 
@@ -62,10 +58,7 @@ export async function ActivarDesactivarCategoria(Id) {
         });
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al activar/desactivar la categoría";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al activar/desactivar la categoría");
     }
 }
 
@@ -84,9 +77,6 @@ export async function BorrarCategoria(Id, Token) {
         const response = await api.delete(`Categorias/${Id}`);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al eliminar la categoría";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al eliminar la categoría");
     }
 }

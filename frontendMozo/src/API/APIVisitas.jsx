@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance';
+import { construirError } from './APIError';
 
 /** GET /TodasLasVisitas - Obtiene todas las visitas (activas y cerradas) para reportes y gráficas */
 export async function ObtenerTodasLasVisitas() {
@@ -6,7 +7,7 @@ export async function ObtenerTodasLasVisitas() {
         const response = await api.get('TodasLasVisitas');
         return response.data ?? [];
     } catch (error) {
-        console.error('Error al obtener todas las visitas:', error);
+        console.error('Error al obtener todas las visitas:', construirError(error, 'Error al obtener todas las visitas'));
         return [];
     }
 }
@@ -16,7 +17,7 @@ export async function ObtenerVisitaPorId(idVisita) {
         const response = await api.get(`Visita?IdVisita=${idVisita}`);
         return response.data;
     } catch (error) {
-        console.error('Error al obtener caja activa:', error);
+        console.error('Error al obtener caja activa:', construirError(error, 'Error al obtener la visita'));
     }
 }
 
@@ -26,7 +27,7 @@ export async function BuscarVisitasActivas() {
         const response = await api.get('VisitasActivas');
         return response.data;
     } catch (error) {
-        console.error('Error al obtener visitas activas:', error);
+        console.error('Error al obtener visitas activas:', construirError(error, 'Error al obtener visitas activas'));
         return [];
     }
 }
@@ -40,7 +41,7 @@ export async function AgregarProductosAVisita(idVisita, productos) {
         
         return response.data;
     } catch (error) {
-        console.error('Error al agregar productos a la visita:', error);
+        console.error('Error al agregar productos a la visita:', construirError(error, 'Error al agregar productos a la visita'));
         if (error.response) {
             console.error('Response data:', error.response.data);
             console.error('Response status:', error.response.status);
@@ -49,7 +50,7 @@ export async function AgregarProductosAVisita(idVisita, productos) {
         if (error.request) {
             console.error('Request:', error.request);
         }
-        throw error;
+        throw construirError(error, 'Error al agregar productos a la visita');
     }
 }
 
@@ -67,12 +68,12 @@ export async function EliminarProductosVisita(idVisita, idsProductos) {
         );
         return response.data;
     } catch (error) {
-        console.error('Error al eliminar productos de la visita:', error);
+        console.error('Error al eliminar productos de la visita:', construirError(error, 'Error al eliminar productos de la visita'));
         if (error.response) {
             console.error('Response data:', error.response.data);
             console.error('Response status:', error.response.status);
         }
-        throw error;
+        throw construirError(error, 'Error al eliminar productos de la visita');
     }
 }
 
@@ -88,12 +89,12 @@ export async function CambiarEstadoProducto(idProducto, estado) {
         );
         return response.data;
     } catch (error) {
-        console.error('Error al cambiar estado del producto:', error);
+        console.error('Error al cambiar estado del producto:', construirError(error, 'Error al cambiar el estado del producto'));
         if (error.response) {
             console.error('Response data:', error.response.data);
             console.error('Response status:', error.response.status);
         }
-        throw error;
+        throw construirError(error, 'Error al cambiar el estado del producto');
     }
 }
 
@@ -119,7 +120,7 @@ export async function BuscarTodasLasVisitas(filtros = {}) {
 
         return resultado;
     } catch (error) {
-        console.error('Error al obtener visitas:', error);
+        console.error('Error al obtener visitas:', construirError(error, 'Error al obtener visitas'));
         return [];
     }
 }
@@ -135,7 +136,7 @@ export async function BuscarVisitasPorRango(fechaInicio, fechaFin) {
             return fecha >= inicio && fecha <= fin;
         });
     } catch (error) {
-        console.error('Error al obtener visitas por rango:', error);
+        console.error('Error al obtener visitas por rango:', construirError(error, 'Error al obtener visitas por rango'));
         return [];
     }
 }
@@ -153,7 +154,7 @@ export async function BuscarVisitasPorMozo(idMozo, filtros = {}) {
         }
         return resultado;
     } catch (error) {
-        console.error('Error al obtener visitas por mozo:', error);
+        console.error('Error al obtener visitas por mozo:', construirError(error, 'Error al obtener visitas por mozo'));
         return [];
     }
 }
@@ -171,7 +172,7 @@ export async function BuscarVisitasPorMesa(idMesa, filtros = {}) {
         }
         return resultado;
     } catch (error) {
-        console.error('Error al obtener visitas por mesa:', error);
+        console.error('Error al obtener visitas por mesa:', construirError(error, 'Error al obtener visitas por mesa'));
         return [];
     }
 }
@@ -184,7 +185,7 @@ export async function BuscarProductosPorVisita(idVisita) {
         const productos = visita?.productosConsumidos ?? visita?.ProductosConsumidos ?? visita?.Productos ?? [];
         return Array.isArray(productos) ? productos : [];
     } catch (error) {
-        console.error('Error al obtener productos por visita:', error);
+        console.error('Error al obtener productos por visita:', construirError(error, 'Error al obtener productos por visita'));
         return [];
     }
 }
@@ -198,7 +199,7 @@ export async function BuscarVisitaPorId(idVisita) {
         const response = await api.get(`Visitas/${idVisita}`);
         return response.data;
     } catch (error) {
-        console.error('Error al obtener visita por ID:', error);
+        console.error('Error al obtener visita por ID:', construirError(error, 'Error al obtener visita por ID'));
         return null;
     }
 }

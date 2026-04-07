@@ -112,5 +112,6 @@ export const useComandaProductos = (open) => {
         actualizarCantidad,
         actualizarIndicaciones,
         limpiarComanda,
+        setComanda,
     };
 };

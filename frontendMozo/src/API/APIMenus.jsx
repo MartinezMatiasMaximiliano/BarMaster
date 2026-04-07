@@ -1,11 +1,12 @@
 import api from '../services/axiosInstance';
+import { construirError } from './APIError';
 
 export async function BuscarTodosLosMenus(idSucursal) {
     try {
         const response = await api.get(`ListaMenu?IdSucursal=${idSucursal}`);
         return response.data;
     } catch (error) {
-        console.error("Error al buscar menús:", error);
+        console.error("Error al buscar menús:", construirError(error, 'Error al buscar menús'));
         return [];
     }
 }
@@ -15,7 +16,7 @@ export async function BuscarUnMenu(idMenu) {
         const response = await api.get(`Menu?id=${idMenu}`);
         return response.data;
     } catch (error) {
-        console.error("Error al buscar menú:", error);
+        console.error("Error al buscar menú:", construirError(error, 'Error al buscar menú'));
         return null;
     }
 }
@@ -31,10 +32,7 @@ export async function CrearMenu(datos) {
         );
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al crear el menú";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al crear el menú");
     }
 }
 
@@ -53,10 +51,7 @@ export async function ModificarMenu(datos) {
         const response = await api.patch('Menu', body);
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al modificar el menú";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al modificar el menú");
     }
 }
 
@@ -68,10 +63,7 @@ export async function ActivarMenu(idMenu, activar) {
         );
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al activar/desactivar el menú";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al activar/desactivar el menú");
     }
 }
 
@@ -86,10 +78,7 @@ export async function BorrarMenu(idMenu) {
         );
         return response.data;
     } catch (error) {
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al eliminar el menú";
-        throw new Error(mensaje);
+        throw construirError(error, "Error al eliminar el menú");
     }
 }
 
@@ -104,10 +93,7 @@ export async function ModificarProductosMenu(idMenu, idsProductos) {
         );
         return response.data;
     } catch (error) {
-        console.error("Error al modificar productos del menú:", error);
-        const mensaje = error.response?.data?.error?.mensaje
-            || (typeof error.response?.data === 'string' ? error.response.data : null)
-            || "Error al modificar productos del menú";
-        throw new Error(mensaje);
+        console.error("Error al modificar productos del menú:", construirError(error, 'Error al modificar productos del menú'));
+        throw construirError(error, "Error al modificar productos del menú");
     }
 }

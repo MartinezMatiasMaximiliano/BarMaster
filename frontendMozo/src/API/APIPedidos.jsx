@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance'
+import { construirError } from './APIError';
 
 // TODO: Este archivo está deprecado. El endpoint "Pedidos" ya no existe.
 // Ahora se usa el endpoint "Visitas". Ver APIVisitas.jsx
@@ -21,6 +22,7 @@ export async function PostItems(ListaPedidos, numeroMesa) {
 
         return response.data; // Esto ahora sí devuelve la respuesta esperada
     } catch (error) {
+        console.error('Error al postear items:', construirError(error, 'Error al agregar items al pedido'));
         return []; // Devuelve un array vacío para evitar problemas en dispatch
     }
 }
@@ -39,7 +41,7 @@ export async function GenerarTicketPDF(NumeroMesa,ListaItems) {
         const url = window.URL.createObjectURL(blob);
         window.open(url); // Or use download logic below
     } catch (error) {
-        console.error('Error downloading PDF:', error);
+        console.error('Error downloading PDF:', construirError(error, 'Error al generar el ticket PDF'));
     }
 };
 

@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance';
+import { construirError } from './APIError';
 
 /**
  * POST /PagarItems - Registra un pago de productos de una visita (crea registro en tabla Pagos).
@@ -21,11 +22,11 @@ export async function PagarItems(idVisita, listaIdsProductos, idTipoPago, monto)
         );
         return response.data;
     } catch (error) {
-        console.error('Error al registrar pago (PagarItems):', error);
+        console.error('Error al registrar pago (PagarItems):', construirError(error, 'Error al registrar el pago'));
         if (error.response) {
             console.error('Response data:', error.response.data);
             console.error('Response status:', error.response.status);
         }
-        throw error;
+        throw construirError(error, 'Error al registrar el pago');
     }
 }

@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance';
+import { construirError } from './APIError';
 
 /**
  * GET /Ticket/{idMovimientoCaja} - Obtiene los datos públicos de un ticket de pago
@@ -15,7 +16,7 @@ export async function ObtenerTicket(tenantId, idMovimientoCaja) {
         });
         return response.data;
     } catch (error) {
-        console.error("Error al obtener ticket:", error);
-        throw error;
+        console.error("Error al obtener ticket:", construirError(error, 'Error al obtener ticket'));
+        throw construirError(error, 'Error al obtener ticket');
     }
 }

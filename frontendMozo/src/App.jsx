@@ -12,6 +12,7 @@ import Abm_Mesas from './pages/Abm_Mesas';
 import Abm_Productos from './pages/Abm_Productos';
 import Abm_Menus from './pages/Abm_Menus';
 import Abm_Categorias from './pages/Abm_Categorias'
+import Abm_TipoEnvios from './pages/Abm_TipoEnvios'
 import Abm_Personas from './pages/Abm_Personas'
 import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
@@ -338,6 +339,7 @@ function App() {
                             <Route path="/historial_caja" element={<Control_Login><HistorialCaja /></Control_Login>} />
                             <Route path="/movimiento_caja" element={<Control_Login><MovimientoCaja /></Control_Login>} />
                             <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
+                            <Route path="/abm_tipo_envios" element={<Control_Login><Abm_TipoEnvios titulo="Tipos de Envío" /></Control_Login>} />
                             <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
                             <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarPlanos} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                             <Route path="/abm_productos" element={<Control_Login><Abm_Productos recargarComponentes={recargarProductos} datos_productos={datos_menu_abm} categorias={categorias} titulo="Productos" /></Control_Login>} />

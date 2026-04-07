@@ -7,97 +7,84 @@ import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
 import { formatearFecha } from "../Helpers/HelperFunctions"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
-import Checkbox from '@mui/material/Checkbox';
-import { Button } from "@mui/material";
-import {
-    BorrarPersona,
-    ModificarPersona
-} from "../API/APIPersonas";
-import { GetDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
-import { Campos, inicializarCampos } from "../configs/agregar/Delivery";
+import { Button, Checkbox } from "@mui/material";
+import { CambiarEstadoEntregaDeliveryTakeaway, EliminarDeliveryTakeaway, GetDeliveryTakeaway, esDelivery, normalizarDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
+import { BuscarTodosLosTipoEnvios } from "../API/APITipoEnvios";
 
-function Delivery(props) {
-    const [campos, setCampos] = useState(Campos);
-
-    // Inicializar campos solo cuando el componente se monte y haya token
-    useEffect(() => {
-        if (localStorage.getItem('token')) {
-            inicializarCampos().then(camposInicializados => {
-                setCampos(camposInicializados);
-            });
-        }
-    }, []);
-
+function Delivery() {
     const [deliveries, setDeliveries] = useState([]);
     const [showModalAgregar, setShowModalAgregar] = useState(false);
+    const [deliveryEditando, setDeliveryEditando] = useState(null);
+    const [actualizandoEntregaIds, setActualizandoEntregaIds] = useState([]);
 
     // Cargar datos desde la API al montar y cuando se pide recargar
     const cargarDeliveries = React.useCallback(async () => {
         if (!localStorage.getItem('token')) return;
-        const data = await GetDeliveryTakeaway();
-        const filas = (Array.isArray(data) ? data : []).map((item) => {
-            const productosRaw = item.productos ?? item.Productos ?? [];
-            const productos = Array.isArray(productosRaw) ? productosRaw : [];
-            return {
-                uuid: item.id ?? item.Id,
-                fechaHora: item.fechaHora ?? item.FechaHora ?? '',
-                Cliente: item.nombreCliente ?? item.NombreCliente ?? '-',
-                Direccion: item.direccion ?? item.Direccion ?? '-',
-                Telefono: item.telefono ?? item.Telefono ?? '-',
-                Indicaciones: item.indicaciones ?? item.Indicaciones ?? '-',
-                TipoEnvio: item.tipoEnvio ?? item.TipoEnvio ?? null,
-                PrecioTotal: item.precioTotal ?? item.PrecioTotal ?? 0,
-                entregado: item.entregado ?? item.Entregado ?? false,
-                Productos: productos.map((p) => ({
-                    nombre: p.nombre ?? p.Nombre ?? '-',
-                    precio: p.precio ?? p.Precio ?? 0,
-                    indicaciones: p.indicaciones ?? p.Indicaciones ?? '',
-                })),
-            };
-        });
-        setDeliveries(filas);
+        try {
+            const [data, tiposEnvio] = await Promise.all([
+                GetDeliveryTakeaway(),
+                BuscarTodosLosTipoEnvios().catch(() => []),
+            ]);
+            const mapaTiposEnvio = new Map((Array.isArray(tiposEnvio) ? tiposEnvio : []).map((tipo) => [Number(tipo.id), tipo]));
+            const filas = (Array.isArray(data) ? data : [])
+                .map(normalizarDeliveryTakeaway)
+                .filter(esDelivery)
+                .map((item) => {
+                    const tipoEnvio = mapaTiposEnvio.get(Number(item.idTipoEnvio)) ?? item.tipoEnvio ?? null;
+                    return {
+                    id: item.id,
+                    fechaHora: item.fechaHora,
+                    Cliente: item.cliente,
+                    Direccion: item.direccion || '-',
+                    Telefono: item.telefono || '-',
+                    Indicaciones: item.indicaciones || '-',
+                    TipoEnvioId: item.idTipoEnvio,
+                    TipoEnvio: tipoEnvio?.nombre || `Tipo ${item.idTipoEnvio}`,
+                    PrecioEnvio: tipoEnvio?.precio ?? null,
+                    PrecioTotal: item.precioTotal,
+                    entregado: item.entregado,
+                    pedido: item,
+                    Productos: item.productos.map((producto) => ({
+                        id: producto.id,
+                        idProducto: producto.idProducto,
+                        nombre: producto.nombre,
+                        precio: producto.precio,
+                        indicaciones: producto.indicaciones,
+                    })),
+                    };
+                });
+            setDeliveries(filas);
+        } catch (error) {
+            console.error("Error al cargar deliveries:", error);
+            setDeliveries([]);
+        }
     }, []);
 
     useEffect(() => {
         cargarDeliveries();
     }, [cargarDeliveries]);
 
-    const toggleEntregadoDelivery = (uuid) => {
-        setDeliveries((prev) =>
-            prev.map((delivery) =>
-                delivery.uuid === uuid
-                    ? { ...delivery, entregado: !delivery.entregado }
-                    : delivery
-            )
-        );
+    const manejarCambioEntregado = async (fila, checked) => {
+        if (!fila?.id) return;
+
+        setActualizandoEntregaIds((prev) => [...prev, fila.id]);
+        try {
+            await CambiarEstadoEntregaDeliveryTakeaway(fila.id, checked);
+            setDeliveries((prev) =>
+                prev.map((delivery) =>
+                    delivery.id === fila.id ? { ...delivery, entregado: checked } : delivery
+                )
+            );
+        } catch (error) {
+            console.error("Error al actualizar estado de entrega:", error);
+        } finally {
+            setActualizandoEntregaIds((prev) => prev.filter((id) => id !== fila.id));
+        }
     };
 
     const api = {
-        eliminar: BorrarPersona,
-        modificar: ModificarPersona,
+        eliminar: EliminarDeliveryTakeaway,
     };
-
-    const configSelect = {
-        titulo: "Envío",
-        name: "Envio",
-        datos: [
-            {
-                "Id": 1,
-                "nombre": "Corto",
-                "precio": 500
-            },
-            {
-                "Id": 2,
-                "nombre": "Mediano",
-                "precio": 750
-            },
-            {
-                "Id": 3,
-                "nombre": "Largo",
-                "precio": 1000
-            }
-        ],
-    }
 
     const columnasDelivery = [
         {
@@ -113,10 +100,10 @@ function Delivery(props) {
             key: "TipoEnvio",
             label: "Envío",
             render: (fila) => {
-                const tipo = fila.TipoEnvio;
-                if (!tipo) return '-';
-                const precio = tipo.precio ?? tipo.Precio;
-                return precio != null ? '$' + precio : (tipo.nombre ?? tipo.Nombre ?? '-');
+                if (!fila.TipoEnvio) return '-';
+                return fila.PrecioEnvio != null
+                    ? `${fila.TipoEnvio} ($${fila.PrecioEnvio})`
+                    : fila.TipoEnvio;
             }
         },
         {
@@ -127,11 +114,13 @@ function Delivery(props) {
         {
             key: "entregado",
             label: "Entregado",
-            align: "right",
+            align: "center",
             render: (fila) => (
                 <Checkbox
-                    checked={!!fila.entregado}
-                    onChange={() => toggleEntregadoDelivery(fila.uuid)}
+                    checked={Boolean(fila.entregado)}
+                    disabled={actualizandoEntregaIds.includes(fila.id)}
+                    onChange={(event) => manejarCambioEntregado(fila, event.target.checked)}
+                    inputProps={{ 'aria-label': 'Pedido entregado' }}
                 />
             ),
         }, 
@@ -143,12 +132,11 @@ function Delivery(props) {
                 <Fila_Acciones
                     fila={fila}
                     api={api}
-                    recargar={props.recargarComponentes}
-                    deleteLabel="Producto"
-                    configSelect={configSelect}
+                    recargar={cargarDeliveries}
+                    deleteLabel="pedido"
                     showToggle={() => false}
                     showEditar={true}
-                    campos={campos}
+                    onClickEditar={() => setDeliveryEditando(fila.pedido)}
                 />
             ),
         },
@@ -183,6 +171,16 @@ function Delivery(props) {
                 open={showModalAgregar}
                 onClose={() => setShowModalAgregar(false)}
                 onSuccess={cargarDeliveries}
+            />
+            <Modal_AgregarDelivery
+                open={Boolean(deliveryEditando)}
+                onClose={() => setDeliveryEditando(null)}
+                onSuccess={() => {
+                    setDeliveryEditando(null);
+                    cargarDeliveries();
+                }}
+                modo="editar"
+                initialData={deliveryEditando}
             />
         </Container>
     );
