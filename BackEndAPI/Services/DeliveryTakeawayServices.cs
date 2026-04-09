@@ -65,7 +65,7 @@ namespace BackEndAPI.Services
             if (request.Origen == "Takeaway")
             {
                 DeliveryTakeaway.Direccion = null;
-                DeliveryTakeaway.Telefono = null;
+                DeliveryTakeaway.Telefono = request.Telefono ?? "";
                 DeliveryTakeaway.IdTipoEnvio = null;
             }
 
