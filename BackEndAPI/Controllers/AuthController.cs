@@ -35,7 +35,9 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "usuario no encontrado":
-                        return BadRequest("usuario no encontrado");
+                        return NotFound("usuario no encontrado");
+                    case "Usuario o contraseña vacios":
+                        return BadRequest(ex.Message);
                     case "Usuario o contraseña incorrectos":
                         return Unauthorized("Usuario o contraseña incorrectos");
                     default:
@@ -59,10 +61,12 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
-                    case "usuario no encontrado":
-                        return BadRequest("usuario no encontrado");
-                    case "Usuario o contraseña incorrectos":
-                        return Unauthorized("Usuario o contraseña incorrectos");
+                    case "Usuario o contraseña vacios":
+                        return BadRequest("Usuario o contraseña vacios");
+                    case "Persona no encontrada":
+                        return NotFound("Persona no encontrada");
+                    case "Contraseña incorrecta":
+                        return Unauthorized("Contraseña incorrecta");
                     default:
                         return StatusCode(500, "Error interno del servidor");
                 }
