@@ -56,7 +56,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("{IdCuenta}")]
-        public async Task<IActionResult> GetListaCuentasCorrientes(Guid IdCuenta)
+        public async Task<IActionResult> GetCuentaCorrientePorId(Guid IdCuenta)
         {
             try
             {
@@ -83,7 +83,8 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
-
+                    case "No se encontro la cuenta":
+                        return NotFound(new { message = "No se encontró la cuenta corriente." });
                     default:
                         return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al obtener las cuentas corrientes." });
                 }
@@ -141,7 +142,8 @@ namespace BackEndAPI.Controllers
         public async Task<IActionResult> CrearMovimientoCuentaCorriente([FromQuery] Guid IdCuenta,[FromBody] CrearMovimientoCajaDTO request) {
             try
             {
-               if (IdCuenta == Guid.Empty) throw new Exception("Cuenta corriente no encontrada");
+                if(request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0 || request.Monto <= 0 || string.IsNullOrEmpty(request.Descripcion)) return BadRequest(new { message = "Todos los campos son obligatorios y el monto debe ser mayor a cero." });
+                if (IdCuenta == Guid.Empty) throw new Exception("id vacio");
                var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(IdCuenta, request);
                 //TODO: Mapear a DTO, ciclo sin fin
                return Ok(result);
@@ -150,8 +152,10 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
-                    case "Cuenta corriente no encontrada":
-                        return BadRequest(new { message = "No se pudo encontrar la cuenta corriente." });
+                    case "id vacio":
+                        return BadRequest(new { message = "El Id de la cuenta corriente es obligatorio." });
+                    case "No se encontro la cuenta":
+                        return NotFound(new { message = "No se pudo encontrar la cuenta corriente." });
                     default:
                         return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al crear el movimiento de la cuenta corriente." });
                 }
