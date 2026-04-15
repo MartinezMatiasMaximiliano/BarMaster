@@ -135,6 +135,11 @@ namespace BackEndAPI.Controllers
         {
             try
             {
+                if (request.MontoApertura < 0)
+                {
+                    return BadRequest(new { message = "El monto de apertura no puede ser negativo" });
+                }
+
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
 
                 if (IdSucursal == Guid.Empty)
