@@ -65,6 +65,10 @@ namespace BackEndAPI.Controllers
         {
             try
             {
+                if (request == null || string.IsNullOrEmpty(request.Nombre) || string.IsNullOrEmpty(request.Password))
+                {
+                    return BadRequest("El nombre y la contraseña son obligatorios.");
+                }
                 Empresa result = await _empresasServices.AddEmpresa(request);
 
                 if (result == null)
@@ -87,6 +91,8 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
+                    case "El nombre y la contraseña son obligatorios.":
+                        return BadRequest("El nombre y la contraseña son obligatorios.");   
                     case "Ya existe una empresa con el nombre solicitado.":
                         return BadRequest("Ya existe una empresa con el nombre solicitado.");
                     case "No se pudo crear la empresa.":
@@ -117,6 +123,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
+
                 return Ok(IdEmpresa);
             }
             catch (Exception ex)
