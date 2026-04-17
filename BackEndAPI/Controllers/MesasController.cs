@@ -25,101 +25,7 @@ namespace BackEndAPI.Controllers
             _mesasServices = mesasServices;
         }
 
-        [HttpPost("/Mesa")]
-        public async Task<ActionResult> CrearMesa(CrearMesaDTO DTO)
-        {
-            try
-            {
-                if (DTO.Nombre == string.Empty)
-                {
-                    throw new Exception("El nombre de la mesa no puede estar vacio");
-                }
-
-                var mesaCreada = await _mesasServices.CrearMesa(DTO);
-                return Created("created", new EntregaDTO(201, "CREATED", $"Creado exitosamente, Id:{mesaCreada.Id}"));
-
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "El nombre de la mesa no puede estar vacio":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "Ya existe la mesa en el plano seleccionado":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                }
-
-            }
-        }
-
-        [HttpPatch("/Mesa")]
-        public async Task<ActionResult> ActualizarMesa(ModificarMesaDTO DTO)
-        {
-            try
-            {
-                var mesaActualizada = await _mesasServices.ModificarMesa(DTO);
-
-                return Ok(new EntregaDTO(200, "MODIFIED", $"Modificado exitosamente, Id:{mesaActualizada.Id}"));
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "No se encontró la mesa con el Id especificado":
-                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
-                    case "Ya existe la mesa en el plano seleccionado":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                }
-            }
-        }
-
-        [HttpPatch("/Mesa/AbrirCerrar")]
-        public async Task<ActionResult> AbrirCerrarMesa([FromBody] AbrirMesaDTO request)
-        {
-            try
-            {
-                var Visita = await _mesasServices.AbrirCerrarMesa(request);
-                string accion = request.Abrir ? "abrir" : "cerrar";
-                
-                var response = new VisitaDTO
-                {
-                    Id = Visita.Id,
-                    IdCaja = Visita.IdCaja,
-                    IdMesa = Visita.IdMesa ?? Guid.Empty,
-                    IdMozo = Visita.IdMozo ?? Guid.Empty,
-                    FechaHora = Visita.FechaHora,
-                    Estado = Visita.Estado,
-                    Origen = Visita.Origen
-                };
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "No se encontró un mozo con ese codigo de servicio":
-                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
-                    case "No hay una caja abierta para asignar la visita":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "No se encontró la mesa con el Id especificado":
-                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
-                    case "La mesa ya está en el estado solicitado":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "No hay una visita abierta para esta mesa":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                }
-            }
-
-        }
-
-        [HttpGet("/Mesas")]
+        [HttpGet("/Mesa")]
         public async Task<ActionResult> GetTodasLasMesas()
         {
             try
@@ -168,13 +74,121 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpPost("/Mesa")]
+        public async Task<ActionResult> CrearMesa(CrearMesaDTO DTO)
+        {
+            try
+            {
+                if (DTO.Nombre == string.Empty) throw new Exception("El nombre de la mesa no puede estar vacio");
+
+
+                if (DTO.Capacidad <= 0) throw new Exception("La capacidad no puede ser negativa");
+
+                var mesaCreada = await _mesasServices.CrearMesa(DTO);
+                return Created("created", new EntregaDTO(201, "CREATED", $"Creado exitosamente, Id:{mesaCreada.Id}"));
+
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "El plano seleccionado no existe":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    case "La capacidad no puede ser negativa":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "El nombre de la mesa no puede estar vacio":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "Ya existe la mesa en el plano seleccionado":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                }
+
+            }
+        }
+
+        [HttpPatch("/Mesa")]
+        public async Task<ActionResult> ActualizarMesa(ModificarMesaDTO DTO)
+        {
+            try
+            {
+                var mesaActualizada = await _mesasServices.ModificarMesa(DTO);
+
+                return Ok(new EntregaDTO(200, "MODIFIED", $"Modificado exitosamente, Id:{mesaActualizada.Id}"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "El nombre de mesa ya existe en este plano":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se encontró la mesa con el Id especificado":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    case "Ya existe la mesa en el plano seleccionado":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                }
+            }
+        }
+
+        [HttpPatch("/Mesa/AbrirCerrar")]
+        public async Task<ActionResult> AbrirCerrarMesa([FromBody] AbrirMesaDTO request)
+        {
+            try
+            {
+                var Visita = await _mesasServices.AbrirCerrarMesa(request);
+                string accion = request.Abrir ? "abrir" : "cerrar";
+
+                var response = new VisitaDTO
+                {
+                    Id = Visita.Id,
+                    IdCaja = Visita.IdCaja,
+                    IdMesa = Visita.IdMesa ?? Guid.Empty,
+                    IdMozo = Visita.IdMozo ?? Guid.Empty,
+                    FechaHora = Visita.FechaHora,
+                    Estado = Visita.Estado,
+                    Origen = Visita.Origen
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "La mesa ya esta cerrada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se puede cerrar la visita, hay productos no pagados":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "La mesa ya esta abierta":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se encontró un mozo con ese codigo de servicio":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    case "No hay una caja abierta para asignar la visita":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No se encontró la mesa con el Id especificado":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+                    case "La mesa ya está en el estado solicitado":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "No hay una visita abierta para esta mesa":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                }
+            }
+
+        }
+
+
+
         [HttpDelete("/Mesa")]
         public async Task<IActionResult> EliminarMesa([FromQuery] Guid IdMesa)
         {
             try
             {
                 var resultado = await _mesasServices.EliminarMesa(IdMesa);
-                
+
                 return Ok(new EntregaDTO(200, "DELETED", "Mesa eliminada exitosamente"));
             }
             catch (Exception ex)
