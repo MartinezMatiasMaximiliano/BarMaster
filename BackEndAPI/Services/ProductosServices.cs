@@ -12,7 +12,7 @@ namespace BackEndAPI.Services
         private readonly IProductosRepository _productosRepository;
         private readonly ICategoriasRepository _categoriasRepository;
         private readonly IMenuRepository _menuRepository;
-        public ProductosServices(IProductosRepository productosRepository,ICategoriasRepository categoriasRepository , IMenuRepository menuRepository)
+        public ProductosServices(IProductosRepository productosRepository, ICategoriasRepository categoriasRepository, IMenuRepository menuRepository)
         {
             _productosRepository = productosRepository;
             _categoriasRepository = categoriasRepository;
@@ -28,7 +28,7 @@ namespace BackEndAPI.Services
             var pathImagen = await FileHelper.GuardarImagenProducto(request.Imagen, request.Nombre);
 
             Producto nuevoProducto = new Producto
-            {    
+            {
                 Codigo = request.Codigo,
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
@@ -38,7 +38,7 @@ namespace BackEndAPI.Services
                 PathImagen = pathImagen ?? "uploads/ImagenesProductos/Placeholder.jpeg",
             };
             var categorias = _categoriasRepository.GetListaCategorias(request.ListaIdCategorias).Result;
-            nuevoProducto.Categorias = categorias.ToList(); 
+            nuevoProducto.Categorias = categorias.ToList();
 
             return await _productosRepository.AddProducto(nuevoProducto);
         }
@@ -65,15 +65,15 @@ namespace BackEndAPI.Services
 
         public async Task<Producto?> EliminarProducto(Guid id)
         {
-           var busqueda = await _productosRepository.GetProductoPorId(id);
-            if (busqueda == null) throw new Exception("El producto no existe");
-            return await _productosRepository.DeleteProducto(busqueda);   
+            var busqueda = await _productosRepository.GetProductoPorId(id);
+            if (busqueda == null) throw new Exception("El producto no fue encontrado");
+            return await _productosRepository.DeleteProducto(busqueda);
         }
 
         public async Task<Producto> BuscarProductoPorId(Guid id)
         {
             var busqueda = await _productosRepository.GetProductoPorId(id);
-            if (busqueda == null) throw new Exception("El producto no existe");
+            if (busqueda == null) throw new Exception("El producto no fue encontrado");
             return busqueda;
 
         }
@@ -102,24 +102,22 @@ namespace BackEndAPI.Services
         public async Task<Producto?> ActualizarProducto(ModificarProductoDTO producto)
         {
             var busqueda = await _productosRepository.GetProductoPorId(producto.IdProducto);
-            if (busqueda == null) throw new Exception("El producto no existe");
+            if (busqueda == null) throw new Exception("El producto no fue encontrado");
 
-            if (producto.Codigo != null)
-                busqueda.Codigo = producto.Codigo;
+            if (producto.Codigo != null) busqueda.Codigo = producto.Codigo;
             busqueda.Nombre = producto.Nombre ?? busqueda.Nombre;
             busqueda.Descripcion = producto.Descripcion ?? busqueda.Descripcion;
             busqueda.Precio = producto.Precio ?? busqueda.Precio;
-            if (producto.CostoProduccion.HasValue)
-                busqueda.CostoProduccion = producto.CostoProduccion;
+            if (producto.CostoProduccion.HasValue) busqueda.CostoProduccion = producto.CostoProduccion;
             busqueda.Activo = producto.Activo ?? busqueda.Activo;
 
-             if (producto.categorias != null && producto.categorias.Count() > 0)
+            if (producto.categorias != null && producto.categorias.Count() > 0)
             {
                 var categorias = await _categoriasRepository.GetListaCategorias(producto.categorias);
                 busqueda.Categorias = categorias.ToList();
             }
 
-             if (producto.Imagen != null)
+            if (producto.Imagen != null)
             {
                 var pathImagen = await FileHelper.GuardarImagenProducto(producto.Imagen, busqueda.Nombre);
                 busqueda.PathImagen = pathImagen ?? busqueda.PathImagen;
