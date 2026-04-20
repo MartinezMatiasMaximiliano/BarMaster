@@ -29,8 +29,7 @@ namespace BackEndAPI.Controllers
                 {
                     Id = tipo.Id,
                     Nombre = tipo.Nombre,
-                    Precio = tipo.Precio,
-                    Vehiculo = tipo.Vehiculo
+                    Precio = tipo.Precio
                 }).ToList();
 
                 if (listaTiposEnvio.Count == 0)
@@ -56,8 +55,7 @@ namespace BackEndAPI.Controllers
                 {
                     Id = tipoEnvio.Id,
                     Nombre = tipoEnvio.Nombre,
-                    Precio = tipoEnvio.Precio,
-                    Vehiculo = tipoEnvio.Vehiculo
+                    Precio = tipoEnvio.Precio
                 };
 
                 return Ok(tipoEnvioDTO);
@@ -84,8 +82,7 @@ namespace BackEndAPI.Controllers
                 {
                     Id = nuevoTipoEnvio.Id,
                     Nombre = nuevoTipoEnvio.Nombre,
-                    Precio = nuevoTipoEnvio.Precio,
-                    Vehiculo = nuevoTipoEnvio.Vehiculo
+                    Precio = nuevoTipoEnvio.Precio
                 };
 
                 return Ok(tipoEnvioDTO);

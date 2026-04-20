@@ -39,10 +39,7 @@ namespace BackEndAPI.Services
 
             var result = await _tenantServices.BuscarTenantPorNombreEmpresa(request.Nombre.ToLower().Replace(" ",string.Empty));
 
-            if (result != null)
-            {
-                throw new Exception("Ya existe una empresa con el nombre solicitado.");
-            }
+            if (result != null) throw new Exception("Ya existe una empresa con el nombre solicitado.");
 
             Empresa empresa = new()
             {

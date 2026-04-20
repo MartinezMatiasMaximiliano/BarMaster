@@ -34,6 +34,7 @@ public class AuthServices : IAuthServices
 
     public async Task<JWTToken> Authenticate(LoginDTO loginDTO)
     {
+        if (string.IsNullOrEmpty(loginDTO.Username) || string.IsNullOrEmpty(loginDTO.Password)) throw new Exception("Usuario o contraseña vacios");
         string EmpresaUsername;
         string? SucursalUsername = null;
 
@@ -77,7 +78,7 @@ public class AuthServices : IAuthServices
 
     public async Task<JWTToken> AuthenticatePersona(LoginDTO request)
     {
-
+        if(request.Username is null || request.Password is null) throw new Exception("Usuario o contraseña vacios");
         var persona = await _personasRepository.GetPersonaPorDni(request.Username);
         if (persona == null) throw new Exception("Persona no encontrada");
 

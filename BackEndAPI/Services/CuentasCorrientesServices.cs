@@ -59,7 +59,7 @@ namespace BackEndAPI.Services
         public async Task<CuentaCorriente?> CrearMovimientoCuentaCorriente(Guid idCuenta, CrearMovimientoCajaDTO request)
         {
             var cuentaCorriente = await _cuentasCorrientesRepository.GetCuentaCorrientePorId(idCuenta);
-            if (cuentaCorriente == null) throw new Exception("No se encontró la cuenta corriente para agregar el movimiento.");
+            if (cuentaCorriente == null) throw new Exception("No se encontro la cuenta");
             var nuevoMovimiento = await _movimientosCajaServices.CrearMovimientoCaja(request);
             if (nuevoMovimiento == null) throw new Exception("No se pudo crear el movimiento para la cuenta corriente.");
             cuentaCorriente.Movimientos.Add(new MovimientosCuentaCorriente

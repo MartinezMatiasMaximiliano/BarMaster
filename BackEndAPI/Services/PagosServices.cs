@@ -20,19 +20,13 @@ namespace BackEndAPI.Services
         public async Task<MovimientoCaja> PagarProductos(CrearPagoDTO InfoPago)
         {
             decimal TotalProductosAPagar = 0;
-            if (InfoPago.ListaIdsProductos == null || InfoPago.ListaIdsProductos.Count <= 0)
-            {
-                throw new Exception("Lista de ids vacia");
-            }
-            if (InfoPago.IdVisita == Guid.Empty)
-            {
-                throw new Exception("IdVisita vacio");
-            }
+            if (InfoPago.ListaIdsProductos == null || InfoPago.ListaIdsProductos.Count <= 0)throw new Exception("Lista de ids vacia");
+            
+            if (InfoPago.IdVisita == Guid.Empty)throw new Exception("IdVisita vacio");
+            
             var visita = await _visitasRepository.BuscarVisitaPorId(InfoPago.IdVisita);
-            if (visita == null)
-            {
-                throw new Exception("Visita no encontrada");
-            }
+            if (visita == null) throw new Exception("Visita no encontrada");
+            
 
             var PagoCreado = new MovimientoCaja
             {
@@ -56,10 +50,8 @@ namespace BackEndAPI.Services
 
             visita.Total += TotalProductosAPagar;
 
-            if (InfoPago.Monto < TotalProductosAPagar)
-            {
-                throw new Exception("Monto insuficiente");
-            }
+            if (InfoPago.Monto < TotalProductosAPagar) throw new Exception("Monto insuficiente");
+            
             return await _pagosRepository.CrearPago(visita, PagoCreado, TotalProductosAPagar);
         }
     }

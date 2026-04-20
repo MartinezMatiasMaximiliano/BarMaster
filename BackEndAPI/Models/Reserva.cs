@@ -8,8 +8,7 @@
         public DateTime FechaHora { get; set; }
         public string NombreReserva { get; set; } = null!;
         public int? CantidadDePersonas { get; set; }
-
-        
+        public string MesaReserva { get; set; }        
 
         //navegacion
         public Sucursal Sucursal { get; set; } = null!;

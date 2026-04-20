@@ -104,52 +104,52 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPost("/TipoMovimientosCaja")]
-        public async Task<IActionResult> CrearTipoMovimientoCaja([FromBody] CrearTipoMovimientoCajaDTO request)
-        {
-            try
-            {
-                var nuevoTipo = await _tipoMovimientosCajaServices.CrearTipoMovimientoCaja(request);
-                var tipoDTO = new TipoMovimientoCajaDTO
-                {
-                    Id = nuevoTipo.Id,
-                    Nombre = nuevoTipo.Nombre,
-                    EsIngreso = nuevoTipo.EsIngreso,
-                    EsEfectivo = nuevoTipo.EsEfectivo
-                };
-                return Ok(tipoDTO);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "El nombre es obligatorio":
-                        return BadRequest(new { message = ex.Message });
-                    default:
-                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
-                }
-            }
-        }
+        //[HttpPost("/TipoMovimientosCaja")]
+        //public async Task<IActionResult> CrearTipoMovimientoCaja([FromBody] CrearTipoMovimientoCajaDTO request)
+        //{
+        //    try
+        //    {
+        //        var nuevoTipo = await _tipoMovimientosCajaServices.CrearTipoMovimientoCaja(request);
+        //        var tipoDTO = new TipoMovimientoCajaDTO
+        //        {
+        //            Id = nuevoTipo.Id,
+        //            Nombre = nuevoTipo.Nombre,
+        //            EsIngreso = nuevoTipo.EsIngreso,
+        //            EsEfectivo = nuevoTipo.EsEfectivo
+        //        };
+        //        return Ok(tipoDTO);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        switch (ex.Message)
+        //        {
+        //            case "El nombre es obligatorio":
+        //                return BadRequest(new { message = ex.Message });
+        //            default:
+        //                return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+        //        }
+        //    }
+        //}
 
-        [HttpDelete("/TipoMovimientosCaja/{id}")]
-        public async Task<IActionResult> EliminarTipoMovimientoCaja(int id)
-        {
-            try
-            {
-                await _tipoMovimientosCajaServices.EliminarTipoMovimientoCaja(id);
-                return Ok(new EntregaDTO(200, "DELETED", "Tipo de movimiento de caja eliminado exitosamente"));
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Tipo de movimiento de caja no encontrado":
-                        return NotFound(new { message = ex.Message });
-                    default:
-                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
-                }
-            }
-        }
+        //[HttpDelete("/TipoMovimientosCaja/{id}")]
+        //public async Task<IActionResult> EliminarTipoMovimientoCaja(int id)
+        //{
+        //    try
+        //    {
+        //        await _tipoMovimientosCajaServices.EliminarTipoMovimientoCaja(id);
+        //        return Ok(new EntregaDTO(200, "DELETED", "Tipo de movimiento de caja eliminado exitosamente"));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        switch (ex.Message)
+        //        {
+        //            case "Tipo de movimiento de caja no encontrado":
+        //                return NotFound(new { message = ex.Message });
+        //            default:
+        //                return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+        //        }
+        //    }
+        //}
     }
 }
 

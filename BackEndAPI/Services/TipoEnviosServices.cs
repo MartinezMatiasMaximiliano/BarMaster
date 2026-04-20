@@ -45,7 +45,6 @@ namespace BackEndAPI.Services
             {
                 Nombre = request.Nombre!.Trim(),
                 Precio = request.Precio!.Value,
-                Vehiculo = request.Vehiculo!.Trim()
             };
 
             return await _tipoEnviosRepository.CrearTipoEnvio(nuevoTipoEnvio);
@@ -96,8 +95,6 @@ namespace BackEndAPI.Services
                 {
                     throw new Exception("El vehiculo es obligatorio");
                 }
-
-                tipoEnvio.Vehiculo = request.Vehiculo.Trim();
             }
 
             await _tipoEnviosRepository.ActualizarTipoEnvio(tipoEnvio);
