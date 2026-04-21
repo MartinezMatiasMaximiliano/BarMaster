@@ -34,6 +34,7 @@ namespace BackEndAPI.Controllers
                     FechaApertura = caja.FechaApertura,
                     FechaCierre = caja.FechaCierre,
                     MontoApertura = caja.MontoApertura,
+                    MontoActual = caja.MontoActual,
                     MontoCierre = caja.MontoCierre,
                     Diferencia = caja.Diferencia
                 }).ToList();
@@ -113,6 +114,7 @@ namespace BackEndAPI.Controllers
                     FechaApertura = caja.FechaApertura,
                     FechaCierre = caja.FechaCierre,
                     MontoApertura = caja.MontoApertura,
+                    MontoActual = caja.MontoActual,
                     MontoCierre = caja.MontoCierre,
                     Diferencia = caja.Diferencia
                 };
@@ -176,7 +178,7 @@ namespace BackEndAPI.Controllers
             try
             {
                 var caja = await _cajasServices.BuscarCajaPorId(request.IdCaja);
-                var result = await _cajasServices.CerrarCaja(caja.Id);
+                var result = await _cajasServices.CerrarCaja(caja.Id, request.MontoCierre);
                 return Ok(result);
             }
             catch (Exception ex)

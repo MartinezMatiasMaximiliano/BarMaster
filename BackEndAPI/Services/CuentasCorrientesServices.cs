@@ -68,7 +68,8 @@ namespace BackEndAPI.Services
                 IdCuentaCorriente = cuentaCorriente.Id
             });
 
-            cuentaCorriente.Balance += request.Monto;
+            var esIngreso = nuevoMovimiento.TipoMovimientoCaja?.EsIngreso ?? false;
+            cuentaCorriente.Balance += esIngreso ? request.Monto : -request.Monto;
             return await _cuentasCorrientesRepository.ActualizarDatosCuentaCorriente(cuentaCorriente);
         }
         public async Task<bool> EliminarCuentaCorriente(Guid id)

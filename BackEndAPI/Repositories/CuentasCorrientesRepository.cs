@@ -18,12 +18,20 @@ namespace BackEndAPI.Repositories
 
         public async Task<ICollection<CuentaCorriente>> GetListaCuentasCorrientes()
         {
-            return await Db.CuentasCorrientes.Include(c => c.Movimientos).ThenInclude(m => m.MovimientoCaja).ToListAsync();
+            return await Db.CuentasCorrientes
+                .Include(c => c.Movimientos)
+                .ThenInclude(m => m.MovimientoCaja)
+                .ThenInclude(mc => mc.TipoMovimientoCaja)
+                .ToListAsync();
         }
 
         public async Task<CuentaCorriente?> GetCuentaCorrientePorId(Guid id)
         {
-            return await Db.CuentasCorrientes.Include(c => c.Movimientos).ThenInclude(m => m.MovimientoCaja).FirstOrDefaultAsync(c => c.Id == id);
+            return await Db.CuentasCorrientes
+                .Include(c => c.Movimientos)
+                .ThenInclude(m => m.MovimientoCaja)
+                .ThenInclude(mc => mc.TipoMovimientoCaja)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<CuentaCorriente?> CrearCuentaCorriente(CuentaCorriente cuentaCorriente)

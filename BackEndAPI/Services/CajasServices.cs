@@ -34,7 +34,7 @@ namespace BackEndAPI.Services
             return _cajasRepository.BuscarCajaAbiertaPorIdSucursal(IdSucursal);
         }
 
-        public async Task<Caja> CerrarCaja(Guid IdCaja)
+        public async Task<Caja> CerrarCaja(Guid IdCaja, decimal montoCierre)
         {
             var caja = await _cajasRepository.GetCajaPorId(IdCaja);
             if (caja == null)
@@ -48,9 +48,8 @@ namespace BackEndAPI.Services
             }
 
             caja.FechaCierre = DateTime.UtcNow;
-            caja.MontoCierre = caja.MontoActual;
-            // Calcular la diferencia: MontoCierre - MontoApertura 
-            caja.Diferencia = caja.CalcularDiferencia();
+            caja.MontoCierre = montoCierre;
+            caja.Diferencia = caja.MontoCierre - caja.MontoActual;
             
             return await _cajasRepository.ActualizarCaja(caja);
         }
