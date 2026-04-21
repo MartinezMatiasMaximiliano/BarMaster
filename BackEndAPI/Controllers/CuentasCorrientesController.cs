@@ -74,7 +74,9 @@ namespace BackEndAPI.Controllers
                         IdMovimimientoCaja = m.MovimientoCaja.Id,
                         Descripcion = m.MovimientoCaja.Descripcion,
                         Monto = m.MovimientoCaja.Monto,
-                        FechaMovimiento = m.MovimientoCaja.FechaMovimiento
+                        FechaMovimiento = m.MovimientoCaja.FechaMovimiento,
+                        EsIngreso = m.MovimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
+                        EsEfectivo = m.MovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
                     })
                 };
                 return Ok(response);
