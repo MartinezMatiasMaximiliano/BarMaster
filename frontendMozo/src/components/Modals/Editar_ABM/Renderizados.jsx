@@ -2,7 +2,31 @@
 import Input_Imagen from "../../Input_Imagen";
 import Multiple_Select from "../../Select_Multiple";
 import Select from "../../Select";
-import { TextField } from "@mui/material";
+import { InputAdornment, TextField, Tooltip } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+
+function buildInputProps(campo) {
+  const inputProps = { ...(campo.InputProps || {}) };
+
+  if (campo.endAdornmentText || campo.infoTooltip) {
+    inputProps.endAdornment = (
+      <InputAdornment position="end">
+        {campo.endAdornmentText || null}
+        {campo.infoTooltip ? (
+          <Tooltip title={campo.infoTooltip}>
+            <InfoOutlinedIcon
+              fontSize="small"
+              color="action"
+              sx={{ ml: campo.endAdornmentText ? 0.5 : 0 }}
+            />
+          </Tooltip>
+        ) : null}
+      </InputAdornment>
+    );
+  }
+
+  return Object.keys(inputProps).length > 0 ? inputProps : undefined;
+}
 
 export const Renderizados = (props, handleChange) => ({
   image: (campo, value, index) => (
@@ -36,8 +60,10 @@ export const Renderizados = (props, handleChange) => ({
       fullWidth
       label={campo.label}
       value={value || ""}
-      placeholder={`Ingrese valor para ${campo.label}`}
+      placeholder={campo.placeholder || `Ingrese valor para ${campo.label}`}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
+      helperText={campo.helperText}
+      InputProps={buildInputProps(campo)}
       variant="outlined"
     />
   ),
@@ -77,7 +103,10 @@ export const Renderizados = (props, handleChange) => ({
       label={campo.label}
       type="number"
       value={value || ""}
-      inputProps={{ min: 1 }}
+      placeholder={campo.placeholder}
+      helperText={campo.helperText}
+      InputProps={buildInputProps(campo)}
+      inputProps={{ min: campo.min ?? 1, ...campo.inputProps }}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
       variant="outlined"
     />

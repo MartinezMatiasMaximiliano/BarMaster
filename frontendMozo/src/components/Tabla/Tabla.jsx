@@ -30,6 +30,8 @@ import { useMemo } from "react";
 export default function Tabla(props) {
     const rowsPerPage = props.rowsPerPage || 10;
     const habilitarPaginacion = props.paginacion !== false;
+    const minHeightContenido = props.minHeightContenido || '80vh';
+    const ajustarAlturaAlContenido = props.ajustarAlturaAlContenido === true;
     // Los botones se muestran siempre por defecto, solo se ocultan si mostrarExportacion es explícitamente false
     const mostrarExportacion = props.mostrarExportacion === undefined ? true : props.mostrarExportacion;
 
@@ -91,6 +93,11 @@ export default function Tabla(props) {
 
     const getTableContainerStyles = () => {
         if (habilitarPaginacion) {
+            if (ajustarAlturaAlContenido) {
+                return {
+                    overflowY: "auto",
+                };
+            }
             return {
                 maxHeight: "70vh",
                 overflow: "hidden",
@@ -130,8 +137,8 @@ export default function Tabla(props) {
                         p: 0,
                         display: 'flex',
                         flexDirection: 'column',
-                        ...(habilitarPaginacion && {
-                            minHeight: '80vh',
+                        ...(habilitarPaginacion && !ajustarAlturaAlContenido && {
+                            minHeight: minHeightContenido,
                         }),
                     }}
                 >
@@ -155,6 +162,8 @@ export default function Tabla(props) {
                             <TablaBody 
                                 filasPaginadas={filasPaginadas}
                                 columnas={props.columnas}
+                                onRowClick={props.onRowClick}
+                                getRowSx={props.getRowSx}
                             />
                         </Table>
                     </TableContainer>

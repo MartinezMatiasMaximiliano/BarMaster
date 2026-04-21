@@ -13,7 +13,14 @@ export default function FiltroFechas({ onBuscar, onHistorico, loading = false })
             prevFechasRef.current = { fechaInicio, fechaFin };
             onBuscar(fechaInicio, fechaFin);
         }
-    }, [fechaInicio, fechaFin]);
+    }, [fechaInicio, fechaFin, onBuscar]);
+
+    const handleHistoricoClick = () => {
+        prevFechasRef.current = { fechaInicio: '', fechaFin: '' };
+        setFechaInicio('');
+        setFechaFin('');
+        onHistorico();
+    };
 
     return (
         <Box sx={{ mb: 2 }}>
@@ -41,7 +48,7 @@ export default function FiltroFechas({ onBuscar, onHistorico, loading = false })
                 <Button
                     variant="outlined"
                     startIcon={<HistoryIcon />}
-                    onClick={onHistorico}
+                    onClick={handleHistoricoClick}
                     disabled={loading}
                     size="medium"
                 >

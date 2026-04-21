@@ -1,17 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { Box, CircularProgress, Alert, TextField, InputAdornment, Typography } from '@mui/material';
+import { Box, CircularProgress, Alert, TextField, InputAdornment, Typography, Button, Stack, Popover, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { ObtenerTodasLasVisitas } from '../../API/APIVisitas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
 import Filtros from '../../components/Filtros/Filtros';
-import FiltroFechas from '../../components/FiltroFechas/FiltroFechas';
-import { filtrarPorBusqueda } from './utils';
+import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
 
-const COLUMNAS_KEYS = ['numeroMesa', 'mozo', 'fecha', 'total', 'tipoPago'];
+const COLUMNAS_KEYS = ['numeroMesa', 'mozo', 'fecha', 'total'];
 
-export default function HistorialTabLocal() {
+export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico }) {
     const [visitas, setVisitas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -19,69 +18,100 @@ export default function HistorialTabLocal() {
     const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [datosCargados, setDatosCargados] = useState(false);
-    const [filtroFechaInicio, setFiltroFechaInicio] = useState('');
-    const [filtroFechaFin, setFiltroFechaFin] = useState('');
+    const [ticketsAnchorEl, setTicketsAnchorEl] = useState(null);
+    const [ticketIdsActivos, setTicketIdsActivos] = useState([]);
+    const filtroActivo = tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico });
 
-    const cargarDatos = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            const data = await ObtenerTodasLasVisitas();
-            setVisitas(Array.isArray(data) ? data : []);
-            setDatosCargados(true);
-        } catch (err) {
-            setError(err?.message || 'Error al cargar el historial local.');
-        } finally {
+    React.useEffect(() => {
+        let ignorar = false;
+
+        if (!filtroActivo) {
+            setVisitas([]);
+            setDatosCargados(false);
+            setError('');
             setLoading(false);
+            return undefined;
         }
-    };
 
-    const handleBuscar = async (fechaInicio, fechaFin) => {
-        setFiltroFechaInicio(fechaInicio);
-        setFiltroFechaFin(fechaFin);
-        await cargarDatos();
-    };
+        const cargarDatos = async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const visitasData = await ObtenerTodasLasVisitas();
+                if (ignorar) return;
+                setVisitas(Array.isArray(visitasData) ? visitasData : []);
+                setDatosCargados(true);
+            } catch (err) {
+                if (ignorar) return;
+                setError(err?.message || 'Error al cargar el historial local.');
+            } finally {
+                if (!ignorar) {
+                    setLoading(false);
+                }
+            }
+        };
 
-    const handleHistorico = async () => {
-        setFiltroFechaInicio('');
-        setFiltroFechaFin('');
-        await cargarDatos();
-    };
+        cargarDatos();
+
+        return () => {
+            ignorar = true;
+        };
+    }, [filtroActivo, fechaInicio, fechaFin, modoHistorico]);
 
     const filas = useMemo(() => {
         const soloLocal = visitas.filter((v) => (v.origen ?? v.Origen ?? '') === 'Local');
         let filtradas = soloLocal;
 
-        if (filtroFechaInicio) {
-            const inicio = new Date(filtroFechaInicio);
-            filtradas = filtradas.filter(v => new Date(v.fechaHora ?? v.FechaHora) >= inicio);
-        }
-        if (filtroFechaFin) {
-            const fin = new Date(filtroFechaFin);
-            fin.setHours(23, 59, 59, 999);
-            filtradas = filtradas.filter(v => new Date(v.fechaHora ?? v.FechaHora) <= fin);
+        if (!modoHistorico) {
+            filtradas = filtradas.filter((v) =>
+                estaFechaEnRango(v.fechaHora ?? v.FechaHora, fechaInicio, fechaFin)
+            );
         }
 
         return filtradas.map((v) => {
+            const productosConsumidos = v.productosConsumidos ?? v.ProductosConsumidos ?? [];
+            const ticketsMap = new Map();
+
+            productosConsumidos.forEach((producto) => {
+                const idMovimientoCaja = producto.idMovimientoCaja ?? producto.IdMovimientoCaja;
+                if (!idMovimientoCaja) return;
+
+                const ticketId = String(idMovimientoCaja);
+                const precio = Number(producto.precio ?? producto.precioDelMomento ?? producto.Precio ?? 0);
+                const fechaProducto = producto.fechaAgregado ?? producto.FechaAgregado ?? null;
+
+                if (!ticketsMap.has(ticketId)) {
+                    ticketsMap.set(ticketId, {
+                        id: ticketId,
+                        total: 0,
+                        hora: fechaProducto,
+                    });
+                }
+
+                const ticketActual = ticketsMap.get(ticketId);
+                ticketActual.total += precio;
+
+                if (!ticketActual.hora && fechaProducto) {
+                    ticketActual.hora = fechaProducto;
+                }
+            });
+
+            const tickets = Array.from(ticketsMap.values());
             const numeroMesa = v.numeroMesa ?? v.NumeroMesa ?? v.mesa?.numero ?? v.mesa?.Nombre ?? '-';
             const mozo = v.mozo ?? v.Mozo;
             const nombreMozo = mozo ? (mozo.nombres ?? mozo.Nombres ?? '') + ' ' + (mozo.apellido ?? mozo.Apellido ?? '') : '-';
             const fechaRaw = v.fechaHora ?? v.FechaHora ?? '';
-            const total = v.productosConsumidos?.reduce((acc, p) => acc + (p.precio ?? p.precioDelMomento ?? p.Precio ?? 0), 0) ?? 0;
-            const pagos = v.pagos ?? v.Pagos ?? [];
-            const tipoPagoStr = pagos.length > 0
-                ? pagos.map((p) => p.tipoPago?.nombre ?? p.TipoPago?.Nombre ?? p.tipoPago?.Nombre ?? (p.idTipoPago != null ? `Tipo ${p.idTipoPago}` : '')).filter(Boolean).join(', ') || '-'
-                : '-';
+            const total = productosConsumidos.reduce((acc, p) => acc + (p.precio ?? p.precioDelMomento ?? p.Precio ?? 0), 0);
             return {
                 id: v.id ?? v.Id,
                 numeroMesa: String(numeroMesa).trim() || '-',
                 mozo: nombreMozo.trim() || '-',
                 fecha: fechaRaw,
                 total: Number(total),
-                tipoPago: tipoPagoStr,
+                tickets,
             };
         });
-    }, [visitas, filtroFechaInicio, filtroFechaFin]);
+    }, [visitas, fechaInicio, fechaFin, modoHistorico]);
 
     const filasConBusqueda = useMemo(
         () => filtrarPorBusqueda(filas, busqueda, COLUMNAS_KEYS),
@@ -96,12 +126,44 @@ export default function HistorialTabLocal() {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
+    const tenantId = typeof window !== 'undefined' ? window.localStorage.getItem('tenantId') : '';
+    const ticketsPopoverOpen = Boolean(ticketsAnchorEl);
+
+    const handleAbrirTickets = (event, ticketIds) => {
+        setTicketsAnchorEl(event.currentTarget);
+        setTicketIdsActivos(ticketIds);
+    };
+
+    const handleCerrarTickets = () => {
+        setTicketsAnchorEl(null);
+        setTicketIdsActivos([]);
+    };
+
     const columnas = [
         { key: 'numeroMesa', label: 'Mesa', align: 'left' },
         { key: 'mozo', label: 'Mozo', align: 'left' },
         { key: 'fecha', label: 'Fecha y hora', align: 'left', render: (f) => (f.fecha ? formatearFechaCompleta(f.fecha) : '-') },
         { key: 'total', label: 'Total', align: 'right', render: (f) => Number(f.total).toFixed(2) },
-        { key: 'tipoPago', label: 'Tipo de pago', align: 'left' },
+        {
+            key: 'ticketIds',
+            label: 'Tickets',
+            align: 'left',
+            render: (fila) => {
+                if (!fila.tickets?.length || !tenantId) {
+                    return '-';
+                }
+
+                return (
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(event) => handleAbrirTickets(event, fila.tickets)}
+                    >
+                        Ver tickets ({fila.tickets.length})
+                    </Button>
+                );
+            },
+        },
     ];
 
     const configFiltros = useMemo(() => ({
@@ -109,7 +171,6 @@ export default function HistorialTabLocal() {
         mozo: { tipo: 'text' },
         fecha: { tipo: 'text' },
         total: { tipo: 'number' },
-        tipoPago: { tipo: 'text' },
     }), []);
 
     const opcionesOrden = useMemo(() => [
@@ -117,30 +178,24 @@ export default function HistorialTabLocal() {
         { label: 'Mozo', campo: 'mozo', tipoOrden: 'texto' },
         { label: 'Fecha y hora', campo: 'fecha', tipoOrden: 'fecha' },
         { label: 'Total', campo: 'total', tipoOrden: 'numero' },
-        { label: 'Tipo de pago', campo: 'tipoPago', tipoOrden: 'texto' },
     ], []);
 
     return (
         <Box sx={{ pt: 2 }}>
-            <FiltroFechas
-                onBuscar={handleBuscar}
-                onHistorico={handleHistorico}
-                loading={loading}
-            />
             {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <CircularProgress />
                 </Box>
             )}
             {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-            {!loading && !error && !datosCargados && (
+            {!loading && !error && !filtroActivo && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
                         Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.
                     </Typography>
                 </Box>
             )}
-            {!loading && !error && datosCargados && (
+            {!loading && !error && filtroActivo && datosCargados && (
                 <>
                     <Box sx={{ mb: 2 }}>
                         <TextField
@@ -181,6 +236,36 @@ export default function HistorialTabLocal() {
                             />
                         )}
                     />
+                    <Popover
+                        open={ticketsPopoverOpen}
+                        anchorEl={ticketsAnchorEl}
+                        onClose={handleCerrarTickets}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'left',
+                        }}
+                    >
+                        <Box sx={{ minWidth: 240, maxWidth: 320 }}>
+                            <List dense disablePadding>
+                                {ticketIdsActivos.map((ticket, index) => (
+                                    <ListItem key={ticket.id} disablePadding divider={index < ticketIdsActivos.length - 1}>
+                                        <ListItemButton
+                                            component="a"
+                                            href={`http://localhost:3006/ticket/${tenantId}/${ticket.id}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            onClick={handleCerrarTickets}
+                                        >
+                                            <ListItemText
+                                                primary={`Ticket ${index + 1}`}
+                                                secondary={`$ ${Number(ticket.total ?? 0).toFixed(2)}`}
+                                            />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+                    </Popover>
                 </>
             )}
         </Box>

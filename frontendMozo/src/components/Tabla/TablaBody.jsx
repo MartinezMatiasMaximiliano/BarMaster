@@ -5,7 +5,7 @@ import { defaultRender } from "./defaultRender";
 /**
  * Componente para el cuerpo de la tabla
  */
-export default function TablaBody({ filasPaginadas, columnas }) {
+export default function TablaBody({ filasPaginadas, columnas, onRowClick, getRowSx }) {
     if (filasPaginadas.length === 0) {
         return (
             <TableBody>
@@ -23,7 +23,15 @@ export default function TablaBody({ filasPaginadas, columnas }) {
     return (
         <TableBody>
             {filasPaginadas.map((fila, rIdx) => (
-                <StyledTableRow key={fila.id ?? rIdx} hover>
+                <StyledTableRow
+                    key={fila.id ?? rIdx}
+                    hover
+                    onClick={onRowClick ? () => onRowClick(fila) : undefined}
+                    sx={{
+                        ...(onRowClick ? { cursor: 'pointer' } : {}),
+                        ...(getRowSx ? getRowSx(fila) : {}),
+                    }}
+                >
                     {columnas.map((col, cIdx) => (
                         <StyledTableCell
                             key={`${col.key ?? cIdx}-${fila.id ?? rIdx}`}

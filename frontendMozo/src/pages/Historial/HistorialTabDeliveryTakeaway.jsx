@@ -5,8 +5,7 @@ import { esDelivery, esTakeaway, GetDeliveryTakeaway, normalizarDeliveryTakeaway
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
 import Filtros from '../../components/Filtros/Filtros';
-import FiltroFechas from '../../components/FiltroFechas/FiltroFechas';
-import { filtrarPorBusqueda } from './utils';
+import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
 
 const COLUMNAS = [
     { key: 'fechaHora', label: 'Fecha y hora', align: 'left' },
@@ -42,7 +41,7 @@ export function mapearDeliveryTakeawayARow(item) {
  * @param {string} titulo - Título de la tabla
  * @param {string} tipo - "delivery" o "takeaway"
  */
-export default function HistorialTabDeliveryTakeaway({ titulo, tipo }) {
+export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio, fechaFin, modoHistorico }) {
     const [datos, setDatos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -50,34 +49,43 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo }) {
     const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [datosCargados, setDatosCargados] = useState(false);
-    const [filtroFechaInicio, setFiltroFechaInicio] = useState('');
-    const [filtroFechaFin, setFiltroFechaFin] = useState('');
+    const filtroActivo = tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico });
 
-    const cargarDatos = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            const data = await GetDeliveryTakeaway();
-            setDatos(Array.isArray(data) ? data : []);
-            setDatosCargados(true);
-        } catch (err) {
-            setError(err?.message || 'Error al cargar el historial.');
-        } finally {
+    React.useEffect(() => {
+        let ignorar = false;
+
+        if (!filtroActivo) {
+            setDatos([]);
+            setDatosCargados(false);
+            setError('');
             setLoading(false);
+            return undefined;
         }
-    };
 
-    const handleBuscar = async (fechaInicio, fechaFin) => {
-        setFiltroFechaInicio(fechaInicio);
-        setFiltroFechaFin(fechaFin);
-        await cargarDatos();
-    };
+        const cargarDatos = async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const data = await GetDeliveryTakeaway();
+                if (ignorar) return;
+                setDatos(Array.isArray(data) ? data : []);
+                setDatosCargados(true);
+            } catch (err) {
+                if (ignorar) return;
+                setError(err?.message || 'Error al cargar el historial.');
+            } finally {
+                if (!ignorar) {
+                    setLoading(false);
+                }
+            }
+        };
 
-    const handleHistorico = async () => {
-        setFiltroFechaInicio('');
-        setFiltroFechaFin('');
-        await cargarDatos();
-    };
+        cargarDatos();
+
+        return () => {
+            ignorar = true;
+        };
+    }, [filtroActivo, fechaInicio, fechaFin, modoHistorico]);
 
     const filas = useMemo(() => {
         const filtrados = tipo === 'delivery'
@@ -86,18 +94,14 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo }) {
 
         let rows = filtrados.map(mapearDeliveryTakeawayARow);
 
-        if (filtroFechaInicio) {
-            const inicio = new Date(filtroFechaInicio);
-            rows = rows.filter(r => new Date(r.fechaHoraRaw) >= inicio);
-        }
-        if (filtroFechaFin) {
-            const fin = new Date(filtroFechaFin);
-            fin.setHours(23, 59, 59, 999);
-            rows = rows.filter(r => new Date(r.fechaHoraRaw) <= fin);
+        if (!modoHistorico) {
+            rows = rows.filter((row) =>
+                estaFechaEnRango(row.fechaHoraRaw, fechaInicio, fechaFin)
+            );
         }
 
         return rows;
-    }, [datos, tipo, filtroFechaInicio, filtroFechaFin]);
+    }, [datos, tipo, fechaInicio, fechaFin, modoHistorico]);
 
     const filasConBusqueda = useMemo(
         () => filtrarPorBusqueda(filas, busqueda, COLUMNAS_KEYS),
@@ -130,25 +134,20 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo }) {
 
     return (
         <Box sx={{ pt: 2 }}>
-            <FiltroFechas
-                onBuscar={handleBuscar}
-                onHistorico={handleHistorico}
-                loading={loading}
-            />
             {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <CircularProgress />
                 </Box>
             )}
             {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-            {!loading && !error && !datosCargados && (
+            {!loading && !error && !filtroActivo && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
                         Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.
                     </Typography>
                 </Box>
             )}
-            {!loading && !error && datosCargados && (
+            {!loading && !error && filtroActivo && datosCargados && (
                 <>
                     <Box sx={{ mb: 2 }}>
                         <TextField

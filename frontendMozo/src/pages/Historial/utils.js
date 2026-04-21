@@ -15,3 +15,28 @@ export function filtrarPorBusqueda(filas, textoBusqueda, columnKeys) {
         })
     );
 }
+
+export function tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico }) {
+    return Boolean(modoHistorico || (fechaInicio && fechaFin));
+}
+
+export function estaFechaEnRango(fechaValor, fechaInicio, fechaFin) {
+    if (!fechaValor) return false;
+
+    const fecha = new Date(fechaValor);
+    if (Number.isNaN(fecha.getTime())) return false;
+
+    if (fechaInicio) {
+        const inicio = new Date(fechaInicio);
+        inicio.setHours(0, 0, 0, 0);
+        if (fecha < inicio) return false;
+    }
+
+    if (fechaFin) {
+        const fin = new Date(fechaFin);
+        fin.setHours(23, 59, 59, 999);
+        if (fecha > fin) return false;
+    }
+
+    return true;
+}

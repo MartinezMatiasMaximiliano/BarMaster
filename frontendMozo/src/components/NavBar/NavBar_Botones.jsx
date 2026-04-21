@@ -43,7 +43,6 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 import HistoryIcon from '@mui/icons-material/History';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
@@ -52,7 +51,6 @@ const menuConfig = {
     admin: {
         "Gestión": [
             { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
-            { path: "/abm_menus", label: "Menús", icon: MenuBookOutlinedIcon },
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_envios", label: "Tipos de Envío", icon: DeliveryDiningOutlinedIcon },
@@ -95,7 +93,6 @@ const menuConfig = {
     cajero: {
         "Gestión": [
             { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
-            { path: "/abm_menus", label: "Menús", icon: MenuBookOutlinedIcon },
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_envios", label: "Tipos de Envío", icon: DeliveryDiningOutlinedIcon },

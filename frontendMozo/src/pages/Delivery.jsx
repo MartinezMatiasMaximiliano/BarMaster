@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Tabla from "../components/Tabla/Tabla";
-import { Container } from "react-bootstrap";
+import { Alert, Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_AgregarDelivery from "../components/Modals/Agregar_Delivery/Modal_AgregarDelivery";
 import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
@@ -8,10 +8,13 @@ import { formatearFecha } from "../Helpers/HelperFunctions"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import { Button, Checkbox } from "@mui/material";
+import { useSelector } from 'react-redux';
 import { CambiarEstadoEntregaDeliveryTakeaway, EliminarDeliveryTakeaway, GetDeliveryTakeaway, esDelivery, normalizarDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
 import { BuscarTodosLosTipoEnvios } from "../API/APITipoEnvios";
+import WarningIcon from '@mui/icons-material/Warning';
 
 function Delivery() {
+    const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
     const [deliveries, setDeliveries] = useState([]);
     const [showModalAgregar, setShowModalAgregar] = useState(false);
     const [deliveryEditando, setDeliveryEditando] = useState(null);
@@ -151,6 +154,12 @@ function Delivery() {
 
     return (
         <Container>
+            {!hayCajaActiva && (
+                <Alert variant="warning" className="d-flex align-items-center shadow-sm mt-3 mb-3">
+                    <WarningIcon className="me-2" style={{ fontSize: '1.5rem' }} />
+                    <span>No se puede agregar delivery si no hay una caja activa</span>
+                </Alert>
+            )}
             <Tabla
                 titulo="Delivery"
                 filas={deliveries}
@@ -162,6 +171,7 @@ function Delivery() {
                         color="primary"
                         onClick={() => setShowModalAgregar(true)}
                         startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
+                        disabled={!hayCajaActiva}
                     >
                         Agregar
                     </Button>

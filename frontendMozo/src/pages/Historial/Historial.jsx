@@ -6,6 +6,7 @@ import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import { boxDividerLine } from '../../styles/boxStyles';
+import FiltroFechas from '../../components/FiltroFechas/FiltroFechas';
 import HistorialTabLocal from './HistorialTabLocal';
 import HistorialTabDeliveryTakeaway from './HistorialTabDeliveryTakeaway';
 import HistorialTabReservas from './HistorialTabReservas';
@@ -19,9 +20,30 @@ const TAB_CAJAS = 4;
 
 export default function Historial() {
     const [tabValue, setTabValue] = useState(0);
+    const [filtroFechas, setFiltroFechas] = useState({
+        fechaInicio: '',
+        fechaFin: '',
+        modoHistorico: false,
+    });
 
     const handleTabChange = (_, newValue) => {
         setTabValue(newValue);
+    };
+
+    const handleBuscar = (fechaInicio, fechaFin) => {
+        setFiltroFechas({
+            fechaInicio,
+            fechaFin,
+            modoHistorico: false,
+        });
+    };
+
+    const handleHistorico = () => {
+        setFiltroFechas({
+            fechaInicio: '',
+            fechaFin: '',
+            modoHistorico: true,
+        });
     };
 
     return (
@@ -31,6 +53,13 @@ export default function Historial() {
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
                 Consultá todos los historiales disponibles en el sistema.
+            </Typography>
+            <FiltroFechas
+                onBuscar={handleBuscar}
+                onHistorico={handleHistorico}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                El rango seleccionado impacta en todas las pestañas del historial.
             </Typography>
 
             <Tabs
@@ -48,19 +77,19 @@ export default function Historial() {
             </Tabs>
 
             <Box role="tabpanel" hidden={tabValue !== TAB_LOCAL}>
-                {tabValue === TAB_LOCAL && <HistorialTabLocal />}
+                {tabValue === TAB_LOCAL && <HistorialTabLocal {...filtroFechas} />}
             </Box>
             <Box role="tabpanel" hidden={tabValue !== TAB_DELIVERY}>
-                {tabValue === TAB_DELIVERY && <HistorialTabDeliveryTakeaway titulo="" tipo="delivery" />}
+                {tabValue === TAB_DELIVERY && <HistorialTabDeliveryTakeaway titulo="" tipo="delivery" {...filtroFechas} />}
             </Box>
             <Box role="tabpanel" hidden={tabValue !== TAB_TAKEAWAY}>
-                {tabValue === TAB_TAKEAWAY && <HistorialTabDeliveryTakeaway titulo="" tipo="takeaway" />}
+                {tabValue === TAB_TAKEAWAY && <HistorialTabDeliveryTakeaway titulo="" tipo="takeaway" {...filtroFechas} />}
             </Box>
             <Box role="tabpanel" hidden={tabValue !== TAB_RESERVAS}>
-                {tabValue === TAB_RESERVAS && <HistorialTabReservas />}
+                {tabValue === TAB_RESERVAS && <HistorialTabReservas {...filtroFechas} />}
             </Box>
             <Box role="tabpanel" hidden={tabValue !== TAB_CAJAS}>
-                {tabValue === TAB_CAJAS && <HistorialTabCajas />}
+                {tabValue === TAB_CAJAS && <HistorialTabCajas {...filtroFechas} />}
             </Box>
         </Container>
     );

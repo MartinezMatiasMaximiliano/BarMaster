@@ -13,17 +13,6 @@ function normalizarMovimiento(movimiento) {
     };
 }
 
-function calcularBalance(movimientos, balanceFallback) {
-    if (!Array.isArray(movimientos) || movimientos.length === 0) {
-        return Number(balanceFallback ?? 0);
-    }
-
-    return movimientos.reduce((saldo, movimiento) => {
-        const monto = Number(movimiento.monto ?? 0);
-        return movimiento.esIngreso ? saldo + monto : saldo - monto;
-    }, 0);
-}
-
 function normalizarCuentaCorriente(cuenta) {
     const movimientosRaw = cuenta.movimientos ?? cuenta.Movimientos ?? [];
     const movimientos = Array.isArray(movimientosRaw) ? movimientosRaw.map(normalizarMovimiento) : [];
@@ -33,7 +22,7 @@ function normalizarCuentaCorriente(cuenta) {
         nombre: (cuenta.nombre ?? cuenta.Nombre ?? '').toString().trim(),
         telefono: (cuenta.telefono ?? cuenta.Telefono ?? '').toString().trim(),
         domicilio: (cuenta.domicilio ?? cuenta.Domicilio ?? '').toString().trim(),
-        balance: calcularBalance(movimientos, cuenta.balance ?? cuenta.Balance ?? 0),
+        balance: Number(cuenta.balance ?? cuenta.Balance ?? 0),
         descuento: Number(cuenta.descuento ?? cuenta.Descuento ?? 0),
         movimientos,
     };

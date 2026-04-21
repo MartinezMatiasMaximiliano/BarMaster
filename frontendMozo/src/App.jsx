@@ -65,6 +65,8 @@ export const LoginContext = createContext();
 export const SucursalContext = createContext();
 export const AuthTypeContext = createContext();
 
+const MENUS_ENABLED = false;
+
 function App() {
     const location = useLocation();
 
@@ -141,7 +143,7 @@ function App() {
                     .catch(() => { if (!cancelled) SetPlanos([]); });
                 // Cargar menús - necesitamos IdSucursal
                 const idSucursal = localStorage.getItem('idSucursal') || authService.getIdSucursal();
-                if (idSucursal) {
+                if (MENUS_ENABLED && idSucursal) {
                     BuscarTodosLosMenus(idSucursal)
                         .then(data => { if (!cancelled) SetMenus(Array.isArray(data) ? data : []); })
                         .catch(() => { if (!cancelled) SetMenus([]); });
@@ -236,6 +238,10 @@ function App() {
     }
 
     async function recargarMenus() {
+        if (!MENUS_ENABLED) {
+            SetMenus([]);
+            return;
+        }
         const idSucursal = localStorage.getItem('idSucursal') || authService.getIdSucursal();
         if (idSucursal) {
             const data = await BuscarTodosLosMenus(idSucursal).catch(() => []);
@@ -379,7 +385,25 @@ function App() {
                             <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
                             <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarPlanos} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                             <Route path="/abm_productos" element={<Control_Login><Abm_Productos recargarComponentes={recargarProductos} datos_productos={datos_menu_abm} categorias={categorias} titulo="Productos" /></Control_Login>} />
-                            <Route path="/abm_menus" element={<Control_Login><Abm_Menus recargarComponentes={recargarMenus} datos_menus={menus} productos={menu} categorias={categorias} idSucursal={localStorage.getItem('idSucursal') || authService.getIdSucursal()} titulo="Menús" /></Control_Login>} />
+                            <Route
+                                path="/abm_menus"
+                                element={
+                                    MENUS_ENABLED
+                                        ? (
+                                            <Control_Login>
+                                                <Abm_Menus
+                                                    recargarComponentes={recargarMenus}
+                                                    datos_menus={menus}
+                                                    productos={menu}
+                                                    categorias={categorias}
+                                                    idSucursal={localStorage.getItem('idSucursal') || authService.getIdSucursal()}
+                                                    titulo="Menús"
+                                                />
+                                            </Control_Login>
+                                        )
+                                        : <Navigate to="/sistema_sucursal" replace />
+                                }
+                            />
                             <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
                             <Route path="/reservas" element={<Control_Login><Abm_Reservas recargarComponentes={recargarReservas} datos_reservas={datos_reservas} titulo="Reservas" /></Control_Login>} />
                             <Route path="/abm_planos" element={<Control_Login><Abm_Planos recargarComponentes={recargarPlanos} datos_planos={datos_planos_abm} titulo="Planos" /></Control_Login>} />
