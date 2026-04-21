@@ -2,10 +2,10 @@ import api from '../services/axiosInstance';
 import { ObtenerCajaActiva } from './APICaja';
 import { construirError } from './APIError';
 
-export async function ObtenerTiposMovimientoCaja() {
+export async function ObtenerTiposMovimientoCaja(entorno = 'Movimiento') {
     try {
         const response = await api.get('TipoMovimientosCaja', {
-            params: { Entorno: 'Movimiento' }
+            params: { Entorno: entorno }
         });
         const tipos = response.data || [];
         
@@ -14,7 +14,8 @@ export async function ObtenerTiposMovimientoCaja() {
             id: tipo.id || tipo.Id,
             nombre: tipo.nombre || tipo.Nombre || '',
             esIngreso: tipo.esIngreso ?? tipo.EsIngreso ?? false,
-            esEfectivo: tipo.esEfectivo ?? tipo.EsEfectivo ?? false
+            esEfectivo: tipo.esEfectivo ?? tipo.EsEfectivo ?? false,
+            entorno: tipo.entorno ?? tipo.Entorno ?? ''
         }));
     } catch (error) {
         console.error('Error al obtener tipos de movimiento de caja:', construirError(error, 'Error al obtener tipos de movimiento de caja'));

@@ -120,7 +120,7 @@ export async function BorrarMesa(idMesa) {
 
 export async function BuscarTodasLasMesas() {
     try {
-        const response = await api.get('Mesas');
+        const response = await api.get('Mesa');
         return response.data;
     } catch (error) {
         console.error("Error al obtener mesas:", construirError(error, 'Error al obtener mesas'));

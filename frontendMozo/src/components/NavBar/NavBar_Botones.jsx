@@ -70,6 +70,7 @@ const menuConfig = {
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
             { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
+            { path: "/abm_cuentas_corrientes", label: "Cuentas Corrientes", icon: AccountBalanceWalletOutlinedIcon },
         ],
         "Reportes": [
             { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
@@ -111,6 +112,7 @@ const menuConfig = {
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
             { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
+            { path: "/abm_cuentas_corrientes", label: "Cuentas Corrientes", icon: AccountBalanceWalletOutlinedIcon },
         ],
         "Reportes": [
             { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },

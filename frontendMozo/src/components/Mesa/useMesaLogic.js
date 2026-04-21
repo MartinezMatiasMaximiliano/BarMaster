@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { 
     cambiarEstadoPagadoPorMesa, 
     eliminarProductos, 
-    agregarVisita 
+    agregarVisita,
+    actualizarVisita
 } from '../../redux/slices/visitasActivasSlice';
-import { EliminarProductosVisita } from '../../API/APIVisitas';
+import { EliminarProductosVisita, ObtenerVisitaPorId } from '../../API/APIVisitas';
 import { AbrirCerrarMesa } from '../../API/APIMesas';
 import { GenerarTicketPDF } from '../../API/APIPedidos';
-import connection from '../../connections/HubConnMozo';
+import connection, { sendHubMessage } from '../../connections/HubConnMozo';
 
 export const useMesaLogic = () => {
     const dispatch = useDispatch();
@@ -28,7 +29,19 @@ export const useMesaLogic = () => {
                 numeroMesa, 
                 idsProductos 
             }));
-            connection.send("RecargarTicket", numeroMesa);
+
+            const visitaActualizada = await ObtenerVisitaPorId(idVisita);
+            if (visitaActualizada) {
+                const visitaActualizadaConMesa = {
+                    ...visitaActualizada,
+                    numeroMesa
+                };
+
+                dispatch(actualizarVisita(visitaActualizadaConMesa));
+                await sendHubMessage("NotificarVisitaActualizada", visitaActualizadaConMesa);
+            }
+
+            await sendHubMessage("RecargarTicket", numeroMesa);
             onSuccess?.();
         } catch (error) {
             console.error('Error al cancelar productos:', error);

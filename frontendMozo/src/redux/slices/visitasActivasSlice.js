@@ -144,6 +144,14 @@ export const visitasActivasSlice = createSlice({
                         numero: visitaNormalizada.numeroMesa
                     } : undefined)
                 };
+            } else {
+                state.value.push({
+                    ...visitaNormalizada,
+                    mesa: visitaNormalizada.numeroMesa ? {
+                        id: visitaNormalizada.idMesa,
+                        numero: visitaNormalizada.numeroMesa
+                    } : undefined
+                });
             }
         },
     },

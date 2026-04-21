@@ -5,8 +5,7 @@ function normalizarTipoEnvio(tipo) {
     return {
         id: tipo.id ?? tipo.Id,
         nombre: (tipo.nombre ?? tipo.Nombre ?? '').toString().trim(),
-        precio: Number(tipo.precio ?? tipo.Precio ?? 0),
-        vehiculo: (tipo.vehiculo ?? tipo.Vehiculo ?? '').toString().trim(),
+        precio: Number(tipo.precio ?? tipo.Precio ?? 0)
     };
 }
 
@@ -25,8 +24,7 @@ export async function CrearTipoEnvio(datos) {
     try {
         const payload = {
             Nombre: datos.nombre,
-            Precio: Number(datos.precio),
-            Vehiculo: datos.vehiculo,
+            Precio: Number(datos.precio)
         };
         const response = await api.post('TipoEnvios', payload);
         return normalizarTipoEnvio(response.data ?? {});
@@ -44,9 +42,6 @@ export async function ModificarTipoEnvio(datos) {
         }
         if (datos.precio !== undefined && datos.precio !== '') {
             payload.Precio = Number(datos.precio);
-        }
-        if (datos.vehiculo !== undefined) {
-            payload.Vehiculo = datos.vehiculo;
         }
 
         const response = await api.patch(`TipoEnvios/${datos.id}`, payload);

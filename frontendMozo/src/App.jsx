@@ -13,6 +13,7 @@ import Abm_Productos from './pages/Abm_Productos';
 import Abm_Menus from './pages/Abm_Menus';
 import Abm_Categorias from './pages/Abm_Categorias'
 import Abm_TipoEnvios from './pages/Abm_TipoEnvios'
+import Abm_CuentasCorrientes from './pages/Abm_CuentasCorrientes'
 import Abm_Personas from './pages/Abm_Personas'
 import Cambiar_Clave from './pages/Cambiar_Clave'
 import Distribucion_mesas from './pages/Distribucion_mesas'
@@ -50,10 +51,11 @@ import { BuscarTodasLasReservas } from './API/APIReservas'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { BuscarTodosLosMenus } from './API/APIMenus'
+import { BuscarTodasLasCuentasCorrientes } from './API/APICuentasCorrientes'
 import { CambiarEstadoItems } from './API/APIItems'
 import { authService } from './services/authService'
 import { useSelector, useDispatch } from 'react-redux'
-import { cambiarEstadoPagadoProductos, cargarVisitasActivas } from './redux/slices/visitasActivasSlice'
+import { actualizarVisita, cambiarEstadoPagadoProductos, cargarVisitasActivas } from './redux/slices/visitasActivasSlice'
 import { agregar as agregarNotificaciones } from './redux/slices/notificacionesSlice'
 import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
@@ -77,7 +79,9 @@ function App() {
 
     const [logeadoUsuario, setLogeadoUsuario] = useState(false);
 
-    const [rol, setRol] = useState(localStorage.getItem('rol') || '');
+    const [rol, setRol] = useState(
+        () => localStorage.getItem('USER_auth_type') || localStorage.getItem('rol') || ''
+    );
     const [authType, setAuthType] = useState(() => {
         return localStorage.getItem('auth_type') || null;
     });
@@ -96,6 +100,7 @@ function App() {
     const [reservas, SetReservas] = useState([])
     const [planos, SetPlanos] = useState([])
     const [menus, SetMenus] = useState([])
+    const [cuentasCorrientes, setCuentasCorrientes] = useState([])
 
     // Cada vez que se hace un navigate('/?algo'), se ejecuta este useEffect recargando los componentes
     // Es mucho más rápido que usar window.location.reload() al abrir/cerrar mesa
@@ -103,7 +108,9 @@ function App() {
     useEffect(() => {
         let cancelled = false;
         const esVistaMesas = location.pathname === '/sistema_sucursal' || location.pathname === '/Index2';
-        if (esVistaMesas) {
+        const esVistaKDS = location.pathname === '/kds';
+        const esVistaAbmCuentasCorrientes = location.pathname === '/abm_cuentas_corrientes';
+        if (esVistaMesas || esVistaKDS) {
             if (localStorage.getItem('token')) {
                 BuscarTodasLasMesas()
                     .then(data => { if (!cancelled) SetMesas(Array.isArray(data) ? data : []); })
@@ -153,11 +160,34 @@ function App() {
             }
         }
 
+        if (esVistaAbmCuentasCorrientes) {
+            if (localStorage.getItem('token')) {
+                BuscarTodasLasCuentasCorrientes()
+                    .then(data => { if (!cancelled) setCuentasCorrientes(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) setCuentasCorrientes([]); });
+            } else {
+                setCuentasCorrientes([]);
+            }
+        }
+
         return () => { cancelled = true; };
     }, [location.search, location.pathname, dispatch])
 
     const { sendRecargarTicket } = useSignalR({
         onRegistrarProducto: (pedido, numeroMesa) => { AgregarItemsAPedido(pedido, numeroMesa) },
+        onVisitaActualizada: (visitaActualizada) => {
+            if (visitaActualizada) {
+                dispatch(actualizarVisita(visitaActualizada));
+            }
+        },
+        onRecargarTicket: async () => {
+            try {
+                const data = await BuscarVisitasActivas();
+                dispatch(cargarVisitasActivas(Array.isArray(data) ? data : []));
+            } catch (error) {
+                console.error('Error al recargar visitas activas por SignalR:', error);
+            }
+        },
         onRegistrarNotificacion: (notificacion) => { dispatch(agregarNotificaciones(notificacion)) },
         onPagarMesa: (IdPedido) => { pagarTotal(IdPedido) },
         onPagarMesaSeparado: (ArrayIdsItems) => { pagarSeparado(ArrayIdsItems) }
@@ -211,6 +241,11 @@ function App() {
             const data = await BuscarTodosLosMenus(idSucursal).catch(() => []);
             SetMenus(Array.isArray(data) ? data : []);
         }
+    }
+
+    async function recargarCuentasCorrientes() {
+        const data = await BuscarTodasLasCuentasCorrientes().catch(() => []);
+        setCuentasCorrientes(Array.isArray(data) ? data : []);
     }
 
     async function pagarTotal(IdVisita) {
@@ -340,6 +375,7 @@ function App() {
                             <Route path="/movimiento_caja" element={<Control_Login><MovimientoCaja /></Control_Login>} />
                             <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
                             <Route path="/abm_tipo_envios" element={<Control_Login><Abm_TipoEnvios titulo="Tipos de Envío" /></Control_Login>} />
+                            <Route path="/abm_cuentas_corrientes" element={<Control_Login><Abm_CuentasCorrientes recargarComponentes={recargarCuentasCorrientes} datos_cuentas_corrientes={cuentasCorrientes} titulo="Cuentas Corrientes" /></Control_Login>} />
                             <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
                             <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarPlanos} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                             <Route path="/abm_productos" element={<Control_Login><Abm_Productos recargarComponentes={recargarProductos} datos_productos={datos_menu_abm} categorias={categorias} titulo="Productos" /></Control_Login>} />

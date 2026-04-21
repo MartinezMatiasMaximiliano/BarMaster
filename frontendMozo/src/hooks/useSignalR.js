@@ -9,20 +9,26 @@ export default function useSignalR(handlers = {}) {
         if (!connection) return;
 
         const onRegistrarProducto = (...args) => handlersRef.current.onRegistrarProducto?.(...args);
+        const onVisitaActualizada = (...args) => handlersRef.current.onVisitaActualizada?.(...args);
         const onRegistrarNotificacion = (...args) => handlersRef.current.onRegistrarNotificacion?.(...args);
         const onPagarMesa = (...args) => handlersRef.current.onPagarMesa?.(...args);
         const onPagarMesaSeparado = (...args) => handlersRef.current.onPagarMesaSeparado?.(...args);
+        const onRecargarTicket = (...args) => handlersRef.current.onRecargarTicket?.(...args);
 
         connection.on('RegistrarProducto', onRegistrarProducto);
+        connection.on('VisitaActualizada', onVisitaActualizada);
         connection.on('RegistrarNotificacion', onRegistrarNotificacion);
         connection.on('PagarMesa', onPagarMesa);
         connection.on('PagarMesaSeparado', onPagarMesaSeparado);
+        connection.on('RecargarTicket', onRecargarTicket);
 
         return () => {
             connection.off('RegistrarProducto', onRegistrarProducto);
+            connection.off('VisitaActualizada', onVisitaActualizada);
             connection.off('RegistrarNotificacion', onRegistrarNotificacion);
             connection.off('PagarMesa', onPagarMesa);
             connection.off('PagarMesaSeparado', onPagarMesaSeparado);
+            connection.off('RecargarTicket', onRecargarTicket);
         }
     }, []);
 

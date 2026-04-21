@@ -53,24 +53,7 @@ function Abm_TipoEnvios(props) {
             label: "Precio",
             align: "right",
             render: (fila) => `$${Number(fila.precio ?? 0)}`,
-        },
-        { key: "vehiculo", label: "Vehículo", align: "right" },
-        {
-            key: "__acciones",
-            label: "Acciones",
-            align: "right",
-            render: (fila) => (
-                <Fila_Acciones
-                    fila={fila}
-                    api={api}
-                    recargar={recargarComponentes}
-                    showEditar={true}
-                    showToggle={() => false}
-                    deleteLabel="tipo de envío"
-                    campos={CamposEditar}
-                />
-            ),
-        },
+        }
     ];
 
     return (
@@ -95,8 +78,7 @@ function Abm_TipoEnvios(props) {
                         filas={filasFiltradas}
                         opcionesOrdenamiento={[
                             { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
-                            { label: 'Precio', campo: 'precio', tipoOrden: 'numero' },
-                            { label: 'Vehículo', campo: 'vehiculo', tipoOrden: 'texto' },
+                            { label: 'Precio', campo: 'precio', tipoOrden: 'numero' }
                         ]}
                         onOrdenar={setFilasOrdenadas}
                         key={filasFiltradas.length}
@@ -108,8 +90,7 @@ function Abm_TipoEnvios(props) {
                         columnas={columnas}
                         configuracionFiltros={{
                             nombre: { tipo: 'text' },
-                            precio: { tipo: 'number' },
-                            vehiculo: { tipo: 'text' },
+                            precio: { tipo: 'number' }
                         }}
                         onFiltrar={setFilasFiltradas}
                         key={tiposEnvio.length}

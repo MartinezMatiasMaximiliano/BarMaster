@@ -4,7 +4,7 @@ import { BuscarTodosLosProductos } from '../../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
 import { AgregarProductosAVisita } from '../../../../API/APIVisitas';
 import { actualizarVisita } from '../../../../redux/slices/visitasActivasSlice';
-import connection from '../../../../connections/HubConnMozo';
+import { sendHubMessage } from '../../../../connections/HubConnMozo';
 import { useSnackbar } from '../../../../hooks/useSnackbar.jsx';
 
 export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
@@ -131,14 +131,17 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
             const visitaActualizada = await AgregarProductosAVisita(idVisita, itemsParaEnviar);
             
             if (visitaActualizada) {
-                // Actualizar Redux con la visita actualizada del backend
-                // Asegurar que tenga el número de mesa para poder encontrarla en Redux
-                dispatch(actualizarVisita({
+                const visitaActualizadaConMesa = {
                     ...visitaActualizada,
                     numeroMesa: numeroMesa
-                }));
-                
-                connection.send("RecargarTicket", numeroMesa);
+                };
+
+                // Actualizar Redux con la visita actualizada del backend
+                // Asegurar que tenga el número de mesa para poder encontrarla en Redux
+                dispatch(actualizarVisita(visitaActualizadaConMesa));
+
+                await sendHubMessage("NotificarVisitaActualizada", visitaActualizadaConMesa);
+                await sendHubMessage("RecargarTicket", numeroMesa);
                 setComanda([]);
                 onClose();
             } else {

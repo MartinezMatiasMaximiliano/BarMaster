@@ -1,8 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { cambiarEstadoPreparacion } from '../../../redux/slices/visitasActivasSlice';
 import { CambiarEstadoProducto } from '../../../API/APIVisitas';
 import { useSnackbar } from '../../../hooks/useSnackbar.jsx';
+import nuevoPedidoSound from '../../../assets/nuevo-pedido.mp3';
+import pedidoCanceladoSound from '../../../assets/pedido-cancelado.mp3';
 
 /**
  * Hook personalizado para manejar la lógica del KDS (Kitchen Display System)
@@ -11,6 +13,9 @@ import { useSnackbar } from '../../../hooks/useSnackbar.jsx';
 export const useKDS = () => {
     const dispatch = useDispatch();
     const { snackbar, showSnackbar, closeSnackbar } = useSnackbar();
+    const nuevoPedidoAudioRef = useRef(null);
+    const pedidoCanceladoAudioRef = useRef(null);
+    const previousItemIdsRef = useRef(new Set());
 
     const visitasActivasRedux = useSelector(
         (state) => state.visitasActivas.value,
@@ -111,25 +116,68 @@ export const useKDS = () => {
         return itemsKDS.filter(item => estadosSeleccionados.includes(item.estado));
     }, [itemsKDS, filtroEstado]);
 
+    useEffect(() => {
+        const nuevoPedidoAudio = new Audio(nuevoPedidoSound);
+        nuevoPedidoAudio.preload = 'auto';
+        nuevoPedidoAudio.volume = 0.6;
+        nuevoPedidoAudioRef.current = nuevoPedidoAudio;
+
+        const pedidoCanceladoAudio = new Audio(pedidoCanceladoSound);
+        pedidoCanceladoAudio.preload = 'auto';
+        pedidoCanceladoAudio.volume = 0.6;
+        pedidoCanceladoAudioRef.current = pedidoCanceladoAudio;
+
+        return () => {
+            nuevoPedidoAudio.pause();
+            pedidoCanceladoAudio.pause();
+            nuevoPedidoAudioRef.current = null;
+            pedidoCanceladoAudioRef.current = null;
+        };
+    }, []);
+
+    const reproducirAudio = useCallback(async (audioRef, descripcion) => {
+        try {
+            if (!audioRef.current) {
+                return;
+            }
+
+            audioRef.current.currentTime = 0;
+            await audioRef.current.play();
+        } catch (error) {
+            console.error(`No se pudo reproducir el sonido de KDS (${descripcion}):`, error);
+        }
+    }, []);
+
     // Detectar nuevos pedidos para reproducir sonido
     useEffect(() => {
-        if (itemsKDS.length > 0 && sonidoHabilitado) {
-            const ultimoItem = itemsKDS[itemsKDS.length - 1];
-            
-            // Si es un pedido nuevo (diferente al último visto)
-            if (ultimoPedidoId !== ultimoItem.id) {
-                setUltimoPedidoId(ultimoItem.id);
-                
-                // Reproducir sonido de notificación
-                try {
-                    const audio = new Audio('/notification.mp3');
-                    audio.volume = 0.5;
-                    audio.play().catch(() => {});
-                } catch (e) {
-                }
+        const idsActuales = new Set(itemsKDS.map(item => item.id));
+
+        if (previousItemIdsRef.current.size === 0) {
+            previousItemIdsRef.current = idsActuales;
+            if (itemsKDS.length > 0) {
+                setUltimoPedidoId(itemsKDS[itemsKDS.length - 1].id);
+            }
+            return;
+        }
+
+        const nuevosItems = itemsKDS.filter(item => !previousItemIdsRef.current.has(item.id));
+        const itemsEliminados = [...previousItemIdsRef.current].filter(id => !idsActuales.has(id));
+
+        if (nuevosItems.length > 0) {
+            const ultimoItemNuevo = nuevosItems[nuevosItems.length - 1];
+            setUltimoPedidoId(ultimoItemNuevo.id);
+
+            if (sonidoHabilitado) {
+                reproducirAudio(nuevoPedidoAudioRef, 'nuevo pedido');
             }
         }
-    }, [itemsKDS, sonidoHabilitado, ultimoPedidoId]);
+
+        if (itemsEliminados.length > 0 && sonidoHabilitado) {
+            reproducirAudio(pedidoCanceladoAudioRef, 'pedido cancelado');
+        }
+
+        previousItemIdsRef.current = idsActuales;
+    }, [itemsKDS, sonidoHabilitado, reproducirAudio]);
 
     // Obtener el estado anterior de un item antes de cambiarlo
     const obtenerEstadoAnterior = useCallback((itemId) => {
