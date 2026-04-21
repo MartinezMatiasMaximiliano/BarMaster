@@ -133,7 +133,7 @@ export const useCaja = () => {
 
     const validarCierre = () => {
         if (mesasAbiertas > 0) {
-            setError(`No se puede cerrar la caja mientras haya mesas abiertas (${mesasAbiertas} ${mesasAbiertas === 1 ? 'mesa abierta' : 'mesas abiertas'}).`);
+            setError('No se puede cerrar caja si hay mesas abiertas, o algun delivery o takeaway activo.');
             return false;
         }
         if (formCierre.montoFinal === '' || Number.isNaN(Number(formCierre.montoFinal))) {

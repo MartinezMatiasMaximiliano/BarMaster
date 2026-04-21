@@ -15,7 +15,14 @@ import {
 import LockIcon from '@mui/icons-material/Lock';
 import { currencyFormatter } from '../utils/constants';
 
-export const FormularioCierre = ({ formCierre, diferencia, guardando, onChange, onSubmit, mesasAbiertas = 0 }) => {
+export const FormularioCierre = ({
+    formCierre,
+    diferencia,
+    guardando,
+    onChange,
+    onSubmit,
+    mesasAbiertas = 0
+}) => {
     return (
         <Card variant="outlined">
             <CardHeader title="Cierre de caja" subheader="Detalla el monto final y observaciones." />
@@ -85,7 +92,7 @@ export const FormularioCierre = ({ formCierre, diferencia, guardando, onChange, 
                     </Stack>
                     {mesasAbiertas > 0 && (
                         <Alert severity="warning" sx={{ mt: 2 }}>
-                            No se puede cerrar la caja mientras haya mesas abiertas ({mesasAbiertas} {mesasAbiertas === 1 ? 'mesa abierta' : 'mesas abiertas'}).
+                            No se puede cerrar caja si hay mesas abiertas, o algun delivery o takeaway activo.
                         </Alert>
                     )}
                     <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3}>
