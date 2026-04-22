@@ -1,10 +1,10 @@
 const camposBase = [
-  { name: "nombre", label: "Nombre", type: "text" },
-  { name: "apellido", label: "Apellido", type: "text" },
-  { name: "dni", label: "DNI", type: "text" },
-  { name: "direccion", label: "Dirección", type: "text" },
-  { name: "telefono", label: "Teléfono", type: "text" },
-  { name: "rol", label: "Rol", type: "select", options: [] },
+  { name: "nombre", label: "Nombre", type: "text", required: true, validation: { rule: "letters" } },
+  { name: "apellido", label: "Apellido", type: "text", required: true, validation: { rule: "letters" } },
+  { name: "dni", label: "DNI", type: "text", required: true, validation: { rule: "integer" } },
+  { name: "direccion", label: "Dirección", type: "text", validation: { rule: "text" } },
+  { name: "telefono", label: "Teléfono", type: "text", validation: { rule: "integer" } },
+  { name: "rol", label: "Rol", type: "select", required: true, validation: { rule: "select" }, options: [] },
 ];
 
 // Función para inicializar los campos con los datos de roles recibidos como parámetro

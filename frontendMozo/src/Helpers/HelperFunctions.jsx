@@ -2,6 +2,12 @@
 import Toast_Notificacion from "../components/Toast_Notificacion";
 import { Chip } from "@mui/material";
 import Avatar from '@mui/material/Avatar';
+import {
+    getFieldError,
+    isRequiredField,
+    validateFieldAndSetError,
+    validateForm,
+} from "../validation/formValidation";
 
 /* Funcion para confirmar el del sistema (sirve para el sistema de una sucursal y para el panel de sucursales) */
 export const handleConfirmarSalir = (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
@@ -218,105 +224,18 @@ export function MappearNotificaciones(notificaciones, eliminarNotificacion) {
     )
 }
 
-const regex = {
-    string: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s.,:;!?]*$/,
-    int: /^[0-9]*$/,
-    decimal: /^[0-9]+(?:,[0-9]+)?$/,
-    image: /image/i,
-    int4: /^[0-9]{4}$/, // int de 4 digitos
-    texto: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s°$.!¿?*[\],#-]*$/, // Permite letras, números, espacios y los caracteres  
-};
-
-const tipoColumnas = {
-    string: ['nombre', 'apellido'],
-    int: ['numero', 'telefono', 'dni', 'cantidaddepersonas', 'mesa', 'capacidad'],
-    decimal: ['precio', 'costoproduccion'],
-    image: ['imagen'],
-    int4: ['codigodeservicio'], 
-    texto: ["direccion", "descripcion", "nombrereserva"]
-};
-
-const camposObligatorios = ['nombre', 'descripcion', 'precio', 'rol', 'categorias', 'apellido', 'dni', 'numero', 'capacidad', 'fechahora', 'nombrereserva', 'cantidaddepersonas', 'mesa', 'estado']
-
-function esValorVacio(valor) {
-    if (valor === null || valor === undefined) return true;
-    if (typeof valor === "string") return valor.trim().length === 0;
-    if (Array.isArray(valor)) return valor.length === 0;
-    return false;
-}
-
 export function esCampoObligatorio(campo) {
-    if (!campo) return false;
-    if (typeof campo === "string") {
-        return camposObligatorios.includes(campo.toLowerCase());
-    }
-
-    return Boolean(campo.required) || camposObligatorios.includes(campo.name?.toLowerCase());
+    return isRequiredField(campo);
 }
 
 export function obtenerErrorCampo(key, valor, campo = null) {
-    const keyNormalizada = key.toLowerCase();
-
-    if (esCampoObligatorio(campo ?? key) && esValorVacio(valor)) {
-        return "Este campo es obligatorio.";
-    }
-
-    if (esValorVacio(valor)) {
-        return null;
-    }
-
-    if (tipoColumnas.string.includes(keyNormalizada) && !regex.string.test(valor)) {
-        return "Formato invalido. Solo se permiten letras, espacios y signos de puntuacion.";
-    }
-
-    if (tipoColumnas.int.includes(keyNormalizada) && !regex.int.test(String(valor))) {
-        return "Formato invalido. Solo se permiten numeros.";
-    }
-
-    if (tipoColumnas.decimal.includes(keyNormalizada) && !regex.decimal.test(String(valor))) {
-        return "Formato invalido. Solo se permiten numeros y una coma decimal.";
-    }
-
-    if (tipoColumnas.image.includes(keyNormalizada) && !regex.image.test(valor?.type || "")) {
-        return "Solo se permite subir imagenes.";
-    }
-
-    if (tipoColumnas.int4.includes(keyNormalizada) && !regex.int4.test(String(valor))) {
-        return "Formato invalido. Se permiten unicamente 4 numeros.";
-    }
-
-    if (tipoColumnas.texto.includes(keyNormalizada) && !regex.texto.test(valor)) {
-        return "Formato invalido. Se permiten letras y numeros";
-    }
-
-    return null;
+    return getFieldError(key, valor, campo);
 }
 
 export function validarFormulario(campos = [], values = {}) {
-    const errores = {};
-
-    campos.forEach((campo) => {
-        const error = obtenerErrorCampo(campo.name, values[campo.name], campo);
-        if (error) {
-            errores[campo.name] = error;
-        }
-    });
-
-    return errores;
+    return validateForm(campos, values);
 }
 
 export function validarCampos(key, valor, setErrors, campo = null) {
-    const error = obtenerErrorCampo(key, valor, campo);
-
-    setErrors(prevErrors => {
-        const newErrors = { ...prevErrors };
-
-        if (error) {
-            newErrors[key] = error;
-        } else {
-            delete newErrors[key];
-        }
-
-        return newErrors;
-    });
+    validateFieldAndSetError(key, valor, setErrors, campo);
 }

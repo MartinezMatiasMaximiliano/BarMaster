@@ -33,6 +33,15 @@ export default function Handlers({ id, editValues, setEditValues, modificar, rec
         [key]: valor,
     }));
 
+    setErrors((prevErrors) => {
+        if (!prevErrors.servidor) {
+            return prevErrors;
+        }
+
+        const { servidor, ...rest } = prevErrors;
+        return rest;
+    });
+
     validarCampos(key, valor, setErrors, campo);
   };
 

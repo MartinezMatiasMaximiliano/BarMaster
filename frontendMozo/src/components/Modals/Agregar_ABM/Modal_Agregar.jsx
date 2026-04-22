@@ -42,7 +42,7 @@ function Modal_Agregar(props) {
         campos: props.campos,
     });
 
-    const renderizados = Renderizados(props, handleChange);
+    const renderizados = Renderizados(props, handleChange, errors);
     const nombreRegistro = props.nombre || 'registro';
 
     return (

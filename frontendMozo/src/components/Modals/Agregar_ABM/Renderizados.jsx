@@ -4,9 +4,22 @@ import Select from "../../Select";
 import { TextField } from "@mui/material";
 import { esCampoObligatorio } from "../../../Helpers/HelperFunctions";
 
-export const Renderizados = (props, handleChange) => ({
+function getFieldUiState(campo, errors = {}) {
+  const fieldError = errors[campo.name];
+  return {
+    error: Boolean(fieldError),
+    helperText: fieldError || campo.helperText || ' ',
+  };
+}
+
+export const Renderizados = (props, handleChange, errors = {}) => ({
   image: (campo, index) => (
-    <Input_Imagen key={index} handleChange={handleChange} />
+    <Input_Imagen
+      key={index}
+      handleChange={handleChange}
+      error={getFieldUiState(campo, errors).error}
+      helperText={getFieldUiState(campo, errors).helperText}
+    />
   ),
   select_multiple: (campo, index) => (
     <Multiple_Select
@@ -14,6 +27,8 @@ export const Renderizados = (props, handleChange) => ({
       campo={campo}
       itemsActivos={[]}
       handleChange={handleChange}
+      error={getFieldUiState(campo, errors).error}
+      helperText={getFieldUiState(campo, errors).helperText}
     />
   ),
   select: (campo, index) => (
@@ -22,6 +37,8 @@ export const Renderizados = (props, handleChange) => ({
       datoActual=""
       campo={campo}
       handleChange={handleChange}
+      error={getFieldUiState(campo, errors).error}
+      helperText={getFieldUiState(campo, errors).helperText}
     />
   ),
 
@@ -33,6 +50,8 @@ export const Renderizados = (props, handleChange) => ({
       label={campo.label}
       placeholder={`Ingrese valor para ${campo.label}`}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
+      error={getFieldUiState(campo, errors).error}
+      helperText={getFieldUiState(campo, errors).helperText}
       variant="outlined"
     />
   ),
@@ -45,6 +64,8 @@ export const Renderizados = (props, handleChange) => ({
       type="datetime-local"
       InputLabelProps={{ shrink: true }}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
+      error={getFieldUiState(campo, errors).error}
+      helperText={getFieldUiState(campo, errors).helperText}
       variant="outlined"
     />
   ),
@@ -55,8 +76,10 @@ export const Renderizados = (props, handleChange) => ({
       required={esCampoObligatorio(campo)}
       label={campo.label}
       type="number"
-      inputProps={{ min: 1 }}
+      inputProps={{ min: campo.min ?? 1, max: campo.max, ...campo.inputProps }}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
+      error={getFieldUiState(campo, errors).error}
+      helperText={getFieldUiState(campo, errors).helperText}
       variant="outlined"
     />
   ),
@@ -67,8 +90,10 @@ export const Renderizados = (props, handleChange) => ({
       required={esCampoObligatorio(campo)}
       label={campo.label}
       placeholder={campo.placeholder || `Ingrese valor para ${campo.label}`}
-      inputProps={{ inputMode: "decimal" }}
+      inputProps={{ inputMode: "decimal", ...campo.inputProps }}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
+      error={getFieldUiState(campo, errors).error}
+      helperText={getFieldUiState(campo, errors).helperText}
       variant="outlined"
     />
   ),

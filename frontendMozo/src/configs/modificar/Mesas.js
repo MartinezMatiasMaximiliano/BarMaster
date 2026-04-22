@@ -1,6 +1,6 @@
 // Definir la estructura de los campos
 const camposBase = [
-  { name: "capacidad", label: "Capacidad", type: "number", required: true },
+  { name: "capacidad", label: "Capacidad", type: "number", required: true, validation: { rule: "integer", min: 1 } },
 ];
 
 // Función para inicializar los campos (mantener compatibilidad con el componente)

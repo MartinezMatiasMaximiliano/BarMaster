@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
 import Select_ from '@mui/material/Select';
 
 export default function Select(props) {
@@ -31,7 +32,7 @@ export default function Select(props) {
     const options = Array.isArray(props.campo.options) ? props.campo.options : [];
 
     return (
-        <FormControl fullWidth>
+        <FormControl fullWidth error={Boolean(props.error)}>
             <InputLabel id="demo-simple-select-label">{props.campo.label}</InputLabel>
             <Select_
                     value={value}
@@ -50,6 +51,7 @@ export default function Select(props) {
                         ))
                     )}
                 </Select_>
+            <FormHelperText>{props.helperText || ' '}</FormHelperText>
         </FormControl>
     );
 }

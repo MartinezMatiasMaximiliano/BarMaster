@@ -5,6 +5,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
 import Select from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
 
@@ -65,7 +66,7 @@ export default function Select_Multiple(props) {
     };
 
     return (
-        <FormControl fullWidth>
+        <FormControl fullWidth error={Boolean(props.error)}>
             <InputLabel id="demo-multiple-chip-label">{props.campo.label}</InputLabel>
             <Select
                 labelId="demo-multiple-chip-label"
@@ -97,6 +98,7 @@ export default function Select_Multiple(props) {
                     );
                 })}
             </Select>
+            <FormHelperText>{props.helperText || ' '}</FormHelperText>
         </FormControl>
     );
 }

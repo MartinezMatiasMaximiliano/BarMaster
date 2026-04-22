@@ -29,6 +29,14 @@ export default function Handlers({ agregar, recargarComponentes, handleClose, ca
     const handler = fieldHandlers[type] || fieldHandlers.default;
     const valor = handler(event);
     setValues((prev) => ({ ...prev, [key]: valor }));
+    setErrors((prevErrors) => {
+      if (!prevErrors.servidor) {
+        return prevErrors;
+      }
+
+      const { servidor, ...rest } = prevErrors;
+      return rest;
+    });
     validarCampos(key, valor, setErrors, campo);
   };
 

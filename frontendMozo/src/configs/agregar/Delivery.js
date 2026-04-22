@@ -7,12 +7,12 @@ const tiposDeEnvio = [
 ];
 
 const camposBase = [
-  { name: "Cliente", label: "Cliente", type: "text" },
-  { name: "Direccion", label: "Dirección", type: "text" },
-  { name: "Telefono", label: "Teléfono", type: "text" },
-  { name: "Indicaciones", label: "Indicaciones", type: "text" },
-  { name: "TipoEnvio", label: "Tipo de Envío", type: "select", options: tiposDeEnvio },
-  { name: "Productos", label: "Productos", type: "select", options: [] },
+  { name: "Cliente", label: "Cliente", type: "text", required: true, validation: { rule: "text" } },
+  { name: "Direccion", label: "Dirección", type: "text", required: true, validation: { rule: "text" } },
+  { name: "Telefono", label: "Teléfono", type: "text", validation: { rule: "integer" } },
+  { name: "Indicaciones", label: "Indicaciones", type: "text", validation: { rule: "text" } },
+  { name: "TipoEnvio", label: "Tipo de Envío", type: "select", required: true, validation: { rule: "select" }, options: tiposDeEnvio },
+  { name: "Productos", label: "Productos", type: "select", required: true, validation: { rule: "select" }, options: [] },
 ];
 
 // Función para inicializar los campos con los datos de productos

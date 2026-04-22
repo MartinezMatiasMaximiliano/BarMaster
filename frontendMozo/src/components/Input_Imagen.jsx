@@ -25,6 +25,8 @@ function Input_Imagen(props) {
                 label="Imagen"
                 value={fileName}
                 placeholder="Seleccione una imagen"
+                error={Boolean(props.error)}
+                helperText={props.helperText || ' '}
                 InputProps={{
                     readOnly: true,
                     endAdornment: (

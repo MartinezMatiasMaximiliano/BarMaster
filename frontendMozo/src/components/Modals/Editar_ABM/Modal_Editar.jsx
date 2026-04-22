@@ -105,7 +105,7 @@ function Modal_Editar(props) {
         }
     };
 
-    const renderizados = Renderizados(props, handleChange);
+    const renderizados = Renderizados(props, handleChange, errors);
     const nombreRegistro = props.nombre || 'registro';
 
     return (
