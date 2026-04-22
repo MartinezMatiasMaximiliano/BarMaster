@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Container, Typography, CircularProgress, Alert, Box } from '@mui/material';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
@@ -7,6 +7,7 @@ import FiltrosAvanzados from './components/FiltrosAvanzados';
 const ReporteCaja = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
+    const prevFechasRef = useRef({ fechaInicio: '', fechaFin: '' });
 
     const handleBuscar = useCallback(() => reportes.cargarVisitas(), [reportes.cargarVisitas]);
     const handleHistorico = useCallback(() => {
@@ -14,6 +15,16 @@ const ReporteCaja = () => {
         filtros.actualizarFiltro('fechaFin', '');
         reportes.cargarVisitas();
     }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
+
+    useEffect(() => {
+        if (filtros.filtros.fechaInicio && filtros.filtros.fechaFin) {
+            const prev = prevFechasRef.current;
+            if (prev.fechaInicio !== filtros.filtros.fechaInicio || prev.fechaFin !== filtros.filtros.fechaFin) {
+                prevFechasRef.current = { fechaInicio: filtros.filtros.fechaInicio, fechaFin: filtros.filtros.fechaFin };
+                reportes.cargarVisitas();
+            }
+        }
+    }, [filtros.filtros.fechaInicio, filtros.filtros.fechaFin]);
 
     if (reportes.loading) {
         return (

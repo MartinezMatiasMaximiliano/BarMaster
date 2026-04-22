@@ -53,8 +53,10 @@ export async function ModificarCategoria(datos) {
 
 export async function ActivarDesactivarCategoria(Id) {
     try {
-        const response = await api.patch('Categorias/ActivarDesactivar', {
-            Id: Id
+        const response = await api.patch('Categorias/ActivarDesactivar', null, {
+            params: {
+                IdCategoria: Id
+            }
         });
         return response.data;
     } catch (error) {

@@ -4,8 +4,8 @@ const camposBase = [
   { name: "imagen", label: "Imagen", type: "image" },
   { name: "codigo", label: "Código", type: "text" },
   { name: "nombre", label: "Nombre", type: "text" },
-  { name: "precio", label: "Precio", type: "text" },
-  { name: "costoProduccion", label: "Costo de Producción", type: "text" },
+  { name: "precio", label: "Precio", type: "decimal" },
+  { name: "costoProduccion", label: "Costo de Producción", type: "decimal" },
   { name: "descripcion", label: "Descripción", type: "text" },
   { name: "categorias", label: "Categorías", type: "select_multiple", options: [] },
 ];

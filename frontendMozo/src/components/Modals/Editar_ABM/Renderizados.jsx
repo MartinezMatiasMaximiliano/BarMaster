@@ -4,6 +4,7 @@ import Multiple_Select from "../../Select_Multiple";
 import Select from "../../Select";
 import { InputAdornment, TextField, Tooltip } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { esCampoObligatorio } from "../../../Helpers/HelperFunctions";
 
 function buildInputProps(campo) {
   const inputProps = { ...(campo.InputProps || {}) };
@@ -58,6 +59,7 @@ export const Renderizados = (props, handleChange) => ({
     <TextField
       key={index}
       fullWidth
+      required={esCampoObligatorio(campo)}
       label={campo.label}
       value={value || ""}
       placeholder={campo.placeholder || `Ingrese valor para ${campo.label}`}
@@ -87,6 +89,7 @@ export const Renderizados = (props, handleChange) => ({
       <TextField
         key={index}
         fullWidth
+        required={esCampoObligatorio(campo)}
         label={campo.label}
         type="datetime-local"
         value={localValue}
@@ -100,6 +103,7 @@ export const Renderizados = (props, handleChange) => ({
     <TextField
       key={index}
       fullWidth
+      required={esCampoObligatorio(campo)}
       label={campo.label}
       type="number"
       value={value || ""}
@@ -107,6 +111,21 @@ export const Renderizados = (props, handleChange) => ({
       helperText={campo.helperText}
       InputProps={buildInputProps(campo)}
       inputProps={{ min: campo.min ?? 1, ...campo.inputProps }}
+      onChange={(e) => handleChange(e, campo.name, campo.type)}
+      variant="outlined"
+    />
+  ),
+  decimal: (campo, value, index) => (
+    <TextField
+      key={index}
+      fullWidth
+      required={esCampoObligatorio(campo)}
+      label={campo.label}
+      value={value || ""}
+      placeholder={campo.placeholder || `Ingrese valor para ${campo.label}`}
+      helperText={campo.helperText}
+      InputProps={buildInputProps(campo)}
+      inputProps={{ inputMode: "decimal", ...campo.inputProps }}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
       variant="outlined"
     />

@@ -1,6 +1,15 @@
 import api from '../services/axiosInstance';
 import { construirError } from './APIError';
 
+function normalizarDecimal(valor, fallback = undefined) {
+    if (valor === undefined || valor === null || valor === '') {
+        return fallback;
+    }
+
+    const numero = Number(String(valor).replace(',', '.'));
+    return Number.isNaN(numero) ? fallback : numero;
+}
+
 function normalizarTipoEnvio(tipo) {
     return {
         id: tipo.id ?? tipo.Id,
@@ -24,7 +33,7 @@ export async function CrearTipoEnvio(datos) {
     try {
         const payload = {
             Nombre: datos.nombre,
-            Precio: Number(datos.precio)
+            Precio: normalizarDecimal(datos.precio, 0)
         };
         const response = await api.post('TipoEnvios', payload);
         return normalizarTipoEnvio(response.data ?? {});
@@ -41,7 +50,7 @@ export async function ModificarTipoEnvio(datos) {
             payload.Nombre = datos.nombre;
         }
         if (datos.precio !== undefined && datos.precio !== '') {
-            payload.Precio = Number(datos.precio);
+            payload.Precio = normalizarDecimal(datos.precio);
         }
 
         const response = await api.patch(`TipoEnvios/${datos.id}`, payload);

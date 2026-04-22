@@ -2,6 +2,15 @@ import api from '../services/axiosInstance'
 import connection from '../connections/HubConnMozo'
 import { construirError } from './APIError';
 
+function normalizarDecimal(valor, fallback = undefined) {
+    if (valor === undefined || valor === null || valor === '') {
+        return fallback;
+    }
+
+    const numero = Number(String(valor).replace(',', '.'));
+    return Number.isNaN(numero) ? fallback : numero;
+}
+
 class CrearProductoDTO {
     constructor(nombre, descripcion, precio, activo, listaIdCategorias, imagen, codigo, costoProduccion) {
         this.Codigo = codigo;
@@ -40,12 +49,12 @@ export async function CrearProducto(datos) {
             new CrearProductoDTO(
                 datos.nombre,
                 datos.descripcion,
-                datos.precio,
+                normalizarDecimal(datos.precio),
                 true,
                 datos.categorias || [], // Ya viene como array de IDs
                 datos.imagen,
                 datos.codigo,
-                datos.costoProduccion || 0,
+                normalizarDecimal(datos.costoProduccion, 0),
             ), {
             headers: {
                 "Content-Type": "multipart/form-data"
@@ -66,8 +75,8 @@ export async function ModificarProducto(datos) {
             Codigo: datos.codigo,
             Nombre: datos.nombre,
             Descripcion: datos.descripcion,
-            Precio: datos.precio,
-            CostoProduccion: datos.costoProduccion,
+            Precio: normalizarDecimal(datos.precio),
+            CostoProduccion: normalizarDecimal(datos.costoProduccion),
             Activo: datos.activo,
             categorias: datos.categorias,
             Imagen: datos.imagen,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { validarCampos } from "../../../Helpers/HelperFunctions";
+import { validarCampos, validarFormulario } from "../../../Helpers/HelperFunctions";
 
 export default function Handlers({ agregar, recargarComponentes, handleClose, campos }) {
   const [errors, setErrors] = useState({});
@@ -25,21 +25,26 @@ export default function Handlers({ agregar, recargarComponentes, handleClose, ca
   };
 
   const handleChange = (event, key, type = "default") => {
+    const campo = campos.find((item) => item.name === key);
     const handler = fieldHandlers[type] || fieldHandlers.default;
     const valor = handler(event);
     setValues((prev) => ({ ...prev, [key]: valor }));
-    validarCampos(key, valor, setErrors);
+    validarCampos(key, valor, setErrors, campo);
   };
 
   const handleSave = async () => {
-    if (Object.keys(errors).length === 0) {
-      try {
-        await agregar(values);
-        handleClose();
-        await recargarComponentes();
-      } catch (error) {
-        setErrors(prev => ({ ...prev, servidor: error.message || 'Ocurrió un error. Intente nuevamente.' }));
-      }
+    const erroresFormulario = validarFormulario(campos, values);
+    if (Object.keys(erroresFormulario).length > 0) {
+      setErrors(erroresFormulario);
+      return;
+    }
+
+    try {
+      await agregar(values);
+      handleClose();
+      await recargarComponentes();
+    } catch (error) {
+      setErrors(prev => ({ ...prev, servidor: error.message || 'Ocurrió un error. Intente nuevamente.' }));
     }
   };
 

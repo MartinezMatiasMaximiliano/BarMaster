@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Container, Typography, CircularProgress, Alert, Box, Card, CardContent, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useFiltros } from './hooks/useFiltros';
@@ -30,6 +30,7 @@ function crearLayoutMesas(mesas) {
 const ReporteVentas = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
+    const prevFechasRef = useRef({ fechaInicio: '', fechaFin: '' });
 
     const handleBuscar = useCallback(() => reportes.cargarVisitas(), [reportes.cargarVisitas]);
     const handleHistorico = useCallback(() => {
@@ -37,6 +38,16 @@ const ReporteVentas = () => {
         filtros.actualizarFiltro('fechaFin', '');
         reportes.cargarVisitas();
     }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
+
+    useEffect(() => {
+        if (filtros.filtros.fechaInicio && filtros.filtros.fechaFin) {
+            const prev = prevFechasRef.current;
+            if (prev.fechaInicio !== filtros.filtros.fechaInicio || prev.fechaFin !== filtros.filtros.fechaFin) {
+                prevFechasRef.current = { fechaInicio: filtros.filtros.fechaInicio, fechaFin: filtros.filtros.fechaFin };
+                reportes.cargarVisitas();
+            }
+        }
+    }, [filtros.filtros.fechaInicio, filtros.filtros.fechaFin]);
 
     const [planos, setPlanos] = useState([]);
     const [planoSeleccionado, setPlanoSeleccionado] = useState('');

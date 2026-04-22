@@ -14,6 +14,7 @@ export default function Fila_Acciones(props) {
                     id={props.fila.id}
                     activar={props.api.activar}
                     desactivar={props.api.desactivar}
+                    onSuccess={props.recargar}
                 />
             )}
 

@@ -4,6 +4,8 @@ import { Container } from "react-bootstrap";
 import Modal_Cambiar_Codigo_Mozo from "../components/Modals/Modal_Cambiar_Codigo_Mozo";
 
 function Abm_Mozos(props) {
+    const mozosActivos = (props.datos_mozos || []).filter((mozo) => mozo.activo === true);
+
     const columnas = [
         { key: "codigoDeServicio", label: "Código" },
         { key: "nombre", label: "Nombre" },
@@ -27,7 +29,7 @@ function Abm_Mozos(props) {
                 onRefresh={props.recargarComponentes}
                 titulo={props.titulo}
                 columnas={columnas}
-                filas={props.datos_mozos}
+                filas={mozosActivos}
             />
         </Container>
     );
