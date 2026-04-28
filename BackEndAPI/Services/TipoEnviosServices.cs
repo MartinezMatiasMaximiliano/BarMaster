@@ -33,13 +33,10 @@ namespace BackEndAPI.Services
 
         public async Task<TipoEnvio> CrearTipoEnvio(CrearTipoEnvioDTO request)
         {
-            ValidarRequest(request.Nombre, request.Precio, request.Vehiculo);
+            
 
             var tipoEnvioExistente = await _tipoEnviosRepository.GetTipoEnvioPorNombre(request.Nombre!.Trim());
-            if (tipoEnvioExistente != null)
-            {
-                throw new Exception("El tipo de envio ya existe");
-            }
+            if (tipoEnvioExistente != null) throw new Exception("El tipo de envio ya existe");
 
             var nuevoTipoEnvio = new TipoEnvio
             {
@@ -58,7 +55,7 @@ namespace BackEndAPI.Services
                 throw new Exception("El tipo de envio no existe");
             }
 
-            if (request.Nombre == null && request.Precio == null && request.Vehiculo == null)
+            if (request.Nombre == null && request.Precio == null )
             {
                 throw new Exception("Debe enviar al menos un campo para modificar");
             }
@@ -89,13 +86,7 @@ namespace BackEndAPI.Services
                 tipoEnvio.Precio = request.Precio.Value;
             }
 
-            if (request.Vehiculo != null)
-            {
-                if (string.IsNullOrWhiteSpace(request.Vehiculo))
-                {
-                    throw new Exception("El vehiculo es obligatorio");
-                }
-            }
+          
 
             await _tipoEnviosRepository.ActualizarTipoEnvio(tipoEnvio);
             return tipoEnvio;
@@ -111,29 +102,6 @@ namespace BackEndAPI.Services
 
             await _tipoEnviosRepository.EliminarTipoEnvio(tipoEnvio);
             return tipoEnvio;
-        }
-
-        private static void ValidarRequest(string? nombre, decimal? precio, string? vehiculo)
-        {
-            if (string.IsNullOrWhiteSpace(nombre))
-            {
-                throw new Exception("El nombre es obligatorio");
-            }
-
-            if (!precio.HasValue)
-            {
-                throw new Exception("El precio es obligatorio");
-            }
-
-            if (precio.Value < 0)
-            {
-                throw new Exception("El precio no puede ser negativo");
-            }
-
-            if (string.IsNullOrWhiteSpace(vehiculo))
-            {
-                throw new Exception("El vehiculo es obligatorio");
-            }
         }
     }
 }
