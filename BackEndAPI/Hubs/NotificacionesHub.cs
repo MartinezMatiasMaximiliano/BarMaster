@@ -24,6 +24,11 @@ namespace BackEndAPI.Hubs
                 await Clients.Group("Mozos").SendAsync("RegistrarProducto", DTO, numeroMesa);
         }
 
+        public async Task NotificarVisitaActualizada(object visitaActualizada)
+        {
+            await Clients.Group("Mozos").SendAsync("VisitaActualizada", visitaActualizada);
+        }
+
         public async Task PagarMesa(int IdPedido)
         {
             await Clients.Group("Mozos").SendAsync("PagarMesa", IdPedido);
