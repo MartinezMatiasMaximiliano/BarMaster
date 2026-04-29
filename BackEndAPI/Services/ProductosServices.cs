@@ -99,27 +99,27 @@ namespace BackEndAPI.Services
             throw new NotImplementedException();
         }
 
-        public async Task<Producto?> ActualizarProducto(ModificarProductoDTO producto)
+        public async Task<Producto?> ActualizarProducto(ModificarProductoDTO request)
         {
-            var busqueda = await _productosRepository.GetProductoPorId(producto.IdProducto);
+            var busqueda = await _productosRepository.GetProductoPorId(request.IdProducto);
             if (busqueda == null) throw new Exception("El producto no fue encontrado");
 
-            if (producto.Codigo != null) busqueda.Codigo = producto.Codigo;
-            busqueda.Nombre = producto.Nombre ?? busqueda.Nombre;
-            busqueda.Descripcion = producto.Descripcion ?? busqueda.Descripcion;
-            busqueda.Precio = producto.Precio ?? busqueda.Precio;
-            if (producto.CostoProduccion.HasValue) busqueda.CostoProduccion = producto.CostoProduccion;
-            busqueda.Activo = producto.Activo ?? busqueda.Activo;
+            if (request.Codigo != null) busqueda.Codigo = request.Codigo;
+            if (!string.IsNullOrEmpty(request.Nombre)) busqueda.Nombre = request.Nombre;
+            if (!string.IsNullOrEmpty(request.Descripcion)) busqueda.Descripcion = request.Descripcion;
+            if (request.Precio.HasValue) busqueda.Precio = (decimal)request.Precio;
+            if (request.CostoProduccion.HasValue) busqueda.CostoProduccion = request.CostoProduccion;
+            busqueda.Activo = request.Activo ?? busqueda.Activo;
 
-            if (producto.categorias != null && producto.categorias.Count() > 0)
+            if (request.categorias != null && request.categorias.Count() > 0)
             {
-                var categorias = await _categoriasRepository.GetListaCategorias(producto.categorias);
+                var categorias = await _categoriasRepository.GetListaCategorias(request.categorias);
                 busqueda.Categorias = categorias.ToList();
             }
 
-            if (producto.Imagen != null)
+            if (request.Imagen != null)
             {
-                var pathImagen = await FileHelper.GuardarImagenProducto(producto.Imagen, busqueda.Nombre);
+                var pathImagen = await FileHelper.GuardarImagenProducto(request.Imagen, busqueda.Nombre);
                 busqueda.PathImagen = pathImagen ?? busqueda.PathImagen;
             }
 
