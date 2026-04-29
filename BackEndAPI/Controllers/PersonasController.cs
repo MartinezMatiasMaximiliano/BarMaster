@@ -107,23 +107,24 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost("/Registrar")]
-        public async Task<IActionResult> Post(CrearPersonaDTO DTO)
+        public async Task<IActionResult> RegistrarPersona(CrearPersonaDTO request)
         {
             try
             {
-                var IdEmpresa = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa")!.Value) : Guid.Empty;
-                if (IdEmpresa == Guid.Empty)
-                {
-                    throw new Exception("Empresa no identificada");
-                }
+                if (request == null || request.IdRol == 0 || string.IsNullOrEmpty(request.Nombres) || string.IsNullOrEmpty(request.Apellido) || string.IsNullOrEmpty(request.Dni) || string.IsNullOrEmpty(request.Direccion) || string.IsNullOrEmpty(request.Telefono) || string.IsNullOrEmpty(request.Email)) throw new Exception("Dato de persona no proporcionados");
 
-                var usuario = await _personasServices.CrearPersona(DTO, IdEmpresa);
+                var IdEmpresa = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa")!.Value) : Guid.Empty;
+                if (IdEmpresa == Guid.Empty) throw new Exception("Empresa no identificada");
+
+                var usuario = await _personasServices.CrearPersona(request, IdEmpresa);
                 return Created("created", new EntregaDTO(201, "CREATED", $"Creado exitosamente, Id:{usuario.Id}"));
             }
             catch (Exception ex)
             {
                 switch (ex.Message)
                 {
+                    case "Dato de persona no proporcionados":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Empresa no identificada":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Ya existe una persona con el mismo DNI.":
@@ -137,9 +138,7 @@ namespace BackEndAPI.Controllers
                     default:
                         return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
                 }
-
             }
-
         }
 
         [HttpPut("/Modificar")]
