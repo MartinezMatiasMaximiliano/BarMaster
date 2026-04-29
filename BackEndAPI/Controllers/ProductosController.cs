@@ -124,7 +124,9 @@ namespace BackEndAPI.Controllers
             try
             {
                 if (request.IdProducto == Guid.Empty) throw new Exception("IdProducto es requerido");
+
                 var producto = await _productosServices.ActualizarProducto(request);
+
                 return Ok();
             }
             catch (Exception ex)

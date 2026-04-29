@@ -208,9 +208,9 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "Id del pedido nulo":
-                        return BadRequest("Id del pedido nulo. Asegúrate de enviar un Id válido como parámetro.");
+                        return BadRequest(new ErrorDTO(400,"BAD REQUEST", "Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'.") );
                     case "Error al eliminar el pedido":
-                        return BadRequest("Error al eliminar el pedido. Verifica el Id enviado y vuelve a intentarlo.");
+                        return BadRequest(new ErrorDTO(400,"BAD REQUEST", "Error al eliminar el pedido. Verifica el Id enviado y vuelve a intentarlo."));
                     default:
                         return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
