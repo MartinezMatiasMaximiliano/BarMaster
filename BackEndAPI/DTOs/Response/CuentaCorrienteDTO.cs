@@ -11,6 +11,6 @@ namespace BackEndAPI.DTOs.Response
         public decimal Balance { get; set; } = 0;
         public decimal Descuento { get; set; } = 0;
 
-        public ICollection<MovimientosCuentaCorriente> Movimientos { get; set; } = new List<MovimientosCuentaCorriente>();
+        public ICollection<MovimientoCuentaCorrienteDTO> Movimientos { get; set; } = new List<MovimientoCuentaCorrienteDTO>();
     }
 }
