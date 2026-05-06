@@ -204,32 +204,34 @@ export default function HistorialTabCajas({ fechaInicio, fechaFin, modoHistorico
                                 : {}
                         )}
                     />
-                    <Alert severity="info" icon={<SouthOutlinedIcon />} sx={{ mt: 2 }}>
-                        {cajaSeleccionada
-                            ? 'Abajo se muestran los movimientos del arqueo seleccionado.'
-                            : 'Hacé click en un arqueo de la tabla superior para ver abajo sus movimientos.'}
-                    </Alert>
-                    {cajaSeleccionada ? (
-                        <Movimientos
-                            cajaActiva={null}
-                            cajaSeleccionada={cajaSeleccionada}
-                            movimientos={movimientos}
-                            loadingMovimientos={loadingMovimientos}
-                            onRecargar={() => cargarMovimientos(cajaSeleccionada.id, cajaSeleccionada.montoInicial)}
-                            onVolverACajaActiva={null}
-                        />
-                    ) : (
-                        <Card variant="outlined" sx={{ mt: 2 }}>
-                            <CardContent>
-                                <Stack spacing={1} alignItems="center" py={4}>
-                                    <SouthOutlinedIcon color="action" />
-                                    <Typography variant="body2" color="text.secondary" textAlign="center">
-                                        Seleccioná un arqueo de la tabla superior para ver abajo sus movimientos.
-                                    </Typography>
-                                </Stack>
-                            </CardContent>
-                        </Card>
+                    {!cajaSeleccionada && (
+                        <Alert severity="info" icon={<SouthOutlinedIcon />} sx={{ mt: 2 }}>
+                            {'Hacé click en un arqueo de la tabla superior para ver abajo sus movimientos.'}
+                        </Alert>
                     )}
+                    <Box sx={{ mt: 3 }}>
+                        {cajaSeleccionada ? (
+                            <Movimientos
+                                cajaActiva={null}
+                                cajaSeleccionada={cajaSeleccionada}
+                                movimientos={movimientos}
+                                loadingMovimientos={loadingMovimientos}
+                                onRecargar={() => cargarMovimientos(cajaSeleccionada.id, cajaSeleccionada.montoInicial)}
+                                onVolverACajaActiva={null}
+                            />
+                        ) : (
+                            <Card variant="outlined">
+                                <CardContent>
+                                    <Stack spacing={1} alignItems="center" py={4}>
+                                        <SouthOutlinedIcon color="action" />
+                                        <Typography variant="body2" color="text.secondary" textAlign="center">
+                                            Seleccioná un arqueo de la tabla superior para ver abajo sus movimientos.
+                                        </Typography>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </Box>
                 </>
             )}
         </Box>

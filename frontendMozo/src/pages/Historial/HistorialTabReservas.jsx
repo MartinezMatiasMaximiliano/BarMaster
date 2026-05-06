@@ -1,22 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { Box, CircularProgress, Alert, TextField, InputAdornment, Chip, Typography } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { Box, CircularProgress, Alert, Chip, Typography } from '@mui/material';
 import { BuscarTodasLasReservas } from '../../API/APIReservas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
-import Filtros from '../../components/Filtros/Filtros';
-import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
-
-const COLUMNAS_KEYS = ['fechaHora', 'nombreReserva', 'cantidadDePersonas', 'estado', 'tipoPago'];
+import { estaFechaEnRango, tieneFiltroHistorialActivo } from './utils';
 const COLORES_ESTADO_RESERVA = { 1: 'warning', 2: 'info', 3: 'error', 4: 'success' };
 
 export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistorico }) {
     const [reservas, setReservas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [busqueda, setBusqueda] = useState('');
-    const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [datosCargados, setDatosCargados] = useState(false);
     const filtroActivo = tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico });
@@ -88,18 +82,9 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
         });
     }, [reservas, fechaInicio, fechaFin, modoHistorico]);
 
-    const filasConBusqueda = useMemo(
-        () => filtrarPorBusqueda(filas, busqueda, COLUMNAS_KEYS),
-        [filas, busqueda]
-    );
-
     React.useEffect(() => {
-        setFilasFiltradas(filasConBusqueda);
-    }, [filasConBusqueda]);
-
-    React.useEffect(() => {
-        setFilasOrdenadas(filasFiltradas);
-    }, [filasFiltradas]);
+        setFilasOrdenadas(filas);
+    }, [filas]);
 
     const columnas = useMemo(() => [
         { key: 'fechaHora', label: 'Fecha y hora', align: 'left', render: (f) => (f.fechaHora ? formatearFechaCompleta(f.fechaHora) : '-') },
@@ -119,14 +104,6 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
             ),
         },
     ], []);
-
-    const configFiltros = useMemo(() => ({
-        fechaHora: { tipo: 'text' },
-        nombreReserva: { tipo: 'text' },
-        cantidadDePersonas: { tipo: 'number' },
-        tipoPago: { tipo: 'text' },
-        estado: { tipo: 'text' },
-    }), []);
 
     const opcionesOrden = useMemo(() => [
         { label: 'Fecha y hora', campo: 'fechaHora', tipoOrden: 'fecha' },
@@ -153,22 +130,6 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
             )}
             {!loading && !error && filtroActivo && datosCargados && (
                 <>
-                    <Box sx={{ mb: 2 }}>
-                        <TextField
-                            size="small"
-                            placeholder="Buscar en todas las columnas..."
-                            value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                            sx={{ minWidth: 260 }}
-                        />
-                    </Box>
                     <Tabla
                         titulo=""
                         filas={filasOrdenadas}
@@ -176,17 +137,9 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
                         paginacion={true}
                         rowsPerPage={10}
                         mostrarExportacion={true}
-                        renderFiltros={() => (
-                            <Filtros
-                                filas={filasConBusqueda}
-                                columnas={columnas}
-                                configuracionFiltros={configFiltros}
-                                onFiltrar={setFilasFiltradas}
-                            />
-                        )}
                         renderOrdenar={() => (
                             <Ordenar
-                                filas={filasFiltradas}
+                                filas={filas}
                                 opcionesOrdenamiento={opcionesOrden}
                                 onOrdenar={setFilasOrdenadas}
                             />

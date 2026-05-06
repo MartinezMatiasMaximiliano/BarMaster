@@ -1,11 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Box, CircularProgress, Alert, TextField, InputAdornment, Typography } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { Box, CircularProgress, Alert, Typography } from '@mui/material';
 import { esDelivery, esTakeaway, GetDeliveryTakeaway, normalizarDeliveryTakeaway } from '../../API/APIDeliveryTakeaway';
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
-import Filtros from '../../components/Filtros/Filtros';
-import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
+import { estaFechaEnRango, tieneFiltroHistorialActivo } from './utils';
 
 const COLUMNAS = [
     { key: 'fechaHora', label: 'Fecha y hora', align: 'left' },
@@ -16,8 +14,6 @@ const COLUMNAS = [
     { key: 'precioTotal', label: 'Total', align: 'right' },
     { key: 'entregado', label: 'Entregado', align: 'center' },
 ];
-
-const COLUMNAS_KEYS = ['fechaHora', 'nombreCliente', 'direccion', 'telefono', 'indicaciones', 'precioTotal', 'entregado'];
 
 export function mapearDeliveryTakeawayARow(item) {
     const normalizado = normalizarDeliveryTakeaway(item);
@@ -45,8 +41,6 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
     const [datos, setDatos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [busqueda, setBusqueda] = useState('');
-    const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [datosCargados, setDatosCargados] = useState(false);
     const filtroActivo = tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico });
@@ -103,28 +97,9 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
         return rows;
     }, [datos, tipo, fechaInicio, fechaFin, modoHistorico]);
 
-    const filasConBusqueda = useMemo(
-        () => filtrarPorBusqueda(filas, busqueda, COLUMNAS_KEYS),
-        [filas, busqueda]
-    );
-
     React.useEffect(() => {
-        setFilasFiltradas(filasConBusqueda);
-    }, [filasConBusqueda]);
-
-    React.useEffect(() => {
-        setFilasOrdenadas(filasFiltradas);
-    }, [filasFiltradas]);
-
-    const configFiltros = useMemo(() => ({
-        fechaHora: { tipo: 'text' },
-        nombreCliente: { tipo: 'text' },
-        direccion: { tipo: 'text' },
-        telefono: { tipo: 'text' },
-        indicaciones: { tipo: 'text' },
-        precioTotal: { tipo: 'number' },
-        entregado: { tipo: 'select', opciones: [{ id: 'Sí', nombre: 'Sí' }, { id: 'No', nombre: 'No' }] },
-    }), []);
+        setFilasOrdenadas(filas);
+    }, [filas]);
 
     const opcionesOrden = useMemo(() => [
         { label: 'Fecha y hora', campo: 'fechaHora', tipoOrden: 'texto' },
@@ -149,22 +124,6 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
             )}
             {!loading && !error && filtroActivo && datosCargados && (
                 <>
-                    <Box sx={{ mb: 2 }}>
-                        <TextField
-                            size="small"
-                            placeholder="Buscar en todas las columnas..."
-                            value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon fontSize="small" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                            sx={{ minWidth: 260 }}
-                        />
-                    </Box>
                     <Tabla
                         titulo={titulo}
                         filas={filasOrdenadas}
@@ -172,17 +131,9 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
                         paginacion={true}
                         rowsPerPage={10}
                         mostrarExportacion={true}
-                        renderFiltros={() => (
-                            <Filtros
-                                filas={filasConBusqueda}
-                                columnas={COLUMNAS}
-                                configuracionFiltros={configFiltros}
-                                onFiltrar={setFilasFiltradas}
-                            />
-                        )}
                         renderOrdenar={() => (
                             <Ordenar
-                                filas={filasFiltradas}
+                                filas={filas}
                                 opcionesOrdenamiento={opcionesOrden}
                                 onOrdenar={setFilasOrdenadas}
                             />

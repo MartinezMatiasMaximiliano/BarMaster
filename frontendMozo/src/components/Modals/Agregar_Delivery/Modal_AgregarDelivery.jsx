@@ -10,7 +10,9 @@ import {
     Stack,
     Box,
     TextField,
-    MenuItem
+    MenuItem,
+    Alert,
+    AlertTitle,
 } from '@mui/material';
 import { SnackbarWrapper } from '../../common/SnackbarWrapper';
 import CloseIcon from '@mui/icons-material/Close';
@@ -22,6 +24,9 @@ import { Comanda } from '../Agregar_Pedidos/components/Comanda';
 import { CrearDeliveryTakeawayFromComanda, ModificarDeliveryTakeaway } from '../../../API/APIDeliveryTakeaway';
 import { BuscarTodosLosTipoEnvios } from '../../../API/APITipoEnvios';
 import { useSnackbar } from '../../../hooks/useSnackbar';
+import { validarCampos, validarFormulario } from '../../../Helpers/HelperFunctions';
+import { Campos as camposTakeAwayBase } from '../../../configs/agregar/TakeAway';
+import { Campos as camposDeliveryBase } from '../../../configs/agregar/Delivery_Takeaway';
 
 function construirComandaInicial(initialData) {
     const productos = Array.isArray(initialData?.productos) ? initialData.productos : [];
@@ -74,6 +79,8 @@ export default function Modal_AgregarDelivery({
     const [loading, setLoading] = useState(false);
     const [tiposDeEnvio, setTiposDeEnvio] = useState([]);
     const [formValues, setFormValues] = useState(formInicial);
+    const [errors, setErrors] = useState({});
+    const [productosInteractuados, setProductosInteractuados] = useState(false);
 
     const {
         productos,
@@ -94,13 +101,67 @@ export default function Modal_AgregarDelivery({
     } = useComandaProductos(open);
 
     const handleClose = () => {
+        setErrors({});
+        setProductosInteractuados(false);
         setFormValues(formInicial);
         limpiarComanda();
         onClose();
     };
 
+    const obtenerCamposFormulario = () => (
+        (origen === 'Delivery' ? camposDeliveryBase : camposTakeAwayBase).map((campo) => {
+            if (campo.name === 'TipoEnvio') {
+                return {
+                    ...campo,
+                    required: true,
+                    validation: {
+                        ...(campo.validation ?? {}),
+                        required: true,
+                    },
+                    options: tiposDeEnvio,
+                };
+            }
+
+            if (campo.name === 'Productos') {
+                return {
+                    ...campo,
+                    options: [{ id: 'comanda', nombre: 'Comanda' }],
+                };
+            }
+
+            if (origen !== 'Delivery' && campo.name === 'Direccion') {
+                return {
+                    ...campo,
+                    required: false,
+                    validation: {
+                        ...(campo.validation ?? {}),
+                        required: false,
+                    },
+                };
+            }
+
+            return { ...campo };
+        })
+    );
+
+    const limpiarErrorServidor = () => {
+        setErrors((prevErrors) => {
+            if (!prevErrors.servidor) {
+                return prevErrors;
+            }
+
+            const { servidor, ...rest } = prevErrors;
+            return rest;
+        });
+    };
+
     const handleFormChange = (field) => (e) => {
-        setFormValues((prev) => ({ ...prev, [field]: e.target.value }));
+        const value = e.target.value;
+        const campo = obtenerCamposFormulario().find((item) => item.name === field);
+
+        setFormValues((prev) => ({ ...prev, [field]: value }));
+        limpiarErrorServidor();
+        validarCampos(field, value, setErrors, campo);
     };
 
     useEffect(() => {
@@ -133,6 +194,7 @@ export default function Modal_AgregarDelivery({
 
         if (!esEdicion || !initialData) {
             setFormValues(formInicial);
+            setProductosInteractuados(false);
             setComanda([]);
             return;
         }
@@ -144,29 +206,43 @@ export default function Modal_AgregarDelivery({
             Indicaciones: initialData.indicaciones ?? '',
             TipoEnvio: initialData.idTipoEnvio ?? '',
         });
+        setProductosInteractuados((initialData?.productos?.length ?? 0) > 0);
         setComanda(construirComandaInicial(initialData));
     }, [open, esEdicion, initialData, setComanda]);
 
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        if (!productosInteractuados && comanda.length > 0) {
+            setProductosInteractuados(true);
+            return;
+        }
+
+        if (!productosInteractuados) {
+            return;
+        }
+
+        const campoProductos = obtenerCamposFormulario().find((campo) => campo.name === 'Productos');
+        const valorProductos = comanda.length > 0 ? 'comanda' : '';
+
+        validarCampos('Productos', valorProductos, setErrors, campoProductos);
+    }, [comanda, open, origen, tiposDeEnvio, productosInteractuados]);
+
     const handleEnviar = async () => {
-        const { Cliente, Direccion, TipoEnvio } = formValues;
-        if (!Cliente?.trim()) {
-            showSnackbar('Ingresá el nombre del cliente.', 'warning');
-            return;
-        }
-        if (origen === 'Delivery' && !Direccion?.trim()) {
-            showSnackbar('Ingresá la dirección del delivery.', 'warning');
-            return;
-        }
-        if (origen === 'Delivery' && (TipoEnvio === '' || TipoEnvio == null)) {
-            showSnackbar('Seleccioná un tipo de envío.', 'warning');
-            return;
-        }
         if (origen === 'Delivery' && tiposDeEnvio.length === 0) {
             showSnackbar('No hay tipos de envío disponibles. Cargalos desde el ABM primero.', 'warning');
             return;
         }
-        if (comanda.length === 0) {
-            showSnackbar('Agregá al menos un producto a la comanda.', 'warning');
+
+        const valoresFormulario = {
+            ...formValues,
+            Productos: comanda.length > 0 ? 'comanda' : '',
+        };
+        const erroresFormulario = validarFormulario(obtenerCamposFormulario(), valoresFormulario);
+        if (Object.keys(erroresFormulario).length > 0) {
+            setErrors(erroresFormulario);
             return;
         }
 
@@ -204,6 +280,7 @@ export default function Modal_AgregarDelivery({
                 msg = `No se pudo ${esEdicion ? 'modificar' : 'crear'} el delivery. Verificá que el tipo de envío exista en la base de datos de BackEndAPI y que la dirección esté completa.`;
             }
 
+            setErrors((prev) => ({ ...prev, servidor: msg }));
             showSnackbar(msg, 'error');
         } finally {
             setLoading(false);
@@ -237,6 +314,12 @@ export default function Modal_AgregarDelivery({
             </DialogTitle>
 
             <DialogContent dividers>
+                {errors.servidor && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        <AlertTitle>No se pudo guardar</AlertTitle>
+                        {errors.servidor}
+                    </Alert>
+                )}
                 <Stack spacing={2} sx={{ mb: 3 }}>
                     <Typography variant="subtitle2" color="text.secondary">Datos del pedido</Typography>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap">
@@ -247,6 +330,8 @@ export default function Modal_AgregarDelivery({
                             variant="outlined"
                             size="small"
                             required
+                            error={Boolean(errors.Cliente)}
+                            helperText={errors.Cliente ?? ' '}
                             sx={{ minWidth: 180 }}
                         />
                         {origen === 'Delivery' && (
@@ -256,6 +341,9 @@ export default function Modal_AgregarDelivery({
                                 onChange={handleFormChange('Direccion')}
                                 variant="outlined"
                                 size="small"
+                                required
+                                error={Boolean(errors.Direccion)}
+                                helperText={errors.Direccion ?? ' '}
                                 sx={{ minWidth: 220 }}
                             />
                         )}
@@ -265,6 +353,8 @@ export default function Modal_AgregarDelivery({
                             onChange={handleFormChange('Telefono')}
                             variant="outlined"
                             size="small"
+                            error={Boolean(errors.Telefono)}
+                            helperText={errors.Telefono ?? ' '}
                             sx={{ minWidth: 140 }}
                         />
                         <TextField
@@ -274,6 +364,8 @@ export default function Modal_AgregarDelivery({
                             variant="outlined"
                             size="small"
                             placeholder={origen === 'Takeaway' ? 'Ej: Retirar en 30 min...' : 'Ej: Timbre A, dejar en portón...'}
+                            error={Boolean(errors.Indicaciones)}
+                            helperText={errors.Indicaciones ?? ' '}
                             sx={{ minWidth: 200 }}
                         />
                         {origen === 'Delivery' && (
@@ -284,6 +376,9 @@ export default function Modal_AgregarDelivery({
                                 onChange={handleFormChange('TipoEnvio')}
                                 variant="outlined"
                                 size="small"
+                                required
+                                error={Boolean(errors.TipoEnvio)}
+                                helperText={errors.TipoEnvio ?? ' '}
                                 sx={{ minWidth: 160 }}
                             >
                                 <MenuItem value="">-</MenuItem>
@@ -300,6 +395,11 @@ export default function Modal_AgregarDelivery({
                 <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
                     Productos - hacé clic en un producto para agregarlo a la comanda
                 </Typography>
+                {errors.Productos && (
+                    <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+                        {errors.Productos}
+                    </Typography>
+                )}
 
                 <Box sx={{ display: 'flex', gap: 2, minWidth: 0, overflow: 'hidden', flex: 1 }}>
                     <Box sx={{ width: '65%', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
