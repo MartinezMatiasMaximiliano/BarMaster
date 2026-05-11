@@ -3,17 +3,8 @@ import { Box, CircularProgress, Alert, Typography } from '@mui/material';
 import { esDelivery, esTakeaway, GetDeliveryTakeaway, normalizarDeliveryTakeaway } from '../../API/APIDeliveryTakeaway';
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
+import Filtros from '../../components/Filtros/Filtros';
 import { estaFechaEnRango, tieneFiltroHistorialActivo } from './utils';
-
-const COLUMNAS = [
-    { key: 'fechaHora', label: 'Fecha y hora', align: 'left' },
-    { key: 'nombreCliente', label: 'Cliente', align: 'left' },
-    { key: 'direccion', label: 'Dirección', align: 'left' },
-    { key: 'telefono', label: 'Teléfono', align: 'left' },
-    { key: 'indicaciones', label: 'Indicaciones', align: 'left' },
-    { key: 'precioTotal', label: 'Total', align: 'right' },
-    { key: 'entregado', label: 'Entregado', align: 'center' },
-];
 
 export function mapearDeliveryTakeawayARow(item) {
     const normalizado = normalizarDeliveryTakeaway(item);
@@ -41,6 +32,7 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
     const [datos, setDatos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [datosCargados, setDatosCargados] = useState(false);
     const filtroActivo = tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico });
@@ -98,14 +90,36 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
     }, [datos, tipo, fechaInicio, fechaFin, modoHistorico]);
 
     React.useEffect(() => {
+        setFilasFiltradas(filas);
         setFilasOrdenadas(filas);
     }, [filas]);
 
+    React.useEffect(() => {
+        setFilasOrdenadas(filasFiltradas);
+    }, [filasFiltradas]);
+
     const opcionesOrden = useMemo(() => [
-        { label: 'Fecha y hora', campo: 'fechaHora', tipoOrden: 'texto' },
+        { label: 'Fecha y hora', campo: 'fechaHoraRaw', tipoOrden: 'fecha' },
         { label: 'Cliente', campo: 'nombreCliente', tipoOrden: 'texto' },
         { label: 'Total', campo: 'precioTotal', tipoOrden: 'numero' },
     ], []);
+
+    const columnas = useMemo(() => {
+        const columnasBase = [
+            { key: 'fechaHora', label: 'Fecha y hora', align: 'left' },
+            { key: 'nombreCliente', label: 'Cliente', align: 'left' },
+            { key: 'telefono', label: 'Teléfono', align: 'left' },
+            { key: 'indicaciones', label: 'Indicaciones', align: 'left' },
+            { key: 'precioTotal', label: 'Total', align: 'right' },
+            { key: 'entregado', label: 'Entregado', align: 'center' },
+        ];
+
+        if (tipo === 'delivery') {
+            columnasBase.splice(2, 0, { key: 'direccion', label: 'Dirección', align: 'left' });
+        }
+
+        return columnasBase;
+    }, [tipo]);
 
     return (
         <Box sx={{ pt: 2 }}>
@@ -127,13 +141,26 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
                     <Tabla
                         titulo={titulo}
                         filas={filasOrdenadas}
-                        columnas={COLUMNAS}
+                        columnas={columnas}
                         paginacion={true}
                         rowsPerPage={10}
                         mostrarExportacion={true}
+                        renderFiltros={() => (
+                            <Filtros
+                                filas={filas}
+                                columnas={[{ key: 'entregado', label: 'Entregado' }]}
+                                configuracionFiltros={{
+                                    entregado: {
+                                        tipo: 'select',
+                                        opciones: [{ nombre: 'Sí' }, { nombre: 'No' }],
+                                    },
+                                }}
+                                onFiltrar={setFilasFiltradas}
+                            />
+                        )}
                         renderOrdenar={() => (
                             <Ordenar
-                                filas={filas}
+                                filas={filasFiltradas}
                                 opcionesOrdenamiento={opcionesOrden}
                                 onOrdenar={setFilasOrdenadas}
                             />

@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import { IconButton, Stack } from "@mui/material";
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
+import LaunchIcon from '@mui/icons-material/Launch';
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
 import Modal_Movimiento_CuentaCorriente from "../components/Modals/Modal_Movimiento_CuentaCorriente";
+import MovimientosCuentaCorrienteDrawer from "../components/CuentasCorrientes/MovimientosCuentaCorrienteDrawer";
 import Ordenar from "../components/Ordenar/Ordenar";
 import Filtros from "../components/Filtros/Filtros";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,6 +25,7 @@ function Abm_CuentasCorrientes(props) {
     const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_cuentas_corrientes || []);
     const [cuentaSeleccionada, setCuentaSeleccionada] = useState(null);
     const [mostrarModalMovimiento, setMostrarModalMovimiento] = useState(false);
+    const [mostrarDrawerMovimientos, setMostrarDrawerMovimientos] = useState(false);
 
     useEffect(() => {
         setFilasFiltradas(props.datos_cuentas_corrientes || []);
@@ -59,7 +62,31 @@ function Abm_CuentasCorrientes(props) {
             key: "movimientos",
             label: "Movimientos",
             align: "right",
-            render: (fila) => fila.movimientos?.length ?? 0,
+            formatter: (_, fila) => fila.movimientos?.length ?? 0,
+            render: (fila) => (
+                <button
+                    type="button"
+                    onClick={() => {
+                        setCuentaSeleccionada(fila);
+                        setMostrarDrawerMovimientos(true);
+                    }}
+                    style={{
+                        border: 0,
+                        background: 'transparent',
+                        color: '#1976d2',
+                        cursor: 'pointer',
+                        padding: 0,
+                        font: 'inherit',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                    }}
+                    title="Ver movimientos"
+                >
+                    {fila.movimientos?.length ?? 0}
+                    <LaunchIcon sx={{ fontSize: 16 }} />
+                </button>
+            ),
         },
         {
             key: "__acciones",
@@ -114,7 +141,7 @@ function Abm_CuentasCorrientes(props) {
                         filas={filasFiltradas}
                         opcionesOrdenamiento={[
                             { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
-                            { label: 'Teléfono', campo: 'telefono', tipoOrden: 'texto' },
+                            { label: 'Teléfono', campo: 'telefono', tipoOrden: 'numero' },
                             { label: 'Domicilio', campo: 'domicilio', tipoOrden: 'texto' },
                             { label: 'Balance', campo: 'balance', tipoOrden: 'numero' },
                             { label: 'Descuento', campo: 'descuento', tipoOrden: 'numero' },
@@ -147,6 +174,14 @@ function Abm_CuentasCorrientes(props) {
                 }}
                 cuentaCorriente={cuentaSeleccionada}
                 onSuccess={props.recargarComponentes}
+            />
+            <MovimientosCuentaCorrienteDrawer
+                open={mostrarDrawerMovimientos}
+                cuentaCorriente={cuentaSeleccionada}
+                onClose={() => {
+                    setMostrarDrawerMovimientos(false);
+                    setCuentaSeleccionada(null);
+                }}
             />
         </Container>
     );

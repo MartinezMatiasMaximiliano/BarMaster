@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Box,
     FormControl,
     InputLabel,
     Select,
@@ -8,6 +7,14 @@ import {
     Stack
 } from '@mui/material';
 import SortIcon from '@mui/icons-material/Sort';
+
+const normalizarValorTexto = (valor) => {
+    if (Array.isArray(valor)) {
+        return valor.join(', ').toLowerCase();
+    }
+
+    return String(valor).toLowerCase();
+};
 
 /**
  * Componente de ordenación para tablas ABM
@@ -75,8 +82,8 @@ function Ordenar({ filas, opcionesOrdenamiento = [], onOrdenar }) {
                 valorB = new Date(valorB).getTime();
             } else if (tipoOrden === 'texto') {
                 // Ordenar texto alfabéticamente
-                valorA = String(valorA).toLowerCase();
-                valorB = String(valorB).toLowerCase();
+                valorA = normalizarValorTexto(valorA);
+                valorB = normalizarValorTexto(valorB);
                 if (direccion === 'ascendente') {
                     return valorA.localeCompare(valorB);
                 } else {

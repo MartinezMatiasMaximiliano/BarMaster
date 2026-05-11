@@ -4,6 +4,7 @@ import { ObtenerTodasLasVisitas } from '../../API/APIVisitas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
+import { exportarTablaAPDF, exportarTablaAExcel } from '../../utils/exportacionTabla';
 import { estaFechaEnRango, tieneFiltroHistorialActivo } from './utils';
 
 export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico }) {
@@ -96,9 +97,13 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
             const nombreMozo = mozo ? (mozo.nombres ?? mozo.Nombres ?? '') + ' ' + (mozo.apellido ?? mozo.Apellido ?? '') : '-';
             const fechaRaw = v.fechaHora ?? v.FechaHora ?? '';
             const total = productosConsumidos.reduce((acc, p) => acc + (p.precio ?? p.precioDelMomento ?? p.Precio ?? 0), 0);
+            const numeroMesaTexto = String(numeroMesa).trim() || '-';
+            const numeroMesaOrden = Number(numeroMesaTexto);
+
             return {
                 id: v.id ?? v.Id,
-                numeroMesa: String(numeroMesa).trim() || '-',
+                numeroMesa: numeroMesaTexto,
+                numeroMesaOrden: Number.isFinite(numeroMesaOrden) ? numeroMesaOrden : Number.MAX_SAFE_INTEGER,
                 mozo: nombreMozo.trim() || '-',
                 fecha: fechaRaw,
                 total: Number(total),
@@ -112,7 +117,86 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
     }, [filas]);
 
     const tenantId = typeof window !== 'undefined' ? window.localStorage.getItem('tenantId') : '';
+    const webBaseUrl = (import.meta.env.WEB_BASE_URL || '').trim().replace(/\/+$/, '');
     const ticketsPopoverOpen = Boolean(ticketsAnchorEl);
+
+    const columnasExportacion = useMemo(() => ([
+        { key: 'numeroMesa', label: 'Mesa' },
+        { key: 'mozo', label: 'Mozo' },
+        {
+            key: 'fecha',
+            label: 'Fecha y hora',
+            formatter: (_, fila) => (fila.fecha ? formatearFechaCompleta(fila.fecha) : '-'),
+        },
+        {
+            key: 'total',
+            label: 'Total',
+            formatter: (_, fila) => Number(fila.total ?? 0).toFixed(2),
+        },
+        { key: 'tickets', label: 'Tickets' },
+    ]), []);
+
+    const obtenerUrlTicket = (ticketId) => `${webBaseUrl}/ticket/${tenantId}/${ticketId}`;
+
+    const handleExportarPDF = async () => {
+        await exportarTablaAPDF({
+            datos: filasOrdenadas,
+            columnas: columnasExportacion,
+            titulo: 'Historial Local',
+            subtitulo: `Total de registros: ${filasOrdenadas.length}`,
+            infoAdicional: [
+                { label: 'Fecha de exportación', value: new Date().toLocaleDateString('es-AR') }
+            ],
+            formatearFila: (fila) => ([
+                { text: fila.numeroMesa ?? '-', fontSize: 9 },
+                { text: fila.mozo ?? '-', fontSize: 9 },
+                { text: fila.fecha ? formatearFechaCompleta(fila.fecha) : '-', fontSize: 9 },
+                { text: Number(fila.total ?? 0).toFixed(2), fontSize: 9 },
+                Array.isArray(fila.tickets) && fila.tickets.length > 0
+                    ? {
+                        text: fila.tickets.flatMap((ticket, index) => {
+                            const partes = [];
+
+                            if (index > 0) {
+                                partes.push({ text: ', ' });
+                            }
+
+                            partes.push({
+                                text: `Ticket ${index + 1}`,
+                                link: obtenerUrlTicket(ticket.id),
+                                color: '#1976d2',
+                                decoration: 'underline',
+                            });
+
+                            return partes;
+                        }),
+                        fontSize: 9,
+                    }
+                    : { text: '-', fontSize: 9 },
+            ]),
+        });
+    };
+
+    const handleExportarExcel = async () => {
+        await exportarTablaAExcel({
+            datos: filasOrdenadas,
+            columnas: columnasExportacion,
+            titulo: 'Historial Local',
+            subtitulo: `Total de registros: ${filasOrdenadas.length}`,
+            infoAdicional: [
+                { label: 'Fecha de exportación', value: new Date().toLocaleDateString('es-AR') }
+            ],
+            formatearFila: (fila) => ([
+                fila.numeroMesa ?? '-',
+                fila.mozo ?? '-',
+                fila.fecha ? formatearFechaCompleta(fila.fecha) : '-',
+                Number(fila.total ?? 0).toFixed(2),
+                Array.isArray(fila.tickets) && fila.tickets.length > 0
+                    ? fila.tickets.map((ticket, index) => `Ticket ${index + 1}: ${obtenerUrlTicket(ticket.id)}`).join('\n')
+                    : '-',
+            ]),
+        });
+    };
 
     const handleAbrirTickets = (event, ticketIds) => {
         setTicketsAnchorEl(event.currentTarget);
@@ -152,7 +236,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
     ];
 
     const opcionesOrden = useMemo(() => [
-        { label: 'Mesa', campo: 'numeroMesa', tipoOrden: 'texto' },
+        { label: 'Mesa', campo: 'numeroMesaOrden', tipoOrden: 'numero' },
         { label: 'Mozo', campo: 'mozo', tipoOrden: 'texto' },
         { label: 'Fecha y hora', campo: 'fecha', tipoOrden: 'fecha' },
         { label: 'Total', campo: 'total', tipoOrden: 'numero' },
@@ -182,6 +266,8 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
                         paginacion={true}
                         rowsPerPage={10}
                         mostrarExportacion={true}
+                        onExportarPDF={handleExportarPDF}
+                        onExportarExcel={handleExportarExcel}
                         renderOrdenar={() => (
                             <Ordenar
                                 filas={filas}
@@ -205,7 +291,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
                                     <ListItem key={ticket.id} disablePadding divider={index < ticketIdsActivos.length - 1}>
                                         <ListItemButton
                                             component="a"
-                                            href={`http://localhost:3006/ticket/${tenantId}/${ticket.id}`}
+                                            href={obtenerUrlTicket(ticket.id)}
                                             target="_blank"
                                             rel="noreferrer"
                                             onClick={handleCerrarTickets}

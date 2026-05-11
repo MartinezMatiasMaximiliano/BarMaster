@@ -97,7 +97,8 @@ function Abm_Productos(props) {
                         opcionesOrdenamiento={[
                             { label: 'Código', campo: 'codigo', tipoOrden: 'texto' },
                             { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
-                            { label: 'Precio', campo: 'precio', tipoOrden: 'numero' }
+                            { label: 'Precio', campo: 'precio', tipoOrden: 'numero' },
+                            { label: 'Categorías', campo: 'categorias', tipoOrden: 'texto' }
                         ]}
                         onOrdenar={setFilasOrdenadas}
                     />

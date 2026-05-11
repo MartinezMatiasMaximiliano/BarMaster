@@ -16,6 +16,32 @@ if (pdfMake && !pdfMake.vfs) {
     pdfMake.vfs = pdfFonts.vfs;
 }
 
+const normalizarValorExportacion = (valor) => {
+    if (valor === null || valor === undefined) {
+        return '';
+    }
+
+    if (Array.isArray(valor)) {
+        return valor.map(item => String(item ?? '').trim()).filter(Boolean).join(', ');
+    }
+
+    return valor;
+};
+
+const protegerTextoParaExcel = (valor) => {
+    if (typeof valor !== 'string') {
+        return valor;
+    }
+
+    const texto = valor.trim();
+
+    if (/^[=+\-@]/.test(texto)) {
+        return `'${texto}`;
+    }
+
+    return valor;
+};
+
 /**
  * Exporta una tabla a PDF
  *
@@ -64,7 +90,7 @@ export const exportarTablaAPDF = async (config) => {
 
             // Formateo por defecto
             return columnas.map(col => {
-                let valor = fila[col.key];
+                let valor = normalizarValorExportacion(fila[col.key]);
 
                 // Aplicar formatter personalizado si existe
                 if (col.formatter && typeof col.formatter === 'function') {
@@ -184,13 +210,19 @@ export const exportarTablaAExcel = async (config) => {
                 return formatearFila(fila, columnas);
             }
             return columnas.map(col => {
-                let valor = fila[col.key];
+                let valor = normalizarValorExportacion(fila[col.key]);
+
                 if (col.formatter && typeof col.formatter === 'function') {
                     valor = col.formatter(valor, fila);
                 } else if (valor === null || valor === undefined) {
                     valor = '';
+                } else if (typeof valor === 'number') {
+                    return valor;
+                } else {
+                    valor = String(valor);
                 }
-                return valor;
+
+                return protegerTextoParaExcel(valor);
             });
         });
 
