@@ -1,10 +1,12 @@
 ﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 
 namespace BackEndAPI.Controllers
 {
@@ -61,7 +63,7 @@ namespace BackEndAPI.Controllers
             try
             {
                 var result = await _cuentasCorrientesServices.GetCuentaCorrientePorId(IdCuenta);
-                var response =  new
+                var response = new
                 {
                     Id = result.Id,
                     Nombre = result.Nombre,
@@ -132,36 +134,59 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "Cuenta corriente no encontrada":
-                        return BadRequest(new { message = "No se pudo encontrar la cuenta corriente." });
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Cuenta corriente no encontrada"));
                     default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al actualizar la cuenta corriente." });
+                        return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al actualizar la cuenta corriente.");
                 }
             }
 
         }
 
         [HttpPost("CrearMovimiento")]
-        public async Task<IActionResult> CrearMovimientoCuentaCorriente([FromQuery] Guid IdCuenta,[FromBody] CrearMovimientoCajaDTO request) {
+        public async Task<IActionResult> CrearMovimientoCuentaCorriente([FromQuery] Guid IdCuenta, [FromBody] CrearMovimientoCajaDTO request)
+        {
             try
             {
-                if(request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0 || request.Monto <= 0 || string.IsNullOrEmpty(request.Descripcion)) return BadRequest(new { message = "Todos los campos son obligatorios y el monto debe ser mayor a cero." });
+                if (request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0 || string.IsNullOrEmpty(request.Descripcion)) throw new Exception("Todos los campos son obligatorios");
+                if (request.Monto <= 0) throw new Exception("y el monto debe ser mayor a cero.");
                 if (IdCuenta == Guid.Empty) throw new Exception("id vacio");
-               var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(IdCuenta, request);
-                //TODO: Mapear a DTO, ciclo sin fin
-               return Ok(result);
+                var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(IdCuenta, request);
+                CuentaCorrienteDTO response = new CuentaCorrienteDTO
+                {
+                    Id = result.Id,
+                    Nombre = result.Nombre,
+                    Telefono = result.Telefono,
+                    Domicilo = result.Domicilo,
+                    Balance = result.Balance,
+                    Descuento = result.Descuento,
+                    Movimientos = result.Movimientos.Select(m => new MovimientoCuentaCorrienteDTO
+                    {
+                        IdMovimientoCaja = m.MovimientoCaja.Id,
+                        Descripcion = m.MovimientoCaja.Descripcion,
+                        Monto = m.MovimientoCaja.Monto,
+                        FechaMovimiento = m.MovimientoCaja.FechaMovimiento,
+                        EsIngreso = m.MovimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
+                        EsEfectivo = m.MovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
+                    }).ToList()
+                };
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 switch (ex.Message)
                 {
+                    case "Todos los campos son obligatorios":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Todos los campos son obligatorios y el monto debe ser mayor a cero."));
+                    case "el monto debe ser mayor a cero.":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El monto del movimiento debe ser mayor a cero."));
                     case "id vacio":
-                        return BadRequest(new { message = "El Id de la cuenta corriente es obligatorio." });
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El Id de la cuenta corriente es obligatorio."));
                     case "No se encontro la cuenta":
-                        return NotFound(new { message = "No se pudo encontrar la cuenta corriente." });
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", "No se pudo encontrar la cuenta corriente."));
                     default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al crear el movimiento de la cuenta corriente." });
+                        return StatusCode(500, "Ocurrió un error al crear el movimiento de la cuenta corriente.");
                 }
-                
+
             }
         }
 
@@ -184,8 +209,9 @@ namespace BackEndAPI.Controllers
                     default:
                         return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al eliminar la cuenta corriente." });
                 }
-                
+
             }
         }
     }
+
 }

@@ -72,9 +72,29 @@ namespace BackEndAPI.Repositories
         }
         public async Task<bool> EliminarDeliveryTakeaway(DeliveryAndTakeaway deliveryTakeaway)
         {
-            Db.DeliveriesTakeaways.Remove(deliveryTakeaway);
-            await Db.SaveChangesAsync();
-            return true;
+            // Eliminar explícitamente la Visita asociada (el FK está en DeliveryAndTakeaway: IdVisita)
+            using var transaccion = await Db.Database.BeginTransactionAsync();
+            try
+            {
+                if (deliveryTakeaway.IdVisita != Guid.Empty)
+                {
+                    var visita = await Db.Visitas.FindAsync(deliveryTakeaway.IdVisita);
+                    if (visita != null)
+                    {
+                        Db.Visitas.Remove(visita);
+                    }
+                }
+
+                Db.DeliveriesTakeaways.Remove(deliveryTakeaway);
+                await Db.SaveChangesAsync();
+                await transaccion.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaccion.RollbackAsync();
+                throw;
+            }
         }
     }
 }

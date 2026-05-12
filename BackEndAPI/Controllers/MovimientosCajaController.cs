@@ -125,6 +125,8 @@ namespace BackEndAPI.Controllers
         {
             try
             {
+                if (request == null || request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0 || string.IsNullOrEmpty(request.Descripcion)) throw new Exception("Datos de movimiento de caja no proporcionados");
+                if (request.Monto <= 0) throw new Exception("El monto debe ser mayor a cero");
                 var nuevoMovimientoCaja = await _movimientosCajaServices.CrearMovimientoCaja(request);
                
                 var response = new MovimientoCajaDTO
@@ -148,8 +150,12 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
+                    case "El monto debe ser mayor a cero":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El monto debe ser mayor a cero"));
+                    case "Datos de movimiento de caja no proporcionados":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Datos de movimiento de caja no proporcionados"));
                     case "La caja no existe":
-                        return BadRequest(ex.Message);
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "La caja no existe"));
                     default:
                         return StatusCode(500, "Error Interno de servidor");
                 }

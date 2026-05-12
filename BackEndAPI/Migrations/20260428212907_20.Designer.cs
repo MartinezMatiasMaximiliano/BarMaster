@@ -3,6 +3,7 @@ using System;
 using BackEndAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428212907_20")]
+    partial class _20
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1001,7 +1004,7 @@ namespace BackEndAPI.Migrations
                     b.HasOne("BackEndAPI.Models.Visita", "Visita")
                         .WithMany()
                         .HasForeignKey("IdVisita")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Sucursal");
@@ -1133,7 +1136,7 @@ namespace BackEndAPI.Migrations
                     b.HasOne("BackEndAPI.Models.Visita", "Visita")
                         .WithMany("Productos")
                         .HasForeignKey("IdVisita")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Producto");

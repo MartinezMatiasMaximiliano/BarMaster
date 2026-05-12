@@ -224,7 +224,7 @@ namespace BackEndAPI.Data
                 .HasMany(v => v.Productos)
                 .WithOne(pv => pv.Visita)
                 .HasForeignKey(v => v.IdVisita)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             ////modelBuilder.Entity<Delivery>()
             ////.HasOne(d => d.Cadete)
@@ -248,7 +248,7 @@ namespace BackEndAPI.Data
                 .HasOne(d => d.Visita)
                 .WithMany()
                 .HasForeignKey(d => d.IdVisita)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Producto>()
                 .HasMany(p => p.Categorias)

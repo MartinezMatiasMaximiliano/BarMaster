@@ -22,17 +22,13 @@ namespace BackEndAPI.Services
 
         public async Task<Reserva> CrearReserva(CrearReservaDTO request, Guid IdSucursal)
         {
-            if (string.IsNullOrWhiteSpace(request.NombreReserva))
-            {
-                throw new Exception("El nombre de la reserva es obligatorio");
-            }
-
             Reserva nuevaReserva = new Reserva
             {
                 IdSucursal = IdSucursal,
                 IdEstadoReserva = request.IdEstadoReserva,
                 FechaHora = request.FechaHora,
                 NombreReserva = request.NombreReserva,
+                Telefono = request.Telefono,
                 CantidadDePersonas = request.CantidadDePersonas
             };
 
@@ -44,6 +40,7 @@ namespace BackEndAPI.Services
             reserva.IdEstadoReserva = ReservaActualizada.IdEstadoReserva;
             reserva.FechaHora = !ReservaActualizada.FechaHora.ToString().IsNullOrEmpty() ? ReservaActualizada.FechaHora : reserva.FechaHora;
             reserva.NombreReserva = !String.IsNullOrEmpty(ReservaActualizada.NombreReserva) ? ReservaActualizada.NombreReserva : reserva.NombreReserva;
+            reserva.Telefono = !String.IsNullOrEmpty(ReservaActualizada.Telefono) ? ReservaActualizada.Telefono : reserva.Telefono;
             reserva.CantidadDePersonas = ReservaActualizada.CantidadDePersonas.HasValue ? ReservaActualizada.CantidadDePersonas : reserva.CantidadDePersonas;
             return await _reservasRepository.ActualizarReserva(reserva);
         }

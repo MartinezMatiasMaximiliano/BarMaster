@@ -4,6 +4,7 @@ using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BackEndAPI.Controllers
 {
@@ -65,7 +66,7 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "El tipo de envio no existe":
-                        return NotFound(ex.Message);
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     default:
                         return StatusCode(500, "Error Interno de servidor: " + ex.Message);
                 }
@@ -77,6 +78,11 @@ namespace BackEndAPI.Controllers
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(request.Nombre)) throw new Exception("El nombre es obligatorio");
+                if (!request.Precio.HasValue) throw new Exception("El precio es obligatorio");
+                if (request.Precio < 0) throw new Exception("El precio no puede ser negativo");
+
+
                 var nuevoTipoEnvio = await _tipoEnviosServices.CrearTipoEnvio(request);
                 var tipoEnvioDTO = new TipoEnvioDTO
                 {
@@ -92,11 +98,13 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "El tipo de envio ya existe":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "El nombre es obligatorio":
+                    return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "El precio es obligatorio":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "El precio no puede ser negativo":
-                    case "El vehiculo es obligatorio":
-                        return BadRequest(ex.Message);
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     default:
                         return StatusCode(500, "Error Interno de servidor: " + ex.Message);
                 }
@@ -116,13 +124,15 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "El tipo de envio no existe":
-                        return NotFound(ex.Message);
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     case "Ya existe un tipo de envio con ese nombre":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Debe enviar al menos un campo para modificar":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "El nombre es obligatorio":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "El precio no puede ser negativo":
-                    case "El vehiculo es obligatorio":
-                        return BadRequest(ex.Message);
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     default:
                         return StatusCode(500, "Error Interno de servidor: " + ex.Message);
                 }
@@ -142,7 +152,7 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "El tipo de envio no existe":
-                        return NotFound(ex.Message);
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     default:
                         return StatusCode(500, "Error Interno de servidor: " + ex.Message);
                 }

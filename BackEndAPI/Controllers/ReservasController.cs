@@ -35,6 +35,7 @@ namespace BackEndAPI.Controllers
                         Id = reserva.Estado.Id,
                         Nombre = reserva.Estado.Nombre
                     },
+                    TelefonoContacto = reserva.Telefono,
                     CantidadDePersonas = reserva.CantidadDePersonas
                 }).ToList();
 
@@ -52,11 +53,9 @@ namespace BackEndAPI.Controllers
             try
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-
-                if (IdSucursal == Guid.Empty)
-                {
-                    throw new Exception("Sucursal no identificada");
-                }
+                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
+                if (string.IsNullOrWhiteSpace(request.NombreReserva)) throw new Exception("El nombre de la reserva es obligatorio");
+                if (string.IsNullOrWhiteSpace(request.Telefono)) throw new Exception("El teléfono de la reserva es obligatorio");
 
                 var nuevaReserva = await _ReservasServices.CrearReserva(request, IdSucursal);
                 var reservaDTO = new ReservaDTO
@@ -78,9 +77,11 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "El nombre de la reserva es obligatorio":
-                        return BadRequest(ex.Message);
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "El teléfono de la reserva es obligatorio":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Sucursal no identificada":
-                        return BadRequest(ex.Message);
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     default:
                         return StatusCode(500, "Error Interno de servidor: " + ex.Message);
                 }
