@@ -39,11 +39,11 @@ function Abm_Mesas(props) {
         cargarCampos();
     }, []);
 
-    const api = {
+    const api = useMemo(() => ({
         crear: CrearMesa,
         modificar: ModificarMesa,
         eliminar: BorrarMesa,
-    };
+    }), []);
 
     // Obtener todas las mesas de todos los planos en una lista plana
     const todasLasMesas = useMemo(() => {
@@ -84,7 +84,7 @@ function Abm_Mesas(props) {
     }, [props.datos_mesas]);
 
     // Columnas simples sin grupos
-    const columnas = [
+    const columnas = useMemo(() => [
         { 
             key: "numero", 
             label: "Número de Mesa", 
@@ -121,7 +121,7 @@ function Abm_Mesas(props) {
                 />
             ),
         },
-    ];
+    ], [api, camposEditar, props.recargarComponentes]);
 
     return (
         <Container>

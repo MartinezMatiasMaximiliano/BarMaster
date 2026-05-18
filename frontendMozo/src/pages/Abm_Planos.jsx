@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Alert } from "@mui/material";
@@ -19,13 +19,13 @@ import { Campos as Campos_Editar } from "../configs/modificar/Planos"
 
 function Abm_Planos(props) {
 
-    const api = {
+    const api = useMemo(() => ({
         crear: CrearPlano,
         modificar: ModificarPlano,
         eliminar: BorrarPlano,
-    };
+    }), []);
 
-    const columnas = [
+    const columnas = useMemo(() => ([
         { key: "nombre", label: "Nombre", align: "right" },
         { key: "detalles", label: "Detalles", align: "right" },
         {
@@ -43,7 +43,7 @@ function Abm_Planos(props) {
                 />
             ),
         },
-    ];
+    ]), [api, props.recargarComponentes]);
 
     return (
         <Container>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Tabla from "../components/Tabla/Tabla";
 import { Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -18,8 +18,12 @@ import { Campos, inicializarCampos } from "../configs/agregar/Personas";
 
 function Abm_Personas(props) {
     const [campos, setCampos] = useState([]);
-    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_personas || []);
-    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_personas || []);
+    const personas = useMemo(() => props.datos_personas || [], [props.datos_personas]);
+    const rolesSelect = useMemo(() => (
+        props.datos_select ? props.datos_select.map(rol => ({ id: rol.id, nombre: rol.nombre })) : []
+    ), [props.datos_select]);
+    const [filasFiltradas, setFilasFiltradas] = useState(personas);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(personas);
 
     // Inicializar campos cuando cambien los datos_select (roles)
     useEffect(() => {
@@ -29,24 +33,24 @@ function Abm_Personas(props) {
 
     // Actualizar filas filtradas cuando cambien los datos originales
     useEffect(() => {
-        setFilasFiltradas(props.datos_personas || []);
-        setFilasOrdenadas(props.datos_personas || []);
-    }, [props.datos_personas]);
+        setFilasFiltradas(personas);
+        setFilasOrdenadas(personas);
+    }, [personas]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
     useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
-    const api = {
+    const api = useMemo(() => ({
         crear: RegistrarPersona,
         eliminar: BorrarPersona,
         activar: ActivarPersona,
         desactivar: DesactivarPersona,
         modificar: ModificarPersona,
-    };
+    }), []);
 
-    const columnas = [
+    const columnas = useMemo(() => ([
         { key: "nombre", label: "Nombre" }, 
         { key: "apellido", label: "Apellido" },
         { key: "dni", label: "DNI" },
@@ -69,7 +73,28 @@ function Abm_Personas(props) {
                 />
             ),
         },
-    ];
+    ]), [api, campos, props.recargarComponentes]);
+
+    const opcionesOrdenamiento = useMemo(() => ([
+        { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
+        { label: 'Apellido', campo: 'apellido', tipoOrden: 'texto' },
+        { label: 'DNI', campo: 'dni', tipoOrden: 'numero' },
+        { label: 'Email', campo: 'email', tipoOrden: 'texto' },
+        { label: 'Rol', campo: 'rolNombre', tipoOrden: 'texto' }
+    ]), []);
+
+    const configuracionFiltros = useMemo(() => ({
+        nombre: { tipo: 'text' },
+        apellido: { tipo: 'text' },
+        dni: { tipo: 'text' },
+        direccion: { tipo: 'text' },
+        telefono: { tipo: 'text' },
+        email: { tipo: 'text' },
+        rolNombre: {
+            tipo: 'select',
+            opciones: rolesSelect
+        }
+    }), [rolesSelect]);
 
     return (
         <Container>
@@ -91,32 +116,15 @@ function Abm_Personas(props) {
                 renderOrdenar={() => (
                     <Ordenar
                         filas={filasFiltradas}
-                        opcionesOrdenamiento={[
-                            { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
-                            { label: 'Apellido', campo: 'apellido', tipoOrden: 'texto' },
-                            { label: 'DNI', campo: 'dni', tipoOrden: 'numero' },
-                            { label: 'Email', campo: 'email', tipoOrden: 'texto' },
-                            { label: 'Rol', campo: 'rolNombre', tipoOrden: 'texto' }
-                        ]}
+                        opcionesOrdenamiento={opcionesOrdenamiento}
                         onOrdenar={setFilasOrdenadas}
                     />
                 )}
                 renderFiltros={() => (
                     <Filtros
-                        filas={props.datos_personas || []}
+                        filas={personas}
                         columnas={columnas}
-                        configuracionFiltros={{
-                            nombre: { tipo: 'text' },
-                            apellido: { tipo: 'text' },
-                            dni: { tipo: 'text' },
-                            direccion: { tipo: 'text' },
-                            telefono: { tipo: 'text' },
-                            email: { tipo: 'text' },
-                            rolNombre: { 
-                                tipo: 'select',
-                                opciones: props.datos_select ? props.datos_select.map(rol => ({ id: rol.id, nombre: rol.nombre })) : []
-                            }
-                        }}
+                        configuracionFiltros={configuracionFiltros}
                         onFiltrar={setFilasFiltradas}
                     />
                 )}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Container } from "react-bootstrap";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -40,21 +40,46 @@ function Abm_TipoEnvios(props) {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
-    const api = {
+    const api = useMemo(() => ({
         crear: CrearTipoEnvio,
         modificar: ModificarTipoEnvio,
         eliminar: EliminarTipoEnvio,
-    };
+    }), []);
 
-    const columnas = [
+    const columnas = useMemo(() => ([
         { key: "nombre", label: "Nombre", align: "right" },
         {
             key: "precio",
             label: "Precio",
             align: "right",
             render: (fila) => `$${Number(fila.precio ?? 0)}`,
-        }
-    ];
+        },
+        {
+            key: "__acciones",
+            label: "Acciones",
+            align: "right",
+            render: (fila) => (
+                <Fila_Acciones
+                    fila={fila}
+                    api={api}
+                    recargar={recargarComponentes}
+                    showEditar={true}
+                    showToggle={() => false}
+                    campos={CamposEditar}
+                />
+            ),
+        },
+    ]), [api, recargarComponentes]);
+
+    const opcionesOrdenamiento = useMemo(() => ([
+        { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
+        { label: 'Precio', campo: 'precio', tipoOrden: 'numero' }
+    ]), []);
+
+    const configuracionFiltros = useMemo(() => ({
+        nombre: { tipo: 'text' },
+        precio: { tipo: 'number' }
+    }), []);
 
     return (
         <Container>
@@ -76,10 +101,7 @@ function Abm_TipoEnvios(props) {
                 renderOrdenar={() => (
                     <Ordenar
                         filas={filasFiltradas}
-                        opcionesOrdenamiento={[
-                            { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
-                            { label: 'Precio', campo: 'precio', tipoOrden: 'numero' }
-                        ]}
+                        opcionesOrdenamiento={opcionesOrdenamiento}
                         onOrdenar={setFilasOrdenadas}
                         key={filasFiltradas.length}
                     />
@@ -88,10 +110,7 @@ function Abm_TipoEnvios(props) {
                     <Filtros
                         filas={tiposEnvio}
                         columnas={columnas}
-                        configuracionFiltros={{
-                            nombre: { tipo: 'text' },
-                            precio: { tipo: 'number' }
-                        }}
+                        configuracionFiltros={configuracionFiltros}
                         onFiltrar={setFilasFiltradas}
                         key={tiposEnvio.length}
                     />

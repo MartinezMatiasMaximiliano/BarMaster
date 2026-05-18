@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Container } from 'react-bootstrap';
 import { Stack, IconButton, Chip, Alert, Box } from '@mui/material';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
@@ -56,7 +56,7 @@ function Abm_Menus(props) {
     }, [filasFiltradas]);
 
     // Wrapper para CrearMenu que incluye IdSucursal
-    const crearMenuConSucursal = async (datos) => {
+    const crearMenuConSucursal = useCallback(async (datos) => {
         // Intentar obtener IdSucursal de props, localStorage, o del token JWT
         let idSucursal = props.idSucursal || localStorage.getItem('idSucursal');
         
@@ -73,15 +73,15 @@ function Abm_Menus(props) {
             ...datos,
             idSucursal: idSucursal
         });
-    };
+    }, [props.idSucursal]);
 
-    const api = {
+    const api = useMemo(() => ({
         crear: crearMenuConSucursal,
         eliminar: BorrarMenu,
         activar: (id) => ActivarMenu(id, true),
         desactivar: (id) => DesactivarMenu(id),
         modificar: ModificarMenu,
-    };
+    }), [crearMenuConSucursal]);
 
     const columnas = useMemo(() => [
         { key: "nombre", label: "Nombre", align: "right" },
@@ -126,7 +126,16 @@ function Abm_Menus(props) {
                 </Stack>
             ),
         },
-    ], [props.recargarComponentes]);
+    ], [api, props.recargarComponentes]);
+
+    const opcionesOrdenamiento = useMemo(() => ([
+        { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
+        { label: 'Cantidad de productos', campo: 'cantidadProductos', tipoOrden: 'numero' }
+    ]), []);
+
+    const configuracionFiltros = useMemo(() => ({
+        nombre: { tipo: 'text' }
+    }), []);
 
     return (
         <Container>
@@ -150,10 +159,7 @@ function Abm_Menus(props) {
                 renderOrdenar={() => (
                     <Ordenar
                         filas={filasFiltradas}
-                        opcionesOrdenamiento={[
-                            { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
-                            { label: 'Cantidad de productos', campo: 'cantidadProductos', tipoOrden: 'numero' }
-                        ]}
+                        opcionesOrdenamiento={opcionesOrdenamiento}
                         onOrdenar={setFilasOrdenadas}
                         key={filasFiltradas.length}
                     />
@@ -162,9 +168,7 @@ function Abm_Menus(props) {
                     <Filtros
                         filas={menusMapeados}
                         columnas={columnas}
-                        configuracionFiltros={{
-                            nombre: { tipo: 'text' }
-                        }}
+                        configuracionFiltros={configuracionFiltros}
                         onFiltrar={setFilasFiltradas}
                     />
                 )}

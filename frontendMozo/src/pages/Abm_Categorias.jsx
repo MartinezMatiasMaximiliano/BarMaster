@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Container } from 'react-bootstrap'
 import { CrearCategoria, BorrarCategoria, DesactivarCategoria, ActivarCategoria, ModificarCategoria } from "../API/APICategorias";
 import Tabla from "../components/Tabla/Tabla";
@@ -11,29 +11,30 @@ import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 import { Campos } from "../configs/agregar/Categorias"
 
 function Abm_Categorias(props) {
-    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_categorias || []);
-    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_categorias || []);
+    const categorias = useMemo(() => props.datos_categorias || [], [props.datos_categorias]);
+    const [filasFiltradas, setFilasFiltradas] = useState(categorias);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(categorias);
 
     // Actualizar filas filtradas cuando cambien los datos originales
     useEffect(() => {
-        setFilasFiltradas(props.datos_categorias || []);
-        setFilasOrdenadas(props.datos_categorias || []);
-    }, [props.datos_categorias]);
+        setFilasFiltradas(categorias);
+        setFilasOrdenadas(categorias);
+    }, [categorias]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
     useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
-    const api = {
+    const api = useMemo(() => ({
         crear: CrearCategoria,
         eliminar: BorrarCategoria,
         desactivar: DesactivarCategoria,
         activar: ActivarCategoria,
         modificar: ModificarCategoria,
-    };
+    }), []);
 
-    const columnas = [
+    const columnas = useMemo(() => [
 
         { key: "nombre", label: "Nombre", align: "right" },
 
@@ -52,7 +53,15 @@ function Abm_Categorias(props) {
                 />
             ),
         },
-    ];
+    ], [api, props.recargarComponentes]);
+
+    const opcionesOrdenamiento = useMemo(() => ([
+        { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' }
+    ]), []);
+
+    const configuracionFiltros = useMemo(() => ({
+        nombre: { tipo: 'text' }
+    }), []);
 
     return (
         <Container>
@@ -73,22 +82,18 @@ function Abm_Categorias(props) {
                 renderOrdenar={() => (
                     <Ordenar
                         filas={filasFiltradas}
-                        opcionesOrdenamiento={[
-                            { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' }
-                        ]}
+                        opcionesOrdenamiento={opcionesOrdenamiento}
                         onOrdenar={setFilasOrdenadas}
                         key={filasFiltradas.length} // Forzar re-render cuando cambien las filas filtradas
                     />
                 )}
                 renderFiltros={() => (
                     <Filtros
-                        filas={props.datos_categorias || []}
+                        filas={categorias}
                         columnas={columnas}
-                        configuracionFiltros={{
-                            nombre: { tipo: 'text' }
-                        }}
+                        configuracionFiltros={configuracionFiltros}
                         onFiltrar={setFilasFiltradas}
-                        key={props.datos_categorias?.length} // Forzar re-render cuando cambien los datos
+                        key={categorias.length} // Forzar re-render cuando cambien los datos
                     />
                 )}
             />

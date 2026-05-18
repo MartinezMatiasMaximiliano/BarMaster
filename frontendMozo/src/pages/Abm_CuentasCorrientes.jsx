@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Container } from "react-bootstrap";
 import { IconButton, Stack } from "@mui/material";
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
@@ -21,28 +21,29 @@ import { Campos as CamposAgregar } from "../configs/agregar/CuentasCorrientes";
 import { Campos as CamposEditar } from "../configs/modificar/CuentasCorrientes";
 
 function Abm_CuentasCorrientes(props) {
-    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_cuentas_corrientes || []);
-    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_cuentas_corrientes || []);
+    const cuentasCorrientes = useMemo(() => props.datos_cuentas_corrientes || [], [props.datos_cuentas_corrientes]);
+    const [filasFiltradas, setFilasFiltradas] = useState(cuentasCorrientes);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(cuentasCorrientes);
     const [cuentaSeleccionada, setCuentaSeleccionada] = useState(null);
     const [mostrarModalMovimiento, setMostrarModalMovimiento] = useState(false);
     const [mostrarDrawerMovimientos, setMostrarDrawerMovimientos] = useState(false);
 
     useEffect(() => {
-        setFilasFiltradas(props.datos_cuentas_corrientes || []);
-        setFilasOrdenadas(props.datos_cuentas_corrientes || []);
-    }, [props.datos_cuentas_corrientes]);
+        setFilasFiltradas(cuentasCorrientes);
+        setFilasOrdenadas(cuentasCorrientes);
+    }, [cuentasCorrientes]);
 
     useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
-    const api = {
+    const api = useMemo(() => ({
         crear: CrearCuentaCorriente,
         modificar: ModificarCuentaCorriente,
         eliminar: EliminarCuentaCorriente,
-    };
+    }), []);
 
-    const columnas = [
+    const columnas = useMemo(() => [
         { key: "nombre", label: "Nombre" },
         { key: "telefono", label: "Teléfono" },
         { key: "domicilio", label: "Domicilio" },
@@ -117,7 +118,23 @@ function Abm_CuentasCorrientes(props) {
                 </Stack>
             ),
         },
-    ];
+    ], [api, props.recargarComponentes]);
+
+    const opcionesOrdenamiento = useMemo(() => ([
+        { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
+        { label: 'Teléfono', campo: 'telefono', tipoOrden: 'numero' },
+        { label: 'Domicilio', campo: 'domicilio', tipoOrden: 'texto' },
+        { label: 'Balance', campo: 'balance', tipoOrden: 'numero' },
+        { label: 'Descuento', campo: 'descuento', tipoOrden: 'numero' },
+    ]), []);
+
+    const configuracionFiltros = useMemo(() => ({
+        nombre: { tipo: 'text' },
+        telefono: { tipo: 'text' },
+        domicilio: { tipo: 'text' },
+        balance: { tipo: 'number' },
+        descuento: { tipo: 'number' },
+    }), []);
 
     return (
         <Container>
@@ -139,30 +156,18 @@ function Abm_CuentasCorrientes(props) {
                 renderOrdenar={() => (
                     <Ordenar
                         filas={filasFiltradas}
-                        opcionesOrdenamiento={[
-                            { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
-                            { label: 'Teléfono', campo: 'telefono', tipoOrden: 'numero' },
-                            { label: 'Domicilio', campo: 'domicilio', tipoOrden: 'texto' },
-                            { label: 'Balance', campo: 'balance', tipoOrden: 'numero' },
-                            { label: 'Descuento', campo: 'descuento', tipoOrden: 'numero' },
-                        ]}
+                        opcionesOrdenamiento={opcionesOrdenamiento}
                         onOrdenar={setFilasOrdenadas}
                         key={filasFiltradas.length}
                     />
                 )}
                 renderFiltros={() => (
                     <Filtros
-                        filas={props.datos_cuentas_corrientes || []}
+                        filas={cuentasCorrientes}
                         columnas={columnas}
-                        configuracionFiltros={{
-                            nombre: { tipo: 'text' },
-                            telefono: { tipo: 'text' },
-                            domicilio: { tipo: 'text' },
-                            balance: { tipo: 'number' },
-                            descuento: { tipo: 'number' },
-                        }}
+                        configuracionFiltros={configuracionFiltros}
                         onFiltrar={setFilasFiltradas}
-                        key={props.datos_cuentas_corrientes?.length}
+                        key={cuentasCorrientes.length}
                     />
                 )}
             />

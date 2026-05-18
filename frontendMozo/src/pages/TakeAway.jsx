@@ -215,7 +215,7 @@ function TakeAway() {
                             { label: 'Teléfono', campo: 'Telefono', tipoOrden: 'numero' },
                             { label: 'Indicaciones', campo: 'Indicaciones', tipoOrden: 'texto' },
                             { label: 'Total', campo: 'PrecioTotal', tipoOrden: 'numero' },
-                            { label: 'Entregado', campo: 'entregadoTexto', tipoOrden: 'texto' },
+                            { label: 'Entregado', campo: 'entregado', tipoOrden: 'booleano' },
                         ]}
                         onOrdenar={setFilasOrdenadas}
                     />

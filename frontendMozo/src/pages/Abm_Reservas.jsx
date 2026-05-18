@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Container } from 'react-bootstrap'
 import { CrearReserva, ModificarReserva, BorrarReserva } from "../API/APIReservas";
 import Tabla from "../components/Tabla/Tabla";
@@ -25,27 +25,28 @@ const getEstadoColor = (idEstado) => {
 };
 
 function Abm_Reservas(props) {
-    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_reservas || []);
-    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_reservas || []);
+    const reservas = useMemo(() => props.datos_reservas || [], [props.datos_reservas]);
+    const [filasFiltradas, setFilasFiltradas] = useState(reservas);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(reservas);
 
     // Actualizar filas filtradas cuando cambien los datos originales
     useEffect(() => {
-        setFilasFiltradas(props.datos_reservas || []);
-        setFilasOrdenadas(props.datos_reservas || []);
-    }, [props.datos_reservas]);
+        setFilasFiltradas(reservas);
+        setFilasOrdenadas(reservas);
+    }, [reservas]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
     useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
-    const api = {
+    const api = useMemo(() => ({
         crear: CrearReserva,
         modificar: ModificarReserva,
         eliminar: BorrarReserva,
-    };
+    }), []);
 
-    const columnas = [
+    const columnas = useMemo(() => ([
         {
             key: "fechaHora",
             label: "Fecha y Hora",
@@ -83,7 +84,27 @@ function Abm_Reservas(props) {
                 />
             ),
         },
-    ];
+    ]), [api, props.recargarComponentes]);
+
+    const opcionesOrdenamiento = useMemo(() => ([
+        { label: 'Fecha y Hora', campo: 'fechaHora', tipoOrden: 'fecha' },
+        { label: 'Estado', campo: 'estado', tipoOrden: 'texto' }
+    ]), []);
+
+    const configuracionFiltros = useMemo(() => ({
+        fechaHora: { tipo: 'text' },
+        nombreReserva: { tipo: 'text' },
+        cantidadDePersonas: { tipo: 'number' },
+        estado: {
+            tipo: 'select',
+            opciones: [
+                { id: 1, nombre: 'Pendiente' },
+                { id: 2, nombre: 'Confirmada' },
+                { id: 3, nombre: 'Cancelada' },
+                { id: 4, nombre: 'Completada' }
+            ]
+        }
+    }), []);
 
     return (
         <Container>
@@ -104,31 +125,15 @@ function Abm_Reservas(props) {
                 renderOrdenar={() => (
                     <Ordenar
                         filas={filasFiltradas}
-                        opcionesOrdenamiento={[
-                            { label: 'Fecha y Hora', campo: 'fechaHora', tipoOrden: 'fecha' },
-                            { label: 'Estado', campo: 'estado', tipoOrden: 'texto' }
-                        ]}
+                        opcionesOrdenamiento={opcionesOrdenamiento}
                         onOrdenar={setFilasOrdenadas}
                     />
                 )}
                 renderFiltros={() => (
                     <Filtros
-                        filas={props.datos_reservas || []}
+                        filas={reservas}
                         columnas={columnas}
-                        configuracionFiltros={{
-                            fechaHora: { tipo: 'text' },
-                            nombreReserva: { tipo: 'text' },
-                            cantidadDePersonas: { tipo: 'number' },
-                            estado: { 
-                                tipo: 'select', 
-                                opciones: [
-                                    { id: 1, nombre: 'Pendiente' },
-                                    { id: 2, nombre: 'Confirmada' },
-                                    { id: 3, nombre: 'Cancelada' },
-                                    { id: 4, nombre: 'Completada' }
-                                ]
-                            }
-                        }}
+                        configuracionFiltros={configuracionFiltros}
                         onFiltrar={setFilasFiltradas}
                     />
                 )}

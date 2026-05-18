@@ -20,7 +20,7 @@ const normalizarValorTexto = (valor) => {
  * Componente de ordenación para tablas ABM
  * @param {Array} filas - Array de filas a ordenar
  * @param {Array} opcionesOrdenamiento - Array de opciones de ordenamiento
- *   Cada opción debe tener: { label: string, campo: string, tipoOrden: 'fecha' | 'numero' | 'texto' }
+ *   Cada opción debe tener: { label: string, campo: string, tipoOrden: 'fecha' | 'numero' | 'texto' | 'booleano' }
  * @param {Function} onOrdenar - Callback que recibe las filas ordenadas
  */
 function Ordenar({ filas, opcionesOrdenamiento = [], onOrdenar }) {
@@ -43,6 +43,11 @@ function Ordenar({ filas, opcionesOrdenamiento = [], onOrdenar }) {
         opcionesDireccion = [
             { value: 'ascendente', label: 'A-Z' },
             { value: 'descendente', label: 'Z-A' }
+        ];
+    } else if (tipoOrden === 'booleano') {
+        opcionesDireccion = [
+            { value: 'descendente', label: 'Sí primero' },
+            { value: 'ascendente', label: 'No primero' }
         ];
     } else if (tipoOrden === 'numero') {
         opcionesDireccion = [
@@ -80,6 +85,9 @@ function Ordenar({ filas, opcionesOrdenamiento = [], onOrdenar }) {
             if (tipoOrden === 'fecha') {
                 valorA = new Date(valorA).getTime();
                 valorB = new Date(valorB).getTime();
+            } else if (tipoOrden === 'booleano') {
+                valorA = valorA ? 1 : 0;
+                valorB = valorB ? 1 : 0;
             } else if (tipoOrden === 'texto') {
                 // Ordenar texto alfabéticamente
                 valorA = normalizarValorTexto(valorA);

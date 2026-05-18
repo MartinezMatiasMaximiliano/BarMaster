@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Container } from "react-bootstrap";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -18,8 +18,9 @@ import { Campos, inicializarCampos } from "../configs/agregar/Producto"
 
 function Abm_Productos(props) {
     const [campos, setCampos] = useState(Campos);
-    const [filasFiltradas, setFilasFiltradas] = useState(props.datos_productos || []);
-    const [filasOrdenadas, setFilasOrdenadas] = useState(props.datos_productos || []);
+    const productos = useMemo(() => props.datos_productos || [], [props.datos_productos]);
+    const [filasFiltradas, setFilasFiltradas] = useState(productos);
+    const [filasOrdenadas, setFilasOrdenadas] = useState(productos);
 
     // Inicializar campos solo cuando el componente se monte y haya token
     useEffect(() => {
@@ -32,24 +33,24 @@ function Abm_Productos(props) {
 
     // Actualizar filas filtradas cuando cambien los datos originales
     useEffect(() => {
-        setFilasFiltradas(props.datos_productos || []);
-        setFilasOrdenadas(props.datos_productos || []);
-    }, [props.datos_productos]);
+        setFilasFiltradas(productos);
+        setFilasOrdenadas(productos);
+    }, [productos]);
 
     // Actualizar filas ordenadas cuando cambien las filas filtradas
     useEffect(() => {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
-    const api = {
+    const api = useMemo(() => ({
         crear: CrearProducto,
         eliminar: BorrarProducto,
         activar: ActivarProducto,
         desactivar: DesactivarProducto,
         modificar: ModificarProducto,
-    };
+    }), []);
 
-    const columnas = [
+    const columnas = useMemo(() => ([
         { key: "imagen", label: "", type: "image", align: "right" },
         { key: "codigo", label: "Código", align: "right" },
         { key: "nombre", label: "Nombre", align: "right" },
@@ -72,7 +73,22 @@ function Abm_Productos(props) {
                 />
             ),
         },
-    ];
+    ]), [api, campos, props.recargarComponentes]);
+
+    const opcionesOrdenamiento = useMemo(() => ([
+        { label: 'Código', campo: 'codigo', tipoOrden: 'texto' },
+        { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
+        { label: 'Precio', campo: 'precio', tipoOrden: 'numero' },
+        { label: 'Categorías', campo: 'categorias', tipoOrden: 'texto' }
+    ]), []);
+
+    const configuracionFiltros = useMemo(() => ({
+        codigo: { tipo: 'text' },
+        nombre: { tipo: 'text' },
+        precio: { tipo: 'number' },
+        descripcion: { tipo: 'text' },
+        categorias: { tipo: 'text' }
+    }), []);
 
     return (
         <Container>
@@ -94,26 +110,15 @@ function Abm_Productos(props) {
                 renderOrdenar={() => (
                     <Ordenar
                         filas={filasFiltradas}
-                        opcionesOrdenamiento={[
-                            { label: 'Código', campo: 'codigo', tipoOrden: 'texto' },
-                            { label: 'Nombre', campo: 'nombre', tipoOrden: 'texto' },
-                            { label: 'Precio', campo: 'precio', tipoOrden: 'numero' },
-                            { label: 'Categorías', campo: 'categorias', tipoOrden: 'texto' }
-                        ]}
+                        opcionesOrdenamiento={opcionesOrdenamiento}
                         onOrdenar={setFilasOrdenadas}
                     />
                 )}
                 renderFiltros={() => (
                     <Filtros
-                        filas={props.datos_productos || []}
+                        filas={productos}
                         columnas={columnas}
-                        configuracionFiltros={{
-                            codigo: { tipo: 'text' },
-                            nombre: { tipo: 'text' },
-                            precio: { tipo: 'number' },
-                            descripcion: { tipo: 'text' },
-                            categorias: { tipo: 'text' }
-                        }}
+                        configuracionFiltros={configuracionFiltros}
                         onFiltrar={setFilasFiltradas}
                     />
                 )}
