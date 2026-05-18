@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AbrirCaja, CerrarCaja, ObtenerCajaActiva, ObtenerMovimientosCaja } from '../../../API/APICaja';
 import { buildTimestampDefaults, initialApertura, initialCierre, obtenerMensajeError } from '../utils/constants';
 import { setCajaActiva as setCajaActivaGlobal } from '../../../redux/slices/cajaActivaSlice';
+import { getMoneyFieldError } from '../../../validation/moneyValidation';
 
 export const useCaja = () => {
     const dispatch = useDispatch();
@@ -15,6 +16,7 @@ export const useCaja = () => {
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
     const [mensaje, setMensaje] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
     const [tabValue, setTabValue] = useState(0);
     const [formApertura, setFormApertura] = useState(initialApertura);
     const [formCierre, setFormCierre] = useState(initialCierre);
@@ -119,11 +121,29 @@ export const useCaja = () => {
     const handleChange = (setter) => (event) => {
         const { name, value } = event.target;
         setter((prev) => ({ ...prev, [name]: value }));
+
+        if (name === 'montoInicial' || name === 'montoFinal') {
+            const fieldError = value ? getMoneyFieldError(name, value) : '';
+
+            setFieldErrors((prevErrors) => {
+                const nextErrors = { ...prevErrors };
+
+                if (fieldError) {
+                    nextErrors[name] = fieldError;
+                } else {
+                    delete nextErrors[name];
+                }
+
+                return nextErrors;
+            });
+        }
     };
 
     const validarApertura = () => {
-        if (!formApertura.montoInicial || Number(formApertura.montoInicial) < 0) {
-            setError('El monto inicial debe ser un número positivo.');
+        const montoInicialError = getMoneyFieldError('montoInicial', formApertura.montoInicial);
+        if (montoInicialError) {
+            setFieldErrors((prevErrors) => ({ ...prevErrors, montoInicial: montoInicialError }));
+            setError(montoInicialError);
             return false;
         }
         return true;
@@ -136,8 +156,11 @@ export const useCaja = () => {
             setError('No se puede cerrar caja si hay mesas abiertas, o algun delivery o takeaway activo.');
             return false;
         }
-        if (formCierre.montoFinal === '' || Number.isNaN(Number(formCierre.montoFinal))) {
-            setError('Debes indicar el monto final real.');
+
+        const montoFinalError = getMoneyFieldError('montoFinal', formCierre.montoFinal);
+        if (montoFinalError) {
+            setFieldErrors((prevErrors) => ({ ...prevErrors, montoFinal: montoFinalError }));
+            setError(montoFinalError);
             return false;
         }
         return true;
@@ -166,6 +189,7 @@ export const useCaja = () => {
             setCajaActiva(caja);
             dispatch(setCajaActivaGlobal(caja || null)); // Actualizar estado global
             setFormCierre(initialCierre());
+            setFieldErrors({});
             setMensaje('La caja se abrió correctamente.');
         } catch (err) {
             setError(obtenerMensajeError(err, 'No pudimos abrir la caja.'));
@@ -200,6 +224,7 @@ export const useCaja = () => {
             dispatch(setCajaActivaGlobal(null)); // Actualizar estado global
             setFormApertura(initialApertura());
             setFormCierre(initialCierre());
+            setFieldErrors({});
             await cargarDatos();
         } catch (err) {
             setError(obtenerMensajeError(err, 'No pudimos cerrar la caja.'));
@@ -311,6 +336,7 @@ export const useCaja = () => {
         guardando,
         error,
         mensaje,
+        fieldErrors,
         tabValue,
         formApertura,
         formCierre,

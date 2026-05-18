@@ -18,6 +18,7 @@ import { currencyFormatter } from '../utils/constants';
 export const FormularioCierre = ({
     formCierre,
     diferencia,
+    errorMontoFinal,
     guardando,
     onChange,
     onSubmit,
@@ -63,7 +64,9 @@ export const FormularioCierre = ({
                             value={formCierre.montoFinal}
                             onChange={onChange}
                             fullWidth
-                            inputProps={{ min: 0, step: '0.01' }}
+                            error={!!errorMontoFinal}
+                            inputProps={{ min: 0, step: '0.01', inputMode: 'decimal' }}
+                            helperText={errorMontoFinal || ' '}
                             required
                         />
                         <TextField

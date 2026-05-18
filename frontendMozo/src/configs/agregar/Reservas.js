@@ -1,7 +1,8 @@
 export const Campos = [
   { name: "fechaHora", label: "Fecha y Hora", type: "datetime-local", required: true, validation: { rule: "datetime" } },
   { name: "nombreReserva", label: "Nombre de Reserva", type: "text", required: true, validation: { rule: "text" } },
-  { name: "cantidadDePersonas", label: "Cantidad de Personas", type: "number", required: true, validation: { rule: "integer", min: 1 } },
+  { name: "telefono", label: "Teléfono", type: "text", required: true, validation: { rule: "phone" }, inputProps: { inputMode: "numeric" } },
+  { name: "cantidadDePersonas", label: "Cantidad de Personas", type: "number", required: true, validation: { rule: "integer", min: 1, max: 999 } },
   { 
     name: "IdEstadoReserva", 
     label: "Estado", 

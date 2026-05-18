@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 
-export const FormularioApertura = ({ formApertura, guardando, onChange, onSubmit }) => {
+export const FormularioApertura = ({ formApertura, errorMontoInicial, guardando, onChange, onSubmit }) => {
     return (
         <Card variant="outlined">
             <CardHeader
@@ -57,7 +57,9 @@ export const FormularioApertura = ({ formApertura, guardando, onChange, onSubmit
                                 value={formApertura.montoInicial}
                                 onChange={onChange}
                                 fullWidth
-                                inputProps={{ min: 0, step: '0.01' }}
+                                error={!!errorMontoInicial}
+                                inputProps={{ min: 0, step: '0.01', inputMode: 'decimal' }}
+                                helperText={errorMontoInicial || ' '}
                                 required
                             />
                         </Box>

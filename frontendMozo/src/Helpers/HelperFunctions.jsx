@@ -128,6 +128,7 @@ export function MappearReservas(reservas) {
             id: reserva.id,
             fechaHora: reserva.fechaHora,
             nombreReserva: reserva.nombreReserva,
+            telefono: (reserva.telefono ?? reserva.Telefono ?? reserva.telefonoContacto ?? reserva.TelefonoContacto ?? '').toString().trim(),
             cantidadDePersonas: reserva.cantidadDePersonas,
             IdEstadoReserva: reserva.estado.id,
             estado: reserva.estado.nombre

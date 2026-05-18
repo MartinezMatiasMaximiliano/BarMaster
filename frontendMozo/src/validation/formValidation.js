@@ -45,6 +45,23 @@ function validateNumericRange(value, fieldConfig, ctx) {
     }
 }
 
+function validateStringLength(value, fieldConfig, ctx) {
+    const stringValue = asTrimmedString(value);
+
+    if (typeof fieldConfig.exactLength === "number" && stringValue.length !== fieldConfig.exactLength) {
+        addIssue(ctx, fieldConfig.messages.exactLength, "exactLength");
+        return;
+    }
+
+    if (typeof fieldConfig.minLength === "number" && stringValue.length < fieldConfig.minLength) {
+        addIssue(ctx, fieldConfig.messages.minLength, "minLength");
+    }
+
+    if (typeof fieldConfig.maxLength === "number" && stringValue.length > fieldConfig.maxLength) {
+        addIssue(ctx, fieldConfig.messages.maxLength, "maxLength");
+    }
+}
+
 function isValidDateValue(value) {
     if (value instanceof Date) {
         return !Number.isNaN(value.getTime());
@@ -72,37 +89,49 @@ function validateLetters(value, fieldConfig, ctx) {
     }
 }
 
-function validateInteger(value, fieldConfig, ctx) {
+function validateIntegerLike(value, fieldConfig, ctx, { patternKey = "integer", messageKey = "integer" } = {}) {
     if (typeof value === "number") {
         if (!Number.isInteger(value) || value < 0) {
-            addIssue(ctx, fieldConfig.messages.integer, "integer");
-        }
-        validateNumericRange(value, fieldConfig, ctx);
-        return;
-    }
-
-    if (!validationPatterns.integer.test(asTrimmedString(value))) {
-        addIssue(ctx, fieldConfig.messages.integer, "integer");
-        return;
-    }
-
-    validateNumericRange(value, fieldConfig, ctx);
-}
-
-function validateDecimal(value, fieldConfig, ctx) {
-    if (typeof value === "number") {
-        if (!Number.isFinite(value) || value < 0) {
-            addIssue(ctx, fieldConfig.messages.decimal, "decimal");
+            addIssue(ctx, fieldConfig.messages[messageKey], messageKey);
         }
         validateNumericRange(value, fieldConfig, ctx);
         return;
     }
 
     const stringValue = asTrimmedString(value);
-    if (!validationPatterns.decimal.test(stringValue)) {
-        addIssue(ctx, fieldConfig.messages.decimal, "decimal");
+    if (!validationPatterns[patternKey].test(stringValue)) {
+        addIssue(ctx, fieldConfig.messages[messageKey], messageKey);
         return;
     }
+
+    validateStringLength(stringValue, fieldConfig, ctx);
+    validateNumericRange(value, fieldConfig, ctx);
+}
+
+function validateInteger(value, fieldConfig, ctx) {
+    validateIntegerLike(value, fieldConfig, ctx, { patternKey: "integer", messageKey: "integer" });
+}
+
+function validatePhone(value, fieldConfig, ctx) {
+    validateIntegerLike(value, fieldConfig, ctx, { patternKey: "phone", messageKey: "phone" });
+}
+
+function validateDecimalLike(value, fieldConfig, ctx, { patternKey = "decimal", messageKey = "decimal" } = {}) {
+    if (typeof value === "number") {
+        if (!Number.isFinite(value) || value < 0) {
+            addIssue(ctx, fieldConfig.messages[messageKey], messageKey);
+        }
+        validateNumericRange(value, fieldConfig, ctx);
+        return;
+    }
+
+    const stringValue = asTrimmedString(value);
+    if (!validationPatterns[patternKey].test(stringValue)) {
+        addIssue(ctx, fieldConfig.messages[messageKey], messageKey);
+        return;
+    }
+
+    validateStringLength(stringValue.replace(/[,.]/g, ""), fieldConfig, ctx);
 
     if (
         typeof fieldConfig.maxDecimals === "number" &&
@@ -111,11 +140,19 @@ function validateDecimal(value, fieldConfig, ctx) {
         const separator = stringValue.includes(",") ? "," : ".";
         const [, decimalPart = ""] = stringValue.split(separator);
         if (decimalPart.length > fieldConfig.maxDecimals) {
-            addIssue(ctx, fieldConfig.messages.decimal, "decimal");
+            addIssue(ctx, fieldConfig.messages[messageKey], messageKey);
         }
     }
 
     validateNumericRange(value, fieldConfig, ctx);
+}
+
+function validateDecimal(value, fieldConfig, ctx) {
+    validateDecimalLike(value, fieldConfig, ctx, { patternKey: "decimal", messageKey: "decimal" });
+}
+
+function validateMoney(value, fieldConfig, ctx) {
+    validateDecimalLike(value, fieldConfig, ctx, { patternKey: "money", messageKey: "money" });
 }
 
 function validateImage(value, fieldConfig, ctx) {
@@ -132,9 +169,14 @@ function validateCode4(value, fieldConfig, ctx) {
 }
 
 function validateText(value, fieldConfig, ctx) {
-    if (!validationPatterns.text.test(asTrimmedString(value))) {
+    const stringValue = asTrimmedString(value);
+
+    if (!validationPatterns.text.test(stringValue)) {
         addIssue(ctx, fieldConfig.messages.text, "text");
+        return;
     }
+
+    validateStringLength(stringValue, fieldConfig, ctx);
 }
 
 function validateDateTime(value, fieldConfig, ctx) {
@@ -172,6 +214,8 @@ function validateSelect(value, fieldConfig, ctx) {
 const validators = {
     letters: validateLetters,
     integer: validateInteger,
+    phone: validatePhone,
+    money: validateMoney,
     decimal: validateDecimal,
     image: validateImage,
     code4: validateCode4,

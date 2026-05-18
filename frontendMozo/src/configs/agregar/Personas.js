@@ -1,9 +1,9 @@
 const camposBase = [
   { name: "nombre", label: "Nombre", type: "text", required: true, validation: { rule: "letters" } },
   { name: "apellido", label: "Apellido", type: "text", required: true, validation: { rule: "letters" } },
-  { name: "dni", label: "DNI", type: "text", required: true, validation: { rule: "integer" } },
+  { name: "dni", label: "DNI", type: "text", required: true, validation: { rule: "integer", exactLength: 8 }, inputProps: { inputMode: "numeric" } },
   { name: "direccion", label: "Dirección", type: "text", validation: { rule: "text" } },
-  { name: "telefono", label: "Teléfono", type: "text", validation: { rule: "integer" } },
+  { name: "telefono", label: "Teléfono", type: "text", validation: { rule: "phone" }, inputProps: { inputMode: "numeric" } },
   { name: "rol", label: "Rol", type: "select", required: true, validation: { rule: "select" }, options: [] },
 ];
 

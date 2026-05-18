@@ -53,6 +53,7 @@ function Abm_Reservas(props) {
             render: (fila) => formatearFechaCompleta(fila.fechaHora)
         },
         { key: "nombreReserva", label: "Nombre de Reserva" },
+        { key: "telefono", label: "Teléfono" },
         { 
             key: "cantidadDePersonas", 
             label: "Cantidad de Personas",
@@ -88,12 +89,14 @@ function Abm_Reservas(props) {
 
     const opcionesOrdenamiento = useMemo(() => ([
         { label: 'Fecha y Hora', campo: 'fechaHora', tipoOrden: 'fecha' },
+        { label: 'Teléfono', campo: 'telefono', tipoOrden: 'numero' },
         { label: 'Estado', campo: 'estado', tipoOrden: 'texto' }
     ]), []);
 
     const configuracionFiltros = useMemo(() => ({
         fechaHora: { tipo: 'text' },
         nombreReserva: { tipo: 'text' },
+        telefono: { tipo: 'text' },
         cantidadDePersonas: { tipo: 'number' },
         estado: {
             tipo: 'select',

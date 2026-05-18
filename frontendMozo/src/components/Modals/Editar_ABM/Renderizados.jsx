@@ -81,6 +81,7 @@ export const Renderizados = (props, handleChange, errors = {}) => ({
       error={getFieldUiState(campo, errors).error}
       helperText={getFieldUiState(campo, errors).helperText}
       InputProps={buildInputProps(campo)}
+      inputProps={{ ...campo.inputProps }}
       variant="outlined"
     />
   ),

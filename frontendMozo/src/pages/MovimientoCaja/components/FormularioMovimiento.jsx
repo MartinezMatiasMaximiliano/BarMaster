@@ -88,6 +88,7 @@ export const FormularioMovimiento = ({
                             inputProps={{ 
                                 min: 0.01, 
                                 step: '0.01',
+                                inputMode: 'decimal',
                                 max: esEgresoEfectivo ? balanceActual : undefined
                             }}
                             helperText={errorMonto || helperTextMonto}

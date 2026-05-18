@@ -2,9 +2,9 @@ import { BuscarTodosLosPlanos } from "../../API/APIPlanos";
 
 // Definir la estructura base de los campos
 const camposBase = [
-  { name: "numero", label: "Numero de Mesa", type: "text", required: true, validation: { rule: "integer", min: 1 } },
+  { name: "numero", label: "Numero de Mesa", type: "text", required: true, validation: { rule: "integer", min: 1, maxLength: 3, max: 999 }, inputProps: { inputMode: "numeric" } },
   { name: "idPlano", label: "Plano", type: "select", validation: { rule: "select" }, options: [] },
-  { name: "capacidad", label: "Capacidad", type: "number", required: true, validation: { rule: "integer", min: 1 } },
+  { name: "capacidad", label: "Capacidad", type: "number", required: true, validation: { rule: "integer", min: 1, max: 999 } },
 ];
 
 // Función para inicializar los campos con los datos de planos

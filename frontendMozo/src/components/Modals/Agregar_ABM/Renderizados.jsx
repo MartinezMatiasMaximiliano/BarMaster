@@ -49,6 +49,7 @@ export const Renderizados = (props, handleChange, errors = {}) => ({
       required={esCampoObligatorio(campo)}
       label={campo.label}
       placeholder={`Ingrese valor para ${campo.label}`}
+      inputProps={{ ...campo.inputProps }}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
       error={getFieldUiState(campo, errors).error}
       helperText={getFieldUiState(campo, errors).helperText}

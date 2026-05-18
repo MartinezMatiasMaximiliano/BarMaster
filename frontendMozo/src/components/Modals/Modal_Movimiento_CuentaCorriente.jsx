@@ -19,6 +19,7 @@ import { ObtenerTiposMovimientoCaja } from '../../API/APIMovimientosCaja';
 import { CrearMovimientoCuentaCorriente } from '../../API/APICuentasCorrientes';
 import { obtenerMensajeError } from '../../pages/Caja/utils/constants';
 import { InfoTipoMovimiento } from '../../pages/MovimientoCaja/components/InfoTipoMovimiento';
+import { getPositiveMoneyFieldError } from '../../validation/moneyValidation';
 
 const initialFormData = {
     idTipoMovimientoCaja: '',
@@ -33,11 +34,13 @@ function Modal_Movimiento_CuentaCorriente({ open, onClose, cuentaCorriente, onSu
     const [loading, setLoading] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
+    const [errorMonto, setErrorMonto] = useState('');
 
     useEffect(() => {
         if (!open) {
             setFormData(initialFormData);
             setError('');
+            setErrorMonto('');
             return;
         }
 
@@ -83,6 +86,29 @@ function Modal_Movimiento_CuentaCorriente({ open, onClose, cuentaCorriente, onSu
         if (error) {
             setError('');
         }
+
+        if (name === 'monto' || name === 'idTipoMovimientoCaja') {
+            const siguienteMonto = name === 'monto' ? value : formData.monto;
+            const siguienteTipoId = name === 'idTipoMovimientoCaja' ? value : formData.idTipoMovimientoCaja;
+            const montoError = siguienteMonto
+                ? getPositiveMoneyFieldError('monto', siguienteMonto)
+                : '';
+
+            if (montoError) {
+                setErrorMonto(montoError);
+                return;
+            }
+
+            const tipoActualizado = tiposMovimiento.find((tipo) => tipo.id === Number(siguienteTipoId));
+            if (tipoActualizado?.esEfectivo && !tipoActualizado?.esIngreso && Number(siguienteMonto) > balanceActual) {
+                setErrorMonto(`El monto no puede ser mayor al balance actual de ${balanceActual.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}`);
+                return;
+            }
+        }
+
+        if (errorMonto) {
+            setErrorMonto('');
+        }
     };
 
     const handleSubmit = async (event) => {
@@ -94,8 +120,10 @@ function Modal_Movimiento_CuentaCorriente({ open, onClose, cuentaCorriente, onSu
             return;
         }
 
-        if (!formData.monto || Number(formData.monto) <= 0) {
-            setError('El monto debe ser mayor a 0.');
+        const montoError = getPositiveMoneyFieldError('monto', formData.monto);
+        if (montoError) {
+            setError(montoError);
+            setErrorMonto(montoError);
             return;
         }
 
@@ -173,12 +201,14 @@ function Modal_Movimiento_CuentaCorriente({ open, onClose, cuentaCorriente, onSu
                                     inputProps={{
                                         min: 0.01,
                                         step: '0.01',
+                                        inputMode: 'decimal',
                                         max: esEgresoEfectivo ? balanceActual : undefined
                                     }}
+                                    error={!!errorMonto}
                                     helperText={
-                                        esEgresoEfectivo
+                                        errorMonto || (esEgresoEfectivo
                                             ? `Balance disponible: ${balanceActual.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}`
-                                            : 'El monto debe ser mayor a 0'
+                                            : 'El monto debe ser mayor a 0')
                                     }
                                 />
 

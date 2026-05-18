@@ -2,7 +2,7 @@ import { BuscarTodosLosProductos } from "../../API/APIProductos";
 
 const camposBase = [
   { name: "Cliente", label: "Cliente", type: "text", required: true, validation: { rule: "text" } },
-  { name: "Telefono", label: "Teléfono", type: "text", validation: { rule: "integer" } },
+  { name: "Telefono", label: "Teléfono", type: "text", validation: { rule: "phone" }, inputProps: { inputMode: "numeric" } },
   { name: "Indicaciones", label: "Indicaciones", type: "text", validation: { rule: "text" } },
   { name: "Productos", label: "Productos", type: "select", required: true, validation: { rule: "select" }, options: [] },
 ];

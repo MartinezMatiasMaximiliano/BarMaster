@@ -4,8 +4,8 @@ const camposBase = [
   { name: "imagen", label: "Imagen", type: "image", validation: { rule: "image" } },
   { name: "codigo", label: "Código", type: "text", validation: { rule: "text" } },
   { name: "nombre", label: "Nombre", type: "text", required: true, validation: { rule: "text" } },
-  { name: "precio", label: "Precio", type: "decimal", required: true, validation: { rule: "decimal", min: 0, maxDecimals: 2 } },
-  { name: "costoProduccion", label: "Costo de Producción", type: "decimal", validation: { rule: "decimal", min: 0, maxDecimals: 2 } },
+  { name: "precio", label: "Precio", type: "decimal", required: true, validation: { rule: "money" } },
+  { name: "costoProduccion", label: "Costo de Producción", type: "decimal", validation: { rule: "money" } },
   { name: "descripcion", label: "Descripción", type: "text", required: true, validation: { rule: "text" } },
   { name: "categorias", label: "Categorías", type: "select_multiple", required: true, validation: { rule: "select_multiple" }, options: [] },
 ];

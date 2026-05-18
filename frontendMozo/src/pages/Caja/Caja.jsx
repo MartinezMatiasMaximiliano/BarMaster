@@ -28,6 +28,7 @@ function Caja() {
         guardando,
         error,
         mensaje,
+        fieldErrors,
         tabValue,
         formApertura,
         formCierre,
@@ -97,6 +98,7 @@ function Caja() {
                                             <FormularioCierre
                                                 formCierre={formCierre}
                                                 diferencia={diferencia}
+                                                errorMontoFinal={fieldErrors.montoFinal}
                                                 guardando={guardando}
                                                 onChange={handleChange(setFormCierre)}
                                                 onSubmit={onCerrarCaja}
@@ -105,6 +107,7 @@ function Caja() {
                                         ) : (
                                             <FormularioApertura
                                                 formApertura={formApertura}
+                                                errorMontoInicial={fieldErrors.montoInicial}
                                                 guardando={guardando}
                                                 onChange={handleChange(setFormApertura)}
                                                 onSubmit={onAbrirCaja}

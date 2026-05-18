@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { CrearMovimientoCaja, ObtenerTiposMovimientoCaja } from '../../../API/APIMovimientosCaja';
 import { ObtenerCajaActiva, ObtenerMovimientosCaja } from '../../../API/APICaja';
 import { obtenerMensajeError } from '../../Caja/utils/constants';
+import { getPositiveMoneyFieldError } from '../../../validation/moneyValidation';
 
 const initialFormData = {
     idTipoMovimientoCaja: '',
@@ -100,7 +101,16 @@ export const useMovimientoCaja = () => {
 
         // Validar monto en tiempo real si es un egreso
         // Validar tanto cuando cambia el monto como cuando cambia el tipo de movimiento
-        if ((name === 'monto' || name === 'idTipoMovimientoCaja') && nuevoFormData.monto) {
+        if (name === 'monto' || name === 'idTipoMovimientoCaja') {
+            const montoError = nuevoFormData.monto
+                ? getPositiveMoneyFieldError('monto', nuevoFormData.monto)
+                : '';
+
+            if (montoError) {
+                setErrorMonto(montoError);
+                return;
+            }
+
             const tipoSeleccionado = tiposMovimiento.find(
                 (t) => t.id === Number(nuevoFormData.idTipoMovimientoCaja)
             );
@@ -108,6 +118,7 @@ export const useMovimientoCaja = () => {
                 const monto = Number(nuevoFormData.monto);
                 if (monto > balanceActual) {
                     setErrorMonto(`El monto no puede ser mayor al balance actual de ${balanceActual.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}`);
+                    return;
                 }
             }
         }
@@ -118,8 +129,11 @@ export const useMovimientoCaja = () => {
             setError('Debes seleccionar un tipo de movimiento.');
             return false;
         }
-        if (!formData.monto || Number(formData.monto) <= 0) {
-            setError('El monto debe ser mayor a 0.');
+
+        const montoError = getPositiveMoneyFieldError('monto', formData.monto);
+        if (montoError) {
+            setError(montoError);
+            setErrorMonto(montoError);
             return false;
         }
 
