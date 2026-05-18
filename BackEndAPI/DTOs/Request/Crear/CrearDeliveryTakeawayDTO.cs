@@ -4,7 +4,6 @@ namespace BackEndAPI.DTOs.Request.Crear
 {
     public class CrearDeliveryTakeawayDTO
     {
-        public Guid? IdPersonaRegistro { get; set; }
         public Guid? IdCadete { get; set; }
         public int? IdTipoEnvio { get; set; }
         public string NombreCliente { get; set; } = null;

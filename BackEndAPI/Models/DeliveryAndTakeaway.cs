@@ -5,7 +5,7 @@
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid IdSucursal { get; set; }
         //public Guid IdPersonaRegistro { get; set; }
-        //public Guid IdCadete { get; set; }
+        public Guid? IdCadete { get; set; }
         public int? IdTipoEnvio { get; set; }
         public Guid IdVisita { get; set; }
         public DateTime FechaHora { get; set; } = DateTime.UtcNow;
@@ -21,7 +21,7 @@
         public Sucursal Sucursal { get; set; }
         public Visita Visita { get; set; }
         //public Persona PersonaRegistro { get; set; }
-        //public Persona Cadete {  get; set; }
+        public Persona Cadete {  get; set; }
         public TipoEnvio TipoEnvio { get; set; }
 
 

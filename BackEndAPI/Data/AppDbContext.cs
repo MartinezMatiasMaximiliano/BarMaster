@@ -237,6 +237,10 @@ namespace BackEndAPI.Data
                 .WithMany()
                 .HasForeignKey(d => d.IdTipoEnvio)
                 .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<DeliveryAndTakeaway>()
+                .HasOne(c => c.Cadete)
+                .WithMany()
+                .HasForeignKey(c => c.IdCadete);
 
             modelBuilder.Entity<DeliveryAndTakeaway>()
                 .HasOne(d => d.Sucursal)

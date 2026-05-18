@@ -41,7 +41,15 @@ namespace BackEndAPI.Controllers
                     Indicaciones = r.Indicaciones,
                     Telefono = r.Telefono ?? "",
                     PrecioTotal = r.PrecioTotal,
+                    PrecioEnvio = r.TipoEnvio.Precio,
                     Entregado = r.Entregado,
+                    Cadete = r.Cadete != null ? new CadeteDTO
+                    {
+                        Id = r.Cadete.Id,
+                        Nombre = r.Cadete.Nombres,
+                        Apellido = r.Cadete.Apellido,
+                        Telefono = r.Cadete.Telefono,
+                    } : null,
                     Productos = (r.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
                     {
                         Id = p.Id,
@@ -90,6 +98,13 @@ namespace BackEndAPI.Controllers
                 Telefono = result.Telefono ?? "",
                 PrecioTotal = result.PrecioTotal,
                 Entregado = result.Entregado,
+                Cadete = result.Cadete != null ? new CadeteDTO
+                {
+                    Id = result.Cadete.Id,
+                    Nombre = result.Cadete.Nombres,
+                    Apellido = result.Cadete.Apellido,
+                    Telefono = result.Cadete.Telefono,
+                } : null,
                 Productos = (result.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
                 {
                     Id = p.Id,
@@ -112,7 +127,7 @@ namespace BackEndAPI.Controllers
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
-
+                if (request.Origen != "Delivery" && request.Origen != "Takeaway") throw new Exception("Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.");
                 var result = await _deliveryTakeawayServices.CrearDeliveryTakeaway(IdSucursal, request);
                 if (result == null) throw new Exception("Error al crear el pedido");
                 var response = new DeliveryTakeawayResponseDTO
@@ -127,7 +142,26 @@ namespace BackEndAPI.Controllers
                     Indicaciones = result.Indicaciones,
                     Telefono = result.Telefono ?? "",
                     PrecioTotal = result.PrecioTotal,
-                    Entregado = result.Entregado
+                    PrecioEnvio = result.TipoEnvio.Precio,
+                    Entregado = result.Entregado,
+                    Cadete = result.Cadete != null ? new CadeteDTO
+                    {
+                        Id = result.Cadete.Id,
+                        Nombre = result.Cadete.Nombres,
+                        Apellido = result.Cadete.Apellido,
+                        Telefono = result.Cadete.Telefono,
+                    } : null,
+                    Productos = (result.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
+                    {
+                        Id = p.Id,
+                        IdProducto = p.IdProducto,
+                        Nombre = p.NombreProducto,
+                        Indicaciones = p.Detalles,
+                        Precio = p.PrecioDelMomento,
+                        EstadoPagado = p.EstadoPagado,
+                        EstadoPedido = p.EstadoPedido,
+                        FechaAgregado = p.FechaAgregado,
+                    }).ToList()
                 };
                 return Ok(response);
 
@@ -136,11 +170,17 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
+                    case "Cantidad no válida":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Cantidad no válida. Asegúrate de enviar una cantidad mayor a cero para cada producto."));
+                    case "Producto no encontrado":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Uno o más productos no fueron encontrados. Verifica los IDs de los productos enviados y vuelve a intentarlo."));
+                    case "Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.":
+                        return BadRequest(new ErrorDTO(400,"BAD REQUEST","Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'."));
                     case "Error al crear el pedido":
-                        return BadRequest("Error al crear el pedido. Verifica los datos enviados y vuelve a intentarlo.");
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST","Error al crear el pedido. Verifica los datos enviados y vuelve a intentarlo."));
 
                     case "Sucursal no identificada":
-                        return BadRequest("Sucursal no identificada. Asegúrate de que el token contenga el claim 'IdSucursal'.");
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST","Sucursal no identificada. Asegúrate de que el token contenga el claim 'IdSucursal'."));
 
                     default:
                         return StatusCode(500, $"Internal server error: {ex.Message}");
@@ -193,6 +233,7 @@ namespace BackEndAPI.Controllers
                 }
             }
         }
+
         [HttpDelete]
         public async Task<IActionResult> EliminarDeliveryTakeaway(Guid id)
         {

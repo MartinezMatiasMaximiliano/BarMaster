@@ -44,7 +44,7 @@ namespace BackEndAPI.Controllers
                     }
                 }).ToList();
 
-                return Ok(listaPersonas);
+                return Ok(response);
 
             }
             catch (Exception ex)

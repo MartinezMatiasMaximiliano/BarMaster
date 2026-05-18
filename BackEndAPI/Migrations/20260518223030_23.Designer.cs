@@ -3,6 +3,7 @@ using System;
 using BackEndAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518223030_23")]
+    partial class _23
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,8 +183,6 @@ namespace BackEndAPI.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IdCadete");
 
                     b.HasIndex("IdSucursal");
 
@@ -992,10 +993,6 @@ namespace BackEndAPI.Migrations
 
             modelBuilder.Entity("BackEndAPI.Models.DeliveryAndTakeaway", b =>
                 {
-                    b.HasOne("BackEndAPI.Models.Persona", "Cadete")
-                        .WithMany()
-                        .HasForeignKey("IdCadete");
-
                     b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
                         .WithMany("Deliveries")
                         .HasForeignKey("IdSucursal")
@@ -1012,8 +1009,6 @@ namespace BackEndAPI.Migrations
                         .HasForeignKey("IdVisita")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Cadete");
 
                     b.Navigation("Sucursal");
 
