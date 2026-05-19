@@ -1,8 +1,5 @@
 namespace BackEndAPI.DTOs.Response
 {
-    /// <summary>
-    /// DTO de respuesta para Delivery/Takeaway. Solo datos escalares + productos de la visita para evitar ciclos en la serialización JSON.
-    /// </summary>
     public class DeliveryTakeawayResponseDTO
     {
         public Guid Id { get; set; }
@@ -15,8 +12,9 @@ namespace BackEndAPI.DTOs.Response
         public string? Indicaciones { get; set; }
         public string Telefono { get; set; } = "";
         public decimal PrecioTotal { get; set; }
+        public decimal PrecioEnvio { get; set; }
         public bool Entregado { get; set; }
-        /// <summary>Productos de la visita (ProductosPorVisita) enlazada a este delivery/takeaway.</summary>
+        public CadeteDTO? Cadete { get; set; } 
         public List<ItemDTO> Productos { get; set; } = new List<ItemDTO>();
     }
 }

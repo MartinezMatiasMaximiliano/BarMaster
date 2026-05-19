@@ -54,6 +54,7 @@ namespace BackEndAPI.Controllers
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
+                if (DateTime.Compare(request.FechaHora, DateTime.Now) < 0) throw new Exception("La fecha y hora de la reserva no puede ser en el pasado");
                 if (string.IsNullOrWhiteSpace(request.NombreReserva)) throw new Exception("El nombre de la reserva es obligatorio");
                 if (string.IsNullOrWhiteSpace(request.Telefono)) throw new Exception("El teléfono de la reserva es obligatorio");
 
@@ -76,6 +77,8 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
+                    case "La fecha y hora de la reserva no puede ser en el pasado":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "El nombre de la reserva es obligatorio":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "El teléfono de la reserva es obligatorio":

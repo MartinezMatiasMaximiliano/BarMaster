@@ -15,11 +15,13 @@ namespace BackEndAPI.Services
         private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
         private readonly ICajasServices _cajasServices;
         private readonly IProductosRepository _productosRepository;
-        public DeliveryTakeawayServices(IDeliveryTakeawayRepository deliveryTakeawayRepository, ICajasServices cajasServices, IProductosRepository productosRepository)
+        private readonly IPersonasRepository _personasRepository;
+        public DeliveryTakeawayServices(IDeliveryTakeawayRepository deliveryTakeawayRepository, ICajasServices cajasServices, IProductosRepository productosRepository, IPersonasRepository personasRepository)
         {
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _cajasServices = cajasServices;
             _productosRepository = productosRepository;
+            _personasRepository = personasRepository;
         }
         public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeaways(Guid IdSucursal)
         {
@@ -42,7 +44,7 @@ namespace BackEndAPI.Services
                 IdMozo = null,
                 IdMesa = null,
                 Origen = request.Origen,
-                Estado = "Abierta"
+                Estado = "Cerrada"
             };
 
             var DeliveryTakeaway = new DeliveryAndTakeaway
@@ -58,6 +60,7 @@ namespace BackEndAPI.Services
                 DeliveryTakeaway.Direccion = request.Direccion;
                 DeliveryTakeaway.Telefono = request.Telefono ?? "";
                 DeliveryTakeaway.IdTipoEnvio = request.IdTipoEnvio;
+                DeliveryTakeaway.Cadete = await _personasRepository.GetPersonaPorId(request.IdCadete.Value);
                 precioEnvio = await _deliveryTakeawayRepository.GetPrecioEnvioPorId(request.IdTipoEnvio);
 
             }
@@ -67,17 +70,14 @@ namespace BackEndAPI.Services
                 DeliveryTakeaway.Direccion = null;
                 DeliveryTakeaway.Telefono = request.Telefono ?? "";
                 DeliveryTakeaway.IdTipoEnvio = null;
+                DeliveryTakeaway.Cadete = null;
             }
 
             foreach (var item in request.ListaIDProductos)
             {
-                //TODO: Mejorar esto, buscar una manera de 
-                //agregar los productos que si se encuentran y notificar los que no se encuentran... (no no agregar ninguno si algo falla?)
                 var producto = await _productosRepository.GetProductoPorId(item.IdProducto);
-                if (producto == null)
-                {
-                    continue;
-                }
+                if (producto == null) throw new Exception($"Producto no encontrado");
+                if (item.Cantidad <= 0) throw new Exception($"Cantidad no válida");
 
                 for (int i = 1; i <= item.Cantidad; i++)
                 {
@@ -115,7 +115,6 @@ namespace BackEndAPI.Services
             request.Indicaciones = request.Indicaciones ?? deliveryTakeawayExistente.Indicaciones;
             return await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(deliveryTakeawayExistente);
         }
-        
         public async Task<bool> EliminarDeliveryTakeaway(Guid IdDeliveryTakeaway)
         {
             var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);

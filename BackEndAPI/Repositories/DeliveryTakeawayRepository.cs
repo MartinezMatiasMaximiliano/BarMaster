@@ -22,6 +22,8 @@ namespace BackEndAPI.Repositories
             return await Db.DeliveriesTakeaways
                 .Include(d => d.Visita)
                 .ThenInclude(v => v.Productos)
+                .Include(e=> e.TipoEnvio)
+                .Include(c => c.Cadete)
                 .Where(d => d.IdSucursal == idSucursal)
                 .ToListAsync();
         }
