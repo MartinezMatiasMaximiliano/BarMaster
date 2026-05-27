@@ -1,8 +1,5 @@
-﻿using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request.Crear;
+﻿using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Services.Interfaces;
-using BackEndAPI.Tenancy;
-using BackEndAPI.Tenancy.Models;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +18,7 @@ namespace BackEndAPI.Controllers
         private readonly ICurrentDbContext _currentDbContext;
         private readonly ICajasServices _cajasServices;
 
+
         public Test(ICurrentDbContext currentDbContext,ICajasServices cajas) {
             _currentDbContext = currentDbContext;
             _cajasServices = cajas;
@@ -30,18 +28,28 @@ namespace BackEndAPI.Controllers
         public async Task<IActionResult> migrar()
         {
             _currentDbContext.Db.Database.Migrate();
-            return Ok($"Pong");
+            return Ok($"Merged");
         }
 
-        [HttpPost("/test")]
-        public async Task<IActionResult> test([FromBody] CrearCajaDTO request)
+                
+        [HttpPost("/test-ARCA")]
+        public async Task<IActionResult> testARCA([FromBody] CrearCajaDTO request)
         {
-            //var resultado = await _cajasServices.CrearCaja(request);
-            return Ok();
+            try
+            {
+                var traGen = new TraGenerator();
+                var traXML = traGen.Generate("wsfe"); 
+                var certLoader = new CertificateLoader();
+                var certLoad = certLoader.Load(System.IO.File.ReadAllBytes("C:/Users/Matias/Desktop/certificado.pfx"), "123456");
+                var cmsSigner = new CmsSignerService();
+                var signedXML = cmsSigner.Sign(traXML, certLoad);
+
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
-
     }
-
-
-
 }
