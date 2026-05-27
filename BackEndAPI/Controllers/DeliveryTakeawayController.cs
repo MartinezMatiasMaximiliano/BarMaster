@@ -134,15 +134,15 @@ namespace BackEndAPI.Controllers
                 {
                     Id = result.Id,
                     IdSucursal = result.IdSucursal,
-                    IdTipoEnvio = result.IdTipoEnvio,
+                    IdTipoEnvio = result.IdTipoEnvio ?? null,
                     IdVisita = result.IdVisita,
                     FechaHora = result.FechaHora,
-                    NombreCliente = result.NombreCliente ?? "",
+                    NombreCliente = result.NombreCliente,
                     Direccion = result.Direccion,
                     Indicaciones = result.Indicaciones,
                     Telefono = result.Telefono ?? "",
                     PrecioTotal = result.PrecioTotal,
-                    PrecioEnvio = result.TipoEnvio.Precio,
+                    PrecioEnvio = result.TipoEnvio != null ? result.TipoEnvio.Precio : 0,
                     Entregado = result.Entregado,
                     Cadete = result.Cadete != null ? new CadeteDTO
                     {
