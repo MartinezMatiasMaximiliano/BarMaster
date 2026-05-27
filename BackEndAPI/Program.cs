@@ -1,3 +1,4 @@
+using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Data;
 using BackEndAPI.Hubs;
 using BackEndAPI.Repositories;
@@ -85,6 +86,7 @@ builder.Services.AddCors(options =>
 
 #region SERVICIOS
 
+builder.Services.Configure<ArcaOptions>(builder.Configuration.GetSection("Arca"));
 builder.Services.AddScoped<ITenantServices, TenantServices>();
 builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
 builder.Services.AddScoped<AppDbContextFactory>();
