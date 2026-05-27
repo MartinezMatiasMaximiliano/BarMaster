@@ -3,6 +3,7 @@ const DEFAULT_MESSAGES = {
     letters: "Formato invalido. Solo se permiten letras, espacios y signos de puntuacion.",
     integer: "Formato invalido. Solo se permiten numeros.",
     phone: "Formato invalido. El telefono debe contener exactamente 10 digitos.",
+    email: "Formato invalido. Ingrese un email valido.",
     money: "Formato invalido. Ingrese un monto valido.",
     decimal: "Formato invalido. Solo se permiten numeros y una coma decimal.",
     image: "Solo se permite subir imagenes.",

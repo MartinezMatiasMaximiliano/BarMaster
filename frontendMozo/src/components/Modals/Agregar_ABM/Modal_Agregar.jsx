@@ -29,18 +29,22 @@ import {
 function Modal_Agregar(props) {
     const [show, setShow] = useState(false);
 
-    const handleClose = () => {
-        setErrors({});
-        setShow(false);
-    };
-    const handleShow = () => setShow(true);
-
-    const { errors, setErrors, handleChange, handleSave } = Handlers({
+    const { errors, setErrors, handleChange, handleSave, resetForm } = Handlers({
         agregar: props.agregar,
         recargarComponentes: props.recargarComponentes,
-        handleClose,
+        handleClose: () => setShow(false),
         campos: props.campos,
     });
+
+    const handleClose = () => {
+        resetForm();
+        setShow(false);
+    };
+
+    const handleShow = () => {
+        resetForm();
+        setShow(true);
+    };
 
     const renderizados = Renderizados(props, handleChange, errors);
     const nombreRegistro = props.nombre || 'registro';
@@ -62,6 +66,7 @@ function Modal_Agregar(props) {
                 maxWidth="sm"
                 fullWidth
                 disableEnforceFocus
+                keepMounted={false}
                 PaperProps={{
                     sx: {
                         borderRadius: 3,

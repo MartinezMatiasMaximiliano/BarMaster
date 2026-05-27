@@ -138,18 +138,23 @@ export function MappearReservas(reservas) {
 
 export function MappearPersonas(personas) {
     return (
-        personas.map(persona => ({
-            id: persona.id,
-            nombre: persona.nombres,
-            apellido: persona.apellido,
-            dni: persona.dni,
-            direccion: persona.direccion,
-            telefono: persona.telefono,
-            email: persona.email,
-            rol: persona.rol?.id || persona.idRol,
-            rolNombre: persona.rol?.nombre || '',
-            activo: persona.activo
-        }))
+        personas.map(persona => {
+            const datosPersonales = persona.datosPersonales ?? persona.DatosPersonales ?? persona;
+            const rol = persona.rol ?? persona.Rol ?? null;
+
+            return {
+                id: persona.id ?? persona.Id,
+                nombre: datosPersonales.nombres ?? datosPersonales.Nombres ?? '',
+                apellido: datosPersonales.apellido ?? datosPersonales.Apellido ?? '',
+                dni: datosPersonales.dni ?? datosPersonales.Dni ?? '',
+                direccion: datosPersonales.direccion ?? datosPersonales.Direccion ?? '',
+                telefono: datosPersonales.telefono ?? datosPersonales.Telefono ?? '',
+                email: datosPersonales.email ?? datosPersonales.Email ?? '',
+                rol: rol?.id ?? rol?.Id ?? persona.idRol ?? persona.IdRol,
+                rolNombre: rol?.nombre ?? rol?.Nombre ?? '',
+                activo: Boolean(datosPersonales.activo ?? datosPersonales.Activo ?? persona.activo ?? persona.Activo ?? false),
+            };
+        })
     )
 }
 

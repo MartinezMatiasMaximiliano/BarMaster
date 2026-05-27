@@ -116,6 +116,12 @@ function validatePhone(value, fieldConfig, ctx) {
     validateIntegerLike(value, fieldConfig, ctx, { patternKey: "phone", messageKey: "phone" });
 }
 
+function validateEmail(value, fieldConfig, ctx) {
+    if (!validationPatterns.email.test(asTrimmedString(value))) {
+        addIssue(ctx, fieldConfig.messages.email, "email");
+    }
+}
+
 function validateDecimalLike(value, fieldConfig, ctx, { patternKey = "decimal", messageKey = "decimal" } = {}) {
     if (typeof value === "number") {
         if (!Number.isFinite(value) || value < 0) {
@@ -156,6 +162,14 @@ function validateMoney(value, fieldConfig, ctx) {
 }
 
 function validateImage(value, fieldConfig, ctx) {
+    if (typeof value === "string") {
+        if (value.trim().length > 0) {
+            return;
+        }
+        addIssue(ctx, fieldConfig.messages.image, "image");
+        return;
+    }
+
     const mimeType = value?.type ?? "";
     if (!validationPatterns.imageMime.test(mimeType)) {
         addIssue(ctx, fieldConfig.messages.image, "image");
@@ -215,6 +229,7 @@ const validators = {
     letters: validateLetters,
     integer: validateInteger,
     phone: validatePhone,
+    email: validateEmail,
     money: validateMoney,
     decimal: validateDecimal,
     image: validateImage,

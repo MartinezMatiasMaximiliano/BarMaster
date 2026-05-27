@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Switch as MUISwitch } from '@mui/material';
 
 export default function Switch(props) {
-    const [checked, setChecked] = useState(props.activo);
+    const [checked, setChecked] = useState(Boolean(props.activo));
     const [loading, setLoading] = useState(false);
     const id = props.id;
 

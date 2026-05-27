@@ -6,7 +6,7 @@ const camposBase = [
   { name: "nombre", label: "Nombre", type: "text", required: true, validation: { rule: "text" } },
   { name: "precio", label: "Precio", type: "decimal", required: true, validation: { rule: "money" } },
   { name: "costoProduccion", label: "Costo de Producción", type: "decimal", validation: { rule: "money" } },
-  { name: "descripcion", label: "Descripción", type: "text", required: true, validation: { rule: "text" } },
+  { name: "descripcion", label: "Descripción", type: "text", validation: { rule: "text" } },
   { name: "categorias", label: "Categorías", type: "select_multiple", required: true, validation: { rule: "select_multiple" }, options: [] },
 ];
 

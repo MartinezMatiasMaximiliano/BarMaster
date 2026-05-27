@@ -1,6 +1,6 @@
 import api from '../services/axiosInstance';
 import { construirError } from './APIError';
-import { AgregarProductosAVisita, EliminarProductosVisita } from './APIVisitas';
+import { AgregarProductosAVisita, EliminarProductosVisita, ObtenerTodasLasVisitas } from './APIVisitas';
 
 export function normalizarDeliveryTakeaway(item) {
     const idTipoEnvio = item.idTipoEnvio ?? item.IdTipoEnvio ?? null;
@@ -43,6 +43,44 @@ export function esTakeaway(item) {
 
 export function esDelivery(item) {
     return !esTakeaway(item);
+}
+
+export function normalizarTakeawayDesdeVisita(visita) {
+    const productosRaw = visita.productosConsumidos ?? visita.ProductosConsumidos ?? [];
+    const productos = Array.isArray(productosRaw) ? productosRaw : [];
+
+    return {
+        id: visita.id ?? visita.Id,
+        idVisita: visita.id ?? visita.Id,
+        fechaHora: visita.fechaHora ?? visita.FechaHora ?? '',
+        cliente: '-',
+        direccion: null,
+        telefono: null,
+        indicaciones: null,
+        precioTotal: Number(visita.total ?? visita.Total ?? 0),
+        entregado: false,
+        idTipoEnvio: null,
+        tipoEnvio: null,
+        productos: productos.map((producto) => ({
+            id: producto.id ?? producto.Id,
+            idProducto: producto.idProducto ?? producto.IdProducto,
+            nombre: producto.nombre ?? producto.Nombre ?? '-',
+            precio: Number(producto.precio ?? producto.Precio ?? 0),
+            indicaciones: producto.indicaciones ?? producto.Indicaciones ?? '',
+            estadoPedido: producto.estadoPedido ?? producto.EstadoPedido ?? '',
+            estadoPagado: producto.estadoPagado ?? producto.EstadoPagado ?? false,
+        })),
+    };
+}
+
+export async function GetTakeawaysDesdeVisitas() {
+    const visitas = await ObtenerTodasLasVisitas();
+    return (Array.isArray(visitas) ? visitas : [])
+        .filter((visita) => {
+            const origen = visita.origen ?? visita.Origen ?? '';
+            return origen.toLowerCase() === 'takeaway';
+        })
+        .map(normalizarTakeawayDesdeVisita);
 }
 
 /**

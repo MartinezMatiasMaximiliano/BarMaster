@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import { Button, Checkbox } from "@mui/material";
 import { useSelector } from 'react-redux';
-import { CambiarEstadoEntregaDeliveryTakeaway, EliminarDeliveryTakeaway, esTakeaway, GetDeliveryTakeaway, normalizarDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
+import { CambiarEstadoEntregaDeliveryTakeaway, EliminarDeliveryTakeaway, GetTakeawaysDesdeVisitas } from "../API/APIDeliveryTakeaway";
 import WarningIcon from '@mui/icons-material/Warning';
 
 const formatearProductosExportacion = (productos) => {
@@ -41,12 +41,11 @@ function TakeAway() {
     const cargarTakeAways = React.useCallback(async () => {
         if (!localStorage.getItem('token')) return;
         try {
-            const data = await GetDeliveryTakeaway();
+            const data = await GetTakeawaysDesdeVisitas();
             const filas = (Array.isArray(data) ? data : [])
-                .map(normalizarDeliveryTakeaway)
-                .filter(esTakeaway)
                 .map((item) => ({
                     id: item.id,
+                    idDeliveryTakeaway: item.idDeliveryTakeaway ?? null,
                     fechaHora: item.fechaHora,
                     Cliente: item.cliente,
                     Telefono: item.telefono || '-',
@@ -82,10 +81,11 @@ function TakeAway() {
 
     const manejarCambioEntregado = async (fila, checked) => {
         if (!fila?.id) return;
+        if (!fila.idDeliveryTakeaway) return;
 
         setActualizandoEntregaIds((prev) => [...prev, fila.id]);
         try {
-            await CambiarEstadoEntregaDeliveryTakeaway(fila.id, checked);
+            await CambiarEstadoEntregaDeliveryTakeaway(fila.idDeliveryTakeaway, checked);
             setTakeAways((prev) =>
                 prev.map((takeAway) =>
                     takeAway.id === fila.id
@@ -125,7 +125,7 @@ function TakeAway() {
             render: (fila) => (
                 <Checkbox
                     checked={Boolean(fila.entregado)}
-                    disabled={actualizandoEntregaIds.includes(fila.id)}
+                    disabled={!fila.idDeliveryTakeaway || actualizandoEntregaIds.includes(fila.id)}
                     onChange={(event) => manejarCambioEntregado(fila, event.target.checked)}
                     inputProps={{ 'aria-label': 'Pedido entregado' }}
                 />
@@ -135,16 +135,16 @@ function TakeAway() {
             key: "__acciones",
             label: "Acciones",
             align: "right",
-            render: (fila) => (
+            render: (fila) => fila.idDeliveryTakeaway ? (
                 <Fila_Acciones
-                    fila={fila}
+                    fila={{ ...fila, id: fila.idDeliveryTakeaway }}
                     api={api}
                     recargar={cargarTakeAways}
                     deleteLabel="pedido"
                     showToggle={() => false}
                     showEditar={false}
                 />
-            ),
+            ) : '-',
         },
         {
             key: "Productos",

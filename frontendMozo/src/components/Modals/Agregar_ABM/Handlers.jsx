@@ -5,6 +5,11 @@ export default function Handlers({ agregar, recargarComponentes, handleClose, ca
   const [errors, setErrors] = useState({});
   const [values, setValues] = useState({});
 
+  const resetForm = () => {
+    setValues({});
+    setErrors({});
+  };
+
   const fieldHandlers = {
     select_multiple: (event) => event.target.value,
     select: (event) => {
@@ -49,6 +54,7 @@ export default function Handlers({ agregar, recargarComponentes, handleClose, ca
 
     try {
       await agregar(values);
+      resetForm();
       handleClose();
       await recargarComponentes();
     } catch (error) {
@@ -56,5 +62,5 @@ export default function Handlers({ agregar, recargarComponentes, handleClose, ca
     }
   };
 
-  return { errors, setErrors, handleChange, handleSave };
+  return { errors, setErrors, handleChange, handleSave, resetForm };
 }
