@@ -38,12 +38,11 @@ namespace BackEndAPI.Controllers
             try
             {
                 var traGen = new TraGenerator();
-                var traXML = traGen.Generate("wsfe"); 
                 var certLoader = new CertificateLoader();
                 var certLoad = certLoader.Load(System.IO.File.ReadAllBytes("C:/Users/Matias/Desktop/certificado.pfx"), "123456");
                 var cmsSigner = new CmsSignerService();
-                var signedXML = cmsSigner.Sign(traXML, certLoad);
-
+                var serv = new WsaaAuthService(traGen, cmsSigner, new HttpClient());
+                var response = await serv.AuthenticateAsync(certLoad);
                 return Ok();
             }
             catch

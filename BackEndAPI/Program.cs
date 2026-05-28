@@ -86,6 +86,7 @@ builder.Services.AddCors(options =>
 
 #region SERVICIOS
 
+builder.Services.AddHttpClient<WsaaAuthService>();
 builder.Services.Configure<ArcaOptions>(builder.Configuration.GetSection("Arca"));
 builder.Services.AddScoped<ITenantServices, TenantServices>();
 builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
