@@ -41,7 +41,7 @@ namespace BackEndAPI.Controllers
                     Indicaciones = r.Indicaciones,
                     Telefono = r.Telefono ?? "",
                     PrecioTotal = r.PrecioTotal,
-                    PrecioEnvio = r.TipoEnvio.Precio,
+                    PrecioEnvio = r.TipoEnvio != null ? r.TipoEnvio.Precio : 0,
                     Entregado = r.Entregado,
                     Cadete = r.Cadete != null ? new CadeteDTO
                     {
@@ -97,6 +97,7 @@ namespace BackEndAPI.Controllers
                 Indicaciones = result.Indicaciones,
                 Telefono = result.Telefono ?? "",
                 PrecioTotal = result.PrecioTotal,
+                PrecioEnvio = result.TipoEnvio != null ? result.TipoEnvio.Precio : 0,
                 Entregado = result.Entregado,
                 Cadete = result.Cadete != null ? new CadeteDTO
                 {

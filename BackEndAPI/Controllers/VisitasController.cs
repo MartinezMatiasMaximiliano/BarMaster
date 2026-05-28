@@ -1,17 +1,7 @@
-using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
-using BackEndAPI.Models;
-using BackEndAPI.Services;
 using BackEndAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.Mapping;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 
 namespace BackEndAPI.Controllers
 {
