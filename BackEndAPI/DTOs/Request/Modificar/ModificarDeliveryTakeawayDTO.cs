@@ -9,7 +9,9 @@ namespace BackEndAPI.DTOs.Request.Modificar
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }
         public string? Indicaciones { get; set; } 
-        public bool Entregado { get; set; } = false;
+        public int? IdTipoEnvio { get; set; }
+        public Guid? IdCadete { get; set; }
+        public bool? Entregado { get; set; }
 
 
     }

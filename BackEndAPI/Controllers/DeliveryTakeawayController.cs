@@ -221,6 +221,10 @@ namespace BackEndAPI.Controllers
                         return BadRequest("Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'.");
                     case "Error al modificar el pedido":
                         return BadRequest("Error al modificar el pedido. Verifica los datos enviados y vuelve a intentarlo.");
+                    case "Cadete no encontrado":
+                        return BadRequest("El cadete enviado no existe.");
+                    case "La persona seleccionada no es cadete":
+                        return BadRequest("La persona seleccionada no tiene rol de cadete.");
                     case "No hay productos para remover":
                         return BadRequest("No hay productos para remover. Asegúrate de que el pedido tenga productos antes de intentar removerlos.");
                     case "No se pueden modificar pedidos entregados":
