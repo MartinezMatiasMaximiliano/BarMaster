@@ -147,7 +147,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                if (request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0 || string.IsNullOrEmpty(request.Descripcion)) throw new Exception("Todos los campos son obligatorios");
+                if (request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0) throw new Exception("Todos los campos son obligatorios");
                 if (request.Monto <= 0) throw new Exception("y el monto debe ser mayor a cero.");
                 if (IdCuenta == Guid.Empty) throw new Exception("id vacio");
                 var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(IdCuenta, request);
