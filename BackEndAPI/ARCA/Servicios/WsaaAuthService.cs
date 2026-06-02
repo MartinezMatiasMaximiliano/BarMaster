@@ -5,14 +5,14 @@ using System.Xml.Linq;
 
 public class WsaaAuthService
 {
+    // WSAA: https://wsaahomo.afip.gov.ar/ws/services/LoginCms?WSDL
+    // WSAA: web service de autenticación y autorización de AFIP
+
     private readonly TraGenerator _traGenerator;
     private readonly CmsSignerService _cmsSigner;
     private readonly HttpClient _httpClient;
 
-    public WsaaAuthService(
-        TraGenerator traGenerator,
-        CmsSignerService cmsSigner,
-        HttpClient httpClient)
+    public WsaaAuthService(TraGenerator traGenerator, CmsSignerService cmsSigner, HttpClient httpClient)
     {
         _traGenerator = traGenerator;
         _cmsSigner = cmsSigner;
@@ -22,38 +22,34 @@ public class WsaaAuthService
     private string BuildSoapEnvelope(string cms)
     {
         return $"""
-    <?xml version="1.0" encoding="utf-8"?>
-    <soap:Envelope
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-        xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+        <?xml version="1.0" encoding="utf-8"?>
+        <soap:Envelope
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 
-      <soap:Body>
-        <loginCms xmlns="http://wsaa.view.sua.dvadac.desein.afip.gov">
-          <in0>{cms}</in0>
-        </loginCms>
-      </soap:Body>
+            <soap:Body>
+                <loginCms xmlns="http://wsaa.view.sua.dvadac.desein.afip.gov">
+                <in0>{cms}</in0>
+                </loginCms>
+            </soap:Body>
 
-    </soap:Envelope>
-    """;
+        </soap:Envelope>
+        """;
     }
 
-    public async Task<ArcaAuthResponse> AuthenticateAsync(X509Certificate2 cert)
+    public async Task<FEAuthResponse> AuthenticateAsync(X509Certificate2 cert)
     {
         try
         {
-            var traXml = _traGenerator.Generate("wsfe");
+            var traXml = _traGenerator.Generate();
             var cmsBase64 = _cmsSigner.Sign(traXml, cert);
             var soapEnvelope = BuildSoapEnvelope(cmsBase64);
-            var content = new StringContent(soapEnvelope, Encoding.UTF8,"text/xml");
-            content.Headers.Add("SOAPAction","\"\"");
+            var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
+            content.Headers.Add("SOAPAction", "\"\"");
             var url = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms";
-            var response = await _httpClient.PostAsync(url,content);
+            var response = await _httpClient.PostAsync(url, content);
             var responseXml = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(response.StatusCode);
-
-            Console.WriteLine(responseXml);
-
 
             var soapDoc = XDocument.Parse(responseXml);
 
@@ -65,7 +61,7 @@ public class WsaaAuthService
             var sign = loginTicketXml.Descendants("sign").First().Value;
             var expiration = loginTicketXml.Descendants("expirationTime").First().Value;
 
-            return new ArcaAuthResponse
+            return new FEAuthResponse
             {
                 Token = token,
                 Sign = sign,

@@ -1,6 +1,7 @@
 ﻿namespace BackEndAPI.ARCA.Clases
 {
-    public class ArcaAuthResponse
+    //clase para representar la respuesta de autenticación de ARCA
+    public class FEAuthResponse
     {
         public string Token { get; set; } = default!;
         public string Sign { get; set; } = default!;
