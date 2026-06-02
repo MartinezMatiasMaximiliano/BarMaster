@@ -98,7 +98,18 @@ namespace BackEndAPI.Services
             persona.Telefono = !string.IsNullOrEmpty(personaActualizada.Telefono) ? personaActualizada.Telefono : persona.Telefono;
             persona.Email = !string.IsNullOrEmpty(personaActualizada.Email) ? personaActualizada.Email : persona.Email;
             persona.IdRol = personaActualizada.IdRol;
-            persona.CodigoDeServicio = !string.IsNullOrEmpty(personaActualizada.CodigoDeServicio) ? personaActualizada.CodigoDeServicio : persona.CodigoDeServicio;
+
+            if (!string.IsNullOrEmpty(personaActualizada.CodigoDeServicio) &&
+                personaActualizada.CodigoDeServicio != persona.CodigoDeServicio)
+            {
+                var personaConCodigo = await _personasRepository.GetPersonaPorCodigoDeServicio(personaActualizada.CodigoDeServicio);
+                if (personaConCodigo != null && personaConCodigo.Id != personaActualizada.Id)
+                {
+                    throw new Exception("Ya existe una persona con el mismo código de servicio.");
+                }
+
+                persona.CodigoDeServicio = personaActualizada.CodigoDeServicio;
+            }
             
             await _personasRepository.ActualizarPersona(persona);
             return persona;

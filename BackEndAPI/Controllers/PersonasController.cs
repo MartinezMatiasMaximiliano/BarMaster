@@ -155,6 +155,8 @@ namespace BackEndAPI.Controllers
                 {
                     case "Persona no identificada":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "Ya existe una persona con el mismo código de servicio.":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     default:
                         return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
 
