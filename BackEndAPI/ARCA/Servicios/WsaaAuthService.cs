@@ -1,4 +1,6 @@
 ﻿using BackEndAPI.ARCA.Clases;
+using Microsoft.CodeAnalysis.Options;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
@@ -11,12 +13,14 @@ public class WsaaAuthService
     private readonly TraGenerator _traGenerator;
     private readonly CmsSignerService _cmsSigner;
     private readonly HttpClient _httpClient;
+    private readonly ArcaOptions _arcaOptions;
 
-    public WsaaAuthService(TraGenerator traGenerator, CmsSignerService cmsSigner, HttpClient httpClient)
+    public WsaaAuthService(TraGenerator traGenerator, CmsSignerService cmsSigner, HttpClient httpClient, IOptions<ArcaOptions> arcaOptions)
     {
         _traGenerator = traGenerator;
         _cmsSigner = cmsSigner;
         _httpClient = httpClient;
+        _arcaOptions = arcaOptions.Value;
     }
 
     private string BuildSoapEnvelope(string cms)
@@ -30,7 +34,7 @@ public class WsaaAuthService
 
             <soap:Body>
                 <loginCms xmlns="http://wsaa.view.sua.dvadac.desein.afip.gov">
-                <in0>{cms}</in0>
+                    <in0>{cms}</in0>
                 </loginCms>
             </soap:Body>
 
@@ -47,8 +51,7 @@ public class WsaaAuthService
             var soapEnvelope = BuildSoapEnvelope(cmsBase64);
             var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
             content.Headers.Add("SOAPAction", "\"\"");
-            var url = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms";
-            var response = await _httpClient.PostAsync(url, content);
+            var response = await _httpClient.PostAsync(_arcaOptions.WsaaUrl, content);
             var responseXml = await response.Content.ReadAsStringAsync();
 
             var soapDoc = XDocument.Parse(responseXml);

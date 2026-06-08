@@ -6,6 +6,7 @@
         public int Concepto { get; set; }
         public int DocTipo { get; set; }
         public long DocNro { get; set; }
+        public int CondicionIVAReceptorId { get; set; }
         public int CbteDesde { get; set; }
         public int CbteHasta { get; set; }
         public DateTime CbteFch { get; set; }

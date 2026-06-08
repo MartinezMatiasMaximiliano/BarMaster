@@ -90,6 +90,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient<WsfeService>();
 builder.Services.AddHttpClient<WsaaAuthService>();
 builder.Services.Configure<ArcaOptions>(builder.Configuration.GetSection("Arca"));
+builder.Services.AddScoped<TraGenerator>();
+builder.Services.AddScoped<CmsSignerService>();
 builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();

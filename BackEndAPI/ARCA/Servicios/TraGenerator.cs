@@ -5,9 +5,9 @@ public class TraGenerator
     public string Generate()
     {
         var uniqueId = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
         var generationTime = DateTime.UtcNow.AddHours(-3);
         var expirationTime = DateTime.UtcNow.AddHours(9);
+
         var xml = new XDocument(
             new XElement("loginTicketRequest",
                 new XAttribute("version", "1.0"),
