@@ -7,8 +7,8 @@
         public int DocTipo { get; set; }
         public long DocNro { get; set; }
         public int CondicionIVAReceptorId { get; set; }
-        public int CbteDesde { get; set; }
-        public int CbteHasta { get; set; }
+        public long CbteDesde { get; set; }
+        public long CbteHasta { get; set; }
         public DateTime CbteFch { get; set; }
         public decimal ImpTotal { get; set; }
         public decimal ImpTotConc { get; set; }

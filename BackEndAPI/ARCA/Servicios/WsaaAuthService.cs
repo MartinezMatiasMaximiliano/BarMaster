@@ -1,5 +1,8 @@
 ﻿using BackEndAPI.ARCA.Clases;
+using BackEndAPI.Data;
+using BackEndAPI.Tenancy.Services;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -14,13 +17,17 @@ public class WsaaAuthService
     private readonly CmsSignerService _cmsSigner;
     private readonly HttpClient _httpClient;
     private readonly ArcaOptions _arcaOptions;
+    private readonly ICurrentDbContext _currentDbContext;
+    private readonly AppDbContext db;
 
-    public WsaaAuthService(TraGenerator traGenerator, CmsSignerService cmsSigner, HttpClient httpClient, IOptions<ArcaOptions> arcaOptions)
+    public WsaaAuthService(TraGenerator traGenerator, CmsSignerService cmsSigner, HttpClient httpClient, IOptions<ArcaOptions> arcaOptions,ICurrentDbContext currentDbContext)
     {
         _traGenerator = traGenerator;
         _cmsSigner = cmsSigner;
         _httpClient = httpClient;
         _arcaOptions = arcaOptions.Value;
+        _currentDbContext = currentDbContext;
+        db = _currentDbContext.Db;
     }
 
     private string BuildSoapEnvelope(string cms)
@@ -40,6 +47,27 @@ public class WsaaAuthService
 
         </soap:Envelope>
         """;
+    }
+
+    public async Task<FEAuthResponse> AutenticarFacturaElectronica(X509Certificate2 cert)
+    {
+        try
+        { 
+            var TokenExistente = await db.FETokenAuths.Where(t => t.ExpirationTime > DateTime.UtcNow).FirstOrDefaultAsync();
+            if (TokenExistente != null) { 
+                return new FEAuthResponse
+                {
+                    Token = TokenExistente.Token,
+                    Sign = TokenExistente.Sign,
+                    ExpirationTime = TokenExistente.ExpirationTime
+                };
+            }
+            return await AuthenticateAsync(cert);
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
     }
 
     public async Task<FEAuthResponse> AuthenticateAsync(X509Certificate2 cert)
@@ -63,6 +91,16 @@ public class WsaaAuthService
             var token = loginTicketXml.Descendants("token").First().Value;
             var sign = loginTicketXml.Descendants("sign").First().Value;
             var expiration = loginTicketXml.Descendants("expirationTime").First().Value;
+
+            var newTokenAuth = new FETokenAuth
+            {
+                Token = token,
+                Sign = sign,
+                ExpirationTime = DateTime.Parse(expiration)
+            };
+
+            await db.FETokenAuths.AddAsync(newTokenAuth);
+            await db.SaveChangesAsync();
 
             return new FEAuthResponse
             {

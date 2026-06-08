@@ -1,5 +1,8 @@
 ﻿using BackEndAPI.ARCA.Clases;
+using BackEndAPI.Data;
+using BackEndAPI.Tenancy.Services;
 using Microsoft.Extensions.Options;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Xml.Linq;
 
@@ -12,12 +15,43 @@ namespace BackEndAPI.ARCA.Servicios
     {
         private readonly HttpClient _httpClient;
         private readonly ArcaOptions _arcaOptions;
-        public WsfeService(HttpClient httpClient, IOptions<ArcaOptions> arcaOptions)
+        private readonly ICurrentDbContext _currentDbContext;
+        private readonly AppDbContext db;
+        public WsfeService(HttpClient httpClient, IOptions<ArcaOptions> arcaOptions, ICurrentDbContext currentDbContext)
         {
             _httpClient = httpClient;
             _arcaOptions = arcaOptions.Value;
+            _currentDbContext = currentDbContext;
+            db = _currentDbContext.Db;
         }
 
+        private async Task<bool> GuardarFactura(FECAERequest invoice, FECAEResponse response, int PuntoVenta, int TipoComprobante, string requestXml, string responseXml)
+        {
+            try
+            {
+                var factura = new FacturaElectronica
+                {
+                    Id = Guid.NewGuid(),
+                    PuntoVenta = PuntoVenta,
+                    TipoComprobante = TipoComprobante,
+                    NumeroComprobante = invoice.CbteDesde,
+                    CAE = response.CAE,
+                    CAEFechaEmision = DateTime.UtcNow,
+                    CAEFechaVencimiento = DateTime.ParseExact(response.CAEExpiration, "yyyyMMdd", null),
+                    Total = invoice.ImpTotal,
+                    JsonSolicitud = System.Text.Json.JsonSerializer.Serialize(invoice),
+                    XmlRespuesta = responseXml
+                };
+                await db.FacturasElectronicas.AddAsync(factura);
+                await db.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al guardar la factura: {ex.Message}");
+                return false;
+            }
+        }
 
         private string BuildLastVoucherSoap(FEAuthRequest auth, int ptoVta, int cbteTipo)
         {
@@ -60,6 +94,7 @@ namespace BackEndAPI.ARCA.Servicios
 
             return int.Parse(cbteNro);
         }
+
 
 
         private string BuildCAERequestSoap(FEAuthRequest auth, int ptoVta, int cbteTipo, FECAERequest invoice)
@@ -127,14 +162,17 @@ namespace BackEndAPI.ARCA.Servicios
             var cae = doc.Descendants(ns + "CAE").First().Value;
             var caeVto = doc.Descendants(ns + "CAEFchVto").First().Value;
 
-            return new FECAEResponse
+
+            var CAEResponse =  new FECAEResponse
             {
                 Result = result,
                 CAE = cae,
                 CAEExpiration = caeVto
             };
-
+            await GuardarFactura(invoice, CAEResponse, ptoVta, cbteTipo, soapXml, responseXml);
+            return CAEResponse;
         }
+
 
 
         private string BuildCondicionIvaRequest(FEAuthRequest auth)
@@ -181,6 +219,7 @@ namespace BackEndAPI.ARCA.Servicios
             }).ToList();
         }
 
+
         private string BuildFECompConsultarSoap(FEAuthRequest auth, FECompConsultarRequest request)
         {
             return $"""
@@ -207,7 +246,6 @@ namespace BackEndAPI.ARCA.Servicios
                 </soap:Envelope>
                 """;
         }
-
         public async Task<FECompConsultarResponse> FECompConsultarAsync(FEAuthRequest auth, FECompConsultarRequest request)
         {
             var soapXml = BuildFECompConsultarSoap(auth, request);

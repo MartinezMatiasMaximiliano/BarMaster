@@ -39,6 +39,7 @@ namespace BackEndAPI.Data
         public DbSet<DeliveryAndTakeaway> DeliveriesTakeaways => Set<DeliveryAndTakeaway>();
         public DbSet<TipoEnvio> TipoEnvios => Set<TipoEnvio>();
         public DbSet<FacturaElectronica> FacturasElectronicas => Set<FacturaElectronica>();
+        public DbSet<FETokenAuth> FETokenAuths => Set<FETokenAuth>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
