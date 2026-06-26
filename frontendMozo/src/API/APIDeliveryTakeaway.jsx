@@ -7,6 +7,7 @@ export function normalizarDeliveryTakeaway(item) {
     const productosRaw = item.productos ?? item.Productos ?? [];
     const productos = Array.isArray(productosRaw) ? productosRaw : [];
     const tipoEnvioRaw = item.tipoEnvio ?? item.TipoEnvio ?? null;
+    const cadeteRaw = item.cadete ?? item.Cadete ?? null;
 
     return {
         id: item.id ?? item.Id,
@@ -24,6 +25,12 @@ export function normalizarDeliveryTakeaway(item) {
             nombre: tipoEnvioRaw.nombre ?? tipoEnvioRaw.Nombre ?? '',
             precio: Number(tipoEnvioRaw.precio ?? tipoEnvioRaw.Precio ?? 0),
             vehiculo: tipoEnvioRaw.vehiculo ?? tipoEnvioRaw.Vehiculo ?? '',
+        } : null,
+        cadete: cadeteRaw ? {
+            id: cadeteRaw.id ?? cadeteRaw.Id ?? null,
+            nombre: cadeteRaw.nombre ?? cadeteRaw.Nombre ?? '-',
+            apellido: cadeteRaw.apellido ?? cadeteRaw.Apellido ?? '-',
+            telefono: cadeteRaw.telefono ?? cadeteRaw.Telefono ?? null,
         } : null,
         productos: productos.map((producto) => ({
             id: producto.id ?? producto.Id,
@@ -124,7 +131,7 @@ function mapFormToCrearDTO(values, origen = 'Delivery') {
             ? null
             : (values.TipoEnvio != null && values.TipoEnvio !== '' ? parseInt(values.TipoEnvio, 10) : null),
         IdPersonaRegistro: null,
-        IdCadete: null,
+        IdCadete: esPedidoTakeaway ? null : (values.Cadete != null && values.Cadete !== '' ? values.Cadete : null),
         ListaIDProductos,
     };
 }
@@ -184,10 +191,40 @@ export async function CrearDeliveryTakeawayFromComanda(formValues, comanda, orig
 
 export async function ModificarDeliveryTakeaway(values) {
     try {
+        const idDeliveryTakeaway = values.id ?? values.IdDeliveryTakeaway;
         const idVisita = values.idVisita ?? values.IdVisita;
+        const origen = values.origen ?? values.Origen ?? 'Delivery';
+        const esPedidoTakeaway = origen === 'Takeaway';
+        if (!idDeliveryTakeaway) {
+            throw new Error('El pedido a modificar no está disponible');
+        }
+
         if (!idVisita) {
             throw new Error('La visita asociada al pedido no está disponible');
         }
+
+        const payload = {
+            IdDeliveryTakeaway: idDeliveryTakeaway,
+            NombreCliente: values.Cliente ?? values.nombreCliente,
+            Telefono: values.Telefono ?? values.telefono,
+            Direccion: values.Direccion ?? values.direccion,
+            Indicaciones: values.Indicaciones ?? values.indicaciones,
+        };
+
+        if (!esPedidoTakeaway) {
+            const idTipoEnvio = values.TipoEnvio ?? values.idTipoEnvio ?? values.IdTipoEnvio;
+            const idCadete = values.Cadete ?? values.idCadete ?? values.IdCadete ?? values.cadete?.id;
+
+            if (idTipoEnvio != null && idTipoEnvio !== '') {
+                payload.IdTipoEnvio = parseInt(idTipoEnvio, 10);
+            }
+
+            if (idCadete != null && idCadete !== '') {
+                payload.IdCadete = idCadete;
+            }
+        }
+
+        await api.patch('DeliveryTakeaway/ModificarDatos', payload);
 
         const productosOriginales = Array.isArray(values.productosOriginales) ? values.productosOriginales : [];
         const comandaActual = Array.isArray(values.comanda) ? values.comanda : [];
@@ -241,7 +278,7 @@ export async function ModificarDeliveryTakeaway(values) {
         }
 
         return {
-            id: values.id ?? values.IdDeliveryTakeaway,
+            id: idDeliveryTakeaway,
             idVisita,
         };
     } catch (error) {

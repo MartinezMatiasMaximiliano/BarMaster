@@ -21,9 +21,11 @@ function Modal_Cambiar_Codigo_Mozo(props) {
     const [value, setValue] = useState(datos.codigoDeServicio);
 
     const [show, setShow] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const handleClose = () => {
         setErrors({});
+        setSaving(false);
         setShow(false);
     }
 
@@ -36,14 +38,22 @@ function Modal_Cambiar_Codigo_Mozo(props) {
             return;
         }
 
-        if (Object.keys(errors).length === 0) {
-
-            // Modifica el registro en la DB
-            await ModificarCodigoMozo({...datos, nuevoCodigo: value});
-
-            // Cerrar el modal después de guardar
+        setSaving(true);
+        try {
+            await ModificarCodigoMozo({ ...datos, nuevoCodigo: value });
             handleClose();
             await props.recargarComponentes();
+        } catch (error) {
+            const mensaje = error?.message || 'No se pudo modificar el código del mozo.';
+            const esCodigoRepetido = /c[oó]digo/i.test(mensaje) && /(existe|repet|duplic)/i.test(mensaje);
+
+            setErrors({
+                codigoDeServicio: esCodigoRepetido
+                    ? 'Ya existe un mozo con ese código.'
+                    : mensaje,
+            });
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -61,7 +71,7 @@ function Modal_Cambiar_Codigo_Mozo(props) {
 
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Eliminar {props.mensaje}</Modal.Title>
+                    <Modal.Title>Cambiar código de mozo</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
@@ -82,8 +92,8 @@ function Modal_Cambiar_Codigo_Mozo(props) {
                     <Button variant="secondary" onClick={handleClose}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleSave}>
-                        Modificar
+                    <Button variant="primary" onClick={handleSave} disabled={saving}>
+                        {saving ? 'Modificando...' : 'Modificar'}
                     </Button>
                 </Modal.Footer>
             </Modal>

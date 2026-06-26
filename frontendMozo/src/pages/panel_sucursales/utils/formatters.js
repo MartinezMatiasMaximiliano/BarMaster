@@ -18,6 +18,38 @@ export const formatearFecha = (fecha) => {
  * @returns {string} Cantidad formateada
  */
 export const formatearMoneda = (cantidad) => {
-    return cantidad.toLocaleString('es-AR');
+    return Number(cantidad || 0).toLocaleString('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        maximumFractionDigits: 0
+    });
+};
+
+export const formatearNumero = (cantidad) => {
+    return Number(cantidad || 0).toLocaleString('es-AR');
+};
+
+export const formatearPorcentaje = (cantidad) => {
+    return `${Number(cantidad || 0).toLocaleString('es-AR', {
+        maximumFractionDigits: 1
+    })}%`;
+};
+
+export const formatearFechaCorta = (fecha) => {
+    if (!fecha) return '—';
+    return new Date(fecha).toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit'
+    });
+};
+
+export const formatearFechaHora = (fecha) => {
+    if (!fecha) return '—';
+    return new Date(fecha).toLocaleString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 };
 

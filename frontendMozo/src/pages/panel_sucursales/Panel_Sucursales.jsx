@@ -1,42 +1,46 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Alert, CircularProgress, Typography } from '@mui/material';
+import { Alert, Box, CircularProgress } from '@mui/material';
 import { LoginContext, AuthTypeContext } from '../../App';
-import { ObtenerEmpresaConSucursales } from '../../API/APIEmpresas';
-import { useFacturacion } from './hooks/useFacturacion';
 import Header from './components/Header';
 import ConfirmExitDialog from './components/ConfirmExitDialog';
+import PanelResumenHeader from './components/PanelResumenHeader';
 import PlanDialog from './components/PlanDialog';
-import EmpresaCard from './components/EmpresaCard';
+import SucursalPerformanceCard from './components/SucursalPerformanceCard';
+import { usePanelSucursalesData } from './hooks/usePanelSucursalesData';
 
 function PanelSucursales() {
-    const [empresas, setEmpresas] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [periodoDias, setPeriodoDias] = useState(7);
+    const [expandedSucursalId, setExpandedSucursalId] = useState(undefined);
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [openPlanDialog, setOpenPlanDialog] = useState(false);
     const navigate = useNavigate();
     const loginContext = useContext(LoginContext);
     const authTypeContext = useContext(AuthTypeContext);
 
-    const { desgloseFacturacion, totalCalculado } = useFacturacion(empresas);
+    const {
+        cargarDatos,
+        desgloseFacturacion,
+        error,
+        loading,
+        resumen,
+        sucursales,
+        totalCalculado,
+        totales
+    } = usePanelSucursalesData(periodoDias);
 
     useEffect(() => {
-        ObtenerEmpresaConSucursales()
-            .then(data => {
-                setEmpresas(Array.isArray(data) ? data : [data]);
-            })
-            .catch(() => {
-                setError('No se pudo cargar la información de las sucursales.');
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }, []);
+        const expandedExiste = sucursales.some(s => s.id === expandedSucursalId);
 
-    const handleSucursalEnter = (sucursal, idEmpresa) => {
-        navigate(`/sucursal/${idEmpresa}/${sucursal.id}`);
-    };
+        if (expandedSucursalId === undefined && sucursales.length > 0) {
+            setExpandedSucursalId(sucursales[0].id);
+            return;
+        }
+
+        if (expandedSucursalId && !expandedExiste && sucursales.length > 0) {
+            setExpandedSucursalId(sucursales[0].id);
+        }
+    }, [expandedSucursalId, sucursales]);
 
     return (
         <Box sx={{
@@ -66,6 +70,15 @@ function PanelSucursales() {
                 totalCalculado={totalCalculado}
             />
 
+            <PanelResumenHeader
+                empresaNombre={resumen?.empresaNombre}
+                periodoDias={periodoDias}
+                totalSucursales={sucursales.length}
+                totales={totales}
+                onPeriodoChange={setPeriodoDias}
+                onActualizar={cargarDatos}
+            />
+
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
                     <CircularProgress />
@@ -74,23 +87,18 @@ function PanelSucursales() {
                 <Alert severity="error" sx={{ borderRadius: 2 }}>
                     {error}
                 </Alert>
-            ) : empresas.length === 0 ? (
+            ) : !sucursales.length ? (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
-                    No se encontraron empresas con sucursales.
+                    No se encontraron sucursales para mostrar.
                 </Alert>
             ) : (
-                <Box sx={{
-                    flexGrow: 1,
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 3
-                }}>
-                    {empresas.map((empresa) => (
-                        <EmpresaCard
-                            key={empresa.id}
-                            empresa={empresa}
-                            onSucursalEnter={handleSucursalEnter}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {sucursales.map((sucursal) => (
+                        <SucursalPerformanceCard
+                            key={sucursal.id}
+                            sucursal={sucursal}
+                            expanded={expandedSucursalId === sucursal.id}
+                            onToggle={() => setExpandedSucursalId(prev => prev === sucursal.id ? null : sucursal.id)}
                         />
                     ))}
                 </Box>

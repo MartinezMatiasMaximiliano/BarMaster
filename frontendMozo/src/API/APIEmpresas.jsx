@@ -11,6 +11,21 @@ export async function ObtenerEmpresaConSucursales() {
     }
 }
 
+export async function ObtenerResumenSucursales(desde, hasta) {
+    try {
+        const params = new URLSearchParams();
+        if (desde) params.append('desde', desde);
+        if (hasta) params.append('hasta', hasta);
+
+        const query = params.toString();
+        const response = await axiosInstance.get(`/Empresa/Sucursales/Resumen${query ? `?${query}` : ''}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener resumen de sucursales:', construirError(error, 'Error al obtener el resumen de sucursales'));
+        throw construirError(error, 'Error al obtener el resumen de sucursales');
+    }
+}
+
 export async function ObtenerPlanEmpresa() {
     try {
         const response = await axiosInstance.get('/Empresa/Plan');

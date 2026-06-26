@@ -1,5 +1,3 @@
-﻿using BackEndAPI.Data;
-using BackEndAPI.DTOs.Request;
 using BackEndAPI.Models;
 using BackEndAPI.Tenancy.Models;
 
@@ -10,7 +8,8 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<IEnumerable<Empresa>> GetAllEmpresas();
         Task<Empresa?> GetEmpresaById(Guid id);
         Task<Empresa?> GetEmpresaByUsername(string nombre);
-        Task<Empresa> AddEmpresa(Empresa empresa,Tenant tenant);
+        Task<Empresa?> GetEmpresaConDatosResumen(Guid id);
+        Task<Empresa> AddEmpresa(Empresa empresa, Tenant tenant);
         Task UpdateEmpresa(Empresa empresa);
         Task DeleteEmpresa(Guid id);
     }

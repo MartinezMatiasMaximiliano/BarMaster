@@ -1,71 +1,142 @@
-import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import Lista_Detalles_Pedidos from '../Listas/Lista_Detalles_Pedidos';
-import { Box, Divider, Typography } from '@mui/material';
+import { Box, Divider, Tooltip, Typography } from '@mui/material';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 
 function Modal_Detalles_Pedido(props) {
-
-    const [show, setShow] = useState(false);
-
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-
     const items = Array.isArray(props.cuerpo) ? props.cuerpo : [];
     const totalProductos = items.reduce((sum, p) => sum + (Number(p.precio) || 0), 0);
+    const precioEnvio = Number(props.precioEnvio || 0);
+    const totalPedido = props.precioTotal != null
+        ? Number(props.precioTotal)
+        : totalProductos + precioEnvio;
+    const formatearPrecio = (valor) => `$${Number(valor || 0).toLocaleString('es-AR')}`;
+    const productosAgrupados = Array.from(
+        items.reduce((map, item) => {
+            const precioUnitario = Number(item.precio || 0);
+            const key = [
+                item.idProducto ?? item.id ?? item.nombre ?? 'producto',
+                item.nombre ?? 'Producto',
+                precioUnitario,
+                item.indicaciones ?? '',
+            ].join('|');
+            const existente = map.get(key);
 
-    return (
-        <>
-            <Button variant={props.variant ? props.variant : "primary"} className="me-2" onClick={handleShow}>
-                Ver
-            </Button>
+            if (existente) {
+                existente.cantidad += 1;
+                existente.total += precioUnitario;
+                return map;
+            }
 
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>{props.titulo}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Box
-                        sx={{
-                            maxHeight: '50vh',
-                            overflowY: 'auto',
-                            overflowX: 'hidden',
-                            pr: 0.5,
-                        }}
-                    >
-                        <Lista_Detalles_Pedidos items={items} />
-                    </Box>
-                    {items.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                            <Divider sx={{ my: 1.5 }} />
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    py: 1.5,
-                                    px: 1.5,
-                                    borderRadius: 1,
-                                    bgcolor: 'action.hover',
-                                }}
-                            >
-                                <Typography variant="subtitle1" color="text.secondary">
-                                    Total (productos)
+            map.set(key, {
+                id: item.idProducto ?? item.id ?? key,
+                nombre: item.nombre || 'Producto',
+                indicaciones: item.indicaciones || '',
+                precioUnitario,
+                cantidad: 1,
+                total: precioUnitario,
+            });
+            return map;
+        }, new Map()).values()
+    );
+    const resumenPedido = (
+        <Box sx={{ width: 340, maxWidth: '80vw' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                Resumen del pedido
+            </Typography>
+            {items.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                    Sin productos
+                </Typography>
+            ) : (
+                <Box sx={{ maxHeight: 280, overflowY: 'auto', pr: 0.5 }}>
+                    {productosAgrupados.map((item, index) => (
+                        <Box
+                            key={`${item.id}-${item.precioUnitario}-${item.indicaciones}-${index}`}
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr auto',
+                                gap: 1.5,
+                                py: 0.75,
+                            }}
+                        >
+                            <Box sx={{ minWidth: 0 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {item.cantidad}x {item.nombre} <Typography component="span" variant="caption" color="text.secondary">({`1x ${formatearPrecio(item.precioUnitario)}`})</Typography>
                                 </Typography>
-                                <Typography variant="h6" fontWeight="bold" color="primary">
-                                    $ {totalProductos.toLocaleString('es-AR')}
-                                </Typography>
+                                {item.indicaciones && (
+                                    <Typography variant="caption" color="text.secondary">
+                                        {item.indicaciones}
+                                    </Typography>
+                                )}
                             </Box>
+                            <Typography variant="body2" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                {formatearPrecio(item.total)}
+                            </Typography>
+                        </Box>
+                    ))}
+                    {precioEnvio > 0 && (
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr auto',
+                                gap: 1.5,
+                                py: 0.75,
+                            }}
+                        >
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                Envío
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                {formatearPrecio(precioEnvio)}
+                            </Typography>
                         </Box>
                     )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Cerrar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </>
+                </Box>
+            )}
+            <Divider sx={{ my: 1.25 }} />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                    Total
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+                    {formatearPrecio(totalPedido)}
+                </Typography>
+            </Box>
+        </Box>
+    );
+
+    return (
+        <Tooltip
+            title={resumenPedido}
+            arrow
+            placement="top"
+            enterDelay={200}
+            slotProps={{
+                tooltip: {
+                    sx: {
+                        maxWidth: 'none',
+                        bgcolor: 'background.paper',
+                        color: 'text.primary',
+                        boxShadow: 4,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        p: 1.25,
+                    },
+                },
+                arrow: {
+                    sx: {
+                        color: 'background.paper',
+                    },
+                },
+            }}
+        >
+            <span>
+                <Button variant={props.variant ? props.variant : "primary"} className="me-2" type="button">
+                    <Inventory2OutlinedIcon sx={{ fontSize: 18, mr: 0.5, verticalAlign: 'text-bottom' }} />
+                    Ver
+                </Button>
+            </span>
+        </Tooltip>
     );
 }
 

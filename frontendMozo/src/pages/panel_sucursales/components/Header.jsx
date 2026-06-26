@@ -27,7 +27,7 @@ const Header = ({ onOpenPlanDialog, onOpenConfirmDialog }) => {
                     Panel de Sucursales
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                    Administrá y visualizá todas tus sucursales
+                    Desempeño operativo claro para decidir rápido
                 </Typography>
             </Box>
 

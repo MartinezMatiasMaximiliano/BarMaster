@@ -12,6 +12,7 @@ const camposBase = [
   { name: "Telefono", label: "Teléfono", type: "text", validation: { rule: "phone" }, inputProps: { inputMode: "numeric" } },
   { name: "Indicaciones", label: "Indicaciones", type: "text", validation: { rule: "text" } },
   { name: "TipoEnvio", label: "Tipo de Envío", type: "select", validation: { rule: "select" }, options: tiposDeEnvio },
+  { name: "Cadete", label: "Cadete", type: "select", validation: { rule: "select" }, options: [] },
   { name: "Productos", label: "Productos", type: "select", required: true, validation: { rule: "select" }, options: [] },
 ];
 
@@ -28,7 +29,7 @@ export const inicializarCampos = async () => {
 
     // Retornar una copia de los campos con las opciones cargadas
     return camposBase.map((campo, index) => 
-      index === 5 ? { ...campo, options: productos } : campo
+      campo.name === "Productos" ? { ...campo, options: productos } : campo
     );
   } catch (error) {
     console.error("Error al cargar productos:", error);

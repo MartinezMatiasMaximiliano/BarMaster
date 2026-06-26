@@ -11,7 +11,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import { Button, Checkbox } from "@mui/material";
 import { useSelector } from 'react-redux';
-import { CambiarEstadoEntregaDeliveryTakeaway, EliminarDeliveryTakeaway, GetTakeawaysDesdeVisitas } from "../API/APIDeliveryTakeaway";
+import {
+    CambiarEstadoEntregaDeliveryTakeaway,
+    EliminarDeliveryTakeaway,
+    GetDeliveryTakeaway,
+    esTakeaway,
+    normalizarDeliveryTakeaway,
+} from "../API/APIDeliveryTakeaway";
 import WarningIcon from '@mui/icons-material/Warning';
 
 const formatearProductosExportacion = (productos) => {
@@ -30,39 +36,54 @@ const formatearProductosExportacion = (productos) => {
         .join(', ');
 };
 
+const mapearTakeAwayAFila = (item) => ({
+    id: item.id,
+    idVisita: item.idVisita,
+    idDeliveryTakeaway: item.id,
+    fechaHora: item.fechaHora,
+    Cliente: item.cliente,
+    Telefono: item.telefono || '-',
+    Indicaciones: item.indicaciones || '-',
+    PrecioTotal: item.precioTotal,
+    entregado: item.entregado,
+    entregadoTexto: item.entregado ? 'Sí' : 'No',
+    pedido: {
+        ...item,
+        id: item.id,
+    },
+    Productos: item.productos.map((producto) => ({
+        id: producto.id,
+        idProducto: producto.idProducto,
+        nombre: producto.nombre,
+        precio: producto.precio,
+        indicaciones: producto.indicaciones,
+    })),
+});
+
 function TakeAway() {
     const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
     const [takeAways, setTakeAways] = useState([]);
     const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [showModalAgregar, setShowModalAgregar] = useState(false);
+    const [takeAwayEditando, setTakeAwayEditando] = useState(null);
     const [actualizandoEntregaIds, setActualizandoEntregaIds] = useState([]);
+    const [errorCarga, setErrorCarga] = useState('');
 
     const cargarTakeAways = React.useCallback(async () => {
         if (!localStorage.getItem('token')) return;
         try {
-            const data = await GetTakeawaysDesdeVisitas();
+            setErrorCarga('');
+            const data = await GetDeliveryTakeaway();
             const filas = (Array.isArray(data) ? data : [])
-                .map((item) => ({
-                    id: item.id,
-                    idDeliveryTakeaway: item.idDeliveryTakeaway ?? null,
-                    fechaHora: item.fechaHora,
-                    Cliente: item.cliente,
-                    Telefono: item.telefono || '-',
-                    Indicaciones: item.indicaciones || '-',
-                    PrecioTotal: item.precioTotal,
-                    entregado: item.entregado,
-                    entregadoTexto: item.entregado ? 'Sí' : 'No',
-                    Productos: item.productos.map((producto) => ({
-                        nombre: producto.nombre,
-                        precio: producto.precio,
-                        indicaciones: producto.indicaciones,
-                    })),
-                }));
+                .map(normalizarDeliveryTakeaway)
+                .filter(esTakeaway)
+                .map(mapearTakeAwayAFila);
             setTakeAways(filas);
         } catch (error) {
             console.error("Error al cargar take away:", error);
             setTakeAways([]);
+            setErrorCarga('No se pudieron cargar los pedidos de take away con sus datos completos.');
         }
     }, []);
 
@@ -137,12 +158,13 @@ function TakeAway() {
             align: "right",
             render: (fila) => fila.idDeliveryTakeaway ? (
                 <Fila_Acciones
-                    fila={{ ...fila, id: fila.idDeliveryTakeaway }}
+                    fila={fila}
                     api={api}
                     recargar={cargarTakeAways}
                     deleteLabel="pedido"
                     showToggle={() => false}
-                    showEditar={false}
+                    showEditar={true}
+                    onClickEditar={() => setTakeAwayEditando(fila.pedido)}
                 />
             ) : '-',
         },
@@ -150,7 +172,11 @@ function TakeAway() {
             key: "Productos",
             label: "Productos",
             render: (fila) => (
-                <Modal_Detalles_Pedido titulo="Detalles" cuerpo={fila.Productos} />
+                <Modal_Detalles_Pedido
+                    titulo="Detalles"
+                    cuerpo={fila.Productos}
+                    precioTotal={fila.PrecioTotal}
+                />
             ),
         },
     ];
@@ -161,6 +187,11 @@ function TakeAway() {
                 <Alert variant="warning" className="d-flex align-items-center shadow-sm mt-3 mb-3">
                     <WarningIcon className="me-2" style={{ fontSize: '1.5rem' }} />
                     <span>No se puede agregar takeaway si no hay una caja activa</span>
+                </Alert>
+            )}
+            {errorCarga && (
+                <Alert variant="danger" className="shadow-sm mt-3 mb-3">
+                    {errorCarga}
                 </Alert>
             )}
             <Tabla
@@ -251,6 +282,17 @@ function TakeAway() {
                 onClose={() => setShowModalAgregar(false)}
                 onSuccess={cargarTakeAways}
                 origen="Takeaway"
+            />
+            <Modal_AgregarDelivery
+                open={Boolean(takeAwayEditando)}
+                onClose={() => setTakeAwayEditando(null)}
+                onSuccess={() => {
+                    setTakeAwayEditando(null);
+                    cargarTakeAways();
+                }}
+                origen="Takeaway"
+                modo="editar"
+                initialData={takeAwayEditando}
             />
         </Container>
     );

@@ -7,11 +7,12 @@ import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
 import { formatearFecha } from "../Helpers/HelperFunctions"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
-import { Button, Checkbox } from "@mui/material";
+import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, IconButton, Stack, Typography } from "@mui/material";
 import { useSelector } from 'react-redux';
 import { CambiarEstadoEntregaDeliveryTakeaway, EliminarDeliveryTakeaway, GetDeliveryTakeaway, esDelivery, normalizarDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
 import { BuscarTodosLosTipoEnvios } from "../API/APITipoEnvios";
 import WarningIcon from '@mui/icons-material/Warning';
+import CloseIcon from '@mui/icons-material/Close';
 
 function Delivery() {
     const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
@@ -19,6 +20,8 @@ function Delivery() {
     const [showModalAgregar, setShowModalAgregar] = useState(false);
     const [deliveryEditando, setDeliveryEditando] = useState(null);
     const [actualizandoEntregaIds, setActualizandoEntregaIds] = useState([]);
+    const [confirmarNoEntregado, setConfirmarNoEntregado] = useState(null);
+    const [mostrarEntregados, setMostrarEntregados] = useState(false);
 
     // Cargar datos desde la API al montar y cuando se pide recargar
     const cargarDeliveries = React.useCallback(async () => {
@@ -41,6 +44,9 @@ function Delivery() {
                     Direccion: item.direccion || '-',
                     Telefono: item.telefono || '-',
                     Indicaciones: item.indicaciones || '-',
+                    Cadete: item.cadete
+                        ? `${item.cadete.nombre} ${item.cadete.apellido}`.trim() || '-'
+                        : '-',
                     TipoEnvioId: item.idTipoEnvio,
                     TipoEnvio: tipoEnvio?.nombre || `Tipo ${item.idTipoEnvio}`,
                     PrecioEnvio: tipoEnvio?.precio ?? null,
@@ -85,9 +91,27 @@ function Delivery() {
         }
     };
 
+    const solicitarCambioEntregado = (fila, checked) => {
+        if (fila.entregado && !checked) {
+            setConfirmarNoEntregado(fila);
+            return;
+        }
+
+        manejarCambioEntregado(fila, checked);
+    };
+
+    const confirmarCambioANoEntregado = async () => {
+        const fila = confirmarNoEntregado;
+        setConfirmarNoEntregado(null);
+        await manejarCambioEntregado(fila, false);
+    };
+
     const api = {
         eliminar: EliminarDeliveryTakeaway,
     };
+
+    const deliveriesPendientes = deliveries.filter((delivery) => !delivery.entregado);
+    const deliveriesEntregados = deliveries.filter((delivery) => delivery.entregado);
 
     const columnasDelivery = [
         {
@@ -99,6 +123,7 @@ function Delivery() {
         { key: "Direccion", label: "Direccion" },
         { key: "Telefono", label: "Telefono" },
         { key: "Indicaciones", label: "Indicaciones" },
+        { key: "Cadete", label: "Cadete" },
         {
             key: "TipoEnvio",
             label: "Envío",
@@ -122,7 +147,7 @@ function Delivery() {
                 <Checkbox
                     checked={Boolean(fila.entregado)}
                     disabled={actualizandoEntregaIds.includes(fila.id)}
-                    onChange={(event) => manejarCambioEntregado(fila, event.target.checked)}
+                    onChange={(event) => solicitarCambioEntregado(fila, event.target.checked)}
                     inputProps={{ 'aria-label': 'Pedido entregado' }}
                 />
             ),
@@ -147,10 +172,17 @@ function Delivery() {
             key: "Productos",
             label: "Productos",
             render: (fila) => (
-                <Modal_Detalles_Pedido titulo="Detalles" cuerpo={fila.Productos} />
+                <Modal_Detalles_Pedido
+                    titulo="Detalles"
+                    cuerpo={fila.Productos}
+                    precioEnvio={fila.PrecioEnvio}
+                    precioTotal={fila.PrecioTotal}
+                />
             )
         },
     ];
+
+    const columnasDeliveryEntregados = columnasDelivery.filter((columna) => columna.key !== "__acciones");
 
     return (
         <Container>
@@ -162,21 +194,80 @@ function Delivery() {
             )}
             <Tabla
                 titulo="Delivery"
-                filas={deliveries}
+                filas={deliveriesPendientes}
                 columnas={columnasDelivery}
                 onRefresh={cargarDeliveries}
                 renderAgregar={() => (
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => setShowModalAgregar(true)}
-                        startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
-                        disabled={!hayCajaActiva}
-                    >
-                        Agregar
-                    </Button>
+                    <Stack direction="row" spacing={1}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => setShowModalAgregar(true)}
+                            startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
+                            disabled={!hayCajaActiva}
+                        >
+                            Agregar
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => setMostrarEntregados(true)}
+                        >
+                            Ver entregados ({deliveriesEntregados.length})
+                        </Button>
+                    </Stack>
                 )}
             />
+            <Drawer
+                anchor="right"
+                open={mostrarEntregados}
+                onClose={() => setMostrarEntregados(false)}
+                PaperProps={{
+                    sx: {
+                        width: { xs: '100%', md: '82vw' },
+                        maxWidth: 1200,
+                        p: 2,
+                    },
+                }}
+            >
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                    <Box>
+                        <Typography variant="h6">Delivery entregados</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {deliveriesEntregados.length} pedido{deliveriesEntregados.length !== 1 ? 's' : ''}
+                        </Typography>
+                    </Box>
+                    <IconButton onClick={() => setMostrarEntregados(false)} aria-label="Cerrar entregados">
+                        <CloseIcon />
+                    </IconButton>
+                </Stack>
+                <Divider sx={{ mb: 2 }} />
+                <Tabla
+                    titulo="Delivery entregados"
+                    filas={deliveriesEntregados}
+                    columnas={columnasDeliveryEntregados}
+                    onRefresh={cargarDeliveries}
+                />
+            </Drawer>
+            <Dialog
+                open={Boolean(confirmarNoEntregado)}
+                onClose={() => setConfirmarNoEntregado(null)}
+            >
+                <DialogTitle>Marcar como no entregado</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        ¿Querés cambiar este delivery a no entregado?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setConfirmarNoEntregado(null)} variant="outlined">
+                        Cancelar
+                    </Button>
+                    <Button onClick={confirmarCambioANoEntregado} variant="contained" color="primary">
+                        Confirmar
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Modal_AgregarDelivery
                 open={showModalAgregar}
                 onClose={() => setShowModalAgregar(false)}

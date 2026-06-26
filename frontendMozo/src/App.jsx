@@ -37,7 +37,6 @@ import ReporteRentabilidad from './pages/Reportes/ReporteRentabilidad'
 import ReporteCaja from './pages/Reportes/ReporteCaja'
 import ReporteResumido from './pages/Reportes/ReporteResumido'
 import PanelSucursales from './pages/panel_sucursales/Panel_Sucursales'
-import DetalleSucursal from './pages/Detalle_Sucursal'
 import LoginUsuarios from './pages/Login_Usuarios';
 import LoginEmpresaSucursal from './pages/Login_Empresa_Sucursal';
 import { PostItems } from './API/APIPedidos';
@@ -353,7 +352,6 @@ function App() {
                         >
                             <Routes>
                                 <Route path="/panel_sucursales" element={<PanelSucursales />} />
-                                <Route path="/sucursal/:idEmpresa/:idSucursal" element={<DetalleSucursal />} />
                                 <Route path="*" element={<Navigate to="/panel_sucursales" replace />} />
                             </Routes>
                         </Box>
@@ -423,7 +421,6 @@ function App() {
                             <Route path="/documentacion" element={<Control_Login><Documentacion_Uso /></Control_Login>} />
                             <Route path="/comentarios" element={<Control_Login><Enviar_Comentarios /></Control_Login>} />
                             <Route path="/panel_sucursales" element={<Control_Login><PanelSucursales /></Control_Login>} />
-                            <Route path="/sucursal/:idEmpresa/:idSucursal" element={<Control_Login><DetalleSucursal /></Control_Login>} />
                             <Route path="/login" element={<LoginUsuarios />} />
                             <Route path="*" element={<Navigate to="/sistema_sucursal" replace />} />
                         </Routes>

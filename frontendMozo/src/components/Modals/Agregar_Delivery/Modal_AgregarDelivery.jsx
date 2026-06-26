@@ -23,6 +23,7 @@ import { ListaProductos } from '../Agregar_Pedidos/components/ListaProductos';
 import { Comanda } from '../Agregar_Pedidos/components/Comanda';
 import { CrearDeliveryTakeawayFromComanda, ModificarDeliveryTakeaway } from '../../../API/APIDeliveryTakeaway';
 import { BuscarTodosLosTipoEnvios } from '../../../API/APITipoEnvios';
+import { BuscarTodasLasPersonas } from '../../../API/APIPersonas';
 import { useSnackbar } from '../../../hooks/useSnackbar';
 import { validarCampos, validarFormulario } from '../../../Helpers/HelperFunctions';
 import { Campos as camposTakeAwayBase } from '../../../configs/agregar/TakeAway';
@@ -64,7 +65,23 @@ const formInicial = {
     Telefono: '',
     Indicaciones: '',
     TipoEnvio: '',
+    Cadete: '',
 };
+
+function normalizarCadete(persona) {
+    const datos = persona.datosPersonales ?? persona.DatosPersonales ?? persona;
+    const rol = persona.rol ?? persona.Rol ?? null;
+    const idRol = rol?.id ?? rol?.Id ?? persona.idRol ?? persona.IdRol;
+    const activo = datos.activo ?? datos.Activo ?? persona.activo ?? persona.Activo ?? true;
+
+    return {
+        id: persona.id ?? persona.Id,
+        nombre: datos.nombres ?? datos.Nombres ?? persona.nombre ?? persona.Nombre ?? '',
+        apellido: datos.apellido ?? datos.Apellido ?? persona.apellido ?? persona.Apellido ?? '',
+        idRol,
+        activo,
+    };
+}
 
 export default function Modal_AgregarDelivery({
     open,
@@ -78,6 +95,7 @@ export default function Modal_AgregarDelivery({
     const esEdicion = modo === 'editar';
     const [loading, setLoading] = useState(false);
     const [tiposDeEnvio, setTiposDeEnvio] = useState([]);
+    const [cadetes, setCadetes] = useState([]);
     const [formValues, setFormValues] = useState(formInicial);
     const [errors, setErrors] = useState({});
     const [productosInteractuados, setProductosInteractuados] = useState(false);
@@ -119,6 +137,18 @@ export default function Modal_AgregarDelivery({
                         required: true,
                     },
                     options: tiposDeEnvio,
+                };
+            }
+
+            if (campo.name === 'Cadete') {
+                return {
+                    ...campo,
+                    required: true,
+                    validation: {
+                        ...(campo.validation ?? {}),
+                        required: true,
+                    },
+                    options: cadetes,
                 };
             }
 
@@ -171,16 +201,30 @@ export default function Modal_AgregarDelivery({
             return () => { cancelled = true; };
         }
 
-        BuscarTodosLosTipoEnvios()
-            .then((data) => {
+        Promise.all([
+            BuscarTodosLosTipoEnvios().catch((error) => {
+                console.error('Error al cargar tipos de envío:', error);
+                return [];
+            }),
+            BuscarTodasLasPersonas().catch((error) => {
+                console.error('Error al cargar cadetes:', error);
+                return [];
+            }),
+        ])
+            .then(([tiposEnvioData, personasData]) => {
                 if (!cancelled) {
-                    setTiposDeEnvio(Array.isArray(data) ? data : []);
+                    setTiposDeEnvio(Array.isArray(tiposEnvioData) ? tiposEnvioData : []);
+                    setCadetes(
+                        (Array.isArray(personasData) ? personasData : [])
+                            .map(normalizarCadete)
+                            .filter((persona) => Number(persona.idRol) === 3 && persona.activo !== false)
+                    );
                 }
             })
-            .catch((error) => {
-                console.error('Error al cargar tipos de envío:', error);
+            .catch(() => {
                 if (!cancelled) {
                     setTiposDeEnvio([]);
+                    setCadetes([]);
                 }
             });
 
@@ -205,6 +249,7 @@ export default function Modal_AgregarDelivery({
             Telefono: initialData.telefono ?? '',
             Indicaciones: initialData.indicaciones ?? '',
             TipoEnvio: initialData.idTipoEnvio ?? '',
+            Cadete: initialData.cadete?.id ?? initialData.Cadete?.Id ?? '',
         });
         setProductosInteractuados((initialData?.productos?.length ?? 0) > 0);
         setComanda(construirComandaInicial(initialData));
@@ -228,11 +273,16 @@ export default function Modal_AgregarDelivery({
         const valorProductos = comanda.length > 0 ? 'comanda' : '';
 
         validarCampos('Productos', valorProductos, setErrors, campoProductos);
-    }, [comanda, open, origen, tiposDeEnvio, productosInteractuados]);
+    }, [comanda, open, origen, tiposDeEnvio, cadetes, productosInteractuados]);
 
     const handleEnviar = async () => {
         if (origen === 'Delivery' && tiposDeEnvio.length === 0) {
             showSnackbar('No hay tipos de envío disponibles. Cargalos desde el ABM primero.', 'warning');
+            return;
+        }
+
+        if (origen === 'Delivery' && cadetes.length === 0) {
+            showSnackbar('No hay cadetes activos disponibles. Cargalos desde el ABM de personas primero.', 'warning');
             return;
         }
 
@@ -253,6 +303,7 @@ export default function Modal_AgregarDelivery({
                     id: initialData?.id,
                     idVisita: initialData?.idVisita,
                     productosOriginales: initialData?.productos ?? [],
+                    origen,
                     ...formValues,
                     comanda,
                 })
@@ -385,6 +436,27 @@ export default function Modal_AgregarDelivery({
                                 {tiposDeEnvio.map((t) => (
                                     <MenuItem key={t.id} value={t.id}>
                                         {t.nombre} ($ {Number(t.precio ?? 0)})
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        )}
+                        {origen === 'Delivery' && (
+                            <TextField
+                                select
+                                label="Cadete"
+                                value={formValues.Cadete}
+                                onChange={handleFormChange('Cadete')}
+                                variant="outlined"
+                                size="small"
+                                required
+                                error={Boolean(errors.Cadete)}
+                                helperText={errors.Cadete ?? ' '}
+                                sx={{ minWidth: 180 }}
+                            >
+                                <MenuItem value="">-</MenuItem>
+                                {cadetes.map((cadete) => (
+                                    <MenuItem key={cadete.id} value={cadete.id}>
+                                        {`${cadete.nombre} ${cadete.apellido}`.trim() || `Cadete ${cadete.id}`}
                                     </MenuItem>
                                 ))}
                             </TextField>

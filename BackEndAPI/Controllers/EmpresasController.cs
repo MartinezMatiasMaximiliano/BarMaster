@@ -60,6 +60,32 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet("/Empresa/Sucursales/Resumen")]
+        public async Task<IActionResult> ObtenerResumenSucursales([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+        {
+            try
+            {
+                var idClaim = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa");
+                if (idClaim == null)
+                    return Unauthorized(new ErrorDTO(401, "UNAUTHORIZED", "Token inválido"));
+
+                var idEmpresa = Guid.Parse(idClaim.Value);
+                var fechaHasta = (hasta ?? DateTime.Today).Date;
+                var fechaDesde = (desde ?? fechaHasta.AddDays(-6)).Date;
+                var resumen = await _empresasServices.GetResumenSucursales(idEmpresa, fechaDesde, fechaHasta);
+
+                if (resumen == null)
+                    return NotFound(new ErrorDTO(404, "NOT FOUND", "Empresa no encontrada"));
+
+                return Ok(resumen);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", ex.Message));
+            }
+        }
+
         [HttpPost()]
         public async Task<IActionResult> CrearEmpresa([FromBody] CrearEmpresaDTO request)
         {

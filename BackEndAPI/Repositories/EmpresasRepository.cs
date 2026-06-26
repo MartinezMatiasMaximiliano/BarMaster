@@ -27,8 +27,23 @@ namespace BackEndAPI.Repositories
         public async Task<Empresa?> GetEmpresaById(Guid id)
         {
             return await db.Empresas
+                .AsSplitQuery()
                 .Include(e => e.Sucursales)
                 //.Include(e=>e.Propietario)
+                .FirstOrDefaultAsync(e => e.Id == id);
+        }
+        public async Task<Empresa?> GetEmpresaConDatosResumen(Guid id)
+        {
+            return await db.Empresas
+                .Include(e => e.Sucursales)
+                    .ThenInclude(s => s.Cajas)
+                        .ThenInclude(c => c.Visitas)
+                            .ThenInclude(v => v.Productos)
+                                .ThenInclude(pv => pv.Producto)
+                .Include(e => e.Sucursales)
+                    .ThenInclude(s => s.Cajas)
+                        .ThenInclude(c => c.MovimientosCaja)
+                            .ThenInclude(m => m.TipoMovimientoCaja)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
         public async Task<Empresa?> GetEmpresaByUsername(string username)
