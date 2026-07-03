@@ -2,12 +2,19 @@ import React from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { formatearMoneda } from '../utils/formatters';
-import { periodosPanelSucursales } from '../utils/dateRange';
+import { obtenerPeriodoPanel, periodosPanelSucursales } from '../utils/dateRange';
 
+<<<<<<< Updated upstream
 const resumenItems = (totales, totalSucursales) => [
     ['Ventas período', formatearMoneda(totales.ventasPeriodo)],
     ['Pedidos período', totales.visitasPeriodo.toLocaleString('es-AR')],
     ['Margen período', formatearMoneda(totales.margenPeriodo)],
+=======
+const resumenItems = (totales, totalSucursales, periodo) => [
+    [`Ventas ${periodo.fraseEn}`, formatearMoneda(totales.ventasHoy)],
+    [`Pedidos ${periodo.fraseEn}`, totales.visitasHoy.toLocaleString('es-AR')],
+    [`Margen ${periodo.fraseEn}`, formatearMoneda(totales.margenHoy)],
+>>>>>>> Stashed changes
     ['Cajas abiertas', `${totales.cajasAbiertas}/${totalSucursales}`]
 ];
 
@@ -19,6 +26,8 @@ const PanelResumenHeader = ({
     onPeriodoChange,
     onActualizar
 }) => {
+    const periodo = obtenerPeriodoPanel(periodoDias);
+
     return (
         <Box
             sx={{
@@ -36,7 +45,7 @@ const PanelResumenHeader = ({
                         {empresaNombre || 'Resumen de sucursales'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Vista rápida de ventas, caja y rentabilidad operativa.
+                        Vista rápida de ventas, caja y rentabilidad operativa {periodo.fraseEn}.
                     </Typography>
                 </Box>
 
@@ -75,7 +84,7 @@ const PanelResumenHeader = ({
                     gap: 1.5
                 }}
             >
-                {resumenItems(totales, totalSucursales).map(([label, value]) => (
+                {resumenItems(totales, totalSucursales, periodo).map(([label, value]) => (
                     <Box key={label} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
                         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>
                             {label}

@@ -97,6 +97,7 @@ function PanelSucursales() {
                         <SucursalPerformanceCard
                             key={sucursal.id}
                             sucursal={sucursal}
+                            periodoDias={periodoDias}
                             expanded={expandedSucursalId === sucursal.id}
                             onToggle={() => setExpandedSucursalId(prev => prev === sucursal.id ? null : sucursal.id)}
                         />
