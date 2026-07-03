@@ -1,20 +1,17 @@
 // components/Mesa/Mesa.jsx
 import React from 'react';
 import { MesaButton } from './MesaButton';
-import { MesaModal } from './MesaModal';
+import { MesaModalUnificado } from './MesaModalUnificado';
 import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
 import { useMesaState } from './useMesaState';
 import { useMesaLogic } from './useMesaLogic';
 
 export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true, esVistaPlano = false }) {
     const {
-        checkBoxSeleccionados,
         show,
         visitaMesa,
-        activarCancelarPedido,
         handleShow,
         handleClose,
-        handleChangeCheckBox,
         setCheckBoxSeleccionados
     } = useMesaState(datos_mesa.nombre);
 
@@ -23,7 +20,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
 
     // Handlers con contexto
     const handleCancelarPedidos = (idsProductos) => {
-        const idVisita = visitaMesa?.id || datos_mesa.visita?.id;
+        const idVisita = visitaMesa?.id || visitaMesa?.Id || datos_mesa.visita?.id || datos_mesa.visita?.Id;
         if (!idVisita) return;
         cancelarPedidos(
             idsProductos,
@@ -59,6 +56,27 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         handleShow();
     };
 
+    const renderMesaActiva = () => (
+        <>
+            <MesaButton
+                numeroMesa={datos_mesa.nombre}
+                estilo={estilo}
+                variant={variant}
+                onClick={handleShowConValidacion}
+                simpleStyle={simpleStyle}
+                disabled={!hayCajaActiva}
+            />
+            <MesaModalUnificado
+                show={show}
+                handleClose={handleClose}
+                datos_mesa={datos_mesa}
+                visitaMesa={visitaMesa}
+                onCancelarPedidos={handleCancelarPedidos}
+                onCerrarMesa={handleCerrarMesa}
+            />
+        </>
+    );
+
     // Renderizado condicional simplificado
     const renderMesa = () => {
         // Mesa sin código (inactiva)
@@ -76,7 +94,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
             );
         }
 
-        // Si simpleStyle (Index2): sin código correcto → Mesa_Deshabilitada (mismo aspecto que MesaButton); si no → MesaButton + MesaModal
+        // Si simpleStyle (Index2): sin código correcto -> Mesa_Deshabilitada; si no -> MesaButton + modal unificado.
         if (simpleStyle) {
             if (variant !== "success") {
                 return (
@@ -90,27 +108,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
                 );
             }
             return (
-                <>
-                    <MesaButton
-                        numeroMesa={datos_mesa.nombre}
-                        estilo={estilo}
-                        variant={variant}
-                        onClick={handleShowConValidacion}
-                        simpleStyle={simpleStyle}
-                        disabled={!hayCajaActiva}
-                    />
-                    <MesaModal
-                        show={show}
-                        handleClose={handleClose}
-                        datos_mesa={datos_mesa}
-                        visitaMesa={visitaMesa}
-                        checkBoxSeleccionados={checkBoxSeleccionados}
-                        handleChangeCheckBox={handleChangeCheckBox}
-                        activarCancelarPedido={activarCancelarPedido}
-                        onCancelarPedidos={handleCancelarPedidos}
-                        onCerrarMesa={handleCerrarMesa}
-                    />
-                </>
+                renderMesaActiva()
             );
         }
 
@@ -129,28 +127,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
 
         // Mesa activa con modal
         return (
-            <>
-                <MesaButton
-                    numeroMesa={datos_mesa.nombre}
-                    estilo={estilo}
-                    variant={variant}
-                    onClick={handleShowConValidacion}
-                    simpleStyle={simpleStyle}
-                    disabled={!hayCajaActiva}
-                />
-                
-                <MesaModal
-                    show={show}
-                    handleClose={handleClose}
-                    datos_mesa={datos_mesa}
-                    visitaMesa={visitaMesa}
-                    checkBoxSeleccionados={checkBoxSeleccionados}
-                    handleChangeCheckBox={handleChangeCheckBox}
-                    activarCancelarPedido={activarCancelarPedido}
-                    onCancelarPedidos={handleCancelarPedidos}
-                    onCerrarMesa={handleCerrarMesa}
-                />
-            </>
+            renderMesaActiva()
         );
     };
 

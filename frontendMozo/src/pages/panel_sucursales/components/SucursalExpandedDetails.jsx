@@ -12,7 +12,7 @@ const SucursalExpandedDetails = ({ sucursal }) => {
 
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
                 <SucursalCajaStatus caja={sucursal.caja} />
-                <SucursalAlerts kpis={sucursal.kpisHoy} />
+                <SucursalAlerts kpis={sucursal.kpisPeriodo} />
             </Stack>
 
             <SucursalCharts series={sucursal.series} />

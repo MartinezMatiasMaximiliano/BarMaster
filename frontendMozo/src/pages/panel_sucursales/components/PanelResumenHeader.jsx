@@ -5,9 +5,9 @@ import { formatearMoneda } from '../utils/formatters';
 import { periodosPanelSucursales } from '../utils/dateRange';
 
 const resumenItems = (totales, totalSucursales) => [
-    ['Ventas hoy', formatearMoneda(totales.ventasHoy)],
-    ['Pedidos hoy', totales.visitasHoy.toLocaleString('es-AR')],
-    ['Margen hoy', formatearMoneda(totales.margenHoy)],
+    ['Ventas período', formatearMoneda(totales.ventasPeriodo)],
+    ['Pedidos período', totales.visitasPeriodo.toLocaleString('es-AR')],
+    ['Margen período', formatearMoneda(totales.margenPeriodo)],
     ['Cajas abiertas', `${totales.cajasAbiertas}/${totalSucursales}`]
 ];
 
@@ -41,7 +41,10 @@ const PanelResumenHeader = ({
                 </Box>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'stretch', sm: 'center' }}>
-                    <Stack direction="row" spacing={1}>
+                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+                            Período
+                        </Typography>
                         {periodosPanelSucursales.map(periodo => (
                             <Button
                                 key={periodo.dias}

@@ -10,7 +10,7 @@ import connection from '../../../../connections/HubConnMozo';
 /**
  * Hook personalizado para manejar toda la lógica de negocio del modal Ver Cuenta
  * Centraliza el estado, cálculos y acciones relacionadas con la cuenta de una mesa
- * @param {object} options - Opcional. tabIndexPagosRegistrados: índice de la tab "Pagos registrados" (Modal_Ver_Cuenta=2, MesaModal=1)
+ * @param {object} options - Opcional. tabIndexPagosRegistrados: índice de la tab "Pagos registrados" (Modal_Ver_Cuenta=2, MesaModalUnificado=1)
  */
 export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
     const tabIndexPagosRegistrados = options?.tabIndexPagosRegistrados ?? 2;
@@ -132,7 +132,16 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
                 showSnackbar(typeof msg === 'string' ? msg : "Error al facturar. Intente de nuevo.", "error");
             }
         }
-    }, [datosMesa.nombre, dispatch, visitaMesa?.id, visitaMesa?.productosConsumidos, tabIndexPagosRegistrados]);
+    }, [
+        datosMesa.nombre,
+        datosMesa.visita?.id,
+        datosMesa.visita?.Id,
+        dispatch,
+        visitaMesa?.id,
+        visitaMesa?.Id,
+        visitaMesa?.productosConsumidos,
+        tabIndexPagosRegistrados
+    ]);
 
     return {
         // Estado

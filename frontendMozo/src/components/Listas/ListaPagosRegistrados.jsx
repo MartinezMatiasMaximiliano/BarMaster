@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { Typography, Box, Stack, Divider, Accordion, AccordionSummary, AccordionDetails, Alert } from "@mui/material";
+import { Typography, Box, Stack, Accordion, AccordionSummary, AccordionDetails, Alert } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { formatearFecha } from '../Mesa/dateFormatter';
@@ -56,15 +56,16 @@ function useTicketsAgrupados(productos) {
 }
 
 /** Accordion individual de un ticket de pago */
-function TicketAccordion({ ticket, index }) {
+function TicketAccordion({ ticket, index, surfaceVariant = false }) {
     return (
         <Accordion
             disableGutters
             sx={{
                 borderRadius: '8px !important',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                border: '1px solid',
-                borderColor: 'divider',
+                boxShadow: surfaceVariant ? 'none' : '0 1px 4px rgba(0,0,0,0.06)',
+                border: surfaceVariant ? 0 : '1px solid',
+                borderColor: surfaceVariant ? 'transparent' : 'divider',
+                bgcolor: surfaceVariant ? '#ffffff' : 'background.paper',
                 '&:before': { display: 'none' },
                 overflow: 'hidden',
             }}
@@ -91,9 +92,8 @@ function TicketAccordion({ ticket, index }) {
                     </Typography>
                 </Stack>
             </AccordionSummary>
-            <AccordionDetails sx={{ px: 2, pt: 0, pb: 1.5 }}>
-                <Divider sx={{ mb: 1 }} />
-                <Box sx={{ maxHeight: 200, overflowY: 'auto' }}>
+            <AccordionDetails sx={{ px: 2, pt: surfaceVariant ? 0.5 : 0, pb: 1.5 }}>
+                <Box sx={{ maxHeight: 200, overflowY: 'auto', bgcolor: surfaceVariant ? '#f7f9fc' : 'transparent', borderRadius: 1.5, p: surfaceVariant ? 1 : 0 }}>
                     {Object.entries(ticket.resumen).map(([nombre, data]) => (
                         <Box
                             key={nombre}
@@ -114,18 +114,33 @@ function TicketAccordion({ ticket, index }) {
 }
 
 /** Lista de pagos registrados agrupados por ticket */
-function ListaPagosRegistrados({ productos }) {
+function ListaPagosRegistrados({ productos, surfaceVariant = false }) {
     const { tickets, totalGeneral } = useTicketsAgrupados(productos);
 
     return (
-        <>
-            <Stack spacing={1.5} sx={{ mb: 2 }}>
+        <Box sx={surfaceVariant ? { display: 'flex', flexDirection: 'column', gap: 1.5, height: '100%', minHeight: 0 } : undefined}>
+            <Stack
+                spacing={1.5}
+                sx={{
+                    mb: surfaceVariant ? 0 : 2,
+                    ...(surfaceVariant && {
+                        flex: '1 1 auto',
+                        minHeight: 0,
+                        overflowY: 'auto',
+                        bgcolor: '#f7f9fc',
+                        borderRadius: 2,
+                        p: 1.25
+                    })
+                }}
+            >
                 {tickets.map((ticket, index) => (
-                    <TicketAccordion key={ticket.id} ticket={ticket} index={index} />
+                    <TicketAccordion key={ticket.id} ticket={ticket} index={index} surfaceVariant={surfaceVariant} />
                 ))}
             </Stack>
-            <Alert severity="success"><b>Total</b>: ${totalGeneral}</Alert>
-        </>
+            <Alert severity="success" sx={surfaceVariant ? { flexShrink: 0, borderRadius: 2 } : undefined}>
+                <b>Total</b>: ${totalGeneral}
+            </Alert>
+        </Box>
     );
 }
 

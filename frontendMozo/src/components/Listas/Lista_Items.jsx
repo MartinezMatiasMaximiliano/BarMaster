@@ -48,7 +48,7 @@ function Lista_Items(props) {
     // Pagos registrados: agrupados por ticket
     if (estado === 2) {
         if (productosFiltrados.length === 0) return mensajeVacio(props.titulo);
-        return <ListaPagosRegistrados productos={productosFiltrados} />;
+        return <ListaPagosRegistrados productos={productosFiltrados} surfaceVariant={props.surfaceVariant} />;
     }
 
     // Resumen normal
@@ -74,7 +74,8 @@ export default memo(Lista_Items, (prevProps, nextProps) => {
         prevProps.PagarMesa === nextProps.PagarMesa &&
         prevProps.mostrarCheckboxes === nextProps.mostrarCheckboxes &&
         prevProps.productosSeleccionados === nextProps.productosSeleccionados &&
-        prevProps.onToggleProducto === nextProps.onToggleProducto &&
-        prevProps.currencyFormatter === nextProps.currencyFormatter
+            prevProps.onToggleProducto === nextProps.onToggleProducto &&
+        prevProps.currencyFormatter === nextProps.currencyFormatter &&
+        prevProps.surfaceVariant === nextProps.surfaceVariant
     );
 });

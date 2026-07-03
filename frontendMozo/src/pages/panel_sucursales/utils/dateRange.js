@@ -15,9 +15,13 @@ export const calcularRangoPanel = (dias) => {
     const hasta = new Date();
     const desde = new Date();
     desde.setDate(hasta.getDate() - (dias - 1));
+    desde.setHours(0, 0, 0, 0);
+    hasta.setHours(23, 59, 59, 999);
 
     return {
-        desde: toDateInputValue(desde),
-        hasta: toDateInputValue(hasta)
+        desde: desde.toISOString(),
+        hasta: hasta.toISOString(),
+        desdeLabel: toDateInputValue(desde),
+        hastaLabel: toDateInputValue(hasta)
     };
 };

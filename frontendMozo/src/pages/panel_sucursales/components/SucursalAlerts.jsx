@@ -21,7 +21,7 @@ const SucursalAlerts = ({ kpis = {} }) => {
         return (
             <Box sx={{ flex: 1 }}>
                 <Alert severity="info" sx={{ borderRadius: 1.5, height: '100%', alignItems: 'center' }}>
-                    Todavía no se registraron ventas hoy.
+                    No se registraron ventas en el período seleccionado.
                 </Alert>
             </Box>
         );

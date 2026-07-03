@@ -7,14 +7,26 @@ import { boxCardBorder } from '../../../../styles/boxStyles';
  * Componente memoizado para el contenido de cada tab
  * Optimizado para evitar re-renders innecesarios
  */
-const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, facturar, mostrarCheckboxes, productosSeleccionados, onToggleProducto, currencyFormatter }) => {
+const TabContent = memo(({
+    visitaMesa,
+    estado,
+    titulo,
+    subtitulo,
+    PagarMesa,
+    facturar,
+    mostrarCheckboxes,
+    productosSeleccionados,
+    onToggleProducto,
+    currencyFormatter,
+    surfaceVariant = false
+}) => {
     return (
         <Box
             sx={{
-                ...boxCardBorder,
+                ...(surfaceVariant ? {} : boxCardBorder),
                 borderRadius: 2,
-                p: 2,
-                bgcolor: estado === false ? 'background.default' : 'transparent',
+                p: surfaceVariant ? 0 : 2,
+                bgcolor: surfaceVariant ? 'transparent' : (estado === false ? 'background.default' : 'transparent'),
                 minHeight: '25vh',
                 ...(mostrarCheckboxes && {
                     display: 'flex',
@@ -35,6 +47,7 @@ const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, fac
                 productosSeleccionados={productosSeleccionados}
                 onToggleProducto={onToggleProducto}
                 currencyFormatter={currencyFormatter}
+                surfaceVariant={surfaceVariant}
             />
         </Box>
     );
@@ -48,7 +61,8 @@ const TabContent = memo(({ visitaMesa, estado, titulo, subtitulo, PagarMesa, fac
         prevProps.mostrarCheckboxes !== nextProps.mostrarCheckboxes ||
         prevProps.productosSeleccionados !== nextProps.productosSeleccionados ||
         prevProps.onToggleProducto !== nextProps.onToggleProducto ||
-        prevProps.currencyFormatter !== nextProps.currencyFormatter) {
+        prevProps.currencyFormatter !== nextProps.currencyFormatter ||
+        prevProps.surfaceVariant !== nextProps.surfaceVariant) {
         return false;
     }
     
