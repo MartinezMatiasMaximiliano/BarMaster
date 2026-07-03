@@ -1,4 +1,5 @@
-﻿using BackEndAPI.Controllers;
+﻿using BackEndAPI.ARCA.Clases;
+using BackEndAPI.Controllers;
 using BackEndAPI.Models;
 using BackEndAPI.Tenancy.Models;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,8 @@ namespace BackEndAPI.Data
         public DbSet<Plano> Planos => Set<Plano>();
         public DbSet<DeliveryAndTakeaway> DeliveriesTakeaways => Set<DeliveryAndTakeaway>();
         public DbSet<TipoEnvio> TipoEnvios => Set<TipoEnvio>();
+        public DbSet<FacturaElectronica> FacturasElectronicas => Set<FacturaElectronica>();
+        public DbSet<FETokenAuth> FETokenAuths => Set<FETokenAuth>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,8 +80,7 @@ namespace BackEndAPI.Data
                 new TipoMovimientoCaja { Id = 20, Nombre = "Reembolso Efectivo", EsIngreso = false, EsEfectivo = true, Entorno = "Ventas" },
                 new TipoMovimientoCaja { Id = 21, Nombre = "Reembolso Tarjeta de Credito/Debito", EsIngreso = false, EsEfectivo = false, Entorno = "Ventas" },
                 new TipoMovimientoCaja { Id = 22, Nombre = "Reembolso Transferencia bancaria", EsIngreso = false, EsEfectivo = false, Entorno = "Ventas" }
-
-                );
+            );
 
 
             modelBuilder.Entity<Empresa>()

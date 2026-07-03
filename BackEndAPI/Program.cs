@@ -1,4 +1,5 @@
 using BackEndAPI.ARCA.Clases;
+using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.Data;
 using BackEndAPI.Hubs;
 using BackEndAPI.Repositories;
@@ -86,13 +87,16 @@ builder.Services.AddCors(options =>
 
 #region SERVICIOS
 
+builder.Services.AddHttpClient<WsfeService>();
 builder.Services.AddHttpClient<WsaaAuthService>();
 builder.Services.Configure<ArcaOptions>(builder.Configuration.GetSection("Arca"));
-builder.Services.AddScoped<ITenantServices, TenantServices>();
-builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
+builder.Services.AddScoped<TraGenerator>();
+builder.Services.AddScoped<CmsSignerService>();
 builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<ITenantServices, TenantServices>();
+builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
 builder.Services.AddScoped<IMenuRepository, MenuRepository>();
 builder.Services.AddScoped<IPagosRepository, PagosRepository>();
 builder.Services.AddScoped<IPagosServices, PagosServices>();

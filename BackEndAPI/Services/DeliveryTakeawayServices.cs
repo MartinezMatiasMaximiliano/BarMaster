@@ -109,10 +109,32 @@ namespace BackEndAPI.Services
             var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(request.IdDeliveryTakeaway);
             if (deliveryTakeawayExistente == null) throw new Exception("No se encontró el pedido");
 
-            request.NombreCliente = request.NombreCliente ?? deliveryTakeawayExistente.NombreCliente;
-            request.Telefono = request.Telefono ?? deliveryTakeawayExistente.Telefono;
-            request.Direccion = request.Direccion ?? deliveryTakeawayExistente.Direccion;
-            request.Indicaciones = request.Indicaciones ?? deliveryTakeawayExistente.Indicaciones;
+            deliveryTakeawayExistente.NombreCliente = request.NombreCliente ?? deliveryTakeawayExistente.NombreCliente;
+            deliveryTakeawayExistente.Telefono = request.Telefono ?? deliveryTakeawayExistente.Telefono;
+            deliveryTakeawayExistente.Direccion = request.Direccion ?? deliveryTakeawayExistente.Direccion;
+            deliveryTakeawayExistente.Indicaciones = request.Indicaciones ?? deliveryTakeawayExistente.Indicaciones;
+            if (request.IdTipoEnvio.HasValue)
+            {
+                deliveryTakeawayExistente.IdTipoEnvio = request.IdTipoEnvio;
+                var precioEnvio = await _deliveryTakeawayRepository.GetPrecioEnvioPorId(request.IdTipoEnvio);
+                var totalProductos = deliveryTakeawayExistente.Visita?.Productos?.Sum(p => p.PrecioDelMomento) ?? 0;
+                deliveryTakeawayExistente.PrecioTotal = totalProductos + precioEnvio;
+            }
+
+            if (request.IdCadete.HasValue)
+            {
+                var cadete = await _personasRepository.GetPersonaPorId(request.IdCadete.Value);
+                if (cadete == null) throw new Exception("Cadete no encontrado");
+                if (cadete.IdRol != 3) throw new Exception("La persona seleccionada no es cadete");
+
+                deliveryTakeawayExistente.IdCadete = request.IdCadete;
+                deliveryTakeawayExistente.Cadete = cadete;
+            }
+
+            if (request.Entregado.HasValue)
+            {
+                deliveryTakeawayExistente.Entregado = request.Entregado.Value;
+            }
             return await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(deliveryTakeawayExistente);
         }
         public async Task<bool> EliminarDeliveryTakeaway(Guid IdDeliveryTakeaway)

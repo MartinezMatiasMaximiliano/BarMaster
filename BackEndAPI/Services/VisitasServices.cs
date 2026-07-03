@@ -37,7 +37,8 @@ namespace BackEndAPI.Services
             var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
 
             if (visita == null) throw new Exception("Visita no encontrada");
-            if(visita.Estado == "Cerrada") throw new Exception("No se pueden agregar productos a una visita cerrada");
+            var esDeliveryTakeaway = visita.Origen == "Delivery" || visita.Origen == "Takeaway";
+            if (visita.Estado == "Cerrada" && !esDeliveryTakeaway) throw new Exception("No se pueden agregar productos a una visita cerrada");
 
             foreach (var item in productos)
             {
@@ -68,7 +69,7 @@ namespace BackEndAPI.Services
             }
 
 
-            if (visita.Origen =="Delivery" || visita.Origen == "Takeaway")
+            if (esDeliveryTakeaway)
             {
                 var deliveryTakeaway = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorIdVisita(IdVisita);
 
@@ -109,21 +110,27 @@ namespace BackEndAPI.Services
             
             var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
             if (visita == null) throw new Exception("Visita no encontrada");
-            if (visita.Estado == "Cerrada") throw new Exception("No se pueden eliminar productos de una visita cerrada");   
+            var esDeliveryTakeaway = visita.Origen == "Delivery" || visita.Origen == "Takeaway";
+            if (visita.Estado == "Cerrada" && !esDeliveryTakeaway) throw new Exception("No se pueden eliminar productos de una visita cerrada");   
 
             var productosEnVisita = visita.Productos?.Select(p => p.Id).ToList() ?? new List<int>();
             var productosNoEncontrados = IdsProductos.Where(id => !productosEnVisita.Contains(id)).ToList();
 
             if (productosNoEncontrados.Any()) throw new Exception($"Los siguientes IDs de productos no pertenecen a esta visita: {string.Join(", ", productosNoEncontrados)}");
 
-            if (visita.Origen == "Delivery" || visita.Origen == "Takeaway")
+            var productosAEliminar = visita.Productos.Where(p => IdsProductos.Contains(p.Id)).ToList();
+            var totalAEliminar = productosAEliminar.Sum(p => p.PrecioDelMomento);
+
+            if (esDeliveryTakeaway)
             {
                 var DeliveryTakeaway = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorIdVisita(IdVisita);
                 if (DeliveryTakeaway == null)throw new Exception("No se encontró el registro de Delivery/Takeaway asociado a esta visita");
+                if (DeliveryTakeaway.Entregado) throw new Exception("No se pueden eliminar productos de una orden de Delivery/Takeaway que ya ha sido entregada");
                 
-                DeliveryTakeaway.Visita.Productos.Where(p => IdsProductos.Contains(p.Id)).ToList().ForEach(p => DeliveryTakeaway.PrecioTotal -= p.PrecioDelMomento);
+                DeliveryTakeaway.PrecioTotal -= totalAEliminar;
                 await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(DeliveryTakeaway);
             }
+            visita.Total -= totalAEliminar;
             return await _visitasRepository.EliminarProductos(visita, IdsProductos);
         }
 
