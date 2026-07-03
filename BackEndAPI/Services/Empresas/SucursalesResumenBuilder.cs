@@ -1,5 +1,5 @@
+using BackEndAPI.DTOs.Query;
 using BackEndAPI.DTOs.Response;
-using BackEndAPI.Models;
 
 namespace BackEndAPI.Services.Empresas
 {
@@ -7,69 +7,55 @@ namespace BackEndAPI.Services.Empresas
     {
         private static readonly TimeZoneInfo ZonaHorariaArgentina = ObtenerZonaHorariaArgentina();
 
-        public static EmpresaSucursalesResumenDTO Construir(Empresa empresa, DateTime desde, DateTime hasta)
+        public static (DateTime DesdeUtc, DateTime HastaUtc) ObtenerRangoUtc(DateTime desde, DateTime hasta)
         {
             var rango = NormalizarRango(desde, hasta);
-            var hoy = ConvertirAFechaArgentina(DateTime.UtcNow).Date;
-            var manana = hoy.AddDays(1);
+            return (rango.DesdeUtc, rango.HastaUtc);
+        }
+
+        public static EmpresaSucursalesResumenDTO Construir(EmpresaResumenQueryDTO empresa, DateTime desde, DateTime hasta)
+        {
+            var rango = NormalizarRango(desde, hasta);
 
             return new EmpresaSucursalesResumenDTO
             {
-                EmpresaId = empresa.Id,
-                EmpresaNombre = empresa.Nombre,
+                EmpresaId = empresa.EmpresaId,
+                EmpresaNombre = empresa.EmpresaNombre,
                 Desde = rango.Desde,
                 Hasta = rango.Hasta,
                 Sucursales = empresa.Sucursales
                     .OrderBy(s => s.Nombre)
-                    .Select(s => ConstruirSucursal(s, rango, hoy, manana))
+                    .Select(s => ConstruirSucursal(s, rango))
                     .ToList()
             };
         }
 
         private static RangoFechas NormalizarRango(DateTime desde, DateTime hasta)
         {
-            var desdeDia = desde.Date;
-            var hastaDia = hasta.Date;
+            var desdeUtc = NormalizarFechaUtc(desde);
+            var hastaUtc = NormalizarFechaUtc(hasta);
 
-            if (hastaDia < desdeDia)
+            if (hastaUtc < desdeUtc)
             {
-                (desdeDia, hastaDia) = (hastaDia, desdeDia);
+                (desdeUtc, hastaUtc) = (hastaUtc, desdeUtc);
             }
 
-            var hastaExclusivo = hastaDia.AddDays(1);
+            var desdeLocal = ConvertirAFechaArgentina(desdeUtc);
+            var hastaLocal = ConvertirAFechaArgentina(hastaUtc);
 
             return new RangoFechas(
-                desdeDia,
-                hastaDia,
-                hastaExclusivo,
-                ConvertirFechaArgentinaAUtc(desdeDia),
-                ConvertirFechaArgentinaAUtc(hastaExclusivo)
+                desdeLocal,
+                hastaLocal,
+                desdeLocal.Date,
+                hastaLocal.Date,
+                desdeUtc,
+                hastaUtc
             );
         }
 
-        private static SucursalResumenDTO ConstruirSucursal(Sucursal sucursal, RangoFechas rango, DateTime hoy, DateTime manana)
+        private static SucursalResumenDTO ConstruirSucursal(SucursalResumenQueryDTO sucursal, RangoFechas rango)
         {
-            var cajas = sucursal.Cajas ?? [];
-            var cajaActiva = cajas
-                .Where(c => c.FechaCierre == null)
-                .OrderByDescending(c => c.FechaApertura)
-                .FirstOrDefault();
-
-            var visitasPeriodo = cajas
-                .SelectMany(c => c.Visitas ?? [])
-                .Where(v =>
-                {
-                    var fechaUtc = NormalizarFechaUtc(v.FechaHora);
-                    return fechaUtc >= rango.DesdeUtc && fechaUtc < rango.HastaExclusivoUtc;
-                })
-                .ToList();
-
-            var visitasHoy = visitasPeriodo
-                .Where(v =>
-                {
-                    var fechaLocal = ConvertirAFechaArgentina(v.FechaHora);
-                    return fechaLocal >= hoy && fechaLocal < manana;
-                })
+            var visitasPeriodo = sucursal.VisitasPeriodo
                 .ToList();
 
             return new SucursalResumenDTO
@@ -78,46 +64,46 @@ namespace BackEndAPI.Services.Empresas
                 Nombre = sucursal.Nombre,
                 Direccion = sucursal.Direccion,
                 Telefono = sucursal.Telefono,
-                Caja = ConstruirCaja(cajaActiva),
-                KpisHoy = ConstruirKpis(visitasHoy),
+                Caja = ConstruirCaja(sucursal.CajaActiva),
+                KpisPeriodo = ConstruirKpis(visitasPeriodo),
                 Series = new SucursalSeriesDTO
                 {
-                    VentasPorHoraHoy = ConstruirVentasPorHora(visitasHoy),
+                    VentasPorHoraPeriodo = ConstruirVentasPorHora(visitasPeriodo),
                     VentasPorDia = ConstruirVentasPorDia(visitasPeriodo, rango)
                 },
                 TopProductos = ConstruirTopProductos(visitasPeriodo)
             };
         }
 
-        private static SucursalKpisDTO ConstruirKpis(IReadOnlyCollection<Visita> visitasHoy)
+        private static SucursalKpisDTO ConstruirKpis(IReadOnlyCollection<VisitaResumenQueryDTO> visitasPeriodo)
         {
-            var ventasHoy = visitasHoy.Sum(v => v.Total);
-            var margenHoy = CalcularMargen(visitasHoy, out var rentabilidadIncompleta);
+            var ventasPeriodo = visitasPeriodo.Sum(v => v.Total);
+            var margenPeriodo = CalcularMargen(visitasPeriodo, out var rentabilidadIncompleta);
 
             return new SucursalKpisDTO
             {
-                Ventas = ventasHoy,
-                CantidadVisitas = visitasHoy.Count,
-                TicketPromedio = visitasHoy.Count > 0 ? ventasHoy / visitasHoy.Count : 0,
-                MargenEstimado = margenHoy,
-                MargenPorcentaje = ventasHoy > 0 ? (margenHoy / ventasHoy) * 100 : 0,
+                Ventas = ventasPeriodo,
+                CantidadVisitas = visitasPeriodo.Count,
+                TicketPromedio = visitasPeriodo.Count > 0 ? ventasPeriodo / visitasPeriodo.Count : 0,
+                MargenEstimado = margenPeriodo,
+                MargenPorcentaje = ventasPeriodo > 0 ? (margenPeriodo / ventasPeriodo) * 100 : 0,
                 RentabilidadIncompleta = rentabilidadIncompleta
             };
         }
 
-        private static SucursalCajaResumenDTO ConstruirCaja(Caja? cajaActiva)
+        private static SucursalCajaResumenDTO ConstruirCaja(CajaResumenQueryDTO? cajaActiva)
         {
             if (cajaActiva == null)
             {
                 return new SucursalCajaResumenDTO { Abierta = false };
             }
 
-            var movimientos = cajaActiva.MovimientosCaja ?? [];
+            var movimientos = cajaActiva.Movimientos ?? [];
             var montoEfectivo = cajaActiva.MontoApertura + movimientos
-                .Where(m => m.TipoMovimientoCaja?.EsEfectivo == true)
+                .Where(m => m.EsEfectivo == true)
                 .Sum(CalcularMontoFirmado);
             var montoNoEfectivo = movimientos
-                .Where(m => m.TipoMovimientoCaja?.EsEfectivo == false)
+                .Where(m => m.EsEfectivo == false)
                 .Sum(CalcularMontoFirmado);
 
             return new SucursalCajaResumenDTO
@@ -132,21 +118,21 @@ namespace BackEndAPI.Services.Empresas
             };
         }
 
-        private static decimal CalcularMontoFirmado(MovimientoCaja movimiento)
+        private static decimal CalcularMontoFirmado(MovimientoCajaResumenQueryDTO movimiento)
         {
-            return movimiento.TipoMovimientoCaja?.EsIngreso == false
+            return movimiento.EsIngreso == false
                 ? -movimiento.Monto
                 : movimiento.Monto;
         }
 
-        private static decimal CalcularMargen(IEnumerable<Visita> visitas, out bool rentabilidadIncompleta)
+        private static decimal CalcularMargen(IEnumerable<VisitaResumenQueryDTO> visitas, out bool rentabilidadIncompleta)
         {
             rentabilidadIncompleta = false;
             decimal margen = 0;
 
             foreach (var productoVendido in visitas.SelectMany(v => v.Productos ?? []))
             {
-                var costo = productoVendido.Producto?.CostoProduccion;
+                var costo = productoVendido.CostoProduccion;
                 if (costo == null)
                 {
                     rentabilidadIncompleta = true;
@@ -160,9 +146,9 @@ namespace BackEndAPI.Services.Empresas
             return margen;
         }
 
-        private static List<VentasPorHoraDTO> ConstruirVentasPorHora(IEnumerable<Visita> visitasHoy)
+        private static List<VentasPorHoraDTO> ConstruirVentasPorHora(IEnumerable<VisitaResumenQueryDTO> visitasPeriodo)
         {
-            var ventasPorHora = visitasHoy
+            var ventasPorHora = visitasPeriodo
                 .GroupBy(v => ConvertirAFechaArgentina(v.FechaHora).Hour)
                 .ToDictionary(g => g.Key, g => g.Sum(v => v.Total));
 
@@ -175,16 +161,18 @@ namespace BackEndAPI.Services.Empresas
                 .ToList();
         }
 
-        private static List<VentasPorDiaDTO> ConstruirVentasPorDia(IEnumerable<Visita> visitasPeriodo, RangoFechas rango)
+        private static List<VentasPorDiaDTO> ConstruirVentasPorDia(IEnumerable<VisitaResumenQueryDTO> visitasPeriodo, RangoFechas rango)
         {
             var visitasPorDia = visitasPeriodo
                 .GroupBy(v => ConvertirAFechaArgentina(v.FechaHora).Date)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            return Enumerable.Range(0, (rango.HastaExclusivo - rango.Desde).Days)
+            var totalDias = (rango.HastaDia - rango.DesdeDia).Days + 1;
+
+            return Enumerable.Range(0, totalDias)
                 .Select(offset =>
                 {
-                    var fecha = rango.Desde.AddDays(offset);
+                    var fecha = rango.DesdeDia.AddDays(offset);
                     var visitasDia = visitasPorDia.TryGetValue(fecha, out var visitas) ? visitas : [];
                     var margen = CalcularMargen(visitasDia, out _);
 
@@ -198,7 +186,7 @@ namespace BackEndAPI.Services.Empresas
                 .ToList();
         }
 
-        private static List<SucursalTopProductoDTO> ConstruirTopProductos(IEnumerable<Visita> visitasPeriodo)
+        private static List<SucursalTopProductoDTO> ConstruirTopProductos(IEnumerable<VisitaResumenQueryDTO> visitasPeriodo)
         {
             return visitasPeriodo
                 .SelectMany(v => v.Productos ?? [])
@@ -208,7 +196,7 @@ namespace BackEndAPI.Services.Empresas
                     Nombre = g.Key,
                     Cantidad = g.Count(),
                     Ventas = g.Sum(p => p.PrecioDelMomento),
-                    MargenEstimado = g.Sum(p => p.PrecioDelMomento - (p.Producto?.CostoProduccion ?? 0))
+                    MargenEstimado = g.Sum(p => p.PrecioDelMomento - (p.CostoProduccion ?? 0))
                 })
                 .OrderByDescending(p => p.Ventas)
                 .Take(5)
@@ -217,22 +205,17 @@ namespace BackEndAPI.Services.Empresas
 
         private static DateTime NormalizarFechaUtc(DateTime fecha)
         {
-            return fecha.Kind == DateTimeKind.Utc
-                ? fecha
-                : DateTime.SpecifyKind(fecha, DateTimeKind.Utc);
+            return fecha.Kind switch
+            {
+                DateTimeKind.Utc => fecha,
+                DateTimeKind.Local => fecha.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(fecha, DateTimeKind.Utc)
+            };
         }
 
         private static DateTime ConvertirAFechaArgentina(DateTime fecha)
         {
             return TimeZoneInfo.ConvertTimeFromUtc(NormalizarFechaUtc(fecha), ZonaHorariaArgentina);
-        }
-
-        private static DateTime ConvertirFechaArgentinaAUtc(DateTime fechaLocal)
-        {
-            return TimeZoneInfo.ConvertTimeToUtc(
-                DateTime.SpecifyKind(fechaLocal, DateTimeKind.Unspecified),
-                ZonaHorariaArgentina
-            );
         }
 
         private static TimeZoneInfo ObtenerZonaHorariaArgentina()
@@ -250,9 +233,10 @@ namespace BackEndAPI.Services.Empresas
         private sealed record RangoFechas(
             DateTime Desde,
             DateTime Hasta,
-            DateTime HastaExclusivo,
+            DateTime DesdeDia,
+            DateTime HastaDia,
             DateTime DesdeUtc,
-            DateTime HastaExclusivoUtc
+            DateTime HastaUtc
         );
     }
 }

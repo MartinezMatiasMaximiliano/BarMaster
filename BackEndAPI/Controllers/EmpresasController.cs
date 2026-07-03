@@ -71,8 +71,8 @@ namespace BackEndAPI.Controllers
                     return Unauthorized(new ErrorDTO(401, "UNAUTHORIZED", "Token inválido"));
 
                 var idEmpresa = Guid.Parse(idClaim.Value);
-                var fechaHasta = (hasta ?? DateTime.Today).Date;
-                var fechaDesde = (desde ?? fechaHasta.AddDays(-6)).Date;
+                var fechaHasta = hasta ?? DateTime.UtcNow;
+                var fechaDesde = desde ?? fechaHasta.AddDays(-7);
                 var resumen = await _empresasServices.GetResumenSucursales(idEmpresa, fechaDesde, fechaHasta);
 
                 if (resumen == null)

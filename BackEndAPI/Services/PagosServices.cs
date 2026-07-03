@@ -42,13 +42,12 @@ namespace BackEndAPI.Services
                 var productoPorVisita = visita.Productos.FirstOrDefault(p => p.Id == id);
                 if (productoPorVisita != null)
                 {
+                    if (productoPorVisita.EstadoPagado) throw new Exception("Producto ya pagado");
                     TotalProductosAPagar = TotalProductosAPagar + productoPorVisita.PrecioDelMomento;
                     productoPorVisita.EstadoPagado = true;
                     productoPorVisita.IdMovimientoCaja = PagoCreado.Id;
                 }
             }
-
-            visita.Total += TotalProductosAPagar;
 
             if (InfoPago.Monto < TotalProductosAPagar) throw new Exception("Monto insuficiente");
             

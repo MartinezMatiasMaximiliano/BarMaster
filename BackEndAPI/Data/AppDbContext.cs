@@ -152,6 +152,9 @@ namespace BackEndAPI.Data
 
             // Relacion Visita N:1 Caja
             modelBuilder.Entity<Visita>()
+                .HasIndex(v => new { v.IdCaja, v.FechaHora });
+
+            modelBuilder.Entity<Visita>()
                 .HasOne(v => v.Caja)
                 .WithMany(c => c.Visitas)
                 .HasForeignKey(v => v.IdCaja)
@@ -261,9 +264,15 @@ namespace BackEndAPI.Data
                 .WithMany(c => c.Productos);
 
             modelBuilder.Entity<Caja>()
+                .HasIndex(c => new { c.IdSucursal, c.FechaCierre });
+
+            modelBuilder.Entity<Caja>()
                 .HasMany(c => c.MovimientosCaja)
                 .WithOne(mc => mc.Caja)
                 .HasForeignKey(mc => mc.IdCaja);
+
+            modelBuilder.Entity<MovimientoCaja>()
+                .HasIndex(mc => new { mc.IdCaja, mc.FechaMovimiento });
 
             modelBuilder.Entity<MovimientoCaja>()
                 .HasOne(mc => mc.TipoMovimientoCaja)

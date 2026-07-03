@@ -42,10 +42,11 @@ namespace BackEndAPI.Services
 
         public async Task<EmpresaSucursalesResumenDTO?> GetResumenSucursales(Guid idEmpresa, DateTime desde, DateTime hasta)
         {
-            var empresa = await _empresasRepository.GetEmpresaConDatosResumen(idEmpresa);
-            if (empresa == null) return null;
+            var (desdeUtc, hastaUtc) = SucursalesResumenBuilder.ObtenerRangoUtc(desde, hasta);
+            var datosResumen = await _empresasRepository.GetDatosResumenSucursales(idEmpresa, desdeUtc, hastaUtc);
+            if (datosResumen == null) return null;
 
-            return SucursalesResumenBuilder.Construir(empresa, desde, hasta);
+            return SucursalesResumenBuilder.Construir(datosResumen, desde, hasta);
         }
 
         public async Task<Empresa> AddEmpresa(CrearEmpresaDTO request)

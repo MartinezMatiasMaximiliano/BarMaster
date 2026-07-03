@@ -42,7 +42,11 @@ namespace BackEndAPI.Repositories
 
         public async Task<Visita> ModificarVisita(Visita request)
         {
-            db.Entry(request).State = EntityState.Modified;
+            if (db.Entry(request).State == EntityState.Detached)
+            {
+                db.Visitas.Update(request);
+            }
+
             await db.SaveChangesAsync();
             return request;
 

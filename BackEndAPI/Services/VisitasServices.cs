@@ -30,7 +30,7 @@ namespace BackEndAPI.Services
         }
         public async Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> productos, Guid IdVisita)
         {
-            decimal Total = 0;
+            decimal totalAgregado = 0;
             if (productos == null || productos.Count <= 0) throw new Exception("Lista de productos vacia");
             if (IdVisita == Guid.Empty) throw new Exception("IdVisita vacio");
 
@@ -42,6 +42,7 @@ namespace BackEndAPI.Services
 
             foreach (var item in productos)
             {
+                if (item.Cantidad <= 0) throw new Exception("Cantidad no válida");
                 //TODO: Mejorar esto, buscar una manera de 
                 //agregar los productos que si se encuentran y notificar los que no se encuentran... (no no agregar ninguno si algo falla?)
                 var producto = await _productosRepository.GetProductoPorId(item.IdProducto);
@@ -63,7 +64,7 @@ namespace BackEndAPI.Services
                         EstadoPagado = false,
                         EstadoPedido = "Pendiente",
                     };
-                    Total += producto.Precio;
+                    totalAgregado += producto.Precio;
                     visita.Productos.Add(productoPorVisita);
                 }
             }
@@ -76,10 +77,11 @@ namespace BackEndAPI.Services
                 if (deliveryTakeaway == null) throw new Exception("No se encontró el registro de Delivery/Takeaway asociado a esta visita");
                 if (deliveryTakeaway.Entregado) throw new Exception("No se pueden agregar productos a una orden de Delivery/Takeaway que ya ha sido entregada");
 
-                deliveryTakeaway.PrecioTotal += Total;
+                deliveryTakeaway.PrecioTotal += totalAgregado;
                 await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(deliveryTakeaway);
             }
-            visita.Total += Total;
+
+            visita.Total = visita.Productos.Sum(p => p.PrecioDelMomento);
             return await _visitasRepository.ModificarVisita(visita);
         }
         
@@ -130,7 +132,9 @@ namespace BackEndAPI.Services
                 DeliveryTakeaway.PrecioTotal -= totalAEliminar;
                 await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(DeliveryTakeaway);
             }
-            visita.Total -= totalAEliminar;
+            visita.Total = visita.Productos
+                .Where(p => !IdsProductos.Contains(p.Id))
+                .Sum(p => p.PrecioDelMomento);
             return await _visitasRepository.EliminarProductos(visita, IdsProductos);
         }
 

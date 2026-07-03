@@ -43,6 +43,8 @@ namespace BackEndAPI.Controllers
                 {
                     case "Monto insuficiente":
                         return BadRequest("El monto proporcionado es insuficiente para cubrir el costo de los productos.");
+                    case "Producto ya pagado":
+                        return BadRequest("Uno o más productos seleccionados ya fueron pagados.");
                     default:
                         return StatusCode(500, "Internal server error catch: Pagar items de visita - " + ex.Message);
                 }

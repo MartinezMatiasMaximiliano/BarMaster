@@ -46,7 +46,7 @@
         public string? Direccion { get; set; }
         public string? Telefono { get; set; }
         public SucursalCajaResumenDTO Caja { get; set; } = new();
-        public SucursalKpisDTO KpisHoy { get; set; } = new();
+        public SucursalKpisDTO KpisPeriodo { get; set; } = new();
         public SucursalSeriesDTO Series { get; set; } = new();
         public List<SucursalTopProductoDTO> TopProductos { get; set; } = [];
     }
@@ -74,7 +74,7 @@
 
     public class SucursalSeriesDTO
     {
-        public List<VentasPorHoraDTO> VentasPorHoraHoy { get; set; } = [];
+        public List<VentasPorHoraDTO> VentasPorHoraPeriodo { get; set; } = [];
         public List<VentasPorDiaDTO> VentasPorDia { get; set; } = [];
     }
 
