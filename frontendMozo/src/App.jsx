@@ -447,9 +447,9 @@ function App() {
                             <Route path="*" element={<Navigate to="/sistema_sucursal" replace />} />
                         </Routes>
                     </Box>
-                    <Box component="aside" sx={{ width: { xs: 0, md: 260 }, borderLeft: { md: 1 }, borderColor: 'divider', display: { xs: 'none', md: 'block' }, bgcolor: 'background.paper', px: 2, py: 3 }} className="container-notificaciones">
+                    {/*<Box component="aside" sx={{ width: { xs: 0, md: 260 }, borderLeft: { md: 1 }, borderColor: 'divider', display: { xs: 'none', md: 'block' }, bgcolor: 'background.paper', px: 2, py: 3 }} className="container-notificaciones">
                         {[...Notificaciones].reverse()}
-                    </Box>
+                    </Box>*/}
                 </Box>
             </AuthTypeContext.Provider>
         </LoginContext.Provider>
