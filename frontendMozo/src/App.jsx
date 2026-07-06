@@ -1,5 +1,5 @@
 import './styles/App.css'
-import React, { useState, useEffect, createContext, useMemo } from 'react'
+import React, { useState, useEffect, createContext, useMemo, useCallback } from 'react'
 import { Route, Routes, useLocation, Navigate } from "react-router-dom"
 import { Box } from '@mui/material'
 import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos, MappearReservas, MappearPlanos } from './Helpers/HelperFunctions'
@@ -51,10 +51,11 @@ import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { BuscarTodosLosMenus } from './API/APIMenus'
 import { BuscarTodasLasCuentasCorrientes } from './API/APICuentasCorrientes'
+import { GetDeliveryTakeaway, normalizarDeliveryTakeaway, normalizarDeliveryTakeawayComoVisita } from './API/APIDeliveryTakeaway'
 import { CambiarEstadoItems } from './API/APIItems'
 import { authService } from './services/authService'
 import { useSelector, useDispatch } from 'react-redux'
-import { actualizarVisita, cambiarEstadoPagadoProductos, cargarVisitasActivas } from './redux/slices/visitasActivasSlice'
+import { actualizarVisita, cambiarEstadoPagadoProductos, cargarVisitasActivas, sincronizarVisitasDeliveryTakeaway } from './redux/slices/visitasActivasSlice'
 import { agregar as agregarNotificaciones } from './redux/slices/notificacionesSlice'
 import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
@@ -174,6 +175,21 @@ function App() {
         return () => { cancelled = true; };
     }, [location.search, location.pathname, dispatch])
 
+    const sincronizarDeliveryTakeaway = useCallback(async () => {
+        if (!localStorage.getItem('token')) return;
+
+        try {
+            const data = await GetDeliveryTakeaway();
+            const visitasDeliveryTakeaway = (Array.isArray(data) ? data : [])
+                .map(normalizarDeliveryTakeaway)
+                .map(normalizarDeliveryTakeawayComoVisita);
+
+            dispatch(sincronizarVisitasDeliveryTakeaway(visitasDeliveryTakeaway));
+        } catch (error) {
+            console.error('Error al sincronizar delivery/takeaway:', error);
+        }
+    }, [dispatch]);
+
     const { sendRecargarTicket } = useSignalR({
         onRegistrarProducto: (pedido, numeroMesa) => { AgregarItemsAPedido(pedido, numeroMesa) },
         onVisitaActualizada: (visitaActualizada) => {
@@ -191,8 +207,15 @@ function App() {
         },
         onRegistrarNotificacion: (notificacion) => { dispatch(agregarNotificaciones(notificacion)) },
         onPagarMesa: (IdPedido) => { pagarTotal(IdPedido) },
-        onPagarMesaSeparado: (ArrayIdsItems) => { pagarSeparado(ArrayIdsItems) }
+        onPagarMesaSeparado: (ArrayIdsItems) => { pagarSeparado(ArrayIdsItems) },
+        onRecargarDeliveryTakeaway: sincronizarDeliveryTakeaway
     })
+
+    useEffect(() => {
+        if (logeadoEmpresaSucursal && authType === 'sucursal') {
+            sincronizarDeliveryTakeaway();
+        }
+    }, [authType, logeadoEmpresaSucursal, sincronizarDeliveryTakeaway]);
 
     // Las visitas activas se cargan con GET /VisitasActivas en el useEffect de sistema_sucursal
 
@@ -216,9 +239,8 @@ function App() {
         SetCategorias(Array.isArray(data) ? data : []);
     }
 
-    //TODO: Recargar Delivery/Take Away
     async function recargarDeliveryTakeAway() {
-        //await BuscarTodosLosDeliveryTakeAway().then(data => SetDeliveryTakeAway(data));
+        await sincronizarDeliveryTakeaway();
     }
 
     async function recargarListadoMozos() {

@@ -149,7 +149,15 @@ export const useCaja = () => {
         return true;
     };
 
-    const mesasAbiertas = visitasActivas?.length ?? 0;
+    const mesasAbiertas = useMemo(() => {
+        return (visitasActivas || []).filter((visita) => {
+            const origen = (visita.origen || visita.Origen || 'Local').toLowerCase();
+            if (origen === 'delivery' || origen === 'takeaway') {
+                return !visita.deliveryTakeaway?.entregado;
+            }
+            return visita.estado !== 'Cerrada';
+        }).length;
+    }, [visitasActivas]);
 
     const validarCierre = () => {
         if (mesasAbiertas > 0) {

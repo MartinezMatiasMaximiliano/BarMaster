@@ -139,9 +139,15 @@ export const MesaModalUnificado = ({
     const handleCloseWithCleanup = useCallback(() => {
         setProductosSeleccionados([]);
         autoSubmitPedidos.reset();
-        limpiarEstado();
+
+        if (comanda.length > 0 && idVisita && !loading) {
+            handleEnviarPedidos();
+        } else if (!loading) {
+            limpiarEstado();
+        }
+
         handleClose();
-    }, [autoSubmitPedidos, handleClose, limpiarEstado]);
+    }, [autoSubmitPedidos, comanda.length, handleClose, handleEnviarPedidos, idVisita, limpiarEstado, loading]);
 
     const handleIndicacionesEnCargaChange = useCallback((productoId, indicaciones) => {
         actualizarIndicaciones(productoId, indicaciones);

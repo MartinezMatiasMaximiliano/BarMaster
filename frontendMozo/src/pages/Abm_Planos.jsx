@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Alert } from "@mui/material";
@@ -18,6 +18,7 @@ import { Campos as Campos_Agregar } from "../configs/agregar/Planos"
 import { Campos as Campos_Editar } from "../configs/modificar/Planos"
 
 function Abm_Planos(props) {
+    const [mostrarAlertaInfo, setMostrarAlertaInfo] = useState(true);
 
     const api = useMemo(() => ({
         crear: CrearPlano,
@@ -47,10 +48,12 @@ function Abm_Planos(props) {
 
     return (
         <Container>
-            <Alert severity="info" sx={{ mb: 2 }}>
-                Aquí puede administrar los planos (crear, editar, eliminar). Para ver la distribución de mesas por plano, vaya a{" "}
-                <Link to="/distribucion_mesas">Operaciones → Distribución de las Mesas</Link>.
-            </Alert>
+            {mostrarAlertaInfo && (
+                <Alert severity="info" sx={{ mb: 2 }} onClose={() => setMostrarAlertaInfo(false)}>
+                    Aquí puede administrar los planos (crear, editar, eliminar). Para ver la distribución de mesas por plano, vaya a{" "}
+                    <Link to="/distribucion_mesas">Operaciones → Distribución de las Mesas</Link>.
+                </Alert>
+            )}
             <Tabla
                 titulo={props.titulo}
                 filas={props.datos_planos}

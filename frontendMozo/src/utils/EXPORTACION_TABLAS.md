@@ -244,7 +244,7 @@ function MiTabla({ datos, loading }) {
 ## Notas Importantes
 
 1. **PDF**: Requiere que `pdfmake` esté instalado (ya está en el proyecto)
-2. **Excel**: Requiere que `xlsx` esté instalado. Si no está, se mostrará un mensaje al usuario
+2. **Excel**: Requiere que `write-excel-file` esté instalado. Si no está, se mostrará un mensaje al usuario
 3. **Formatters**: Los formatters deben retornar strings para PDF, pero pueden retornar números para Excel
 4. **Datos vacíos**: El sistema valida que haya datos antes de exportar
 5. **Nombres de archivo**: Si no se especifica `nombreArchivo`, se usa un nombre por defecto con la fecha actual

@@ -4,24 +4,71 @@ import { Alert, Container } from "react-bootstrap";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_AgregarDelivery from "../components/Modals/Agregar_Delivery/Modal_AgregarDelivery";
 import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
+import BotonCobrarPedido from "../components/DeliveryTakeaway/BotonCobrarPedido";
 import { formatearFecha } from "../Helpers/HelperFunctions"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, IconButton, Stack, Typography } from "@mui/material";
-import { useSelector } from 'react-redux';
-import { CambiarEstadoEntregaDeliveryTakeaway, EliminarDeliveryTakeaway, GetDeliveryTakeaway, esDelivery, normalizarDeliveryTakeaway } from "../API/APIDeliveryTakeaway";
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    CambiarEstadoEntregaDeliveryTakeaway,
+    EliminarDeliveryTakeaway,
+    GetDeliveryTakeaway,
+    normalizarDeliveryTakeaway,
+    normalizarDeliveryTakeawayComoVisita,
+} from "../API/APIDeliveryTakeaway";
 import { BuscarTodosLosTipoEnvios } from "../API/APITipoEnvios";
+import { sincronizarVisitasDeliveryTakeaway, actualizarVisita } from "../redux/slices/visitasActivasSlice";
 import WarningIcon from '@mui/icons-material/Warning';
 import CloseIcon from '@mui/icons-material/Close';
 
 function Delivery() {
+    const dispatch = useDispatch();
     const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
-    const [deliveries, setDeliveries] = useState([]);
+    const visitasActivas = useSelector((state) => state.visitasActivas.value);
     const [showModalAgregar, setShowModalAgregar] = useState(false);
     const [deliveryEditando, setDeliveryEditando] = useState(null);
     const [actualizandoEntregaIds, setActualizandoEntregaIds] = useState([]);
     const [confirmarNoEntregado, setConfirmarNoEntregado] = useState(null);
-    const [mostrarEntregados, setMostrarEntregados] = useState(false);
+    const [mostrarEnviados, setMostrarEnviados] = useState(false);
+
+    const deliveries = React.useMemo(() => (
+        (Array.isArray(visitasActivas) ? visitasActivas : [])
+            .filter((visita) => (visita.origen || '').toLowerCase() === 'delivery')
+            .map((visita) => {
+                const item = visita.deliveryTakeaway || {};
+                const productosConsumidos = Array.isArray(visita.productosConsumidos) ? visita.productosConsumidos : [];
+                const tipoEnvio = item.tipoEnvio ?? null;
+
+                return {
+                    id: item.id ?? visita.idDeliveryTakeaway,
+                    idVisita: visita.id,
+                    fechaHora: visita.fechaHora,
+                    Cliente: item.cliente ?? '-',
+                    Direccion: item.direccion || '-',
+                    Telefono: item.telefono || '-',
+                    Indicaciones: item.indicaciones || '-',
+                    Cadete: item.cadete
+                        ? `${item.cadete.nombre} ${item.cadete.apellido}`.trim() || '-'
+                        : '-',
+                    TipoEnvioId: item.idTipoEnvio,
+                    TipoEnvio: tipoEnvio?.nombre || (item.idTipoEnvio ? `Tipo ${item.idTipoEnvio}` : '-'),
+                    PrecioEnvio: tipoEnvio?.precio ?? null,
+                    PrecioTotal: item.precioTotal ?? productosConsumidos.reduce((acc, producto) => acc + (Number(producto.precio) || 0), 0),
+                    entregado: Boolean(item.entregado),
+                    estadoCobro: productosConsumidos.every((producto) => producto.estadoPagado) ? 'Cobrado' : 'Pendiente',
+                    pedido: item,
+                    Productos: productosConsumidos.map((producto) => ({
+                        id: producto.id,
+                        idProducto: producto.idProducto,
+                        nombre: producto.nombre,
+                        precio: producto.precio,
+                        indicaciones: producto.indicaciones,
+                        estadoPagado: producto.estadoPagado,
+                    })),
+                };
+            })
+    ), [visitasActivas]);
 
     // Cargar datos desde la API al montar y cuando se pide recargar
     const cargarDeliveries = React.useCallback(async () => {
@@ -32,42 +79,20 @@ function Delivery() {
                 BuscarTodosLosTipoEnvios().catch(() => []),
             ]);
             const mapaTiposEnvio = new Map((Array.isArray(tiposEnvio) ? tiposEnvio : []).map((tipo) => [Number(tipo.id), tipo]));
-            const filas = (Array.isArray(data) ? data : [])
+            const visitas = (Array.isArray(data) ? data : [])
                 .map(normalizarDeliveryTakeaway)
-                .filter(esDelivery)
                 .map((item) => {
                     const tipoEnvio = mapaTiposEnvio.get(Number(item.idTipoEnvio)) ?? item.tipoEnvio ?? null;
-                    return {
-                    id: item.id,
-                    fechaHora: item.fechaHora,
-                    Cliente: item.cliente,
-                    Direccion: item.direccion || '-',
-                    Telefono: item.telefono || '-',
-                    Indicaciones: item.indicaciones || '-',
-                    Cadete: item.cadete
-                        ? `${item.cadete.nombre} ${item.cadete.apellido}`.trim() || '-'
-                        : '-',
-                    TipoEnvioId: item.idTipoEnvio,
-                    TipoEnvio: tipoEnvio?.nombre || `Tipo ${item.idTipoEnvio}`,
-                    PrecioEnvio: tipoEnvio?.precio ?? null,
-                    PrecioTotal: item.precioTotal,
-                    entregado: item.entregado,
-                    pedido: item,
-                    Productos: item.productos.map((producto) => ({
-                        id: producto.id,
-                        idProducto: producto.idProducto,
-                        nombre: producto.nombre,
-                        precio: producto.precio,
-                        indicaciones: producto.indicaciones,
-                    })),
-                    };
+                    return normalizarDeliveryTakeawayComoVisita({
+                        ...item,
+                        tipoEnvio,
+                    });
                 });
-            setDeliveries(filas);
+            dispatch(sincronizarVisitasDeliveryTakeaway(visitas));
         } catch (error) {
             console.error("Error al cargar deliveries:", error);
-            setDeliveries([]);
         }
-    }, []);
+    }, [dispatch]);
 
     useEffect(() => {
         cargarDeliveries();
@@ -79,11 +104,19 @@ function Delivery() {
         setActualizandoEntregaIds((prev) => [...prev, fila.id]);
         try {
             await CambiarEstadoEntregaDeliveryTakeaway(fila.id, checked);
-            setDeliveries((prev) =>
-                prev.map((delivery) =>
-                    delivery.id === fila.id ? { ...delivery, entregado: checked } : delivery
-                )
-            );
+            dispatch(actualizarVisita({
+                id: fila.idVisita,
+                idDeliveryTakeaway: fila.id,
+                origen: 'Delivery',
+                fechaHora: fila.fechaHora,
+                estado: 'Cerrada',
+                deliveryTakeaway: {
+                    ...fila.pedido,
+                    id: fila.id,
+                    entregado: checked,
+                },
+                productosConsumidos: fila.Productos,
+            }));
         } catch (error) {
             console.error("Error al actualizar estado de entrega:", error);
         } finally {
@@ -139,6 +172,19 @@ function Delivery() {
             label: "Total",
             render: (fila) => ('$' + fila.PrecioTotal)
         }, 
+        {
+            key: "estadoCobro",
+            label: "Cobro",
+            align: "center",
+            render: (fila) => (
+                <BotonCobrarPedido
+                    pedido={fila}
+                    disabled={!hayCajaActiva}
+                    onSuccess={cargarDeliveries}
+                    titulo="Cobrar delivery"
+                />
+            ),
+        },
         {
             key: "entregado",
             label: "Entregado",
@@ -211,17 +257,17 @@ function Delivery() {
                         <Button
                             variant="outlined"
                             color="primary"
-                            onClick={() => setMostrarEntregados(true)}
+                            onClick={() => setMostrarEnviados(true)}
                         >
-                            Ver entregados ({deliveriesEntregados.length})
+                            Ver enviados ({deliveriesEntregados.length})
                         </Button>
                     </Stack>
                 )}
             />
             <Drawer
                 anchor="right"
-                open={mostrarEntregados}
-                onClose={() => setMostrarEntregados(false)}
+                open={mostrarEnviados}
+                onClose={() => setMostrarEnviados(false)}
                 PaperProps={{
                     sx: {
                         width: { xs: '100%', md: '82vw' },
@@ -232,18 +278,18 @@ function Delivery() {
             >
                 <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
                     <Box>
-                        <Typography variant="h6">Delivery entregados</Typography>
+                        <Typography variant="h6">Delivery enviados</Typography>
                         <Typography variant="body2" color="text.secondary">
                             {deliveriesEntregados.length} pedido{deliveriesEntregados.length !== 1 ? 's' : ''}
                         </Typography>
                     </Box>
-                    <IconButton onClick={() => setMostrarEntregados(false)} aria-label="Cerrar entregados">
+                    <IconButton onClick={() => setMostrarEnviados(false)} aria-label="Cerrar enviados">
                         <CloseIcon />
                     </IconButton>
                 </Stack>
                 <Divider sx={{ mb: 2 }} />
                 <Tabla
-                    titulo="Delivery entregados"
+                    titulo="Delivery enviados"
                     filas={deliveriesEntregados}
                     columnas={columnasDeliveryEntregados}
                     onRefresh={cargarDeliveries}
