@@ -13,7 +13,9 @@ import {
     FormControl,
     InputLabel,
     Select,
-    MenuItem
+    MenuItem,
+    Checkbox,
+    FormControlLabel
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ReceiptIcon from '@mui/icons-material/Receipt';
@@ -43,6 +45,7 @@ export default function Modal_Facturar({
     const [idCuentaCorriente, setIdCuentaCorriente] = useState('');
     const [montoDescuento, setMontoDescuento] = useState('');
     const [descripcionDescuento, setDescripcionDescuento] = useState('');
+    const [facturarTicket, setFacturarTicket] = useState(false);
     const [showOpcionesExtra, setShowOpcionesExtra] = useState(false);
     const [error, setError] = useState('');
     const cajaActiva = useSelector((state) => state.cajaActiva.value);
@@ -83,6 +86,7 @@ export default function Modal_Facturar({
             setIdCuentaCorriente('');
             setMontoDescuento('');
             setDescripcionDescuento('');
+            setFacturarTicket(false);
             setShowOpcionesExtra(false);
             setError('');
         }
@@ -147,19 +151,32 @@ export default function Modal_Facturar({
                         <Typography variant="h5" color="primary.main">{currencyFormatter.format(totalNum)}</Typography>
                     </Box>
 
-                    <FormControl fullWidth size="small">
-                        <InputLabel id="facturar-tipo-pago">Método de pago</InputLabel>
-                        <Select
-                            labelId="facturar-tipo-pago"
-                            value={idTipoPago}
-                            label="Método de pago"
-                            onChange={(e) => setIdTipoPago(e.target.value)}
-                        >
-                            {tiposPago.map((tp) => (
-                                <MenuItem key={tp.id} value={String(tp.id)}>{tp.nombre}</MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
+                        <FormControl size="small" sx={{ width: { xs: '100%', sm: '65%' } }}>
+                            <InputLabel id="facturar-tipo-pago">Método de pago</InputLabel>
+                            <Select
+                                labelId="facturar-tipo-pago"
+                                value={idTipoPago}
+                                label="Método de pago"
+                                onChange={(e) => setIdTipoPago(e.target.value)}
+                            >
+                                {tiposPago.map((tp) => (
+                                    <MenuItem key={tp.id} value={String(tp.id)}>{tp.nombre}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        <FormControlLabel
+                            sx={{ width: { xs: '100%', sm: '35%' }, m: 0 }}
+                            control={
+                                <Checkbox
+                                    checked={facturarTicket}
+                                    onChange={(e) => setFacturarTicket(e.target.checked)}
+                                />
+                            }
+                            label="Facturar ticket"
+                        />
+                    </Stack>
 
                     {esEfectivo && (
                         <Box>

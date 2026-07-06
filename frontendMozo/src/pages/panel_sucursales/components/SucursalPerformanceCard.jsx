@@ -21,13 +21,8 @@ import SucursalExpandedDetails from './SucursalExpandedDetails';
 import { formatearMoneda, formatearNumero, formatearPorcentaje } from '../utils/formatters';
 import { obtenerPeriodoPanel } from '../utils/dateRange';
 
-<<<<<<< Updated upstream
-const SucursalPerformanceCard = ({ sucursal, expanded, onToggle }) => {
-    const kpis = sucursal.kpisPeriodo ?? {};
-=======
 const SucursalPerformanceCard = ({ sucursal, periodoDias, expanded, onToggle }) => {
-    const kpis = sucursal.kpisHoy ?? {};
->>>>>>> Stashed changes
+    const kpis = sucursal.kpisPeriodo ?? {};
     const caja = sucursal.caja ?? {};
     const ventas = Number(kpis.ventas || 0);
     const margen = Number(kpis.margenEstimado || 0);
@@ -102,25 +97,15 @@ const SucursalPerformanceCard = ({ sucursal, periodoDias, expanded, onToggle }) 
                 >
                     <KpiTile
                         icon={<AttachMoneyIcon fontSize="small" color="primary" />}
-<<<<<<< Updated upstream
-                        label="Ventas período"
-                        value={formatearMoneda(ventas)}
-                        helper={ventas > 0 ? 'Facturación del período' : 'Sin ventas registradas'}
-=======
                         label={`Ventas ${periodo.fraseEn}`}
                         value={formatearMoneda(ventas)}
                         helper={ventas > 0 ? `Facturación ${periodo.fraseDe}` : 'Sin ventas registradas'}
->>>>>>> Stashed changes
                     />
                     <KpiTile
                         icon={<ShoppingCartIcon fontSize="small" color="primary" />}
                         label="Pedidos"
                         value={formatearNumero(kpis.cantidadVisitas)}
-<<<<<<< Updated upstream
-                        helper="Visitas del período"
-=======
                         helper={`Visitas ${periodo.fraseDe}`}
->>>>>>> Stashed changes
                     />
                     <KpiTile
                         icon={<ReceiptLongIcon fontSize="small" color="primary" />}

@@ -1,5 +1,6 @@
 import { Box, Button, DialogActions } from '@mui/material';
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import PrintIcon from '@mui/icons-material/Print';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
@@ -24,7 +25,7 @@ export const MesaModalActions = ({
                 startIcon={<ReceiptIcon />}
                 size="small"
             >
-                Facturar todo
+                Cobrar todo
             </Button>
             <Button
                 variant="contained"
@@ -34,7 +35,7 @@ export const MesaModalActions = ({
                 startIcon={<PlaylistAddCheckIcon />}
                 size="small"
             >
-                Facturar por partes {productosSeleccionadosCount > 0 && `(${productosSeleccionadosCount})`}
+                Cobrar por partes {productosSeleccionadosCount > 0 && `(${productosSeleccionadosCount})`}
             </Button>
             <Button
                 onClick={onAgregarPedidos}
@@ -45,6 +46,14 @@ export const MesaModalActions = ({
                 size="small"
             >
                 {loading ? 'Enviando...' : `Agregar ${totalItems > 0 ? `${totalItems} item${totalItems > 1 ? 's' : ''}` : 'Pedidos'}`}
+            </Button>
+            <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<PrintIcon />}
+                size="small"
+            >
+                Imprimir Preticket
             </Button>
         </Box>
         <Button onClick={onClose} variant="outlined" size="small">

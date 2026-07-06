@@ -25,10 +25,16 @@ export const periodosPanelSucursales = [
 export const obtenerPeriodoPanel = (dias) =>
     periodosPanelSucursales.find(periodo => periodo.dias === dias) ?? periodosPanelSucursales[0];
 
+const toDateInputValue = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 export const calcularRangoPanel = (dias) => {
     const hasta = new Date();
     const desde = new Date();
-<<<<<<< Updated upstream
     desde.setDate(hasta.getDate() - (dias - 1));
     desde.setHours(0, 0, 0, 0);
     hasta.setHours(23, 59, 59, 999);
@@ -38,12 +44,5 @@ export const calcularRangoPanel = (dias) => {
         hasta: hasta.toISOString(),
         desdeLabel: toDateInputValue(desde),
         hastaLabel: toDateInputValue(hasta)
-=======
-    desde.setTime(hasta.getTime() - (dias * 24 * 60 * 60 * 1000));
-
-    return {
-        desde: desde.toISOString(),
-        hasta: hasta.toISOString()
->>>>>>> Stashed changes
     };
 };

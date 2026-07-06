@@ -12,11 +12,7 @@ const SucursalExpandedDetails = ({ sucursal, periodoDias }) => {
 
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
                 <SucursalCajaStatus caja={sucursal.caja} />
-<<<<<<< Updated upstream
-                <SucursalAlerts kpis={sucursal.kpisPeriodo} />
-=======
-                <SucursalAlerts kpis={sucursal.kpisHoy} periodoDias={periodoDias} />
->>>>>>> Stashed changes
+                <SucursalAlerts kpis={sucursal.kpisPeriodo} periodoDias={periodoDias} />
             </Stack>
 
             <SucursalCharts series={sucursal.series} periodoDias={periodoDias} />

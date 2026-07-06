@@ -4,17 +4,10 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { formatearMoneda } from '../utils/formatters';
 import { obtenerPeriodoPanel, periodosPanelSucursales } from '../utils/dateRange';
 
-<<<<<<< Updated upstream
-const resumenItems = (totales, totalSucursales) => [
-    ['Ventas período', formatearMoneda(totales.ventasPeriodo)],
-    ['Pedidos período', totales.visitasPeriodo.toLocaleString('es-AR')],
-    ['Margen período', formatearMoneda(totales.margenPeriodo)],
-=======
 const resumenItems = (totales, totalSucursales, periodo) => [
-    [`Ventas ${periodo.fraseEn}`, formatearMoneda(totales.ventasHoy)],
-    [`Pedidos ${periodo.fraseEn}`, totales.visitasHoy.toLocaleString('es-AR')],
-    [`Margen ${periodo.fraseEn}`, formatearMoneda(totales.margenHoy)],
->>>>>>> Stashed changes
+    [`Ventas ${periodo.fraseEn}`, formatearMoneda(totales.ventasPeriodo)],
+    [`Pedidos ${periodo.fraseEn}`, totales.visitasPeriodo.toLocaleString('es-AR')],
+    [`Margen ${periodo.fraseEn}`, formatearMoneda(totales.margenPeriodo)],
     ['Cajas abiertas', `${totales.cajasAbiertas}/${totalSucursales}`]
 ];
 

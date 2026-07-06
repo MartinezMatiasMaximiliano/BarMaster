@@ -27,14 +27,9 @@ const ChartFrame = ({ title, children }) => (
     </Box>
 );
 
-<<<<<<< Updated upstream
-const SucursalCharts = ({ series = {} }) => {
-    const ventasPorHora = series.ventasPorHoraPeriodo ?? [];
-=======
 const SucursalCharts = ({ series = {}, periodoDias }) => {
     const periodo = obtenerPeriodoPanel(periodoDias);
-    const ventasPorHora = series.ventasPorHoraHoy ?? [];
->>>>>>> Stashed changes
+    const ventasPorHora = series.ventasPorHoraPeriodo ?? [];
     const ventasPorDia = (series.ventasPorDia ?? []).map(item => ({
         ...item,
         fechaLabel: formatearFechaCorta(item.fecha)
@@ -49,11 +44,7 @@ const SucursalCharts = ({ series = {}, periodoDias }) => {
                 mb: 2
             }}
         >
-<<<<<<< Updated upstream
-            <ChartFrame title="Ventas por hora del período">
-=======
             <ChartFrame title={`Ventas por hora ${periodo.fraseDe}`}>
->>>>>>> Stashed changes
                 <ResponsiveContainer>
                     <BarChart data={ventasPorHora} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />

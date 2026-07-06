@@ -24,11 +24,7 @@ const SucursalAlerts = ({ kpis = {}, periodoDias }) => {
         return (
             <Box sx={{ flex: 1 }}>
                 <Alert severity="info" sx={{ borderRadius: 1.5, height: '100%', alignItems: 'center' }}>
-<<<<<<< Updated upstream
-                    No se registraron ventas en el período seleccionado.
-=======
                     No se registraron ventas {periodo.fraseEn}.
->>>>>>> Stashed changes
                 </Alert>
             </Box>
         );
