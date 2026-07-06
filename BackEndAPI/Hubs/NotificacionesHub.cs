@@ -49,6 +49,10 @@ namespace BackEndAPI.Hubs
             await Clients.All.SendAsync("RecargarMenu");
         }
 
+        public async Task RecargarDeliveryTakeaway() {
+            await Clients.Group("Mozos").SendAsync("RecargarDeliveryTakeaway");
+        }
+
         public async Task MesaCerrada(int NumeroMesa)
         {
             await Clients.All.SendAsync("MesaCerrada", NumeroMesa);

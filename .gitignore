@@ -551,3 +551,4 @@ bin/
 /BackEndAPI/wwwroot/uploads/ImagenesProductos
 .claude/settings.local.json
 BackEndAPI/Properties/launchSettings.json
+BackEndAPI/.config/dotnet-tools.json
