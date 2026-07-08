@@ -20,6 +20,44 @@ namespace BackEndAPI.Controllers
             _deliveryTakeawayServices = deliveryTakeawayServices;
         }
 
+        private static DeliveryTakeawayResponseDTO MappearDeliveryTakeawayDTO(DeliveryAndTakeaway deliveryTakeaway)
+        {
+            return new DeliveryTakeawayResponseDTO
+            {
+                Id = deliveryTakeaway.Id,
+                IdSucursal = deliveryTakeaway.IdSucursal,
+                IdTipoEnvio = deliveryTakeaway.IdTipoEnvio,
+                IdVisita = deliveryTakeaway.IdVisita,
+                IdCaja = deliveryTakeaway.Visita.IdCaja,
+                FechaHora = deliveryTakeaway.FechaHora,
+                NombreCliente = deliveryTakeaway.NombreCliente ?? "",
+                Direccion = deliveryTakeaway.Direccion,
+                Indicaciones = deliveryTakeaway.Indicaciones,
+                Telefono = deliveryTakeaway.Telefono ?? "",
+                PrecioTotal = deliveryTakeaway.PrecioTotal,
+                PrecioEnvio = deliveryTakeaway.TipoEnvio != null ? deliveryTakeaway.TipoEnvio.Precio : 0,
+                Entregado = deliveryTakeaway.Entregado,
+                Cadete = deliveryTakeaway.Cadete != null ? new CadeteDTO
+                {
+                    Id = deliveryTakeaway.Cadete.Id,
+                    Nombre = deliveryTakeaway.Cadete.Nombres,
+                    Apellido = deliveryTakeaway.Cadete.Apellido,
+                    Telefono = deliveryTakeaway.Cadete.Telefono,
+                } : null,
+                Productos = (deliveryTakeaway.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
+                {
+                    Id = p.Id,
+                    IdProducto = p.IdProducto,
+                    Nombre = p.NombreProducto,
+                    Indicaciones = p.Detalles,
+                    Precio = p.PrecioDelMomento,
+                    EstadoPagado = p.EstadoPagado,
+                    EstadoPedido = p.EstadoPedido,
+                    FechaAgregado = p.FechaAgregado,
+                }).ToList()
+            };
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetListaDeliveryTakeaways()
         {
@@ -29,39 +67,7 @@ namespace BackEndAPI.Controllers
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
                 var result = await _deliveryTakeawayServices.GetListaDeliveryTakeaways(IdSucursal);
                 if (result == null) throw new Exception("Error al obtener los pedidos");
-                var response = result.Select(r => new DeliveryTakeawayResponseDTO
-                {
-                    Id = r.Id,
-                    IdSucursal = r.IdSucursal,
-                    IdTipoEnvio = r.IdTipoEnvio,
-                    IdVisita = r.IdVisita,
-                    FechaHora = r.FechaHora,
-                    NombreCliente = r.NombreCliente ?? "",
-                    Direccion = r.Direccion,
-                    Indicaciones = r.Indicaciones,
-                    Telefono = r.Telefono ?? "",
-                    PrecioTotal = r.PrecioTotal,
-                    PrecioEnvio = r.TipoEnvio != null ? r.TipoEnvio.Precio : 0,
-                    Entregado = r.Entregado,
-                    Cadete = r.Cadete != null ? new CadeteDTO
-                    {
-                        Id = r.Cadete.Id,
-                        Nombre = r.Cadete.Nombres,
-                        Apellido = r.Cadete.Apellido,
-                        Telefono = r.Cadete.Telefono,
-                    } : null,
-                    Productos = (r.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
-                    {
-                        Id = p.Id,
-                        IdProducto = p.IdProducto,
-                        Nombre = p.NombreProducto,
-                        Indicaciones = p.Detalles,
-                        Precio = p.PrecioDelMomento,
-                        EstadoPagado = p.EstadoPagado,
-                        EstadoPedido = p.EstadoPedido,
-                        FechaAgregado = p.FechaAgregado,
-                    }).ToList()
-                }).ToList();
+                var response = result.Select(MappearDeliveryTakeawayDTO).ToList();
                 return Ok(response);
             }
             catch (Exception ex)
@@ -78,6 +84,35 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpGet("Caja/{idCaja}")]
+        public async Task<IActionResult> GetListaDeliveryTakeawaysPorCaja(Guid idCaja)
+        {
+            try
+            {
+                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
+                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
+                if (idCaja == Guid.Empty) throw new Exception("Caja no identificada");
+                var result = await _deliveryTakeawayServices.GetListaDeliveryTakeawaysPorCaja(IdSucursal, idCaja);
+                if (result == null) throw new Exception("Error al obtener los pedidos");
+                var response = result.Select(MappearDeliveryTakeawayDTO).ToList();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Error al obtener los pedidos":
+                        return BadRequest("Error al obtener los pedidos. Verifica los datos enviados y vuelve a intentarlo.");
+                    case "Sucursal no identificada":
+                        return BadRequest("Sucursal no identificada. Asegúrate de que el token contenga el claim 'IdSucursal'.");
+                    case "Caja no identificada":
+                        return BadRequest("Caja no identificada. Asegúrate de enviar un Id de caja válido.");
+                    default:
+                        return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDeliveryTakeawayPorId(Guid id)
         {
@@ -85,39 +120,7 @@ namespace BackEndAPI.Controllers
             if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
             var result = await _deliveryTakeawayServices.ObtenerDeliveryTakeawayPorId(id);
             if (result == null) throw new Exception("Error al obtener los pedidos");
-            var response = new DeliveryTakeawayResponseDTO
-            {
-                Id = result.Id,
-                IdSucursal = result.IdSucursal,
-                IdTipoEnvio = result.IdTipoEnvio,
-                IdVisita = result.IdVisita,
-                FechaHora = result.FechaHora,
-                NombreCliente = result.NombreCliente ?? "",
-                Direccion = result.Direccion ?? "",
-                Indicaciones = result.Indicaciones,
-                Telefono = result.Telefono ?? "",
-                PrecioTotal = result.PrecioTotal,
-                PrecioEnvio = result.TipoEnvio != null ? result.TipoEnvio.Precio : 0,
-                Entregado = result.Entregado,
-                Cadete = result.Cadete != null ? new CadeteDTO
-                {
-                    Id = result.Cadete.Id,
-                    Nombre = result.Cadete.Nombres,
-                    Apellido = result.Cadete.Apellido,
-                    Telefono = result.Cadete.Telefono,
-                } : null,
-                Productos = (result.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
-                {
-                    Id = p.Id,
-                    IdProducto = p.IdProducto,
-                    Nombre = p.NombreProducto,
-                    Indicaciones = p.Detalles,
-                    Precio = p.PrecioDelMomento,
-                    EstadoPagado = p.EstadoPagado,
-                    EstadoPedido = p.EstadoPedido,
-                    FechaAgregado = p.FechaAgregado,
-                }).ToList()
-            };
+            var response = MappearDeliveryTakeawayDTO(result);
             return Ok(response);
         }
 
@@ -131,39 +134,7 @@ namespace BackEndAPI.Controllers
                 if (request.Origen != "Delivery" && request.Origen != "Takeaway") throw new Exception("Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.");
                 var result = await _deliveryTakeawayServices.CrearDeliveryTakeaway(IdSucursal, request);
                 if (result == null) throw new Exception("Error al crear el pedido");
-                var response = new DeliveryTakeawayResponseDTO
-                {
-                    Id = result.Id,
-                    IdSucursal = result.IdSucursal,
-                    IdTipoEnvio = result.IdTipoEnvio ?? null,
-                    IdVisita = result.IdVisita,
-                    FechaHora = result.FechaHora,
-                    NombreCliente = result.NombreCliente,
-                    Direccion = result.Direccion,
-                    Indicaciones = result.Indicaciones,
-                    Telefono = result.Telefono ?? "",
-                    PrecioTotal = result.PrecioTotal,
-                    PrecioEnvio = result.TipoEnvio != null ? result.TipoEnvio.Precio : 0,
-                    Entregado = result.Entregado,
-                    Cadete = result.Cadete != null ? new CadeteDTO
-                    {
-                        Id = result.Cadete.Id,
-                        Nombre = result.Cadete.Nombres,
-                        Apellido = result.Cadete.Apellido,
-                        Telefono = result.Cadete.Telefono,
-                    } : null,
-                    Productos = (result.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
-                    {
-                        Id = p.Id,
-                        IdProducto = p.IdProducto,
-                        Nombre = p.NombreProducto,
-                        Indicaciones = p.Detalles,
-                        Precio = p.PrecioDelMomento,
-                        EstadoPagado = p.EstadoPagado,
-                        EstadoPedido = p.EstadoPedido,
-                        FechaAgregado = p.FechaAgregado,
-                    }).ToList()
-                };
+                var response = MappearDeliveryTakeawayDTO(result);
                 return Ok(response);
 
             }
@@ -203,6 +174,7 @@ namespace BackEndAPI.Controllers
                     IdSucursal = result.IdSucursal,
                     IdTipoEnvio = result.IdTipoEnvio,
                     IdVisita = result.IdVisita,
+                    IdCaja = result.Visita.IdCaja,
                     FechaHora = result.FechaHora,
                     NombreCliente = result.NombreCliente ?? "",
                     Direccion = result.Direccion,
@@ -264,4 +236,3 @@ namespace BackEndAPI.Controllers
         }
     }
 }
-

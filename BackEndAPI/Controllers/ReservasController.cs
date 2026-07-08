@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using BackEndAPI.Models;
 namespace BackEndAPI.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ReservasController : ControllerBase
@@ -19,31 +19,67 @@ namespace BackEndAPI.Controllers
             _ReservasServices = _reservasServices;
         }
 
+        private static ReservaDTO MappearReservaDTO(Reserva reserva)
+        {
+            return new ReservaDTO
+            {
+                Id = reserva.Id,
+                FechaHora = reserva.FechaHora,
+                NombreReserva = reserva.NombreReserva,
+                Estado = new EstadoReservaDTO
+                {
+                    Id = reserva.Estado.Id,
+                    Nombre = reserva.Estado.Nombre
+                },
+                TelefonoContacto = reserva.Telefono,
+                CantidadDePersonas = reserva.CantidadDePersonas
+            };
+        }
+
         [HttpGet("/Reservas")]
         public async Task<IActionResult> GetReservas()
         {
             try
             {
                 var reservas = await _ReservasServices.BuscarReservas();
-                var ListaReservas = reservas.Select(reserva => new ReservaDTO
-                {
-                    Id = reserva.Id,
-                    FechaHora = reserva.FechaHora,
-                    NombreReserva = reserva.NombreReserva,
-                    Estado = new EstadoReservaDTO
-                    {
-                        Id = reserva.Estado.Id,
-                        Nombre = reserva.Estado.Nombre
-                    },
-                    TelefonoContacto = reserva.Telefono,
-                    CantidadDePersonas = reserva.CantidadDePersonas
-                }).ToList();
+                var ListaReservas = reservas.Select(MappearReservaDTO).ToList();
 
                 return Ok(ListaReservas);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+            }
+        }
+        // Si "Hasta" es null, entonces se devuelven las reservas de la fecha "Desde" (así se obtienen las reservas de días exactos, y no en rangos de días)
+        [HttpGet("/Reservas/Fechas")]
+        public async Task<IActionResult> GetReservasPorRangoFechas([FromQuery] DateTime Desde, [FromQuery] DateTime? Hasta)
+        {
+            try
+            {
+                if (Desde == default) throw new Exception("Fecha desde no enviada");
+
+                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
+                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
+
+                var reservas = await _ReservasServices.BuscarReservasPorRangoFechas(IdSucursal, Desde, Hasta);
+                var ListaReservas = reservas.Select(MappearReservaDTO).ToList();
+
+                return Ok(ListaReservas);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Fecha desde no enviada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "Sucursal no identificada":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "Rango de fechas inválido":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    default:
+                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+                }
             }
         }
 

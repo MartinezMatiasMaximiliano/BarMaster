@@ -20,16 +20,46 @@ namespace BackEndAPI.Services
             return await _reservasRepository.GetAllReservas();
         }
 
+        private static DateTime FechaLocalInicioDiaUtc(DateTime fecha)
+        {
+            return DateTime.SpecifyKind(fecha.Date, DateTimeKind.Local).ToUniversalTime();
+        }
+
+        private static DateTime FechaLocalFinDiaExclusiveUtc(DateTime fecha)
+        {
+            return DateTime.SpecifyKind(fecha.Date.AddDays(1), DateTimeKind.Local).ToUniversalTime();
+        }
+
+        private static DateTime FechaHoraLocalUtc(DateTime fechaHora)
+        {
+            return fechaHora.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(fechaHora, DateTimeKind.Local).ToUniversalTime()
+                : fechaHora.ToUniversalTime();
+        }
+
+        public async Task<IEnumerable<Reserva>> BuscarReservasPorRangoFechas(Guid IdSucursal, DateTime Desde, DateTime? Hasta)
+        {
+            if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
+
+            var desde = FechaLocalInicioDiaUtc(Desde);
+            var hastaExclusive = FechaLocalFinDiaExclusiveUtc(Hasta ?? Desde);
+
+            if (hastaExclusive <= desde) throw new Exception("Rango de fechas inválido");
+
+            return await _reservasRepository.GetReservasPorRangoFechas(IdSucursal, desde, hastaExclusive);
+        }
+
         public async Task<Reserva> CrearReserva(CrearReservaDTO request, Guid IdSucursal)
         {
             Reserva nuevaReserva = new Reserva
             {
                 IdSucursal = IdSucursal,
                 IdEstadoReserva = request.IdEstadoReserva,
-                FechaHora = request.FechaHora,
+                FechaHora = FechaHoraLocalUtc(request.FechaHora),
                 NombreReserva = request.NombreReserva,
                 Telefono = request.Telefono,
-                CantidadDePersonas = request.CantidadDePersonas
+                CantidadDePersonas = request.CantidadDePersonas,
+                MesaReserva = string.Empty
             };
 
             return await _reservasRepository.CrearReserva(nuevaReserva);

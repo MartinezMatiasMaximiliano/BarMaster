@@ -7,6 +7,7 @@ namespace BackEndAPI.Services.Interfaces
     public interface IDeliveryTakeawayServices
     {
         Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeaways(Guid IdSucursal);
+        Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeawaysPorCaja(Guid IdSucursal, Guid IdCaja);
         Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid IdDeliveryTakeaway);
         Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(Guid Idsucursal, CrearDeliveryTakeawayDTO request);
         Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway);

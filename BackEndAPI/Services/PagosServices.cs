@@ -28,7 +28,7 @@ namespace BackEndAPI.Services
             if (visita == null) throw new Exception("Visita no encontrada");
             
             var origen = string.IsNullOrWhiteSpace(visita.Origen) ? "Local" : visita.Origen;
-            ver descripcion = visita.Mesa != null
+            var descripcion = visita.Mesa != null
                 ? $"Pago de la mesa {visita.Mesa.Nombre}" : $"Pago de {origen}";
 
             var PagoCreado = new MovimientoCaja
