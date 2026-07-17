@@ -8,7 +8,8 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<CuentaCorriente?> GetCuentaCorrientePorId(Guid id);
         Task<CuentaCorriente?> CrearCuentaCorriente(CuentaCorriente cuentaCorriente);
         Task<CuentaCorriente?> ActualizarDatosCuentaCorriente(CuentaCorriente cuentaCorriente);
-        //Task<CuentaCorriente?> CrearMovimientoCuentaCorriente(Guid idCuentaCorriente, MovimientoCaja movimiento);
-        Task<bool> EliminarCuentaCorriente(CuentaCorriente CC);
+        Task<bool> DesactivarCuentaCorriente(CuentaCorriente cuentaCorriente);
+        Task<CuentaCorriente?> CrearMovimientoCuentaCorriente(CuentaCorriente cuentaCorriente, MovimientoCaja movimiento);
+        Task<bool> EliminarCuentaCorriente(CuentaCorriente cuentaCorriente);
     }
 }
