@@ -209,7 +209,7 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("Eliminar")]
         public async Task<IActionResult> EliminarCuentaCorriente([FromQuery] Guid IdCuenta)
         {
             try
