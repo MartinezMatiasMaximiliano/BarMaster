@@ -27,6 +27,16 @@ namespace BackEndAPI.Repositories
                 .Where(d => d.IdSucursal == idSucursal)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdCaja(Guid idSucursal, Guid idCaja)
+        {
+            return await Db.DeliveriesTakeaways
+                .Include(d => d.Visita)
+                .ThenInclude(v => v.Productos)
+                .Include(e => e.TipoEnvio)
+                .Include(c => c.Cadete)
+                .Where(d => d.IdSucursal == idSucursal && d.Visita.IdCaja == idCaja)
+                .ToListAsync();
+        }
         public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid id)
         {
             return await Db.DeliveriesTakeaways

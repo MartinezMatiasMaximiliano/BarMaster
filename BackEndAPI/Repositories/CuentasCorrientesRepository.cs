@@ -54,5 +54,18 @@ namespace BackEndAPI.Repositories
             await Db.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> DesactivarCuentaCorriente(CuentaCorriente cc)
+        {
+            cc.Activa = false;
+            Db.CuentasCorrientes.Update(cc);
+            await Db.SaveChangesAsync();
+            return true;
+        }
+
+        public Task<CuentaCorriente?> CrearMovimientoCuentaCorriente(CuentaCorriente cuentaCorriente, MovimientoCaja movimiento)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

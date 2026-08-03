@@ -6,6 +6,7 @@ namespace BackEndAPI.DTOs.Response
         public Guid IdSucursal { get; set; }
         public int? IdTipoEnvio { get; set; }
         public Guid IdVisita { get; set; }
+        public Guid IdCaja { get; set; }
         public DateTime FechaHora { get; set; }
         public string NombreCliente { get; set; } = "";
         public string? Direccion { get; set; }

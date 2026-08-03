@@ -1,8 +1,10 @@
 ﻿using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Data;
 using BackEndAPI.Tenancy.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
 
@@ -15,13 +17,15 @@ namespace BackEndAPI.ARCA.Servicios
     {
         private readonly HttpClient _httpClient;
         private readonly ArcaOptions _arcaOptions;
+        private readonly WsaaAuthService _wasaaAuthService;
         private readonly ICurrentDbContext _currentDbContext;
         private readonly AppDbContext db;
-        public WsfeService(HttpClient httpClient, IOptions<ArcaOptions> arcaOptions, ICurrentDbContext currentDbContext)
+        public WsfeService(HttpClient httpClient, IOptions<ArcaOptions> arcaOptions, ICurrentDbContext currentDbContext, WsaaAuthService wasaaAuthService)
         {
             _httpClient = httpClient;
             _arcaOptions = arcaOptions.Value;
             _currentDbContext = currentDbContext;
+            _wasaaAuthService = wasaaAuthService;
             db = _currentDbContext.Db;
         }
 
@@ -163,7 +167,7 @@ namespace BackEndAPI.ARCA.Servicios
             var caeVto = doc.Descendants(ns + "CAEFchVto").First().Value;
 
 
-            var CAEResponse =  new FECAEResponse
+            var CAEResponse = new FECAEResponse
             {
                 Result = result,
                 CAE = cae,
@@ -272,6 +276,69 @@ namespace BackEndAPI.ARCA.Servicios
                 FechaComprobante = DateTime.ParseExact(result.Element(ns + "CbteFch")!.Value, "yyyyMMdd", null),
                 Resultado = "A"
             };
+        }
+
+        public async Task<List<FacturaElectronica>> GetFacturasAsync()
+        {
+            return await db.FacturasElectronicas.ToListAsync();
+        }
+
+        //ESTA FUNCION ES EL PUNTO DE INICIO DE LAS FACTURAS ELECTRONICAS, SE DEBE LLAMAR DESDE EL CONTROLADOR
+        public async Task<int> CrearFacturaElectronica(FEAuthRequest auth, DatosParaFactura DatosFactura)
+        {
+            try
+            {
+                //1. Cargar el certificado
+                //TODO: cambiar la ruta de los certificados y la contraseñas por busquedas en S3
+                X509Certificate2 certLoad = CertificateLoader.Load(System.IO.File.ReadAllBytes("C:/Users/Matias/Desktop/certificado.pfx"), "123456");
+
+                //2. Autenticar y obtener el token                
+                FEAuthResponse response = await _wasaaAuthService.AutenticarFacturacionElectronica(certLoad);
+
+                //3. Obtener el último comprobante para el punto de venta y tipo de comprobante
+                //TODO: buscar que es el punto de venta y una lista de tipos de comprobantes
+                int last = await GetLastVoucherAsync(auth, DatosFactura.PuntoDeVenta, DatosFactura.TipoDeComprobante);
+
+                ////TODO: buscar los valores posibles para cada campo
+                FECAERequest comprobante = new FECAERequest
+                {
+                    Concepto = DatosFactura.concepto,
+                    DocTipo = DatosFactura.TipoDocumentoCliente,
+                    DocNro = DatosFactura.NumeroDocumentoCliente,
+                    CondicionIVAReceptorId = DatosFactura.CondicionIVAReceptor,
+                    CbteDesde = last + 1,
+                    CbteHasta = last + 1,
+                    CbteFch = DateTime.Today,
+                    ImpTotal = 100, //importe total = ImpTotal = ImpNeto + ImpIVA + ImpTrib + ImpOpEx + ImpTotConc
+                    ImpTotConc = 0, //Importe no gravado. conceptos que no integran la base imponible del IVA. Generalmente 0
+                    ImpNeto = 100, //Importe neto gravado. Es el subtotal sujeto a IVA. el total antes de impuestos
+                    ImpOpEx = 0, //Importe exento. Es el subtotal de operaciones exentas de IVA. Generalmente 0
+                    ImpIVA = 0, //Importe del IVA. Es el subtotal de operaciones sujetas a IVA. !!ES UN PORCENTAJE!!
+                    ImpTrib = 0 //Otros tributos.
+                };
+
+
+                //5. Solicitar el CAE para el nuevo comprobante
+                FECAEResponse caeResponse = await RequestCAEAsync(auth, DatosFactura.PuntoDeVenta, DatosFactura.TipoDeComprobante, comprobante);
+
+                //6. Verificar la respuesta
+                FECompConsultarResponse confirm = await FECompConsultarAsync(auth, new FECompConsultarRequest
+                {
+                    PuntoVenta = DatosFactura.PuntoDeVenta,
+                    TipoComprobante = DatosFactura.TipoDeComprobante,
+                    NumeroComprobante = comprobante.CbteDesde
+                });
+                //7. Imprimir el resultado
+
+                //8. Manejar errores
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error occurred: {ex.Message}");
+                return 0;
+            }
         }
     }
 }

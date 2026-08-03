@@ -20,20 +20,23 @@ namespace BackEndAPI.Controllers
             _visitasServices = visitasServices;
         }
 
-        [HttpPost("/PagarItems")]
-        public async Task<IActionResult> PagarItemsDeVisita([FromBody] CrearPagoDTO request)
+        [HttpPost("/Pagar")]
+        public async Task<IActionResult> PagarItemsDeVisita([FromBody] CrearPagoDTO request, [FromQuery] bool emitirFactura, [FromQuery] bool marcarPago)
         {
             try
             {
-                var visitaActualizada = await _PagosServices.PagarProductos(request);
-                //TODO: terminar esta funcion, se necesita crear la factura
+                if (request.ListaIdsProductos == null || request.ListaIdsProductos.Count <= 0) throw new Exception("Lista de ids vacia");
+                if (request.IdVisita == Guid.Empty) throw new Exception("IdVisita vacio");
+
+
+                var result = await _PagosServices.PagarProductos(request,emitirFactura,marcarPago);
                 var Response = new PagoDTO
                 {
-                    Id = visitaActualizada.Id,
-                    IdVisita = visitaActualizada.IdVisita ?? Guid.Empty,
-                    FechaCreacion = visitaActualizada.FechaMovimiento,
-                    Monto = visitaActualizada.Monto,
-                    tipoMovimientoCaja = visitaActualizada.TipoMovimientoCaja
+                    Id = result.Id,
+                    IdVisita = result.IdVisita ?? Guid.Empty,
+                    FechaCreacion = result.FechaMovimiento,
+                    Monto = result.Monto,
+                    tipoMovimientoCaja = result.TipoMovimientoCaja
                 };  
                 return Ok(Response);
             }

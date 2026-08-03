@@ -2,6 +2,7 @@
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Services;
+using BackEndAPI.Services.Amazon;
 using BackEndAPI.Services.Interfaces;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -22,12 +23,14 @@ namespace BackEndAPI.Controllers
         private readonly ICurrentDbContext _currentDbContext;
         private readonly WsfeService _wsfeService;
         private readonly WsaaAuthService _wasaaAuthService;
+        private readonly S3Service _s3Service;
 
-        public Test(ICurrentDbContext currentDbContext, WsfeService wsfeService, WsaaAuthService wsaaAuthService)
+        public Test(ICurrentDbContext currentDbContext, WsfeService wsfeService, WsaaAuthService wsaaAuthService, S3Service s3Service)
         {
             _currentDbContext = currentDbContext;
             _wsfeService = wsfeService;
             _wasaaAuthService = wsaaAuthService;
+            _s3Service = s3Service;
         }
 
         [HttpPost("/migrar")]
@@ -96,6 +99,21 @@ namespace BackEndAPI.Controllers
             catch
             {
                 return BadRequest();
+            }
+        }
+
+
+        [HttpGet("file")]
+        public async Task<IActionResult> filetest([FromQuery] string key)
+        {
+            try
+            {
+                var fileStream = await _s3Service.ObtenerArchivo(key);
+                return File(fileStream, "application/octet-stream", key);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }
