@@ -125,7 +125,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                if (request == null || request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0 || string.IsNullOrEmpty(request.Descripcion)) throw new Exception("Datos de movimiento de caja no proporcionados");
+                if (request == null || request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0) throw new Exception("Datos de movimiento de caja no proporcionados");
                 if (request.Monto <= 0) throw new Exception("El monto debe ser mayor a cero");
                 var nuevoMovimientoCaja = await _movimientosCajaServices.CrearMovimientoCaja(request);
                
