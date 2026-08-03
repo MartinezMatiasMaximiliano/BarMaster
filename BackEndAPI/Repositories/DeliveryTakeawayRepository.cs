@@ -22,9 +22,13 @@ namespace BackEndAPI.Repositories
             return await Db.DeliveriesTakeaways
                 .Include(d => d.Visita)
                 .ThenInclude(v => v.Productos)
+                .Include(d => d.Visita)
+                .ThenInclude(v => v.Pagos)
+                .ThenInclude(p => p.TipoMovimientoCaja)
                 .Include(e=> e.TipoEnvio)
                 .Include(c => c.Cadete)
                 .Where(d => d.IdSucursal == idSucursal)
+                .AsSplitQuery()
                 .ToListAsync();
         }
         public async Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdCaja(Guid idSucursal, Guid idCaja)
@@ -32,9 +36,13 @@ namespace BackEndAPI.Repositories
             return await Db.DeliveriesTakeaways
                 .Include(d => d.Visita)
                 .ThenInclude(v => v.Productos)
+                .Include(d => d.Visita)
+                .ThenInclude(v => v.Pagos)
+                .ThenInclude(p => p.TipoMovimientoCaja)
                 .Include(e => e.TipoEnvio)
                 .Include(c => c.Cadete)
                 .Where(d => d.IdSucursal == idSucursal && d.Visita.IdCaja == idCaja)
+                .AsSplitQuery()
                 .ToListAsync();
         }
         public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid id)
@@ -42,6 +50,12 @@ namespace BackEndAPI.Repositories
             return await Db.DeliveriesTakeaways
                  .Include(d => d.Visita)
                  .ThenInclude(v => v.Productos)
+                 .Include(d => d.Visita)
+                 .ThenInclude(v => v.Pagos)
+                 .ThenInclude(p => p.TipoMovimientoCaja)
+                 .Include(e => e.TipoEnvio)
+                 .Include(c => c.Cadete)
+                 .AsSplitQuery()
                  .FirstOrDefaultAsync(d => d.Id == id);
         }
         public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorIdVisita(Guid IdVisita)
@@ -49,6 +63,12 @@ namespace BackEndAPI.Repositories
             return await Db.DeliveriesTakeaways
                  .Include(d => d.Visita)
                  .ThenInclude(v => v.Productos)
+                 .Include(d => d.Visita)
+                 .ThenInclude(v => v.Pagos)
+                 .ThenInclude(p => p.TipoMovimientoCaja)
+                 .Include(e => e.TipoEnvio)
+                 .Include(c => c.Cadete)
+                 .AsSplitQuery()
                  .FirstOrDefaultAsync(d => d.IdVisita == IdVisita);
         }
         public async Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(DeliveryAndTakeaway deliveryAndTakeaway, Visita visita)

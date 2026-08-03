@@ -41,7 +41,9 @@ namespace BackEndAPI.Services
                 IdCaja = visita.IdCaja,
                 IdVisita = infoPago.IdVisita,
                 Monto = infoPago.Monto,
-                Descripcion = $"Pago de la visita {visita.Id}"
+                Descripcion = visita.Mesa != null
+                    ? $"Pago de la mesa {visita.Mesa.Nombre}"
+                    : $"Pago de {visita.Origen}"
             };
 
             foreach (var id in infoPago.ListaIdsProductos)
