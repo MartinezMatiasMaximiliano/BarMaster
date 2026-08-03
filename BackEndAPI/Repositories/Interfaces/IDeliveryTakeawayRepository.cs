@@ -8,6 +8,7 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdCaja(Guid idSucursal, Guid idCaja);
         Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid id);
         Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorIdVisita(Guid IdVisita);
+        Task<decimal> ObtenerPrecioEnvioPorIdVisita(Guid idVisita);
         Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(DeliveryAndTakeaway deliveryTakeaway, Visita visita);
         Task<DeliveryAndTakeaway?> ModificarDeliveryTakeaway(DeliveryAndTakeaway deliveryTakeaway);
         Task<decimal> GetPrecioEnvioPorId(int? id);

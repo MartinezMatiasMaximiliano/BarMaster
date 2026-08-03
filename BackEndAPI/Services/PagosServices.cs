@@ -12,13 +12,15 @@ namespace BackEndAPI.Services
     {
         private readonly IVisitasRepository _visitasRepository;
         private readonly IPagosRepository _pagosRepository;
+        private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
         private readonly WsfeService _wsfeService;
         private readonly WsaaAuthService _wasaaAuthService;
 
-        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, WsfeService wsfeService, WsaaAuthService wsaaAuthService)
+        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository, WsfeService wsfeService, WsaaAuthService wsaaAuthService)
         {
             _visitasRepository = visitasRepository;
             _pagosRepository = pagosRepository;
+            _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _wsfeService = wsfeService;
             _wasaaAuthService = wsaaAuthService;
         }
@@ -35,16 +37,7 @@ namespace BackEndAPI.Services
             var descripcion = visita.Mesa != null
                 ? $"Pago de la mesa {visita.Mesa.Nombre}" : $"Pago de {origen}";
 
-            var PagoCreado = new MovimientoCaja
-            {
-                IdTipoMovimientoCaja = infoPago.IdTipoMovimiento,
-                IdCaja = visita.IdCaja,
-                IdVisita = infoPago.IdVisita,
-                Monto = infoPago.Monto,
-                Descripcion = visita.Mesa != null
-                    ? $"Pago de la mesa {visita.Mesa.Nombre}"
-                    : $"Pago de {visita.Origen}"
-            };
+            var idMovimientoCaja = Guid.NewGuid();
 
             foreach (var id in infoPago.ListaIdsProductos)
             {
@@ -53,15 +46,30 @@ namespace BackEndAPI.Services
                 {
                     TotalAPagar = TotalAPagar + productoPorVisita.PrecioDelMomento;
                     productoPorVisita.EstadoPagado = true;
-                    productoPorVisita.IdMovimientoCaja = PagoCreado.Id;
+                    productoPorVisita.IdMovimientoCaja = idMovimientoCaja;
                 }
             }
 
-            visita.Total += TotalAPagar;
+            // si es delivery, se suma el precio del envio al total a pagar
+
+            if (string.Equals(origen, "Delivery", StringComparison.OrdinalIgnoreCase))
+            {
+                TotalAPagar += await _deliveryTakeawayRepository.ObtenerPrecioEnvioPorIdVisita(infoPago.IdVisita);
+            }
 
             if (infoPago.Monto < TotalAPagar) throw new Exception("Monto insuficiente");
 
-            var resultado =  await _pagosRepository.CrearPago(visita, PagoCreado, TotalAPagar);
+            var PagoCreado = new MovimientoCaja
+            {
+                Id = idMovimientoCaja,
+                IdTipoMovimientoCaja = infoPago.IdTipoMovimiento,
+                IdCaja = visita.IdCaja,
+                IdVisita = infoPago.IdVisita,
+                Monto = TotalAPagar,
+                Descripcion = descripcion
+            };
+
+            var resultado =  await _pagosRepository.CrearPago(visita, PagoCreado, infoPago.Monto);
 
             //if (emitirFactura)
             //{
