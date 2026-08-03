@@ -6,14 +6,14 @@ namespace BackEndAPI.Services.Amazon
 
     public class S3Service
     {
-        private readonly IAmazonS3 _s3;
+        //private readonly IAmazonS3 _s3;
         private readonly IConfiguration _configuration;
 
         public S3Service(
-            IAmazonS3 s3,
+          //  IAmazonS3 s3,
             IConfiguration configuration)
         {
-            _s3 = s3;
+            //_s3 = s3;
             _configuration = configuration;
         }
 
@@ -21,9 +21,10 @@ namespace BackEndAPI.Services.Amazon
         {
             var bucket = "barmaster-cert-vault";
 
-            var response = await _s3.GetObjectAsync(bucket, key);
+            //var response = await _s3.GetObjectAsync(bucket, key);
 
-            return response.ResponseStream;
+            //return response.ResponseStream;
+            throw new NotImplementedException();
         }
     }
 }
