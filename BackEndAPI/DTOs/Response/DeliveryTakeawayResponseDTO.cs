@@ -16,6 +16,7 @@ namespace BackEndAPI.DTOs.Response
         public decimal PrecioEnvio { get; set; }
         public bool Entregado { get; set; }
         public CadeteDTO? Cadete { get; set; } 
+        public PagoDTO? Pago { get; set; }
         public List<ItemDTO> Productos { get; set; } = new List<ItemDTO>();
     }
 }
