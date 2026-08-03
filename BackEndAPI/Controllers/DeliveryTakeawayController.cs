@@ -22,6 +22,10 @@ namespace BackEndAPI.Controllers
 
         private static DeliveryTakeawayResponseDTO MappearDeliveryTakeawayDTO(DeliveryAndTakeaway deliveryTakeaway)
         {
+            var ultimoPago = deliveryTakeaway.Visita?.Pagos
+                .OrderByDescending(p => p.FechaMovimiento)
+                .FirstOrDefault();
+
             return new DeliveryTakeawayResponseDTO
             {
                 Id = deliveryTakeaway.Id,
@@ -43,6 +47,17 @@ namespace BackEndAPI.Controllers
                     Nombre = deliveryTakeaway.Cadete.Nombres,
                     Apellido = deliveryTakeaway.Cadete.Apellido,
                     Telefono = deliveryTakeaway.Cadete.Telefono,
+                } : null,
+                Pago = ultimoPago != null ? new PagoDTO
+                {
+                    Id = ultimoPago.Id,
+                    IdVisita = ultimoPago.IdVisita ?? Guid.Empty,
+                    tipoMovimientoCaja = ultimoPago.TipoMovimientoCaja,
+                    Monto = ultimoPago.Monto,
+                    Vuelto = ultimoPago.TipoMovimientoCaja?.EsEfectivo == true
+                        ? Math.Max(0, ultimoPago.Monto - deliveryTakeaway.PrecioTotal)
+                        : null,
+                    FechaCreacion = ultimoPago.FechaMovimiento
                 } : null,
                 Productos = (deliveryTakeaway.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO
                 {
@@ -168,21 +183,7 @@ namespace BackEndAPI.Controllers
                 if (request.IdDeliveryTakeaway == Guid.Empty) throw new Exception("Id del pedido nulo");
                 var result = await _deliveryTakeawayServices.ModificarDatosDeliveryTakeaway(request);
                 if (result == null) throw new Exception("Error al modificar el pedido");
-                var response = new DeliveryTakeawayResponseDTO
-                {
-                    Id = result.Id,
-                    IdSucursal = result.IdSucursal,
-                    IdTipoEnvio = result.IdTipoEnvio,
-                    IdVisita = result.IdVisita,
-                    IdCaja = result.Visita.IdCaja,
-                    FechaHora = result.FechaHora,
-                    NombreCliente = result.NombreCliente ?? "",
-                    Direccion = result.Direccion,
-                    Indicaciones = result.Indicaciones,
-                    Telefono = result.Telefono ?? "",
-                    PrecioTotal = result.PrecioTotal,
-                    Entregado = result.Entregado
-                };
+                var response = MappearDeliveryTakeawayDTO(result);
                 return Ok(response);
             }
             catch (Exception ex)
