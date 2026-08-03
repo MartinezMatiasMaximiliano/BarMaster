@@ -34,7 +34,7 @@ namespace BackEndAPI.Repositories
                 if (tipoMovimientoCaja.EsEfectivo)
                 {
                     var caja = await Db.Cajas.FirstOrDefaultAsync(c => c.Id == visita.IdCaja);
-                    caja.MontoActual += pago.totalProductosPagados;
+                    caja.MontoActual += totalProductosPagados;
                     Db.Entry(caja).State = EntityState.Modified;
                 }
 
