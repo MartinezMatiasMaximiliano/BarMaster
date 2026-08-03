@@ -4,6 +4,7 @@ using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 using Mono.TextTemplating;
+using System.Globalization;
 
 namespace BackEndAPI.Repositories
 {
@@ -18,7 +19,7 @@ namespace BackEndAPI.Repositories
             Db = _context.Db;
         }
 
-        public async Task<MovimientoCaja> CrearPago(Visita visita, MovimientoCaja pago, decimal totalProductosPagados)
+        public async Task<MovimientoCaja> CrearPago(Visita visita, MovimientoCaja pago, decimal montoRecibido)
         {
             var transaccion = Db.Database.BeginTransaction();
             var tipoMovimientoCaja = await Db.TipoMovimientosCajas.FirstOrDefaultAsync(tp => tp.Id == pago.IdTipoMovimientoCaja);
@@ -33,8 +34,12 @@ namespace BackEndAPI.Repositories
 
                 if (tipoMovimientoCaja.EsEfectivo)
                 {
+                    var vuelto = Math.Max(0, montoRecibido - pago.Monto);
+                    var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+                    pago.Descripcion = $"{pago.Descripcion} | Vuelto: $ {vueltoFormateado}";
+
                     var caja = await Db.Cajas.FirstOrDefaultAsync(c => c.Id == visita.IdCaja);
-                    caja.MontoActual += totalProductosPagados;
+                    caja.MontoActual += pago.Monto;
                     Db.Entry(caja).State = EntityState.Modified;
                 }
 
