@@ -117,7 +117,7 @@ export default function Modal_Facturar({
             return;
         }
         setError('');
-        const montoParaBackend = totalFinal;
+        const montoParaBackend = esEfectivo ? montoRecibidoNum : totalFinal;
         onConfirm(productIds, Number(idTipoPago), montoParaBackend);
         handleClose();
     }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, cajaInsuficiente, montoCaja, currencyFormatter, productIds, idTipoPago, onConfirm, handleClose]);

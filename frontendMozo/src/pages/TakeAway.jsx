@@ -5,6 +5,7 @@ import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_AgregarDelivery from "../components/Modals/Agregar_Delivery/Modal_AgregarDelivery";
 import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
 import BotonCobrarPedido from "../components/DeliveryTakeaway/BotonCobrarPedido";
+import EntregaCountdown from "../components/DeliveryTakeaway/EntregaCountdown";
 import { formatearFecha } from "../Helpers/HelperFunctions";
 import Ordenar from "../components/Ordenar/Ordenar";
 import Filtros from "../components/Filtros/Filtros";
@@ -48,6 +49,7 @@ function TakeAway() {
     const [showModalAgregar, setShowModalAgregar] = useState(false);
     const [takeAwayEditando, setTakeAwayEditando] = useState(null);
     const [actualizandoEntregaIds, setActualizandoEntregaIds] = useState([]);
+    const [entregasEnTransicionIds, setEntregasEnTransicionIds] = useState([]);
     const [errorCarga, setErrorCarga] = useState('');
     const [mostrarEntregados, setMostrarEntregados] = useState(false);
 
@@ -67,6 +69,7 @@ function TakeAway() {
                     Telefono: item.telefono || '-',
                     Indicaciones: item.indicaciones || '-',
                     PrecioTotal: item.precioTotal ?? productosConsumidos.reduce((acc, producto) => acc + (Number(producto.precio) || 0), 0),
+                    pago: item.pago ?? null,
                     entregado: Boolean(item.entregado),
                     entregadoTexto: item.entregado ? 'Sí' : 'No',
                     estadoCobro: productosConsumidos.every((producto) => producto.estadoPagado) ? 'Cobrado' : 'Pendiente',
@@ -87,12 +90,16 @@ function TakeAway() {
     ), [visitasActivas]);
 
     const takeAwaysPendientes = React.useMemo(
-        () => takeAways.filter((takeAway) => !takeAway.entregado),
-        [takeAways]
+        () => takeAways.filter((takeAway) => (
+            !takeAway.entregado || entregasEnTransicionIds.includes(takeAway.id)
+        )),
+        [takeAways, entregasEnTransicionIds]
     );
     const takeAwaysEntregados = React.useMemo(
-        () => takeAways.filter((takeAway) => takeAway.entregado),
-        [takeAways]
+        () => takeAways.filter((takeAway) => (
+            takeAway.entregado && !entregasEnTransicionIds.includes(takeAway.id)
+        )),
+        [takeAways, entregasEnTransicionIds]
     );
 
     const cargarTakeAways = React.useCallback(async () => {
@@ -123,36 +130,59 @@ function TakeAway() {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
+    const despacharEstadoEntrega = (fila, checked) => {
+        dispatch(actualizarVisita({
+            id: fila.idVisita,
+            idDeliveryTakeaway: fila.idDeliveryTakeaway,
+            origen: 'Takeaway',
+            fechaHora: fila.fechaHora,
+            estado: 'Cerrada',
+            deliveryTakeaway: {
+                ...fila.pedido,
+                id: fila.idDeliveryTakeaway,
+                entregado: checked,
+            },
+            productosConsumidos: fila.Productos,
+        }));
+    };
+
     const manejarCambioEntregado = async (fila, checked) => {
-        if (!fila?.id) return;
-        if (!fila.idDeliveryTakeaway) return;
+        if (!fila?.id) return false;
+        if (!fila.idDeliveryTakeaway) return false;
 
         setActualizandoEntregaIds((prev) => [...prev, fila.id]);
         try {
             await CambiarEstadoEntregaDeliveryTakeaway(fila.idDeliveryTakeaway, checked);
-            dispatch(actualizarVisita({
-                id: fila.idVisita,
-                idDeliveryTakeaway: fila.idDeliveryTakeaway,
-                origen: 'Takeaway',
-                fechaHora: fila.fechaHora,
-                estado: 'Cerrada',
-                deliveryTakeaway: {
-                    ...fila.pedido,
-                    id: fila.idDeliveryTakeaway,
-                    entregado: checked,
-                },
-                productosConsumidos: fila.Productos,
-            }));
+            setEntregasEnTransicionIds((prev) => checked
+                ? (prev.includes(fila.id) ? prev : [...prev, fila.id])
+                : prev.filter((id) => id !== fila.id));
+            despacharEstadoEntrega(fila, checked);
+            return true;
         } catch (error) {
             console.error("Error al actualizar estado de entrega:", error);
+            return false;
         } finally {
             setActualizandoEntregaIds((prev) => prev.filter((id) => id !== fila.id));
+        }
+    };
+
+    const cancelarEntregaEnTransicion = async (fila) => {
+        setEntregasEnTransicionIds((prev) => prev.filter((id) => id !== fila.id));
+        despacharEstadoEntrega(fila, false);
+
+        const cancelado = await manejarCambioEntregado(fila, false);
+        if (!cancelado) {
+            despacharEstadoEntrega(fila, true);
         }
     };
 
     const api = {
         eliminar: EliminarDeliveryTakeaway,
     };
+
+    const finalizarTransicionEntrega = React.useCallback((id) => {
+        setEntregasEnTransicionIds((prev) => prev.filter((itemId) => itemId !== id));
+    }, []);
 
     const columnasTakeAway = [
         {
@@ -185,7 +215,12 @@ function TakeAway() {
             key: "entregado",
             label: "Entregado",
             align: "center",
-            render: (fila) => (
+            render: (fila) => entregasEnTransicionIds.includes(fila.id) ? (
+                <EntregaCountdown
+                    onComplete={() => finalizarTransicionEntrega(fila.id)}
+                    onCancel={() => cancelarEntregaEnTransicion(fila)}
+                />
+            ) : (
                 <Checkbox
                     checked={Boolean(fila.entregado)}
                     disabled={!fila.idDeliveryTakeaway || actualizandoEntregaIds.includes(fila.id)}

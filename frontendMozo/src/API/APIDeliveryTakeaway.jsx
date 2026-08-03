@@ -9,6 +9,12 @@ export function normalizarDeliveryTakeaway(item) {
     const productos = Array.isArray(productosRaw) ? productosRaw : [];
     const tipoEnvioRaw = item.tipoEnvio ?? item.TipoEnvio ?? null;
     const cadeteRaw = item.cadete ?? item.Cadete ?? null;
+    const pagoRaw = item.pago ?? item.Pago ?? item.ultimoPago ?? item.UltimoPago ?? null;
+    const tipoPagoRaw = pagoRaw?.tipoMovimientoCaja
+        ?? pagoRaw?.TipoMovimientoCaja
+        ?? pagoRaw?.metodoPago
+        ?? pagoRaw?.MetodoPago
+        ?? null;
     const precioEnvio = Number(item.precioEnvio ?? item.PrecioEnvio ?? tipoEnvioRaw?.precio ?? tipoEnvioRaw?.Precio ?? 0);
 
     return {
@@ -38,6 +44,23 @@ export function normalizarDeliveryTakeaway(item) {
             nombre: cadeteRaw.nombre ?? cadeteRaw.Nombre ?? '-',
             apellido: cadeteRaw.apellido ?? cadeteRaw.Apellido ?? '-',
             telefono: cadeteRaw.telefono ?? cadeteRaw.Telefono ?? null,
+        } : null,
+        pago: pagoRaw ? {
+            id: pagoRaw.id ?? pagoRaw.Id ?? null,
+            montoRecibido: Number(
+                pagoRaw.montoRecibido
+                ?? pagoRaw.MontoRecibido
+                ?? pagoRaw.monto
+                ?? pagoRaw.Monto
+                ?? 0
+            ),
+            vuelto: pagoRaw.vuelto ?? pagoRaw.Vuelto ?? null,
+            fechaCreacion: pagoRaw.fechaCreacion ?? pagoRaw.FechaCreacion ?? null,
+            metodoPago: tipoPagoRaw ? {
+                id: tipoPagoRaw.id ?? tipoPagoRaw.Id ?? null,
+                nombre: tipoPagoRaw.nombre ?? tipoPagoRaw.Nombre ?? 'Método no identificado',
+                esEfectivo: Boolean(tipoPagoRaw.esEfectivo ?? tipoPagoRaw.EsEfectivo ?? false),
+            } : null,
         } : null,
         productos: productos.map((producto) => ({
             id: producto.id ?? producto.Id,

@@ -5,6 +5,7 @@ import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_AgregarDelivery from "../components/Modals/Agregar_Delivery/Modal_AgregarDelivery";
 import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
 import BotonCobrarPedido from "../components/DeliveryTakeaway/BotonCobrarPedido";
+import EntregaCountdown from "../components/DeliveryTakeaway/EntregaCountdown";
 import { formatearFecha } from "../Helpers/HelperFunctions"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
@@ -29,6 +30,7 @@ function Delivery() {
     const [showModalAgregar, setShowModalAgregar] = useState(false);
     const [deliveryEditando, setDeliveryEditando] = useState(null);
     const [actualizandoEntregaIds, setActualizandoEntregaIds] = useState([]);
+    const [entregasEnTransicionIds, setEntregasEnTransicionIds] = useState([]);
     const [confirmarNoEntregado, setConfirmarNoEntregado] = useState(null);
     const [mostrarEnviados, setMostrarEnviados] = useState(false);
 
@@ -55,6 +57,7 @@ function Delivery() {
                     TipoEnvio: tipoEnvio?.nombre || (item.idTipoEnvio ? `Tipo ${item.idTipoEnvio}` : '-'),
                     PrecioEnvio: tipoEnvio?.precio ?? null,
                     PrecioTotal: item.precioTotal ?? productosConsumidos.reduce((acc, producto) => acc + (Number(producto.precio) || 0), 0),
+                    pago: item.pago ?? null,
                     entregado: Boolean(item.entregado),
                     estadoCobro: productosConsumidos.every((producto) => producto.estadoPagado) ? 'Cobrado' : 'Pendiente',
                     pedido: item,
@@ -98,29 +101,48 @@ function Delivery() {
         cargarDeliveries();
     }, [cargarDeliveries]);
 
+    const despacharEstadoEntrega = (fila, checked) => {
+        dispatch(actualizarVisita({
+            id: fila.idVisita,
+            idDeliveryTakeaway: fila.id,
+            origen: 'Delivery',
+            fechaHora: fila.fechaHora,
+            estado: 'Cerrada',
+            deliveryTakeaway: {
+                ...fila.pedido,
+                id: fila.id,
+                entregado: checked,
+            },
+            productosConsumidos: fila.Productos,
+        }));
+    };
+
     const manejarCambioEntregado = async (fila, checked) => {
-        if (!fila?.id) return;
+        if (!fila?.id) return false;
 
         setActualizandoEntregaIds((prev) => [...prev, fila.id]);
         try {
             await CambiarEstadoEntregaDeliveryTakeaway(fila.id, checked);
-            dispatch(actualizarVisita({
-                id: fila.idVisita,
-                idDeliveryTakeaway: fila.id,
-                origen: 'Delivery',
-                fechaHora: fila.fechaHora,
-                estado: 'Cerrada',
-                deliveryTakeaway: {
-                    ...fila.pedido,
-                    id: fila.id,
-                    entregado: checked,
-                },
-                productosConsumidos: fila.Productos,
-            }));
+            setEntregasEnTransicionIds((prev) => checked
+                ? (prev.includes(fila.id) ? prev : [...prev, fila.id])
+                : prev.filter((id) => id !== fila.id));
+            despacharEstadoEntrega(fila, checked);
+            return true;
         } catch (error) {
             console.error("Error al actualizar estado de entrega:", error);
+            return false;
         } finally {
             setActualizandoEntregaIds((prev) => prev.filter((id) => id !== fila.id));
+        }
+    };
+
+    const cancelarEntregaEnTransicion = async (fila) => {
+        setEntregasEnTransicionIds((prev) => prev.filter((id) => id !== fila.id));
+        despacharEstadoEntrega(fila, false);
+
+        const cancelado = await manejarCambioEntregado(fila, false);
+        if (!cancelado) {
+            despacharEstadoEntrega(fila, true);
         }
     };
 
@@ -143,8 +165,16 @@ function Delivery() {
         eliminar: EliminarDeliveryTakeaway,
     };
 
-    const deliveriesPendientes = deliveries.filter((delivery) => !delivery.entregado);
-    const deliveriesEntregados = deliveries.filter((delivery) => delivery.entregado);
+    const finalizarTransicionEntrega = React.useCallback((id) => {
+        setEntregasEnTransicionIds((prev) => prev.filter((itemId) => itemId !== id));
+    }, []);
+
+    const deliveriesPendientes = deliveries.filter((delivery) => (
+        !delivery.entregado || entregasEnTransicionIds.includes(delivery.id)
+    ));
+    const deliveriesEntregados = deliveries.filter((delivery) => (
+        delivery.entregado && !entregasEnTransicionIds.includes(delivery.id)
+    ));
 
     const columnasDelivery = [
         {
@@ -189,7 +219,12 @@ function Delivery() {
             key: "entregado",
             label: "Entregado",
             align: "center",
-            render: (fila) => (
+            render: (fila) => entregasEnTransicionIds.includes(fila.id) ? (
+                <EntregaCountdown
+                    onComplete={() => finalizarTransicionEntrega(fila.id)}
+                    onCancel={() => cancelarEntregaEnTransicion(fila)}
+                />
+            ) : (
                 <Checkbox
                     checked={Boolean(fila.entregado)}
                     disabled={actualizandoEntregaIds.includes(fila.id)}

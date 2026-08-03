@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { Button } from '@mui/material';
+import { Button, Stack, Tooltip, Typography } from '@mui/material';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useDispatch } from 'react-redux';
 import Modal_Facturar from '../Modals/Modal_Facturar/Modal_Facturar';
 import { PagarItems } from '../../API/APIPagos';
@@ -41,6 +42,15 @@ export default function BotonCobrarPedido({
     const precioEnvio = !hayProductosPagados ? Number(pedido?.PrecioEnvio || 0) : 0;
     const total = totalProductosPendientes + precioEnvio;
     const idVisita = pedido?.idVisita;
+    const estaCobrado = productos.length > 0 && productosPendientes.length === 0;
+    const pago = pedido?.pago;
+    const metodoPago = pago?.metodoPago;
+    const montoRecibido = Number(pago?.montoRecibido ?? 0);
+    const totalPedido = Number(pedido?.PrecioTotal ?? pedido?.precioTotal ?? 0);
+    const vueltoInformado = pago?.vuelto;
+    const vuelto = vueltoInformado != null
+        ? Number(vueltoInformado)
+        : Math.max(0, montoRecibido - totalPedido);
     const puedeCobrar = !disabled && Boolean(idVisita) && productIds.length > 0;
 
     const handleConfirmar = useCallback(async (idsProductos, idTipoPago, monto) => {
@@ -63,6 +73,47 @@ export default function BotonCobrarPedido({
             showSnackbar(typeof msg === 'string' ? msg : 'Error al cobrar el pedido. Intente de nuevo.', 'error');
         }
     }, [dispatch, idVisita, onSuccess, showSnackbar]);
+
+    if (estaCobrado) {
+        const metodoPagoTexto = metodoPago?.nombre || 'Cobrado';
+
+        return (
+            <Stack alignItems="center">
+                {metodoPago?.esEfectivo ? (
+                    <Tooltip
+                        arrow
+                        title={(
+                            <Stack spacing={0.25}>
+                                <Typography variant="caption">
+                                    Pagó: {currencyFormatter.format(montoRecibido)}
+                                </Typography>
+                                <Typography variant="caption">
+                                    Vuelto: {currencyFormatter.format(vuelto)}
+                                </Typography>
+                            </Stack>
+                        )}
+                    >
+                        <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            component="span"
+                            tabIndex={0}
+                            sx={{ cursor: 'help' }}
+                        >
+                            <InfoOutlinedIcon
+                                color="info"
+                                sx={{ fontSize: 17, verticalAlign: 'text-bottom' }}
+                            />{metodoPagoTexto}
+                        </Typography>
+                    </Tooltip>
+                ) : (
+                <Typography variant="body2" fontWeight={600}>
+                    {metodoPagoTexto}
+                </Typography>
+                )}
+            </Stack>
+        );
+    }
 
     return (
         <>
