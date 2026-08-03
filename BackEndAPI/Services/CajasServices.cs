@@ -15,11 +15,14 @@ namespace BackEndAPI.Services
 
         public async Task<Caja> CrearCaja(CrearCajaDTO request, Guid IdSucursal)
         {
+            var ultimaCajaCerrada = await _cajasRepository.BuscarUltimaCajaCerradaPorIdSucursal(IdSucursal);
+            var montoApertura = ultimaCajaCerrada?.MontoCierre ?? request.MontoApertura;
+
             Caja nuevaCaja = new Caja
             {
-                IdSucursal = IdSucursal, 
-                MontoApertura = request.MontoApertura,
-                MontoActual = request.MontoApertura
+                IdSucursal = IdSucursal,
+                MontoApertura = montoApertura,
+                MontoActual = montoApertura
             };
             return await _cajasRepository.CrearCaja(nuevaCaja);
         }

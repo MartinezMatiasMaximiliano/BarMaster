@@ -33,6 +33,14 @@ namespace BackEndAPI.Repositories
             return await Db.Cajas.Where(c => c.FechaCierre == null && c.IdSucursal == IdSucursal).FirstOrDefaultAsync();
         }
 
+        public async Task<Caja?> BuscarUltimaCajaCerradaPorIdSucursal(Guid IdSucursal)
+        {
+            return await Db.Cajas
+                .Where(c => c.IdSucursal == IdSucursal && c.FechaCierre != null && c.MontoCierre != null)
+                .OrderByDescending(c => c.FechaCierre)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Caja?> GetCajaPorId(Guid id)
         {
             return await Db.Cajas.FirstOrDefaultAsync(c => c.Id == id);
