@@ -7,11 +7,6 @@ export const buildTimestampDefaults = () => {
     };
 };
 
-export const initialApertura = () => ({
-    ...buildTimestampDefaults(),
-    montoInicial: ''
-});
-
 export const initialCierre = () => ({
     ...buildTimestampDefaults(),
     montoFinal: '',
