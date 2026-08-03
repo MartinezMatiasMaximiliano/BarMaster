@@ -4,7 +4,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useDispatch } from 'react-redux';
 import Modal_Facturar from '../Modals/Modal_Facturar/Modal_Facturar';
-import { PagarItems } from '../../API/APIPagos';
+import { Pagar } from '../../API/APIPagos';
 import { useSnackbar } from '../../hooks/useSnackbar.jsx';
 import { cambiarEstadoPagadoProductos } from '../../redux/slices/visitasActivasSlice';
 import { sendHubMessage } from '../../connections/HubConnMozo';
@@ -60,7 +60,7 @@ export default function BotonCobrarPedido({
         }
 
         try {
-            const pagoCreado = await PagarItems(idVisita, idsProductos, idTipoPago, monto);
+            const pagoCreado = await Pagar(idVisita, idsProductos, idTipoPago, monto);
             const idMovimientoCaja = pagoCreado?.id || pagoCreado?.Id;
             dispatch(cambiarEstadoPagadoProductos({ idsProductos, pagado: true, idMovimientoCaja }));
             await sendHubMessage('RecargarDeliveryTakeaway');

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
-import { PagarItems } from '../../../../API/APIPagos';
+import { Pagar } from '../../../../API/APIPagos';
 import { BuscarTipoMovimientosPorEntorno } from '../../../../API/APITipoMovimientosCaja';
 import { GenerarTicketPDF } from '../../../../API/APIPedidos';
 import { cambiarEstadoPagadoProductos } from '../../../../redux/slices/visitasActivasSlice';
@@ -113,7 +113,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
                 idTipoPago = primer?.id ?? primer?.Id ?? 1;
             }
 
-            const pagoCreado = await PagarItems(idVisita, arregloIds, idTipoPago, monto);
+            const pagoCreado = await Pagar(idVisita, arregloIds, idTipoPago, monto);
             const idMovimientoCaja = pagoCreado?.id || pagoCreado?.Id;
 
             GenerarTicketPDF(datosMesa.nombre, arregloIds);
