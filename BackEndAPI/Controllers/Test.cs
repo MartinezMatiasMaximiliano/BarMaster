@@ -108,8 +108,9 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var fileStream = await _s3Service.ObtenerArchivo(key);
-                return File(fileStream, "application/octet-stream", key);
+                //var fileStream = await _s3Service.ObtenerArchivo(key);
+                //return File(fileStream, "application/octet-stream", key);
+                throw new NotImplementedException();    
             }
             catch (Exception ex)
             {

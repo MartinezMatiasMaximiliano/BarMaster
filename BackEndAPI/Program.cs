@@ -139,7 +139,7 @@ builder.Services.AddScoped<IRolesServices, RolesServices>();
 builder.Services.AddScoped<ICuentasCorrientesRepository, CuentasCorrientesRepository>();
 builder.Services.AddScoped<ICuentasCorrientesServices, CuentasCorrientesServices>();
 builder.Services.AddScoped<S3Service>();
-builder.Services.AddAWSService<IAmazonS3>();
+//builder.Services.AddAWSService<IAmazonS3>();
 
 builder.Services.AddDbContext<MasterDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Master")));
