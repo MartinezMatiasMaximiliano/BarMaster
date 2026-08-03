@@ -31,10 +31,10 @@ namespace BackEndAPI.Repositories
                 await Db.MovimientosCajas.AddAsync(pago);
                 Db.Entry(visita).State = EntityState.Modified;
 
-                if (tipoMovimientoCaja.EsEfectivo == true)
+                if (tipoMovimientoCaja.EsEfectivo)
                 {
                     var caja = await Db.Cajas.FirstOrDefaultAsync(c => c.Id == visita.IdCaja);
-                    caja.MontoActual += pago.Monto;
+                    caja.MontoActual += pago.totalProductosPagados;
                     Db.Entry(caja).State = EntityState.Modified;
                 }
 
