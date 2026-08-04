@@ -13,11 +13,9 @@ namespace BackEndAPI.Controllers
     public class PagosController : ControllerBase
     {
         private readonly IPagosServices _PagosServices;
-        private readonly IVisitasServices _visitasServices;
-        public PagosController(IPagosServices pagosServices, IVisitasServices visitasServices)
+        public PagosController(IPagosServices pagosServices)
         {
             _PagosServices = pagosServices;
-            _visitasServices = visitasServices;
         }
 
         [HttpPost("/Pagar")]
