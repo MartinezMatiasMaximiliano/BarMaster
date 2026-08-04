@@ -34,8 +34,12 @@ namespace BackEndAPI.Repositories
                 await Db.MovimientosCajas.AddAsync(movimientoCaja);
                 Db.Entry(visita).State = EntityState.Modified;
 
-                if (tipoMovimientoCaja.EsEfectivo == true)
+                if (tipoMovimientoCaja.EsEfectivo)
                 {
+                    var vuelto = Math.Max(0, montoRecibido - pago.Monto);
+                    var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+                    pago.Descripcion = $"{pago.Descripcion} | Vuelto: $ {vueltoFormateado}";
+
                     var caja = await Db.Cajas.FirstOrDefaultAsync(c => c.Id == visita.IdCaja);
                     caja.MontoActual += movimientoCaja.Monto;
                     Db.Entry(caja).State = EntityState.Modified;

@@ -71,6 +71,14 @@ namespace BackEndAPI.Repositories
                  .AsSplitQuery()
                  .FirstOrDefaultAsync(d => d.IdVisita == IdVisita);
         }
+        public async Task<decimal> ObtenerPrecioEnvioPorIdVisita(Guid idVisita)
+        {
+            return await Db.DeliveriesTakeaways
+                .AsNoTracking()
+                .Where(d => d.IdVisita == idVisita && d.IdTipoEnvio.HasValue)
+                .Select(d => d.TipoEnvio.Precio)
+                .FirstOrDefaultAsync();
+        }
         public async Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(DeliveryAndTakeaway deliveryAndTakeaway, Visita visita)
         {
             var transaccion = await Db.Database.BeginTransactionAsync();

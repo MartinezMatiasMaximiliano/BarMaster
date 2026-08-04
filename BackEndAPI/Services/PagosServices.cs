@@ -12,13 +12,15 @@ namespace BackEndAPI.Services
     {
         private readonly IVisitasRepository _visitasRepository;
         private readonly IPagosRepository _pagosRepository;
+        private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
         private readonly WsfeService _wsfeService;
         private readonly WsaaAuthService _wasaaAuthService;
 
-        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, WsfeService wsfeService, WsaaAuthService wsaaAuthService)
+        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository, WsfeService wsfeService, WsaaAuthService wsaaAuthService)
         {
             _visitasRepository = visitasRepository;
             _pagosRepository = pagosRepository;
+            _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _wsfeService = wsfeService;
             _wasaaAuthService = wsaaAuthService;
         }

@@ -40,7 +40,7 @@ namespace BackEndAPI.Services
                     IdCaja = request.IdCaja,
                     IdVisita = null,
                     Monto = request.Monto,
-                    Descripcion = request.Descripcion,
+                    Descripcion = request.Descripcion?.Trim() ?? string.Empty,
                     FechaMovimiento = DateTime.UtcNow,
                     TipoMovimientoCaja = TipoMovimiento,
 
