@@ -1,5 +1,6 @@
 ﻿using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Data;
+using BackEndAPI.Models;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -29,13 +30,184 @@ namespace BackEndAPI.ARCA.Servicios
             db = _currentDbContext.Db;
         }
 
-        private async Task<bool> GuardarFactura(FECAERequest invoice, FECAEResponse response, int PuntoVenta, int TipoComprobante, string requestXml, string responseXml)
+
+        public async Task<FacturaElectronica> CrearFacturaElectronica(DatosParaFactura DatosFactura) //ESTA FUNCION ES EL PUNTO DE INICIO DE LAS FACTURAS ELECTRONICAS, SE DEBE LLAMAR DESDE EL CONTROLADOR
+        {
+            try
+            {
+
+                //1. Cargar el certificado
+                //TODO: cambiar la ruta de los certificados y la contraseñas por busquedas en S3
+                X509Certificate2 certLoad = CertificateLoader.Load(System.IO.File.ReadAllBytes("C:/Users/Matias/Desktop/certificado.pfx"), "123456"); //TODO: cambiar la ruta de los certificados y la contraseñas por busquedas en S3
+
+                //2. Autenticar y obtener el token                
+                Empresa empresa = await db.Empresas.FirstOrDefaultAsync();
+                FEAuthResponse buscarTokenValido = await _wasaaAuthService.AutenticarFacturacionElectronica(empresa.ubicacionCert);
+                if (empresa.ubicacionCert == null) throw new Exception("No se encontró la ubicación del certificado de la empresa");
+
+                FEAuthRequest auth = new FEAuthRequest
+                {
+                    Token = buscarTokenValido.Token,
+                    Sign = buscarTokenValido.Sign,
+                    Cuit = empresa.Cuit,
+                };
+
+
+                //3. Obtener el último comprobante para el punto de venta y tipo de comprobante
+                //TODO: buscar que es el punto de venta y una lista de tipos de comprobantes
+                int last = await GetLastVoucherAsync(auth, DatosFactura.PuntoDeVenta, DatosFactura.TipoDeComprobante);
+
+                ////TODO: buscar los valores posibles para cada campo
+                FECAERequest comprobante = new FECAERequest
+                {
+                    Concepto = DatosFactura.concepto,
+                    DocTipo = DatosFactura.TipoDocumentoCliente,
+                    DocNro = DatosFactura.NumeroDocumentoCliente,
+                    CondicionIVAReceptorId = DatosFactura.CondicionIVAReceptor,
+                    CbteDesde = last + 1,
+                    CbteHasta = last + 1,
+                    CbteFch = DateTime.Today,
+                    ImpTotal = 100, //importe total = ImpTotal = ImpNeto + ImpIVA + ImpTrib + ImpOpEx + ImpTotConc
+                    ImpTotConc = 0, //Importe no gravado. conceptos que no integran la base imponible del IVA. Generalmente 0
+                    ImpNeto = 100, //Importe neto gravado. Es el subtotal sujeto a IVA. el total antes de impuestos
+                    ImpOpEx = 0, //Importe exento. Es el subtotal de operaciones exentas de IVA. Generalmente 0
+                    ImpIVA = 0, //Importe del IVA. Es el subtotal de operaciones sujetas a IVA. !!ES UN PORCENTAJE!!
+                    ImpTrib = 0 //Otros tributos.
+                };
+
+
+                //5. Solicitar el CAE para el nuevo comprobante
+                FacturaElectronica caeResponse = await RequestCAEAsync(auth, DatosFactura.PuntoDeVenta, DatosFactura.TipoDeComprobante, comprobante);
+
+                //6. Verificar la respuesta
+                FECompConsultarResponse confirm = await FECompConsultarAsync(auth, new FECompConsultarRequest
+                {
+                    PuntoVenta = DatosFactura.PuntoDeVenta,
+                    TipoComprobante = DatosFactura.TipoDeComprobante,
+                    NumeroComprobante = comprobante.CbteDesde
+                });
+
+
+                return caeResponse;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error occurred: {ex.Message}");
+                throw ex;
+            }
+        }
+
+
+        public async Task<List<FacturaElectronica>> GetFacturasAsync()
+        {
+            return await db.FacturasElectronicas.ToListAsync();
+        }
+
+        public async Task<FacturaElectronica> RequestCAEAsync(FEAuthRequest auth, int ptoVta, int cbteTipo, FECAERequest invoice)
+        {
+            var soapXml = BuildCAERequestSoap(auth, ptoVta, cbteTipo, invoice);
+
+            var content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
+            content.Headers.Add("SOAPAction", $"\"{WsfeSoapActions.FECAESolicitar}\"");
+            var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
+
+            var responseXml = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(responseXml);
+
+            var doc = XDocument.Parse(responseXml);
+            XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
+
+            var result = doc.Descendants(ns + "Resultado").First().Value;
+            var cae = doc.Descendants(ns + "CAE").First().Value;
+            var caeVto = doc.Descendants(ns + "CAEFchVto").First().Value;
+
+
+            var CAEResponse = new FECAEResponse
+            {
+                Result = result,
+                CAE = cae,
+                CAEExpiration = caeVto
+            };
+
+            var facturaElectronica = await GuardarFactura(invoice, CAEResponse, ptoVta, cbteTipo, soapXml, responseXml);
+            return facturaElectronica;
+        }
+        public async Task<int> GetLastVoucherAsync(FEAuthRequest auth, int ptoVta, int cbteTipo)
+        {
+            var soapXml = BuildLastVoucherSoap(auth, ptoVta, cbteTipo);
+
+            var content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
+            content.Headers.Add("SOAPAction", $"\"{WsfeSoapActions.FECompUltimoAutorizado}\"");
+
+            var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
+
+            var responseXml = await response.Content.ReadAsStringAsync();
+
+            var doc = XDocument.Parse(responseXml);
+            XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
+            var cbteNro = doc.Descendants(ns + "CbteNro").First().Value;
+
+            return int.Parse(cbteNro);
+        }
+        public async Task<List<CondicionIvaReceptor>> GetCondicionesIvaReceptorAsync(FEAuthRequest auth)
+        {
+            var soapXml = BuildCondicionIvaRequest(auth);
+            var content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
+            content.Headers.Add("SOAPAction", $"\"{WsfeSoapActions.FEParamGetCondicionIvaReceptor}\"");
+
+            var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
+            var responseXml = await response.Content.ReadAsStringAsync();
+
+            var doc = XDocument.Parse(responseXml);
+
+            XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
+
+            return doc.Descendants(ns + "CondicionIvaReceptor").Select(x => new CondicionIvaReceptor
+            {
+                Id = int.Parse(x.Element(ns + "Id")!.Value),
+
+                Descripcion = x.Element(ns + "Desc")!.Value,
+
+                ClaseComprobante = x.Element(ns + "Cmp_Clase")?.Value ?? ""
+            }).ToList();
+        }
+        public async Task<FECompConsultarResponse> FECompConsultarAsync(FEAuthRequest auth, FECompConsultarRequest request)
+        {
+            var soapXml = BuildFECompConsultarSoap(auth, request);
+            var content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
+            content.Headers.Add("SOAPAction", $"\"{WsfeSoapActions.FECompConsultar}\"");
+
+            var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
+            var responseXml = await response.Content.ReadAsStringAsync();
+
+            var doc = XDocument.Parse(responseXml);
+            XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
+            var result = doc.Descendants(ns + "ResultGet").First();
+
+            return new FECompConsultarResponse
+            {
+                NumeroComprobante = long.Parse(result.Element(ns + "CbteDesde")!.Value),
+                PuntoVenta = int.Parse(result.Element(ns + "PtoVta")!.Value),
+                TipoComprobante = int.Parse(result.Element(ns + "CbteTipo")!.Value),
+                DocTipo = int.Parse(result.Element(ns + "DocTipo")!.Value),
+                DocNro = long.Parse(result.Element(ns + "DocNro")!.Value),
+                ImporteTotal = decimal.Parse(result.Element(ns + "ImpTotal")!.Value, System.Globalization.CultureInfo.InvariantCulture),
+                Cae = result.Element(ns + "CodAutorizacion")?.Value ?? "",
+                CaeVencimiento = result.Element(ns + "FchVto")?.Value ?? "",
+                FechaComprobante = DateTime.ParseExact(result.Element(ns + "CbteFch")!.Value, "yyyyMMdd", null),
+                Resultado = "A"
+            };
+        }
+
+
+
+
+        private async Task<FacturaElectronica> GuardarFactura(FECAERequest invoice, FECAEResponse response, int PuntoVenta, int TipoComprobante, string requestXml, string responseXml)
         {
             try
             {
                 var factura = new FacturaElectronica
                 {
-                    Id = Guid.NewGuid(),
                     PuntoVenta = PuntoVenta,
                     TipoComprobante = TipoComprobante,
                     NumeroComprobante = invoice.CbteDesde,
@@ -47,16 +219,13 @@ namespace BackEndAPI.ARCA.Servicios
                     XmlRespuesta = responseXml
                 };
                 await db.FacturasElectronicas.AddAsync(factura);
-                await db.SaveChangesAsync();
-                return true;
+                return factura;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al guardar la factura: {ex.Message}");
-                return false;
+                throw new Exception($"error generando factura {ex.Message}");
             }
         }
-
         private string BuildLastVoucherSoap(FEAuthRequest auth, int ptoVta, int cbteTipo)
         {
             return
@@ -81,26 +250,6 @@ namespace BackEndAPI.ARCA.Servicios
                 </soap:Envelope>
                 """;
         }
-        public async Task<int> GetLastVoucherAsync(FEAuthRequest auth, int ptoVta, int cbteTipo)
-        {
-            var soapXml = BuildLastVoucherSoap(auth, ptoVta, cbteTipo);
-
-            var content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
-            content.Headers.Add("SOAPAction", $"\"{WsfeSoapActions.FECompUltimoAutorizado}\"");
-
-            var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
-
-            var responseXml = await response.Content.ReadAsStringAsync();
-
-            var doc = XDocument.Parse(responseXml);
-            XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
-            var cbteNro = doc.Descendants(ns + "CbteNro").First().Value;
-
-            return int.Parse(cbteNro);
-        }
-
-
-
         private string BuildCAERequestSoap(FEAuthRequest auth, int ptoVta, int cbteTipo, FECAERequest invoice)
         {
             return $"""
@@ -148,37 +297,6 @@ namespace BackEndAPI.ARCA.Servicios
                 </soap:Envelope>
                 """;
         }
-        public async Task<FECAEResponse> RequestCAEAsync(FEAuthRequest auth, int ptoVta, int cbteTipo, FECAERequest invoice)
-        {
-            var soapXml = BuildCAERequestSoap(auth, ptoVta, cbteTipo, invoice);
-
-            var content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
-            content.Headers.Add("SOAPAction", $"\"{WsfeSoapActions.FECAESolicitar}\"");
-            var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
-
-            var responseXml = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseXml);
-
-            var doc = XDocument.Parse(responseXml);
-            XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
-
-            var result = doc.Descendants(ns + "Resultado").First().Value;
-            var cae = doc.Descendants(ns + "CAE").First().Value;
-            var caeVto = doc.Descendants(ns + "CAEFchVto").First().Value;
-
-
-            var CAEResponse = new FECAEResponse
-            {
-                Result = result,
-                CAE = cae,
-                CAEExpiration = caeVto
-            };
-            await GuardarFactura(invoice, CAEResponse, ptoVta, cbteTipo, soapXml, responseXml);
-            return CAEResponse;
-        }
-
-
-
         private string BuildCondicionIvaRequest(FEAuthRequest auth)
         {
             return $"""
@@ -200,30 +318,6 @@ namespace BackEndAPI.ARCA.Servicios
                 </soap:Envelope>
                 """;
         }
-        public async Task<List<CondicionIvaReceptor>> GetCondicionesIvaReceptorAsync(FEAuthRequest auth)
-        {
-            var soapXml = BuildCondicionIvaRequest(auth);
-            var content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
-            content.Headers.Add("SOAPAction", $"\"{WsfeSoapActions.FEParamGetCondicionIvaReceptor}\"");
-
-            var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
-            var responseXml = await response.Content.ReadAsStringAsync();
-
-            var doc = XDocument.Parse(responseXml);
-
-            XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
-
-            return doc.Descendants(ns + "CondicionIvaReceptor").Select(x => new CondicionIvaReceptor
-            {
-                Id = int.Parse(x.Element(ns + "Id")!.Value),
-
-                Descripcion = x.Element(ns + "Desc")!.Value,
-
-                ClaseComprobante = x.Element(ns + "Cmp_Clase")?.Value ?? ""
-            }).ToList();
-        }
-
-
         private string BuildFECompConsultarSoap(FEAuthRequest auth, FECompConsultarRequest request)
         {
             return $"""
@@ -249,96 +343,6 @@ namespace BackEndAPI.ARCA.Servicios
                     </soap:Body>
                 </soap:Envelope>
                 """;
-        }
-        public async Task<FECompConsultarResponse> FECompConsultarAsync(FEAuthRequest auth, FECompConsultarRequest request)
-        {
-            var soapXml = BuildFECompConsultarSoap(auth, request);
-            var content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
-            content.Headers.Add("SOAPAction", $"\"{WsfeSoapActions.FECompConsultar}\"");
-
-            var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
-            var responseXml = await response.Content.ReadAsStringAsync();
-
-            var doc = XDocument.Parse(responseXml);
-            XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
-            var result = doc.Descendants(ns + "ResultGet").First();
-
-            return new FECompConsultarResponse
-            {
-                NumeroComprobante = long.Parse(result.Element(ns + "CbteDesde")!.Value),
-                PuntoVenta = int.Parse(result.Element(ns + "PtoVta")!.Value),
-                TipoComprobante = int.Parse(result.Element(ns + "CbteTipo")!.Value),
-                DocTipo = int.Parse(result.Element(ns + "DocTipo")!.Value),
-                DocNro = long.Parse(result.Element(ns + "DocNro")!.Value),
-                ImporteTotal = decimal.Parse(result.Element(ns + "ImpTotal")!.Value, System.Globalization.CultureInfo.InvariantCulture),
-                Cae = result.Element(ns + "CodAutorizacion")?.Value ?? "",
-                CaeVencimiento = result.Element(ns + "FchVto")?.Value ?? "",
-                FechaComprobante = DateTime.ParseExact(result.Element(ns + "CbteFch")!.Value, "yyyyMMdd", null),
-                Resultado = "A"
-            };
-        }
-
-        public async Task<List<FacturaElectronica>> GetFacturasAsync()
-        {
-            return await db.FacturasElectronicas.ToListAsync();
-        }
-
-        //ESTA FUNCION ES EL PUNTO DE INICIO DE LAS FACTURAS ELECTRONICAS, SE DEBE LLAMAR DESDE EL CONTROLADOR
-        public async Task<int> CrearFacturaElectronica(FEAuthRequest auth, DatosParaFactura DatosFactura)
-        {
-            try
-            {
-                //1. Cargar el certificado
-                //TODO: cambiar la ruta de los certificados y la contraseñas por busquedas en S3
-                X509Certificate2 certLoad = CertificateLoader.Load(System.IO.File.ReadAllBytes("C:/Users/Matias/Desktop/certificado.pfx"), "123456");
-
-                //2. Autenticar y obtener el token                
-                FEAuthResponse response = await _wasaaAuthService.AutenticarFacturacionElectronica(certLoad);
-
-                //3. Obtener el último comprobante para el punto de venta y tipo de comprobante
-                //TODO: buscar que es el punto de venta y una lista de tipos de comprobantes
-                int last = await GetLastVoucherAsync(auth, DatosFactura.PuntoDeVenta, DatosFactura.TipoDeComprobante);
-
-                ////TODO: buscar los valores posibles para cada campo
-                FECAERequest comprobante = new FECAERequest
-                {
-                    Concepto = DatosFactura.concepto,
-                    DocTipo = DatosFactura.TipoDocumentoCliente,
-                    DocNro = DatosFactura.NumeroDocumentoCliente,
-                    CondicionIVAReceptorId = DatosFactura.CondicionIVAReceptor,
-                    CbteDesde = last + 1,
-                    CbteHasta = last + 1,
-                    CbteFch = DateTime.Today,
-                    ImpTotal = 100, //importe total = ImpTotal = ImpNeto + ImpIVA + ImpTrib + ImpOpEx + ImpTotConc
-                    ImpTotConc = 0, //Importe no gravado. conceptos que no integran la base imponible del IVA. Generalmente 0
-                    ImpNeto = 100, //Importe neto gravado. Es el subtotal sujeto a IVA. el total antes de impuestos
-                    ImpOpEx = 0, //Importe exento. Es el subtotal de operaciones exentas de IVA. Generalmente 0
-                    ImpIVA = 0, //Importe del IVA. Es el subtotal de operaciones sujetas a IVA. !!ES UN PORCENTAJE!!
-                    ImpTrib = 0 //Otros tributos.
-                };
-
-
-                //5. Solicitar el CAE para el nuevo comprobante
-                FECAEResponse caeResponse = await RequestCAEAsync(auth, DatosFactura.PuntoDeVenta, DatosFactura.TipoDeComprobante, comprobante);
-
-                //6. Verificar la respuesta
-                FECompConsultarResponse confirm = await FECompConsultarAsync(auth, new FECompConsultarRequest
-                {
-                    PuntoVenta = DatosFactura.PuntoDeVenta,
-                    TipoComprobante = DatosFactura.TipoDeComprobante,
-                    NumeroComprobante = comprobante.CbteDesde
-                });
-                //7. Imprimir el resultado
-
-                //8. Manejar errores
-
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error occurred: {ex.Message}");
-                return 0;
-            }
         }
     }
 }

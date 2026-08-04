@@ -11,6 +11,8 @@ namespace BackEndAPI.Models
         public string[]? Telefonos { get; set; } = null;
         public string[]? Emails { get; set; } = null;
         public DateTime FechaInscripcion { get; set; } = DateTime.UtcNow;
+        public long Cuit { get; set; }
+        public string? ubicacionCert { get; set; }
         public bool Activo { get; set; } = false;
         public string Username { get; set; } = null!;
         public byte[] PasswordHash { get; private set; } 

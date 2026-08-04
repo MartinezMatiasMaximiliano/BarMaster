@@ -10,7 +10,8 @@ namespace BackEndAPI.Models
         public string? Codigo { get; set; }
         public string Nombre { get; set; } = null!;
         public string? Descripcion { get; set; }
-        public decimal Precio { get; set; }
+        public decimal PrecioNeto { get; set; }
+        public decimal PorcentajeIVA { get; set; }
         public decimal? CostoProduccion { get; set; }
         public bool Activo { get; set; } = true;
         public string? PathImagen { get; set; } = string.Empty;

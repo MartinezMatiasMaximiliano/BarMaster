@@ -31,8 +31,9 @@ namespace BackEndAPI.Controllers
                     Codigo = producto.Codigo,
                     Nombre = producto.Nombre,
                     Descripcion = producto.Descripcion ?? string.Empty,
-                    Precio = producto.Precio,
-                    Costo = producto.CostoProduccion,
+                    PrecioNeto = producto.PrecioNeto,
+                    PorcentajeIVA = producto.PorcentajeIVA,
+                    CostoProduccion = producto.CostoProduccion,
                     Activo = producto.Activo,
                     ImagenUrl = producto.PathImagen ?? string.Empty,
                     Categorias = producto.Categorias?
@@ -67,8 +68,9 @@ namespace BackEndAPI.Controllers
                     Codigo = producto.Codigo,
                     Nombre = producto.Nombre,
                     Descripcion = producto.Descripcion ?? string.Empty,
-                    Precio = producto.Precio,
-                    Costo = producto.CostoProduccion,
+                    PrecioNeto = producto.PrecioNeto,
+                    PorcentajeIVA = producto.PorcentajeIVA,
+                    CostoProduccion = producto.CostoProduccion,
                     Activo = producto.Activo,
                     ImagenUrl = producto.PathImagen ?? string.Empty,
                     Categorias = producto.Categorias?
@@ -96,7 +98,7 @@ namespace BackEndAPI.Controllers
             try
             {
                 if (request.Nombre == null) throw new Exception("Nombre nulo");
-                if (request.Precio <= 0) throw new Exception("Precio invalido");
+                if (request.PrecioNeto <= 0) throw new Exception("Precio invalido");
 
                 var producto = await _productosServices.CrearProducto(request);
 
