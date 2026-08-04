@@ -19,6 +19,19 @@ namespace BackEndAPI.Repositories
         {
             return await db.Reservas.Include(r => r.Estado).ToListAsync();
         }
+
+        public async Task<IEnumerable<Reserva>> GetReservasPorRangoFechas(Guid idSucursal, DateTime desde, DateTime hastaExclusive)
+        {
+            return await db.Reservas
+                .Include(r => r.Estado)
+                .Where(r =>
+                    r.IdSucursal == idSucursal &&
+                    r.FechaHora >= desde &&
+                    r.FechaHora < hastaExclusive)
+                .OrderBy(r => r.FechaHora)
+                .ToListAsync();
+        }
+
         public async Task<Reserva?> GetReservaPorId(Guid id)
         {
             return await db.Reservas.Include(r => r.Estado).FirstOrDefaultAsync(r => r.Id == id);

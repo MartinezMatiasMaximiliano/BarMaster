@@ -72,11 +72,21 @@ namespace BackEndAPI.Services
             cuentaCorriente.Balance += esIngreso ? request.Monto : -request.Monto;
             return await _cuentasCorrientesRepository.ActualizarDatosCuentaCorriente(cuentaCorriente);
         }
-        public async Task<bool> EliminarCuentaCorriente(Guid id)
+
+        public async Task<bool> DesactivarCuentaCorriente(Guid idCuentaCorriente)
         {
-            var busqueda = await _cuentasCorrientesRepository.GetCuentaCorrientePorId(id);
+            var busqueda = await _cuentasCorrientesRepository.GetCuentaCorrientePorId(idCuentaCorriente);
             if (busqueda == null) throw new Exception("Cuenta corriente no encontrada");
             if (busqueda.Balance != 0) throw new Exception("balance no nulo");
+            var resultado = await _cuentasCorrientesRepository.DesactivarCuentaCorriente(busqueda);
+            return true;
+        }
+        public async Task<bool> EliminarCuentaCorriente(Guid idCuentaCorriente)
+        {
+            var busqueda = await _cuentasCorrientesRepository.GetCuentaCorrientePorId(idCuentaCorriente);
+            if (busqueda == null) throw new Exception("Cuenta corriente no encontrada");
+            if (busqueda.Balance != 0) throw new Exception("balance no nulo");
+            var resultado = await _cuentasCorrientesRepository.EliminarCuentaCorriente(busqueda);  
             return true;
         }
     }

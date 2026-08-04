@@ -10,8 +10,10 @@ namespace BackEndAPI.Services.Interfaces
         Task<CuentaCorriente?> GetCuentaCorrientePorId(Guid id);
         Task<CuentaCorriente?> CrearCuentaCorriente(CrearCuentaCorrienteDTO cuentaCorriente);
         Task<CuentaCorriente?> ActualizarDatosCuentaCorriente(ModificarCuentaCorrienteDTO cuentaCorriente);
-        Task<CuentaCorriente?> CrearMovimientoCuentaCorriente(Guid idCuenta, CrearMovimientoCajaDTO request);
-        Task<bool> EliminarCuentaCorriente(Guid id);
+        Task<CuentaCorriente?> CrearMovimientoCuentaCorriente(Guid idCuentaCorriente, CrearMovimientoCajaDTO request);
+
+        Task<bool> DesactivarCuentaCorriente(Guid idCuentaCorriente);
+        Task<bool> EliminarCuentaCorriente(Guid idCuentaCorriente);
 
     }
 }

@@ -27,6 +27,11 @@ namespace BackEndAPI.Services
         {
             return await _deliveryTakeawayRepository.ObtenerPorIdSucursal(IdSucursal);
         }
+        public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeawaysPorCaja(Guid IdSucursal, Guid IdCaja)
+        {
+            if (IdCaja == Guid.Empty) throw new Exception("Caja no identificada");
+            return await _deliveryTakeawayRepository.ObtenerPorIdCaja(IdSucursal, IdCaja);
+        }
         public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid IdDeliveryTakeaway)
         {
             return await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);

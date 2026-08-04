@@ -1,6 +1,5 @@
-import Button from 'react-bootstrap/Button';
 import { Box, Divider, Tooltip, Typography } from '@mui/material';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 function Modal_Detalles_Pedido(props) {
     const items = Array.isArray(props.cuerpo) ? props.cuerpo : [];
@@ -130,12 +129,18 @@ function Modal_Detalles_Pedido(props) {
                 },
             }}
         >
-            <span>
-                <Button variant={props.variant ? props.variant : "primary"} className="me-2" type="button">
-                    <Inventory2OutlinedIcon sx={{ fontSize: 18, mr: 0.5, verticalAlign: 'text-bottom' }} />
-                    Ver
-                </Button>
-            </span>
+            <Typography
+                component="span"
+                variant="body2"
+                fontWeight={600}
+                tabIndex={0}
+                sx={{ cursor: 'help' }}
+            >
+                <InfoOutlinedIcon
+                    color="info"
+                    sx={{ fontSize: 17, verticalAlign: 'text-bottom' }}
+                />Ver
+            </Typography>
         </Tooltip>
     );
 }

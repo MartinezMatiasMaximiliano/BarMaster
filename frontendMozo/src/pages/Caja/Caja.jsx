@@ -30,7 +30,6 @@ function Caja() {
         mensaje,
         fieldErrors,
         tabValue,
-        formApertura,
         formCierre,
         diferencia,
         balanceActual,
@@ -44,7 +43,6 @@ function Caja() {
         handleChange,
         onAbrirCaja,
         onCerrarCaja,
-        setFormApertura,
         setFormCierre
     } = useCaja();
 
@@ -106,10 +104,7 @@ function Caja() {
                                             />
                                         ) : (
                                             <FormularioApertura
-                                                formApertura={formApertura}
-                                                errorMontoInicial={fieldErrors.montoInicial}
                                                 guardando={guardando}
-                                                onChange={handleChange(setFormApertura)}
                                                 onSubmit={onAbrirCaja}
                                             />
                                         )}

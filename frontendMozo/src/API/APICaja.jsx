@@ -56,10 +56,10 @@ export async function ObtenerCajaActiva() {
     }
 }
 
-export async function AbrirCaja(datos) {
+export async function AbrirCaja(datos = {}) {
     try {
         const payload = {
-            montoApertura: datos.montoInicial
+            montoApertura: Number(datos.montoInicial) || 0
         };
         
         const response = await api.post('Cajas/Abrir', payload);

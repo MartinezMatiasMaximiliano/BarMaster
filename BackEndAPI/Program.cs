@@ -1,3 +1,4 @@
+using Amazon.S3;
 using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.Data;
@@ -5,6 +6,7 @@ using BackEndAPI.Hubs;
 using BackEndAPI.Repositories;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
+using BackEndAPI.Services.Amazon;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using BackEndAPI.Tenancy.Services;
@@ -136,6 +138,8 @@ builder.Services.AddScoped<IRolesRepository, RolesRepository>();
 builder.Services.AddScoped<IRolesServices, RolesServices>();
 builder.Services.AddScoped<ICuentasCorrientesRepository, CuentasCorrientesRepository>();
 builder.Services.AddScoped<ICuentasCorrientesServices, CuentasCorrientesServices>();
+builder.Services.AddScoped<S3Service>();
+//builder.Services.AddAWSService<IAmazonS3>();
 
 builder.Services.AddDbContext<MasterDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Master")));

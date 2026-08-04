@@ -49,7 +49,7 @@ public class WsaaAuthService
         """;
     }
 
-    public async Task<FEAuthResponse> AutenticarFacturaElectronica(X509Certificate2 cert)
+    public async Task<FEAuthResponse> AutenticarFacturacionElectronica(X509Certificate2 cert)
     {
         try
         { 
@@ -96,7 +96,7 @@ public class WsaaAuthService
             {
                 Token = token,
                 Sign = sign,
-                ExpirationTime = DateTime.Parse(expiration)
+                ExpirationTime = DateTime.Parse(expiration).ToUniversalTime()
             };
 
             await db.FETokenAuths.AddAsync(newTokenAuth);

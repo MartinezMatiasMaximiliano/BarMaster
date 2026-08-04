@@ -3,10 +3,7 @@ using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 
 namespace BackEndAPI.Controllers
 {
@@ -190,7 +187,29 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpPatch("Desactivar")]
+        public async Task<IActionResult> DesactivarCuentaCorriente([FromQuery] Guid IdCuenta)
+        {
+            try
+            {
+                var result = await _cuentasCorrientesServices.DesactivarCuentaCorriente(IdCuenta);
+                return Ok("Cuenta corriente desactivada");
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "Cuenta corriente no encontrada":
+                        return BadRequest(new { message = "No se encontró la cuenta corriente a desactivar." });
+                    case "balance no nulo":
+                        return BadRequest(new { message = "No se puede desactivar la cuenta corriente porque tiene balance impago" });
+                    default:
+                        return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al desactivar la cuenta corriente." });
+                }
+            }
+        }
+
+        [HttpDelete("Eliminar")]
         public async Task<IActionResult> EliminarCuentaCorriente([FromQuery] Guid IdCuenta)
         {
             try
