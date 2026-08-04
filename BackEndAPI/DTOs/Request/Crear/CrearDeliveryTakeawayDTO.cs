@@ -11,7 +11,8 @@ namespace BackEndAPI.DTOs.Request.Crear
         public string? Indicaciones { get; set; } = null;
         public string? Telefono { get; set; } = null;
         public string Origen { get; set; } = null!;  
-        public CrearPagoDeliveryTakeawayDTO InfoPago { get; set; } = null!;
+        public decimal montoAbonado { get; set; }
+        public CrearPagoDTO InfoPago { get; set; } = null!;
         public List<AgregarProductoAVisita> ListaIDProductos { get; set; } = new List<AgregarProductoAVisita>();
     }
 }

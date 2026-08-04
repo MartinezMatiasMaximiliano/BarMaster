@@ -11,7 +11,7 @@ namespace BackEndAPI.Models
         public decimal Monto { get; set; }  
         public string Descripcion { get; set; } = string.Empty;
         public bool Facturado { get; set; } = false;
-        public Guid? IdFactura { get; set; } = Guid.Empty;
+        public Guid? IdFactura { get; set; } = null;
         public DateTime FechaMovimiento { get; set; } = DateTime.UtcNow;
 
 

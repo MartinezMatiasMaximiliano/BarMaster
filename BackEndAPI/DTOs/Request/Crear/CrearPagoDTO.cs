@@ -15,13 +15,4 @@ namespace BackEndAPI.DTOs.Request.Crear
         public DatosParaFactura? DatosFacturaARCA { get; set; }
         public ICollection<int> ListaIdsProductos { get; set; } = new List<int>();
     }
-
-    public class CrearPagoDeliveryTakeawayDTO
-    {
-        public int IdTipoMovimiento { get; set; }
-        public Guid IdVisita { get; set; }
-        public decimal Monto { get; set; }
-        public bool GenerarFactura { get; set; } = false;
-        public DatosParaFactura? DatosFacturaARCA { get; set; }
-    }
 }

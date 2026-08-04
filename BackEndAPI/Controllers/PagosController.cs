@@ -49,7 +49,7 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "No se encontró la ubicación del certificado de la empresa":
-                        return BadRequest("No se encontró la ubicación del certificado de la empresa.");
+                        return BadRequest("No se encontró l2a ubicación del certificado de la empresa.");
                     case "IdVisita vacio":
                         return BadRequest("El id de la visita no puede estar vacío.");
                     case "Datos de factura vacios":

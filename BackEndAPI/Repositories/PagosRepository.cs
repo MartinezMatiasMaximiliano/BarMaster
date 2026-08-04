@@ -5,6 +5,7 @@ using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.ARCA.Clases;
+using System.Globalization;
 
 namespace BackEndAPI.Repositories
 {
@@ -23,7 +24,7 @@ namespace BackEndAPI.Repositories
             Db = _context.Db;
         }
 
-        public async Task<(MovimientoCaja, FacturaElectronica)> CrearPago(Visita visita, MovimientoCaja movimientoCaja, DatosParaFactura DatosFactura, decimal totalProductosPagados, bool generarFactura)
+        public async Task<(MovimientoCaja, FacturaElectronica)> CrearPago(Visita visita, MovimientoCaja movimientoCaja, DatosParaFactura DatosFactura, decimal totalProductosPagados, bool generarFactura, decimal montoAbonado)
         {
             var transaccion = Db.Database.BeginTransaction();
             var tipoMovimientoCaja = await Db.TipoMovimientosCajas.FirstOrDefaultAsync(tp => tp.Id == movimientoCaja.IdTipoMovimientoCaja);
@@ -36,12 +37,12 @@ namespace BackEndAPI.Repositories
 
                 if (tipoMovimientoCaja.EsEfectivo)
                 {
-                    var vuelto = Math.Max(0, montoRecibido - pago.Monto);
+                    var vuelto = Math.Max(0, montoAbonado - movimientoCaja.Monto);
                     var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
-                    pago.Descripcion = $"{pago.Descripcion} | Vuelto: $ {vueltoFormateado}";
+                    movimientoCaja.Descripcion = $"{movimientoCaja.Descripcion} | Vuelto: $ {vueltoFormateado}";
 
                     var caja = await Db.Cajas.FirstOrDefaultAsync(c => c.Id == visita.IdCaja);
-                    caja.MontoActual += movimientoCaja.Monto;
+                    caja.MontoActual += movimientoCaja.Monto - vuelto;
                     Db.Entry(caja).State = EntityState.Modified;
                 }
 

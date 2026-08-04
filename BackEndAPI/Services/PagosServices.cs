@@ -51,11 +51,11 @@ namespace BackEndAPI.Services
                 }
             }
 
-            visita.Total += TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal;
+            visita.Total += TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal; //TODO: REVISAR
 
             if (infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
 
-            var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(visita, PagoCreado, infoPago.DatosFacturaARCA, TotalAPagar, infoPago.GenerarFactura);
+            var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(visita, PagoCreado, infoPago.DatosFacturaARCA, TotalAPagar, infoPago.GenerarFactura, infoPago.MontoAbonado);
             return (ResultadoPagoCreado, null);
         }
     }

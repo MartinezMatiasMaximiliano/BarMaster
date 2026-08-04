@@ -1,3 +1,4 @@
+using BackEndAPI.ARCA.Clases;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
@@ -16,12 +17,14 @@ namespace BackEndAPI.Services
         private readonly ICajasServices _cajasServices;
         private readonly IProductosRepository _productosRepository;
         private readonly IPersonasRepository _personasRepository;
-        public DeliveryTakeawayServices(IDeliveryTakeawayRepository deliveryTakeawayRepository, ICajasServices cajasServices, IProductosRepository productosRepository, IPersonasRepository personasRepository)
+        private readonly IPagosRepository _pagosRepository;
+        public DeliveryTakeawayServices(IDeliveryTakeawayRepository deliveryTakeawayRepository, ICajasServices cajasServices, IProductosRepository productosRepository, IPersonasRepository personasRepository, IPagosRepository pagosRepository)
         {
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _cajasServices = cajasServices;
             _productosRepository = productosRepository;
             _personasRepository = personasRepository;
+            _pagosRepository = pagosRepository;
         }
         public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeaways(Guid IdSucursal)
         {
@@ -103,12 +106,27 @@ namespace BackEndAPI.Services
             }
 
             DeliveryTakeaway.PrecioTotal = visitaCreada.Total + precioEnvio;
-            return await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
+            DeliveryAndTakeaway dtwk = await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
+
+           
+            var pagoMovimiento = new MovimientoCaja();
+
+            (MovimientoCaja movimientoCaja, FacturaElectronica facturaElectronica) = await _pagosRepository.CrearPago(
+                visitaCreada,
+                pagoMovimiento,
+                request.InfoPago.DatosFacturaARCA,
+                visitaCreada.Total,
+                request.InfoPago.GenerarFactura,
+                request.InfoPago.MontoAbonado
+            );
+
+            return dtwk;
         }
         public async Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway)
         {
             throw new NotImplementedException();
         }
+
         public async Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeaway(ModificarDeliveryTakeawayDTO request)
         {
             var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(request.IdDeliveryTakeaway);
