@@ -1,10 +1,10 @@
+using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Identity.Data;
-using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace BackEndAPI.Services
 {
@@ -23,66 +23,38 @@ namespace BackEndAPI.Services
             _wasaaAuthService = wsaaAuthService;
         }
 
-        public async Task<MovimientoCaja> PagarProductos(CrearPagoDTO infoPago, bool emitirFactura, bool marcarPago)
+        public async Task<(MovimientoCaja, FacturaElectronica?)> PagarProductos(CrearPagoDTO infoPago)
         {
-            decimal TotalAPagar = 0;
-
             var visita = await _visitasRepository.BuscarVisitaPorId(infoPago.IdVisita);
-
             if (visita == null) throw new Exception("Visita no encontrada");
-            
-            var origen = string.IsNullOrWhiteSpace(visita.Origen) ? "Local" : visita.Origen;
-            var descripcion = visita.Mesa != null
-                ? $"Pago de la mesa {visita.Mesa.Nombre}" : $"Pago de {origen}";
 
             var PagoCreado = new MovimientoCaja
             {
                 IdTipoMovimientoCaja = infoPago.IdTipoMovimiento,
                 IdCaja = visita.IdCaja,
                 IdVisita = infoPago.IdVisita,
-                Monto = infoPago.Monto,
-                Descripcion = visita.Mesa != null
-                    ? $"Pago de la mesa {visita.Mesa.Nombre}"
-                    : $"Pago de {visita.Origen}"
+                Monto = infoPago.MontoAbonado,
+                Descripcion = visita.Origen == "Local" ? $"Pago de la visita local id: {visita.Id}" : $"Pago de {visita.Origen} id:{visita.Id}"
             };
 
-            foreach (var id in infoPago.ListaIdsProductos)
+            decimal TotalAPagar = 0;
+            foreach (int id in infoPago.ListaIdsProductos)
             {
                 var productoPorVisita = visita.Productos.FirstOrDefault(p => p.Id == id);
                 if (productoPorVisita != null)
                 {
-                    TotalAPagar = TotalAPagar + productoPorVisita.PrecioDelMomento;
-                    productoPorVisita.EstadoPagado = true;
+                    TotalAPagar = TotalAPagar + productoPorVisita.PrecioDelMomento; // TODO: Verificar si se debe sumar el IVA o no
                     productoPorVisita.IdMovimientoCaja = PagoCreado.Id;
+                    productoPorVisita.EstadoPagado = true;
                 }
             }
 
-            visita.Total += TotalAPagar;
+            visita.Total += TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal;
 
-            if (infoPago.Monto < TotalAPagar) throw new Exception("Monto insuficiente");
+            if (infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
 
-            var resultado =  await _pagosRepository.CrearPago(visita, PagoCreado, TotalAPagar);
-
-            //if (emitirFactura)
-            //{
-            //    var factura = await _wsfeService.CrearFacturaElectronica(infoPago.DatosFacturaARCA, authResponse);
-            //    var authResponse = await _wasaaAuthService.AutenticarFacturacionElectronica(cert);
-            //    if(authResponse != null)
-            //    {
-            //        var facturaResponse = await _wsfeService.CrearFacturaElectronica(infoPago.DatosFacturaARCA, authResponse);
-            //        if (facturaResponse != null)
-            //        {
-            //            // Aquí puedes manejar la respuesta de la factura, como guardar el CAE o cualquier otra información relevante
-            //        }
-            //    }
-            //    else {
-            //        throw new Exception();
-            //    }
-
-                
-            //}
-
-            return resultado;
+            var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(visita, PagoCreado, infoPago.DatosFacturaARCA, TotalAPagar, infoPago.GenerarFactura);
+            return (ResultadoPagoCreado, null);
         }
     }
 }

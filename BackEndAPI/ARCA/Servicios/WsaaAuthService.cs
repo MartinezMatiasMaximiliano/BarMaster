@@ -1,6 +1,7 @@
 ﻿using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Data;
 using BackEndAPI.Tenancy.Services;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -49,7 +50,7 @@ public class WsaaAuthService
         """;
     }
 
-    public async Task<FEAuthResponse> AutenticarFacturacionElectronica(X509Certificate2 cert)
+    public async Task<FEAuthResponse> AutenticarFacturacionElectronica(string uriCert)
     {
         try
         { 
@@ -62,7 +63,7 @@ public class WsaaAuthService
                     ExpirationTime = TokenExistente.ExpirationTime
                 };
             }
-            return await AuthenticateAsync(cert);
+            return await AuthenticateAsync(uriCert);
         }
         catch (Exception ex)
         {
@@ -70,10 +71,11 @@ public class WsaaAuthService
         }
     }
 
-    public async Task<FEAuthResponse> AuthenticateAsync(X509Certificate2 cert)
+    public async Task<FEAuthResponse> AuthenticateAsync(string uriCert)
     {
         try
         {
+            var cert = await BuscarCertificado(uriCert);
             var traXml = _traGenerator.Generate();
             var cmsBase64 = _cmsSigner.Sign(traXml, cert);
             var soapEnvelope = BuildSoapEnvelope(cmsBase64);
@@ -114,4 +116,9 @@ public class WsaaAuthService
             throw ex;
         }
     }
+
+    private async Task<X509Certificate2> BuscarCertificado(string Uri) {
+        throw new NotImplementedException();
+    }
+
 }

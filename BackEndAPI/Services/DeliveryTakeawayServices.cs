@@ -93,11 +93,11 @@ namespace BackEndAPI.Services
                         IdProducto = item.IdProducto,
                         NombreProducto = producto.Nombre,
                         Detalles = item.Detalles,
-                        PrecioDelMomento = producto.Precio,
+                        PrecioDelMomento = producto.PrecioNeto,
                         EstadoPagado = false,
                         EstadoPedido = "Pendiente",
                     };
-                    visitaCreada.Total += producto.Precio;
+                    visitaCreada.Total += producto.PrecioNeto;
                     visitaCreada.Productos.Add(productoPorVisita);
                 }
             }

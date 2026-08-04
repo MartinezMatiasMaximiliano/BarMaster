@@ -40,7 +40,7 @@ namespace BackEndAPI.Data
         public DbSet<TipoEnvio> TipoEnvios => Set<TipoEnvio>();
         public DbSet<FacturaElectronica> FacturasElectronicas => Set<FacturaElectronica>();
         public DbSet<FETokenAuth> FETokenAuths => Set<FETokenAuth>();
-
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
@@ -280,6 +280,12 @@ namespace BackEndAPI.Data
                 .HasOne(mc => mc.TipoMovimientoCaja)
                 .WithMany()
                 .HasForeignKey(mc => mc.IdTipoMovimientoCaja)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<MovimientoCaja>()
+                .HasOne(mc => mc.facturaElectronica)
+                .WithMany()
+                .HasForeignKey(mc => mc.IdFactura)
                 .OnDelete(DeleteBehavior.SetNull);
 
             base.OnModelCreating(modelBuilder);
