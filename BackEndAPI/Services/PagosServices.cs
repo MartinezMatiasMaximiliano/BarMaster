@@ -1,10 +1,11 @@
+using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Identity.Data;
-using System.Runtime.CompilerServices;
+using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
 
 namespace BackEndAPI.Services
 {
@@ -25,72 +26,59 @@ namespace BackEndAPI.Services
             _wasaaAuthService = wsaaAuthService;
         }
 
-        public async Task<MovimientoCaja> PagarProductos(CrearPagoDTO infoPago, bool emitirFactura, bool marcarPago)
+        public async Task<(MovimientoCaja, FacturaElectronica?)> PagarProductos(CrearPagoDTO infoPago)
+        {
+            var visita = await _visitasRepository.BuscarVisitaPorId(infoPago.IdVisita);
+            if (visita == null) throw new Exception("Visita no encontrada");
+
+            var movimientoCaja = new MovimientoCaja
+            {
+                IdTipoMovimientoCaja = infoPago.IdTipoMovimiento,
+                IdCaja = visita.IdCaja,
+                IdVisita = infoPago.IdVisita,
+                Facturado = infoPago.GenerarFactura,
+                Descripcion = visita.Origen == "Local" ? 
+                 $"Pago de mesa {(visita.Mesa != null ? visita.Mesa.Nombre : "")}"
+                  : 
+                 $"Pago de {visita.Origen}"
+            };
+
+            decimal TotalAPagar = CalcularTotalProductos(infoPago.ListaIdsProductos, visita, movimientoCaja.Id);
+            if (infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
+
+            visita.Total += TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal; //TODO: REVISAR
+            movimientoCaja.Monto = TotalAPagar;
+            CalcularVuelto(infoPago.MontoAbonado, TotalAPagar, movimientoCaja);
+
+
+
+            var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(visita, movimientoCaja, infoPago.DatosFacturaARCA, TotalAPagar, infoPago.GenerarFactura, infoPago.MontoAbonado);
+
+            return (ResultadoPagoCreado, FacturaElectronica);
+        }
+
+        public decimal CalcularTotalProductos(ICollection<int> IdProductos, Visita visita, Guid IdMovimientoCaja)
         {
             decimal TotalAPagar = 0;
-
-            var visita = await _visitasRepository.BuscarVisitaPorId(infoPago.IdVisita);
-
-            if (visita == null) throw new Exception("Visita no encontrada");
-            
-            var origen = string.IsNullOrWhiteSpace(visita.Origen) ? "Local" : visita.Origen;
-            var descripcion = visita.Mesa != null
-                ? $"Pago de la mesa {visita.Mesa.Nombre}" : $"Pago de {origen}";
-
-            var idMovimientoCaja = Guid.NewGuid();
-
-            foreach (var id in infoPago.ListaIdsProductos)
+            foreach (int id in IdProductos)
             {
                 var productoPorVisita = visita.Productos.FirstOrDefault(p => p.Id == id);
                 if (productoPorVisita != null)
                 {
-                    TotalAPagar = TotalAPagar + productoPorVisita.PrecioDelMomento;
+                    TotalAPagar = TotalAPagar + productoPorVisita.PrecioDelMomento; // TODO: Verificar si se debe sumar el IVA o no
+                    productoPorVisita.IdMovimientoCaja = IdMovimientoCaja;
                     productoPorVisita.EstadoPagado = true;
-                    productoPorVisita.IdMovimientoCaja = idMovimientoCaja;
                 }
             }
+            return TotalAPagar;
+        }
 
-            // si es delivery, se suma el precio del envio al total a pagar
+        private void CalcularVuelto(decimal montoAbonado, decimal totalAPagar, MovimientoCaja movimientoCaja)
+        {
+            var vuelto = Math.Max(0, montoAbonado - movimientoCaja.Monto);
+            var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+            movimientoCaja.Descripcion = $"{movimientoCaja.Descripcion} | Abonado: $ {montoAbonado} | Vuelto: $ {vueltoFormateado}";
 
-            if (string.Equals(origen, "Delivery", StringComparison.OrdinalIgnoreCase))
-            {
-                TotalAPagar += await _deliveryTakeawayRepository.ObtenerPrecioEnvioPorIdVisita(infoPago.IdVisita);
-            }
-
-            if (infoPago.Monto < TotalAPagar) throw new Exception("Monto insuficiente");
-
-            var PagoCreado = new MovimientoCaja
-            {
-                Id = idMovimientoCaja,
-                IdTipoMovimientoCaja = infoPago.IdTipoMovimiento,
-                IdCaja = visita.IdCaja,
-                IdVisita = infoPago.IdVisita,
-                Monto = TotalAPagar,
-                Descripcion = descripcion
-            };
-
-            var resultado =  await _pagosRepository.CrearPago(visita, PagoCreado, infoPago.Monto);
-
-            //if (emitirFactura)
-            //{
-            //    var factura = await _wsfeService.CrearFacturaElectronica(infoPago.DatosFacturaARCA, authResponse);
-            //    var authResponse = await _wasaaAuthService.AutenticarFacturacionElectronica(cert);
-            //    if(authResponse != null)
-            //    {
-            //        var facturaResponse = await _wsfeService.CrearFacturaElectronica(infoPago.DatosFacturaARCA, authResponse);
-            //        if (facturaResponse != null)
-            //        {
-            //            // Aquí puedes manejar la respuesta de la factura, como guardar el CAE o cualquier otra información relevante
-            //        }
-            //    }
-            //    else {
-            //        throw new Exception();
-            //    }
-
-                
-            //}
-
-            return resultado;
         }
     }
 }

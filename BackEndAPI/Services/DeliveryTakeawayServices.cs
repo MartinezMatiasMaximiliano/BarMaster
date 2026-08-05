@@ -1,3 +1,4 @@
+using BackEndAPI.ARCA.Clases;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
@@ -12,16 +13,20 @@ namespace BackEndAPI.Services
 {
     public class DeliveryTakeawayServices : IDeliveryTakeawayServices
     {
+        private readonly IPagosServices _pagosServices;
         private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
         private readonly ICajasServices _cajasServices;
         private readonly IProductosRepository _productosRepository;
         private readonly IPersonasRepository _personasRepository;
-        public DeliveryTakeawayServices(IDeliveryTakeawayRepository deliveryTakeawayRepository, ICajasServices cajasServices, IProductosRepository productosRepository, IPersonasRepository personasRepository)
+        private readonly IPagosRepository _pagosRepository;
+        public DeliveryTakeawayServices(IDeliveryTakeawayRepository deliveryTakeawayRepository, ICajasServices cajasServices, IProductosRepository productosRepository, IPersonasRepository personasRepository, IPagosRepository pagosRepository,IPagosServices pagosServices)
         {
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _cajasServices = cajasServices;
             _productosRepository = productosRepository;
             _personasRepository = personasRepository;
+            _pagosRepository = pagosRepository;
+            _pagosServices = pagosServices;
         }
         public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeaways(Guid IdSucursal)
         {
@@ -43,6 +48,7 @@ namespace BackEndAPI.Services
             if (IdCaja == null) throw new Exception("No hay una caja abierta");
 
             decimal precioEnvio = 0;
+
             var visitaCreada = new Visita
             {
                 IdCaja = IdCaja.Id,
@@ -76,9 +82,10 @@ namespace BackEndAPI.Services
                 DeliveryTakeaway.Telefono = request.Telefono ?? "";
                 DeliveryTakeaway.IdTipoEnvio = null;
                 DeliveryTakeaway.Cadete = null;
+                precioEnvio = 0;
             }
 
-            foreach (var item in request.ListaIDProductos)
+            foreach (var item in request.ListaProductos)
             {
                 var producto = await _productosRepository.GetProductoPorId(item.IdProducto);
                 if (producto == null) throw new Exception($"Producto no encontrado");
@@ -88,27 +95,42 @@ namespace BackEndAPI.Services
                 {
                     var productoPorVisita = new ProductosPorVisita
                     {
-
                         IdVisita = visitaCreada.Id,
                         IdProducto = item.IdProducto,
                         NombreProducto = producto.Nombre,
                         Detalles = item.Detalles,
-                        PrecioDelMomento = producto.Precio,
+                        PrecioDelMomento = producto.PrecioNeto,
                         EstadoPagado = false,
                         EstadoPedido = "Pendiente",
                     };
-                    visitaCreada.Total += producto.Precio;
+                    visitaCreada.Total += producto.PrecioNeto;
                     visitaCreada.Productos.Add(productoPorVisita);
                 }
             }
 
+
             DeliveryTakeaway.PrecioTotal = visitaCreada.Total + precioEnvio;
-            return await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
+            DeliveryAndTakeaway dtwk = await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
+
+           
+            var pagoMovimiento = new MovimientoCaja();
+
+            (MovimientoCaja movimientoCaja, FacturaElectronica facturaElectronica) = await _pagosRepository.CrearPago(
+                visitaCreada,
+                pagoMovimiento,
+                request.InfoPago.DatosFacturaARCA,
+                visitaCreada.Total,
+                request.InfoPago.GenerarFactura,
+                request.InfoPago.MontoAbonado
+            );
+
+            return dtwk;
         }
         public async Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway)
         {
             throw new NotImplementedException();
         }
+
         public async Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeaway(ModificarDeliveryTakeawayDTO request)
         {
             var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(request.IdDeliveryTakeaway);
@@ -149,5 +171,6 @@ namespace BackEndAPI.Services
             return await _deliveryTakeawayRepository.EliminarDeliveryTakeaway(deliveryTakeawayExistente);
         }
 
+       
     }
 }

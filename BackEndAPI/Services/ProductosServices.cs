@@ -32,7 +32,8 @@ namespace BackEndAPI.Services
                 Codigo = request.Codigo,
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
-                Precio = request.Precio,
+                PrecioNeto = request.PrecioNeto,
+                PorcentajeIVA = request.PorcentajeIVA,
                 CostoProduccion = request.CostoProduccion,
                 Activo = request.Activo,
                 PathImagen = pathImagen ?? "uploads/ImagenesProductos/Placeholder.jpeg",
@@ -53,7 +54,8 @@ namespace BackEndAPI.Services
                 Codigo = producto.Codigo,
                 Nombre = producto.Nombre,
                 Descripcion = producto.Descripcion,
-                Precio = producto.Precio,
+                PrecioNeto = producto.PrecioNeto,
+                PorcentajeIVA = producto.PorcentajeIVA,
                 CostoProduccion = producto.CostoProduccion,
                 Activo = producto.Activo,
                 PathImagen = producto.PathImagen,
@@ -107,7 +109,8 @@ namespace BackEndAPI.Services
             if (request.Codigo != null) busqueda.Codigo = request.Codigo;
             if (!string.IsNullOrEmpty(request.Nombre)) busqueda.Nombre = request.Nombre;
             if (!string.IsNullOrEmpty(request.Descripcion)) busqueda.Descripcion = request.Descripcion;
-            if (request.Precio.HasValue) busqueda.Precio = (decimal)request.Precio;
+            if (request.PrecioNeto.HasValue) busqueda.PrecioNeto = (decimal)request.PrecioNeto;
+            if (request.PorcentajeIVA.HasValue) busqueda.PorcentajeIVA = (decimal)request.PorcentajeIVA;
             if (request.CostoProduccion.HasValue) busqueda.CostoProduccion = request.CostoProduccion;
             busqueda.Activo = request.Activo ?? busqueda.Activo;
 
