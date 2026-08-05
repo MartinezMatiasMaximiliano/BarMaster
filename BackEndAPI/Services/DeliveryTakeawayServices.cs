@@ -108,21 +108,11 @@ namespace BackEndAPI.Services
                 }
             }
 
-
-            DeliveryTakeaway.PrecioTotal = visitaCreada.Total + precioEnvio;
+            visitaCreada.Total += precioEnvio;
+            DeliveryTakeaway.PrecioTotal = visitaCreada.Total;//DISCRIMINAR PRECRIO
+            //DeliveryTakeaway.PrecioEnvio = visitaCreada.Total;//DISCRIMINAR PRECRIO
+            //DeliveryTakeaway.PrecioProductos = visitaCreada.Total;//DISCRIMINAR PRECRIO
             DeliveryAndTakeaway dtwk = await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
-
-           
-            var pagoMovimiento = new MovimientoCaja();
-
-            (MovimientoCaja movimientoCaja, FacturaElectronica facturaElectronica) = await _pagosRepository.CrearPago(
-                visitaCreada,
-                pagoMovimiento,
-                request.InfoPago.DatosFacturaARCA,
-                visitaCreada.Total,
-                request.InfoPago.GenerarFactura,
-                request.InfoPago.MontoAbonado
-            );
 
             return dtwk;
         }

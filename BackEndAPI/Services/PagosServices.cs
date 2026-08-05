@@ -37,17 +37,17 @@ namespace BackEndAPI.Services
                 IdCaja = visita.IdCaja,
                 IdVisita = infoPago.IdVisita,
                 Facturado = infoPago.GenerarFactura,
-                Descripcion = visita.Origen == "Local" ? 
+                Descripcion = visita.Origen == "Local" ?
                  $"Pago de mesa {(visita.Mesa != null ? visita.Mesa.Nombre : "")}"
-                  : 
+                  :
                  $"Pago de {visita.Origen}"
             };
 
-            decimal TotalAPagar = CalcularTotalProductos(infoPago.ListaIdsProductos, visita, movimientoCaja.Id);
+            decimal TotalAPagar = await CalcularTotalProductos(infoPago.ListaIdsProductos, visita, movimientoCaja.Id);
             if (infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
 
-            visita.Total += TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal; //TODO: REVISAR
-            movimientoCaja.Monto = TotalAPagar;
+            visita.Total = TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal; //TODO: REVISAR
+            movimientoCaja.Monto = visita.Total;
             CalcularVuelto(infoPago.MontoAbonado, TotalAPagar, movimientoCaja);
 
 
@@ -57,9 +57,21 @@ namespace BackEndAPI.Services
             return (ResultadoPagoCreado, FacturaElectronica);
         }
 
-        public decimal CalcularTotalProductos(ICollection<int> IdProductos, Visita visita, Guid IdMovimientoCaja)
+        public async Task<decimal> CalcularTotalProductos(ICollection<int> IdProductos, Visita visita, Guid IdMovimientoCaja)
         {
             decimal TotalAPagar = 0;
+            if (visita.Origen == "Delivery")
+            {
+                //RECORDATORIO: en caso de DyTKW,la funcion de crearPago solo se llama con todos los productos de la visita, por lo que el envio
+                //solo se cobra una vez, no pueden existir multiples pagos del mismo  DyTKW
+                var deliveryTakeaway = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorIdVisita(visita.Id);
+
+                if (deliveryTakeaway.TipoEnvio != null)
+                {
+                  TotalAPagar += deliveryTakeaway.TipoEnvio.Precio;
+                }
+            }
+
             foreach (int id in IdProductos)
             {
                 var productoPorVisita = visita.Productos.FirstOrDefault(p => p.Id == id);
@@ -77,6 +89,7 @@ namespace BackEndAPI.Services
         {
             var vuelto = Math.Max(0, montoAbonado - movimientoCaja.Monto);
             var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+            //formatear abonado tambien
             movimientoCaja.Descripcion = $"{movimientoCaja.Descripcion} | Abonado: $ {montoAbonado} | Vuelto: $ {vueltoFormateado}";
 
         }
