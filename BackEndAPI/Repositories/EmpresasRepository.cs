@@ -73,7 +73,9 @@ namespace BackEndAPI.Repositories
                     Movimientos = c.MovimientosCaja
                         .Select(m => new MovimientoCajaResumenQueryDTO
                         {
-                            Monto = m.Monto,
+                            MontoAbonado = m.MontoAbonado,
+                            Vuelto = m.Vuelto,
+                            MontoTotal = m.MontoTotal,
                             EsIngreso = m.TipoMovimientoCaja != null ? m.TipoMovimientoCaja.EsIngreso : null,
                             EsEfectivo = m.TipoMovimientoCaja != null ? m.TipoMovimientoCaja.EsEfectivo : null
                         })

@@ -3,7 +3,9 @@ namespace BackEndAPI.DTOs.Response
     public class TicketVirtualDTO
     {
         public Guid Id { get; set; }
-        public decimal Monto { get; set; }
+        public decimal MontoAbonado { get; set; }
+        public decimal Vuelto { get; set; }
+        public decimal MontoTotal { get; set; }
         public DateTime FechaMovimiento { get; set; }
         public string? NombreMesa { get; set; }
         public string? NombreSucursal { get; set; }

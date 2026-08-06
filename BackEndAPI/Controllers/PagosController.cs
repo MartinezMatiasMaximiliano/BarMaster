@@ -37,7 +37,9 @@ namespace BackEndAPI.Controllers
                     Id = movimientoCaja.Id,
                     IdVisita = movimientoCaja.IdVisita ?? Guid.Empty,
                     FechaCreacion = movimientoCaja.FechaMovimiento,
-                    Monto = movimientoCaja.Monto,
+                    MontoAbonado = movimientoCaja.MontoAbonado,
+                    Vuelto = movimientoCaja.Vuelto,
+                    MontoTotal = movimientoCaja.MontoTotal,
                     tipoMovimientoCaja = movimientoCaja.TipoMovimientoCaja
                 };
                 return Ok(Response);

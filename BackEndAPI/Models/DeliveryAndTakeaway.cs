@@ -13,6 +13,8 @@
         public string? Direccion { get; set; } = null;  
         public string? Indicaciones { get; set; } 
         public string? Telefono { get; set; } = null!;
+        public decimal PrecioEnvio { get; set; }
+        public decimal precioProductos { get; set; }
         public decimal PrecioTotal { get; set; }
         public bool Entregado { get; set; }
         

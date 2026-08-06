@@ -29,7 +29,9 @@ namespace BackEndAPI.DTOs.Query
 
     public class MovimientoCajaResumenQueryDTO
     {
-        public decimal Monto { get; set; }
+        public decimal MontoAbonado { get; set; }
+        public decimal Vuelto { get; set; }
+        public decimal MontoTotal { get; set; }
         public bool? EsIngreso { get; set; }
         public bool? EsEfectivo { get; set; }
     }

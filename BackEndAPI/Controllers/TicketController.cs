@@ -36,7 +36,9 @@ namespace BackEndAPI.Controllers
                 var ticket = new TicketVirtualDTO
                 {
                     Id = movimiento.Id,
-                    Monto = movimiento.Monto,
+                    MontoAbonado = movimiento.MontoAbonado,
+                    Vuelto = movimiento.Vuelto,
+                    MontoTotal = movimiento.MontoTotal,
                     FechaMovimiento = movimiento.FechaMovimiento,
                     NombreMesa = movimiento.Visita?.Mesa?.Nombre,
                     NombreSucursal = movimiento.Caja?.Sucursal?.Nombre,

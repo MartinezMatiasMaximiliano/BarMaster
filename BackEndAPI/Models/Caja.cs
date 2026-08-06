@@ -30,7 +30,7 @@
         { 
             var movimientosEfectivo = MovimientosCaja
                 .Where(m => m.TipoMovimientoCaja.EsEfectivo == true)
-                .Sum(m => m.Monto);
+                .Sum(m => m.MontoTotal);
             return movimientosEfectivo;
         }
     }

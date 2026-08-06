@@ -10,58 +10,54 @@ namespace BackEndAPI.Services
         private readonly IMovimientosCajaRepository _movimientosCajaRepository;
         private readonly ITipoMovimientosCajaRepository _tipoMovimientosCajaRepository;
         private readonly ICajasRepository _cajasRepository;
+        private readonly ICajasServices _cajasServices;
 
-        public MovimientosCajaServices(IMovimientosCajaRepository movimientosCajaRepository, ICajasRepository cajasRepository, ITipoMovimientosCajaRepository tipoMovimientosCajaRepository)
+        public MovimientosCajaServices(IMovimientosCajaRepository movimientosCajaRepository, ICajasRepository cajasRepository, ITipoMovimientosCajaRepository tipoMovimientosCajaRepository, ICajasServices cajasServices)
         {
             _movimientosCajaRepository = movimientosCajaRepository;
             _cajasRepository = cajasRepository;
             _tipoMovimientosCajaRepository = tipoMovimientosCajaRepository;
+            _cajasServices = cajasServices;
         }
 
-        public async Task<MovimientoCaja> CrearMovimientoCaja(CrearMovimientoCajaDTO request)
+        public async Task<MovimientoCaja> CrearMovimientoCaja(Guid IdSucursal,CrearMovimientoCajaDTO request)
         {
-           
-                var caja = await _cajasRepository.GetCajaPorId(request.IdCaja);
-                if (caja == null)
-                {
-                    throw new Exception("La caja no existe");
-                }
 
-                var TipoMovimiento = await _tipoMovimientosCajaRepository.GetTipoMovimientoCajaPorId(request.IdTipoMovimientoCaja);
+            var caja = await _cajasServices.BuscarCajaAbiertaPorIdSucursal(IdSucursal);
+            if (caja == null) throw new Exception("La caja no existe");
+            var TipoMovimiento = await _tipoMovimientosCajaRepository.GetTipoMovimientoCajaPorId(request.IdTipoMovimientoCaja);
+            if (TipoMovimiento == null) throw new Exception("No existe este tipo de movimiento");
 
-                if (TipoMovimiento == null)
-                {
-                    throw new Exception("No existe este tipo de movimiento");
-                }
-
-                MovimientoCaja nuevoMovimiento = new MovimientoCaja
-                {
-                    IdTipoMovimientoCaja = request.IdTipoMovimientoCaja,
-                    IdCaja = request.IdCaja,
-                    IdVisita = null,
-                    Monto = request.Monto,
-                    Descripcion = request.Descripcion?.Trim() ?? string.Empty,
-                    FechaMovimiento = DateTime.UtcNow,
-                    TipoMovimientoCaja = TipoMovimiento,
-
-                };
-
-                if (TipoMovimiento.EsEfectivo == true)
-                {
-                    if (TipoMovimiento.EsIngreso == true)
-                    {
-                        caja.MontoActual = caja.MontoActual + request.Monto;
-                    }
-                    else
-                    {
-                        caja.MontoActual = caja.MontoActual - request.Monto;
-                    }
-                }
-
-                var movimientoCreado = await _movimientosCajaRepository.CrearMovimientoCaja(nuevoMovimiento,caja);
-                return movimientoCreado;
+            MovimientoCaja nuevoMovimiento = new MovimientoCaja
+            {
+                IdTipoMovimientoCaja = request.IdTipoMovimientoCaja,
+                IdCaja = caja.Id,
+                IdVisita = null,
+                MontoAbonado = request.MontoAbonado,
+                MontoTotal = request.MontoTotal,
+                Descripcion = request.Descripcion?.Trim() ?? string.Empty,
+                FechaMovimiento = DateTime.UtcNow,
+                TipoMovimientoCaja = TipoMovimiento,
+            };
 
 
+            if (TipoMovimiento.EsEfectivo == true)
+            {
+                CalcularVuelto(nuevoMovimiento,TipoMovimiento); 
+                caja.MontoActual = TipoMovimiento.EsIngreso
+                    ? caja.MontoActual + nuevoMovimiento.MontoTotal
+                    : caja.MontoActual - nuevoMovimiento.MontoTotal;
+            }
+
+            var movimientoCreado = await _movimientosCajaRepository.CrearMovimientoCaja(nuevoMovimiento, caja);
+            return movimientoCreado;
+        }
+
+        private void CalcularVuelto(MovimientoCaja movimiento, TipoMovimientoCaja tipoMovimiento)
+        {
+            movimiento.Vuelto = tipoMovimiento.Entorno == "Ventas"
+                ? movimiento.MontoAbonado - movimiento.MontoTotal
+                : 0;
         }
 
         public async Task<IEnumerable<MovimientoCaja>> BuscarListaMovimientosCaja()
