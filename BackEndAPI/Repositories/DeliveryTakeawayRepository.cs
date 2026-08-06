@@ -95,7 +95,6 @@ namespace BackEndAPI.Repositories
             {
                 transaccion.Rollback();
                 throw new Exception("Error al crear el pedido: " + ex.Message);
-
             }
         }
         public async Task<DeliveryAndTakeaway?> ModificarDeliveryTakeaway(DeliveryAndTakeaway deliveryTakeaway)

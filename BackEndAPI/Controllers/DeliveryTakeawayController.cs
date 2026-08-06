@@ -139,6 +139,7 @@ namespace BackEndAPI.Controllers
             return Ok(response);
         }
 
+
         [HttpPost("Crear")]
         public async Task<IActionResult> CreateDeliveryTakeaway(CrearDeliveryTakeawayDTO request)
         {
@@ -147,7 +148,10 @@ namespace BackEndAPI.Controllers
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
                 if (request.Origen != "Delivery" && request.Origen != "Takeaway") throw new Exception("Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.");
+
+
                 var result = await _deliveryTakeawayServices.CrearDeliveryTakeaway(IdSucursal, request);
+
                 if (result == null) throw new Exception("Error al crear el pedido");
                 var response = MappearDeliveryTakeawayDTO(result);
                 return Ok(response);
