@@ -1,6 +1,7 @@
 import api from '../services/axiosInstance';
 import { construirError } from './APIError';
 import { AgregarProductosAVisita, EliminarProductosVisita, ObtenerTodasLasVisitas } from './APIVisitas';
+import { sendHubMessage } from '../connections/HubConnMozo';
 
 export function normalizarDeliveryTakeaway(item) {
     const idTipoEnvio = item.idTipoEnvio ?? item.IdTipoEnvio ?? null;
@@ -8,6 +9,13 @@ export function normalizarDeliveryTakeaway(item) {
     const productos = Array.isArray(productosRaw) ? productosRaw : [];
     const tipoEnvioRaw = item.tipoEnvio ?? item.TipoEnvio ?? null;
     const cadeteRaw = item.cadete ?? item.Cadete ?? null;
+    const pagoRaw = item.pago ?? item.Pago ?? item.ultimoPago ?? item.UltimoPago ?? null;
+    const tipoPagoRaw = pagoRaw?.tipoMovimientoCaja
+        ?? pagoRaw?.TipoMovimientoCaja
+        ?? pagoRaw?.metodoPago
+        ?? pagoRaw?.MetodoPago
+        ?? null;
+    const precioEnvio = Number(item.precioEnvio ?? item.PrecioEnvio ?? tipoEnvioRaw?.precio ?? tipoEnvioRaw?.Precio ?? 0);
 
     return {
         id: item.id ?? item.Id,
@@ -23,14 +31,36 @@ export function normalizarDeliveryTakeaway(item) {
         tipoEnvio: tipoEnvioRaw ? {
             id: tipoEnvioRaw.id ?? tipoEnvioRaw.Id ?? idTipoEnvio,
             nombre: tipoEnvioRaw.nombre ?? tipoEnvioRaw.Nombre ?? '',
-            precio: Number(tipoEnvioRaw.precio ?? tipoEnvioRaw.Precio ?? 0),
+            precio: precioEnvio,
             vehiculo: tipoEnvioRaw.vehiculo ?? tipoEnvioRaw.Vehiculo ?? '',
-        } : null,
+        } : (idTipoEnvio != null ? {
+            id: idTipoEnvio,
+            nombre: '',
+            precio: precioEnvio,
+            vehiculo: '',
+        } : null),
         cadete: cadeteRaw ? {
             id: cadeteRaw.id ?? cadeteRaw.Id ?? null,
             nombre: cadeteRaw.nombre ?? cadeteRaw.Nombre ?? '-',
             apellido: cadeteRaw.apellido ?? cadeteRaw.Apellido ?? '-',
             telefono: cadeteRaw.telefono ?? cadeteRaw.Telefono ?? null,
+        } : null,
+        pago: pagoRaw ? {
+            id: pagoRaw.id ?? pagoRaw.Id ?? null,
+            montoRecibido: Number(
+                pagoRaw.montoRecibido
+                ?? pagoRaw.MontoRecibido
+                ?? pagoRaw.monto
+                ?? pagoRaw.Monto
+                ?? 0
+            ),
+            vuelto: pagoRaw.vuelto ?? pagoRaw.Vuelto ?? null,
+            fechaCreacion: pagoRaw.fechaCreacion ?? pagoRaw.FechaCreacion ?? null,
+            metodoPago: tipoPagoRaw ? {
+                id: tipoPagoRaw.id ?? tipoPagoRaw.Id ?? null,
+                nombre: tipoPagoRaw.nombre ?? tipoPagoRaw.Nombre ?? 'Método no identificado',
+                esEfectivo: Boolean(tipoPagoRaw.esEfectivo ?? tipoPagoRaw.EsEfectivo ?? false),
+            } : null,
         } : null,
         productos: productos.map((producto) => ({
             id: producto.id ?? producto.Id,
@@ -40,6 +70,41 @@ export function normalizarDeliveryTakeaway(item) {
             indicaciones: producto.indicaciones ?? producto.Indicaciones ?? '',
             estadoPedido: producto.estadoPedido ?? producto.EstadoPedido ?? '',
             estadoPagado: producto.estadoPagado ?? producto.EstadoPagado ?? false,
+            idMovimientoCaja: producto.idMovimientoCaja ?? producto.IdMovimientoCaja ?? null,
+            fechaAgregado: producto.fechaAgregado ?? producto.FechaAgregado ?? null,
+        })),
+    };
+}
+
+export function normalizarDeliveryTakeawayComoVisita(item) {
+    const pedido = normalizarDeliveryTakeaway(item);
+
+    return {
+        id: pedido.idVisita,
+        idVisita: pedido.idVisita,
+        idDeliveryTakeaway: pedido.id,
+        fechaHora: pedido.fechaHora,
+        estado: 'Cerrada',
+        origen: esTakeaway(pedido) ? 'Takeaway' : 'Delivery',
+        idMesa: null,
+        numeroMesa: null,
+        deliveryTakeaway: pedido,
+        productosConsumidos: pedido.productos.map((producto) => ({
+            id: producto.id,
+            idProducto: producto.idProducto,
+            nombre: producto.nombre,
+            indicaciones: producto.indicaciones,
+            precio: producto.precio,
+            precioDelMomento: producto.precio,
+            estadoPagado: producto.estadoPagado,
+            estadoPedido: producto.estadoPedido || 'Pendiente',
+            estadoPreparacion: producto.estadoPedido === 'Listo'
+                ? 2
+                : producto.estadoPedido === 'En Preparación'
+                    ? 1
+                    : 0,
+            idMovimientoCaja: producto.idMovimientoCaja ?? null,
+            fechaAgregado: producto.fechaAgregado ?? null,
         })),
     };
 }
@@ -76,6 +141,8 @@ export function normalizarTakeawayDesdeVisita(visita) {
             indicaciones: producto.indicaciones ?? producto.Indicaciones ?? '',
             estadoPedido: producto.estadoPedido ?? producto.EstadoPedido ?? '',
             estadoPagado: producto.estadoPagado ?? producto.EstadoPagado ?? false,
+            idMovimientoCaja: producto.idMovimientoCaja ?? producto.IdMovimientoCaja ?? null,
+            fechaAgregado: producto.fechaAgregado ?? producto.FechaAgregado ?? null,
         })),
     };
 }
@@ -162,6 +229,7 @@ export async function CrearDeliveryTakeaway(values, origen = 'Delivery') {
             'DeliveryTakeaway/Crear',
             body
         );
+        await sendHubMessage('RecargarDeliveryTakeaway');
         return response.data ?? null;
     } catch (error) {
         console.error('Error al crear delivery/takeaway:', construirError(error, 'Error al crear delivery/takeaway'));
@@ -182,6 +250,7 @@ export async function CrearDeliveryTakeawayFromComanda(formValues, comanda, orig
             'DeliveryTakeaway/Crear',
             body
         );
+        await sendHubMessage('RecargarDeliveryTakeaway');
         return response.data ?? null;
     } catch (error) {
         console.error('Error al crear delivery/takeaway:', construirError(error, 'Error al crear delivery/takeaway'));
@@ -277,6 +346,8 @@ export async function ModificarDeliveryTakeaway(values) {
             await AgregarProductosAVisita(idVisita, productosAAgregar);
         }
 
+        await sendHubMessage('RecargarDeliveryTakeaway');
+
         return {
             id: idDeliveryTakeaway,
             idVisita,
@@ -293,6 +364,7 @@ export async function CambiarEstadoEntregaDeliveryTakeaway(id, entregado) {
             IdDeliveryTakeaway: id,
             Entregado: entregado,
         });
+        await sendHubMessage('RecargarDeliveryTakeaway');
         return response.data ?? null;
     } catch (error) {
         console.error('Error al cambiar estado de entrega:', construirError(error, 'Error al cambiar estado de entrega'));
@@ -305,6 +377,7 @@ export async function EliminarDeliveryTakeaway(id) {
         const response = await api.delete('DeliveryTakeaway', {
             params: { id },
         });
+        await sendHubMessage('RecargarDeliveryTakeaway');
         return response.data ?? null;
     } catch (error) {
         console.error('Error al eliminar delivery/takeaway:', construirError(error, 'Error al eliminar delivery/takeaway'));

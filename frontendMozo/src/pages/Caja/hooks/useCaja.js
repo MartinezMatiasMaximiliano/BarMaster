@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AbrirCaja, CerrarCaja, ObtenerCajaActiva, ObtenerMovimientosCaja } from '../../../API/APICaja';
-import { buildTimestampDefaults, initialApertura, initialCierre, obtenerMensajeError } from '../utils/constants';
+import { buildTimestampDefaults, initialCierre, obtenerMensajeError } from '../utils/constants';
 import { setCajaActiva as setCajaActivaGlobal } from '../../../redux/slices/cajaActivaSlice';
 import { getMoneyFieldError } from '../../../validation/moneyValidation';
 
@@ -18,7 +18,6 @@ export const useCaja = () => {
     const [mensaje, setMensaje] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
     const [tabValue, setTabValue] = useState(0);
-    const [formApertura, setFormApertura] = useState(initialApertura);
     const [formCierre, setFormCierre] = useState(initialCierre);
 
     const cargarDatos = async () => {
@@ -122,7 +121,7 @@ export const useCaja = () => {
         const { name, value } = event.target;
         setter((prev) => ({ ...prev, [name]: value }));
 
-        if (name === 'montoInicial' || name === 'montoFinal') {
+        if (name === 'montoFinal') {
             const fieldError = value ? getMoneyFieldError(name, value) : '';
 
             setFieldErrors((prevErrors) => {
@@ -139,17 +138,15 @@ export const useCaja = () => {
         }
     };
 
-    const validarApertura = () => {
-        const montoInicialError = getMoneyFieldError('montoInicial', formApertura.montoInicial);
-        if (montoInicialError) {
-            setFieldErrors((prevErrors) => ({ ...prevErrors, montoInicial: montoInicialError }));
-            setError(montoInicialError);
-            return false;
-        }
-        return true;
-    };
-
-    const mesasAbiertas = visitasActivas?.length ?? 0;
+    const mesasAbiertas = useMemo(() => {
+        return (visitasActivas || []).filter((visita) => {
+            const origen = (visita.origen || visita.Origen || 'Local').toLowerCase();
+            if (origen === 'delivery' || origen === 'takeaway') {
+                return !visita.deliveryTakeaway?.entregado;
+            }
+            return visita.estado !== 'Cerrada';
+        }).length;
+    }, [visitasActivas]);
 
     const validarCierre = () => {
         if (mesasAbiertas > 0) {
@@ -171,21 +168,9 @@ export const useCaja = () => {
         setMensaje('');
         setError('');
 
-        if (!validarApertura()) {
-            return;
-        }
-
         setGuardando(true);
         try {
-            // Usar siempre la fecha y hora actual al abrir la caja
-            const timestampActual = buildTimestampDefaults();
-
-            const payload = {
-                fechaApertura: timestampActual.fecha,
-                horaApertura: timestampActual.hora,
-                montoInicial: Number(formApertura.montoInicial)
-            };
-            const caja = await AbrirCaja(payload);
+            const caja = await AbrirCaja({ montoInicial: 0 });
             setCajaActiva(caja);
             dispatch(setCajaActivaGlobal(caja || null)); // Actualizar estado global
             setFormCierre(initialCierre());
@@ -222,7 +207,6 @@ export const useCaja = () => {
             setMensaje('La caja se cerró correctamente.');
             setCajaActiva(null);
             dispatch(setCajaActivaGlobal(null)); // Actualizar estado global
-            setFormApertura(initialApertura());
             setFormCierre(initialCierre());
             setFieldErrors({});
             await cargarDatos();
@@ -282,21 +266,6 @@ export const useCaja = () => {
         cargarDatos();
     }, []);
 
-    // Actualizar fecha y hora del formulario de apertura cada minuto cuando NO hay caja activa
-    useEffect(() => {
-        if (cajaActiva) return;
-
-        // Actualizar inmediatamente
-        setFormApertura((prev) => ({ ...prev, ...buildTimestampDefaults() }));
-
-        // Actualizar cada minuto
-        const interval = setInterval(() => {
-            setFormApertura((prev) => ({ ...prev, ...buildTimestampDefaults() }));
-        }, 60000); // 60000 ms = 1 minuto
-
-        return () => clearInterval(interval);
-    }, [cajaActiva]);
-
     // Actualizar fecha y hora del formulario de cierre cada minuto cuando hay caja activa
     useEffect(() => {
         if (!cajaActiva) return;
@@ -338,7 +307,6 @@ export const useCaja = () => {
         mensaje,
         fieldErrors,
         tabValue,
-        formApertura,
         formCierre,
         diferencia,
         balanceActual,
@@ -354,7 +322,6 @@ export const useCaja = () => {
         handleChange,
         onAbrirCaja,
         onCerrarCaja,
-        setFormApertura,
         setFormCierre
     };
 };

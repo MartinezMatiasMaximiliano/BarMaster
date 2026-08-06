@@ -1,9 +1,19 @@
 import { useMemo, memo } from 'react';
+import { Box, Typography } from '@mui/material';
 import ListaCheckboxes from './ListaCheckboxes';
 import ListaPagosRegistrados from './ListaPagosRegistrados';
 import ListaResumen from './ListaResumen';
 
-const mensajeVacio = (titulo) => (
+const mensajeVacio = (titulo, surfaceVariant = false) => surfaceVariant ? (
+    <Box sx={{ bgcolor: '#f7f9fc', borderRadius: 2, p: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: 800 }}>
+            {titulo}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+            No hay items para mostrar. Los tickets enviados por los clientes aparecerán aquí
+        </Typography>
+    </Box>
+) : (
     <div className="mb-0">
         <h4>{titulo}</h4>
         <p>No hay items para mostrar. Los tickets enviados por los clientes aparecerán aquí</p>
@@ -25,7 +35,7 @@ function Lista_Items(props) {
 
     // Sin datos
     if (!productosConsumidos) {
-        return mensajeVacio(props.titulo);
+        return mensajeVacio(props.titulo, props.surfaceVariant);
     }
 
     // Modo checkboxes: productos pendientes para facturar
@@ -47,8 +57,8 @@ function Lista_Items(props) {
 
     // Pagos registrados: agrupados por ticket
     if (estado === 2) {
-        if (productosFiltrados.length === 0) return mensajeVacio(props.titulo);
-        return <ListaPagosRegistrados productos={productosFiltrados} />;
+        if (productosFiltrados.length === 0) return mensajeVacio(props.titulo, props.surfaceVariant);
+        return <ListaPagosRegistrados productos={productosFiltrados} surfaceVariant={props.surfaceVariant} />;
     }
 
     // Resumen normal
@@ -74,7 +84,8 @@ export default memo(Lista_Items, (prevProps, nextProps) => {
         prevProps.PagarMesa === nextProps.PagarMesa &&
         prevProps.mostrarCheckboxes === nextProps.mostrarCheckboxes &&
         prevProps.productosSeleccionados === nextProps.productosSeleccionados &&
-        prevProps.onToggleProducto === nextProps.onToggleProducto &&
-        prevProps.currencyFormatter === nextProps.currencyFormatter
+            prevProps.onToggleProducto === nextProps.onToggleProducto &&
+        prevProps.currencyFormatter === nextProps.currencyFormatter &&
+        prevProps.surfaceVariant === nextProps.surfaceVariant
     );
 });

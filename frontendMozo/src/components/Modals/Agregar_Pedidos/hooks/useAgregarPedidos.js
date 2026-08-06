@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { BuscarTodosLosProductos } from '../../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
@@ -16,6 +16,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
     const [categoriaFiltro, setCategoriaFiltro] = useState(null);
     const [comanda, setComanda] = useState([]);
     const [loading, setLoading] = useState(false);
+    const enviandoRef = useRef(false);
 
     // Cargar productos y categorías
     useEffect(() => {
@@ -114,8 +115,9 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
     // Enviar pedidos
     const handleEnviarPedidos = async () => {
-        if (comanda.length === 0 || !idVisita) return;
+        if (enviandoRef.current || comanda.length === 0 || !idVisita) return;
 
+        enviandoRef.current = true;
         setLoading(true);
         try {
             const itemsParaEnviar = [];
@@ -153,6 +155,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
             console.error('Error al enviar pedidos:', error);
             showSnackbar('Error al agregar los pedidos. Por favor, intenta nuevamente.', 'error');
         } finally {
+            enviandoRef.current = false;
             setLoading(false);
         }
     };

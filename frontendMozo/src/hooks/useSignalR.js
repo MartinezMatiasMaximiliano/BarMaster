@@ -14,6 +14,7 @@ export default function useSignalR(handlers = {}) {
         const onPagarMesa = (...args) => handlersRef.current.onPagarMesa?.(...args);
         const onPagarMesaSeparado = (...args) => handlersRef.current.onPagarMesaSeparado?.(...args);
         const onRecargarTicket = (...args) => handlersRef.current.onRecargarTicket?.(...args);
+        const onRecargarDeliveryTakeaway = (...args) => handlersRef.current.onRecargarDeliveryTakeaway?.(...args);
 
         connection.on('RegistrarProducto', onRegistrarProducto);
         connection.on('VisitaActualizada', onVisitaActualizada);
@@ -21,6 +22,7 @@ export default function useSignalR(handlers = {}) {
         connection.on('PagarMesa', onPagarMesa);
         connection.on('PagarMesaSeparado', onPagarMesaSeparado);
         connection.on('RecargarTicket', onRecargarTicket);
+        connection.on('RecargarDeliveryTakeaway', onRecargarDeliveryTakeaway);
 
         return () => {
             connection.off('RegistrarProducto', onRegistrarProducto);
@@ -29,6 +31,7 @@ export default function useSignalR(handlers = {}) {
             connection.off('PagarMesa', onPagarMesa);
             connection.off('PagarMesaSeparado', onPagarMesaSeparado);
             connection.off('RecargarTicket', onRecargarTicket);
+            connection.off('RecargarDeliveryTakeaway', onRecargarDeliveryTakeaway);
         }
     }, []);
 
@@ -42,10 +45,15 @@ export default function useSignalR(handlers = {}) {
         try { connection.send('RecargarMenu'); } catch (e) { console.error(e); }
     }
 
+    const sendRecargarDeliveryTakeaway = () => {
+        if (!connection) return;
+        try { connection.send('RecargarDeliveryTakeaway'); } catch (e) { console.error(e); }
+    }
+
     const registrarMozoAGrupo = (connectionId) => {
         if (!connection) return;
         try { connection.send('RegistrarMozoAGrupo', connectionId); } catch (e) { console.error(e); }
     }
 
-    return { sendRecargarTicket, sendRecargarMenu, registrarMozoAGrupo };
+    return { sendRecargarTicket, sendRecargarMenu, sendRecargarDeliveryTakeaway, registrarMozoAGrupo };
 }

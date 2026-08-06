@@ -19,12 +19,14 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import KpiTile from './KpiTile';
 import SucursalExpandedDetails from './SucursalExpandedDetails';
 import { formatearMoneda, formatearNumero, formatearPorcentaje } from '../utils/formatters';
+import { obtenerPeriodoPanel } from '../utils/dateRange';
 
-const SucursalPerformanceCard = ({ sucursal, expanded, onToggle }) => {
-    const kpis = sucursal.kpisHoy ?? {};
+const SucursalPerformanceCard = ({ sucursal, periodoDias, expanded, onToggle }) => {
+    const kpis = sucursal.kpisPeriodo ?? {};
     const caja = sucursal.caja ?? {};
     const ventas = Number(kpis.ventas || 0);
     const margen = Number(kpis.margenEstimado || 0);
+    const periodo = obtenerPeriodoPanel(periodoDias);
 
     return (
         <Card
@@ -95,15 +97,15 @@ const SucursalPerformanceCard = ({ sucursal, expanded, onToggle }) => {
                 >
                     <KpiTile
                         icon={<AttachMoneyIcon fontSize="small" color="primary" />}
-                        label="Ventas hoy"
+                        label={`Ventas ${periodo.fraseEn}`}
                         value={formatearMoneda(ventas)}
-                        helper={ventas > 0 ? 'Facturación del día' : 'Sin ventas registradas'}
+                        helper={ventas > 0 ? `Facturación ${periodo.fraseDe}` : 'Sin ventas registradas'}
                     />
                     <KpiTile
                         icon={<ShoppingCartIcon fontSize="small" color="primary" />}
                         label="Pedidos"
                         value={formatearNumero(kpis.cantidadVisitas)}
-                        helper="Visitas de hoy"
+                        helper={`Visitas ${periodo.fraseDe}`}
                     />
                     <KpiTile
                         icon={<ReceiptLongIcon fontSize="small" color="primary" />}
@@ -125,7 +127,7 @@ const SucursalPerformanceCard = ({ sucursal, expanded, onToggle }) => {
                     />
                 </Box>
 
-                {expanded && <SucursalExpandedDetails sucursal={sucursal} />}
+                {expanded && <SucursalExpandedDetails sucursal={sucursal} periodoDias={periodoDias} />}
             </Stack>
         </Card>
     );

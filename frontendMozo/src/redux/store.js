@@ -6,8 +6,15 @@ import codigoMozoReducer from './slices/codigoMozoSlice'
 import ticketReducer from './slices/ticketSlice'
 import cajaActivaReducer from './slices/cajaActivaSlice'
 import storage from 'redux-persist/lib/storage'
-import { persistReducer } from 'redux-persist'
-import {thunk} from 'redux-thunk'
+import {
+    FLUSH,
+    PAUSE,
+    PERSIST,
+    PURGE,
+    REGISTER,
+    REHYDRATE,
+    persistReducer
+} from 'redux-persist'
 
 const persistConfig = {
     key: 'root',
@@ -31,7 +38,7 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
-                ignoredActions: ['persist/PERSIST'],  // Ignorar la acci�n de persistencia
+                ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
             },
-        }).concat(thunk),
+        }),
 })

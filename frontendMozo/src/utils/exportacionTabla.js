@@ -10,6 +10,7 @@
 
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
+import writeExcelFile from 'write-excel-file/browser';
 
 // Inicializar las fuentes de pdfmake
 if (pdfMake && !pdfMake.vfs) {
@@ -40,6 +41,21 @@ const protegerTextoParaExcel = (valor) => {
     }
 
     return valor;
+};
+
+const normalizarCeldaParaExcel = (valor) => {
+    const valorNormalizado = normalizarValorExportacion(valor);
+
+    if (
+        typeof valorNormalizado === 'string' ||
+        typeof valorNormalizado === 'number' ||
+        typeof valorNormalizado === 'boolean' ||
+        valorNormalizado instanceof Date
+    ) {
+        return protegerTextoParaExcel(valorNormalizado);
+    }
+
+    return protegerTextoParaExcel(String(valorNormalizado));
 };
 
 /**
@@ -175,12 +191,6 @@ export const exportarTablaAPDF = async (config) => {
  * @param {Function} [config.formatearFila] - Función personalizada para formatear cada fila
  */
 export const exportarTablaAExcel = async (config) => {
-    // Importar xlsx dinámicamente
-    const XLSX = await import('xlsx').catch(error => {
-        console.error('Error al importar xlsx:', error);
-        throw new Error('La exportación a Excel no está disponible en este momento.');
-    });
-
     const {
         datos,
         columnas,
@@ -200,33 +210,24 @@ export const exportarTablaAExcel = async (config) => {
     }
 
     try {
-        // Crear workbook con una sola hoja: información arriba y tabla debajo (así se ve todo al abrir)
-        const wb = XLSX.utils.book_new();
-
         const headers = columnas.map(col => col.label || col.key || '');
 
         const filas = datos.map(fila => {
             if (formatearFila && typeof formatearFila === 'function') {
-                return formatearFila(fila, columnas);
+                return formatearFila(fila, columnas).map(normalizarCeldaParaExcel);
             }
             return columnas.map(col => {
                 let valor = normalizarValorExportacion(fila[col.key]);
 
                 if (col.formatter && typeof col.formatter === 'function') {
                     valor = col.formatter(valor, fila);
-                } else if (valor === null || valor === undefined) {
-                    valor = '';
-                } else if (typeof valor === 'number') {
-                    return valor;
-                } else {
-                    valor = String(valor);
                 }
 
-                return protegerTextoParaExcel(valor);
+                return normalizarCeldaParaExcel(valor);
             });
         });
 
-        // Una sola hoja: título, subtítulo, info adicional, luego tabla
+        // Una sola hoja: título, subtítulo, info adicional, luego tabla.
         const todasLasFilas = [];
         if (titulo) todasLasFilas.push([titulo]);
         if (subtitulo) todasLasFilas.push([subtitulo]);
@@ -240,14 +241,11 @@ export const exportarTablaAExcel = async (config) => {
         todasLasFilas.push(headers);
         filas.forEach(fila => todasLasFilas.push(fila));
 
-        const ws = XLSX.utils.aoa_to_sheet(todasLasFilas);
-        const colWidths = columnas.map(() => ({ wch: 20 }));
-        ws['!cols'] = colWidths;
-
-        XLSX.utils.book_append_sheet(wb, ws, 'Datos');
-
         const nombre = nombreArchivo || `exportacion_${new Date().toISOString().split('T')[0]}`;
-        XLSX.writeFile(wb, `${nombre}.xlsx`);
+        await writeExcelFile(todasLasFilas, {
+            sheet: 'Datos',
+            columns: columnas.map(() => ({ width: 20 }))
+        }).toFile(`${nombre}.xlsx`);
     } catch (error) {
         console.error('Error al exportar a Excel:', error);
         throw new Error('Error al exportar a Excel. Intente nuevamente.');

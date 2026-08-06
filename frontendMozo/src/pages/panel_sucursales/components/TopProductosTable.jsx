@@ -10,9 +10,11 @@ import {
     Typography
 } from '@mui/material';
 import { formatearMoneda } from '../utils/formatters';
+import { obtenerPeriodoPanel } from '../utils/dateRange';
 
-const TopProductosTable = ({ productos = [] }) => {
+const TopProductosTable = ({ productos = [], periodoDias }) => {
     const maxVentas = Math.max(...productos.map(p => Number(p.ventas || 0)), 0);
+    const periodo = obtenerPeriodoPanel(periodoDias);
 
     return (
         <Box
@@ -25,7 +27,7 @@ const TopProductosTable = ({ productos = [] }) => {
         >
             <Box sx={{ p: 1.5, bgcolor: 'background.default' }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    Top productos del período
+                    Top productos {periodo.fraseDe}
                 </Typography>
             </Box>
 
@@ -61,7 +63,7 @@ const TopProductosTable = ({ productos = [] }) => {
                 </Table>
             ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
-                    No hay productos vendidos en el período seleccionado.
+                    No hay productos vendidos {periodo.fraseEn}.
                 </Typography>
             )}
         </Box>

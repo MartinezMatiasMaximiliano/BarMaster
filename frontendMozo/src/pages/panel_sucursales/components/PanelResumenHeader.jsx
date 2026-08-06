@@ -2,12 +2,12 @@ import React from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { formatearMoneda } from '../utils/formatters';
-import { periodosPanelSucursales } from '../utils/dateRange';
+import { obtenerPeriodoPanel, periodosPanelSucursales } from '../utils/dateRange';
 
-const resumenItems = (totales, totalSucursales) => [
-    ['Ventas hoy', formatearMoneda(totales.ventasHoy)],
-    ['Pedidos hoy', totales.visitasHoy.toLocaleString('es-AR')],
-    ['Margen hoy', formatearMoneda(totales.margenHoy)],
+const resumenItems = (totales, totalSucursales, periodo) => [
+    [`Ventas ${periodo.fraseEn}`, formatearMoneda(totales.ventasPeriodo)],
+    [`Pedidos ${periodo.fraseEn}`, totales.visitasPeriodo.toLocaleString('es-AR')],
+    [`Margen ${periodo.fraseEn}`, formatearMoneda(totales.margenPeriodo)],
     ['Cajas abiertas', `${totales.cajasAbiertas}/${totalSucursales}`]
 ];
 
@@ -19,6 +19,8 @@ const PanelResumenHeader = ({
     onPeriodoChange,
     onActualizar
 }) => {
+    const periodo = obtenerPeriodoPanel(periodoDias);
+
     return (
         <Box
             sx={{
@@ -36,12 +38,15 @@ const PanelResumenHeader = ({
                         {empresaNombre || 'Resumen de sucursales'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Vista rápida de ventas, caja y rentabilidad operativa.
+                        Vista rápida de ventas, caja y rentabilidad operativa {periodo.fraseEn}.
                     </Typography>
                 </Box>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'stretch', sm: 'center' }}>
-                    <Stack direction="row" spacing={1}>
+                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+                            Período
+                        </Typography>
                         {periodosPanelSucursales.map(periodo => (
                             <Button
                                 key={periodo.dias}
@@ -72,7 +77,7 @@ const PanelResumenHeader = ({
                     gap: 1.5
                 }}
             >
-                {resumenItems(totales, totalSucursales).map(([label, value]) => (
+                {resumenItems(totales, totalSucursales, periodo).map(([label, value]) => (
                     <Box key={label} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
                         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>
                             {label}

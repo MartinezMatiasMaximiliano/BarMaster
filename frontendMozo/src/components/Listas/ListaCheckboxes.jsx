@@ -3,7 +3,14 @@ import { Typography, Box, Checkbox, Stack, Chip, Alert } from "@mui/material";
 import { getEstadoColor, getNombre, getPrecio } from './helpers';
 
 /** Lista de productos pendientes con checkboxes para seleccionar cuáles facturar */
-function ListaCheckboxes({ productos, titulo, subtitulo, currencyFormatter, productosSeleccionados, onToggleProducto }) {
+function ListaCheckboxes({
+    productos,
+    titulo,
+    subtitulo,
+    currencyFormatter,
+    productosSeleccionados,
+    onToggleProducto
+}) {
     const total = useMemo(() =>
         productos.reduce((acc, p) => acc + getPrecio(p), 0),
         [productos]

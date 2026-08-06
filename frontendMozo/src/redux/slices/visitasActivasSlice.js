@@ -13,7 +13,7 @@ export const visitasActivasSlice = createSlice({
         cargarVisitasActivas: (state, action) => {
             const visitas = Array.isArray(action.payload) ? action.payload : [];
             const estadoANumero = (s) => (s === 'Listo' ? 2 : s === 'En Preparación' ? 1 : 0);
-            visitas.forEach(visita => {
+            const visitasNormalizadas = visitas.map(visita => {
                 // Normalizar id (el backend puede devolver Id en PascalCase)
                 visita.id = visita.id || visita.Id;
                 (visita.productosConsumidos || []).forEach(p => {
@@ -23,13 +23,27 @@ export const visitasActivasSlice = createSlice({
                     p.idMovimientoCaja = p.idMovimientoCaja || p.IdMovimientoCaja || null;
                     p.fechaAgregado = p.fechaAgregado || p.FechaAgregado || null;
                 });
+                return visita;
             });
-            state.value = visitas;
+            const visitasNoLocales = state.value.filter(visita => {
+                const origen = (visita.origen || visita.Origen || 'Local').toLowerCase();
+                return origen !== 'local';
+            });
+            state.value = [...visitasNormalizadas, ...visitasNoLocales];
         },
 
         // agregarVisita - Agrega una nueva visita cuando se abre una mesa
         agregarVisita: (state, action) => {
             state.value.push(action.payload);
+        },
+
+        sincronizarVisitasDeliveryTakeaway: (state, action) => {
+            const visitas = Array.isArray(action.payload) ? action.payload : [];
+            const visitasLocales = state.value.filter(visita => {
+                const origen = (visita.origen || visita.Origen || 'Local').toLowerCase();
+                return origen === 'local';
+            });
+            state.value = [...visitasLocales, ...visitas];
         },
 
 
@@ -103,8 +117,11 @@ export const visitasActivasSlice = createSlice({
                 id: visitaActualizada.id || visitaActualizada.Id,
                 fechaHora: visitaActualizada.fechaHora || visitaActualizada.FechaHora,
                 estado: visitaActualizada.estado || visitaActualizada.Estado,
+                origen: visitaActualizada.origen || visitaActualizada.Origen || 'Local',
                 idMesa: visitaActualizada.idMesa || visitaActualizada.IdMesa,
                 numeroMesa: visitaActualizada.numeroMesa || visitaActualizada.NumeroMesa,
+                idDeliveryTakeaway: visitaActualizada.idDeliveryTakeaway || visitaActualizada.IdDeliveryTakeaway,
+                deliveryTakeaway: visitaActualizada.deliveryTakeaway || visitaActualizada.DeliveryTakeaway,
                 productosConsumidos: (visitaActualizada.productosConsumidos || visitaActualizada.ProductosConsumidos || []).map(p => {
                     const estadoPedido = p.estadoPedido ?? p.EstadoPedido ?? 'Pendiente';
                     return {
@@ -117,7 +134,8 @@ export const visitasActivasSlice = createSlice({
                         estadoPedido,
                         estadoPreparacion: p.estadoPreparacion ?? estadoPedidoANumero(estadoPedido),
                         idMovimientoCaja: p.idMovimientoCaja ?? p.IdMovimientoCaja ?? null,
-                        fechaAgregado: p.fechaAgregado ?? p.FechaAgregado ?? null
+                        fechaAgregado: p.fechaAgregado ?? p.FechaAgregado ?? null,
+                        idProducto: p.idProducto ?? p.IdProducto ?? null
                     };
                 })
             };
@@ -130,6 +148,12 @@ export const visitasActivasSlice = createSlice({
                 index = state.value.findIndex(
                     v => v.numeroMesa === visitaNormalizada.numeroMesa ||
                     v.mesa?.numero === visitaNormalizada.numeroMesa
+                );
+            }
+            if (index === -1 && visitaNormalizada.idDeliveryTakeaway) {
+                index = state.value.findIndex(
+                    v => v.idDeliveryTakeaway === visitaNormalizada.idDeliveryTakeaway ||
+                    v.deliveryTakeaway?.id === visitaNormalizada.idDeliveryTakeaway
                 );
             }
 
@@ -160,6 +184,7 @@ export const visitasActivasSlice = createSlice({
 // Action creators are generated for each case reducer function
 export const { 
     cargarVisitasActivas,
+    sincronizarVisitasDeliveryTakeaway,
     agregarVisita, 
     eliminarPorMesa, 
     eliminarProductos, 

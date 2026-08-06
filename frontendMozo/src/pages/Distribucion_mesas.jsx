@@ -20,6 +20,7 @@ function Distribucion_mesas() {
     const [cargando, setCargando] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+    const [mostrarAlertaInfo, setMostrarAlertaInfo] = useState(true);
 
     // Cargar planos al montar el componente
     useEffect(() => {
@@ -154,9 +155,11 @@ function Distribucion_mesas() {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     Selecciona un plano y arrastra las mesas para reorganizar su distribución
                 </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
-                    Para eliminar mesas, andá a <Link to="/abm_mesas">Gestión → Mesas</Link>.
-                </Alert>
+                {mostrarAlertaInfo && (
+                    <Alert severity="info" sx={{ mb: 2 }} onClose={() => setMostrarAlertaInfo(false)}>
+                        Para eliminar mesas, andá a <Link to="/abm_mesas">Gestión → Mesas</Link>.
+                    </Alert>
+                )}
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
                     <FormControl size="small" sx={{ minWidth: 250 }}>

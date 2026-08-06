@@ -1,8 +1,11 @@
 import React from 'react';
 import { Alert, Box } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { obtenerPeriodoPanel } from '../utils/dateRange';
 
-const SucursalAlerts = ({ kpis = {} }) => {
+const SucursalAlerts = ({ kpis = {}, periodoDias }) => {
+    const periodo = obtenerPeriodoPanel(periodoDias);
+
     if (kpis.rentabilidadIncompleta) {
         return (
             <Box sx={{ flex: 1 }}>
@@ -21,7 +24,7 @@ const SucursalAlerts = ({ kpis = {} }) => {
         return (
             <Box sx={{ flex: 1 }}>
                 <Alert severity="info" sx={{ borderRadius: 1.5, height: '100%', alignItems: 'center' }}>
-                    Todavía no se registraron ventas hoy.
+                    No se registraron ventas {periodo.fraseEn}.
                 </Alert>
             </Box>
         );

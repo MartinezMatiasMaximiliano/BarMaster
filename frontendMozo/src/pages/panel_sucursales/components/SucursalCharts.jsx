@@ -12,6 +12,7 @@ import {
     YAxis
 } from 'recharts';
 import { formatearFechaCorta, formatearMoneda } from '../utils/formatters';
+import { obtenerPeriodoPanel } from '../utils/dateRange';
 
 const chartMoney = (value) => formatearMoneda(value).replace(/\s/g, ' ');
 
@@ -26,8 +27,9 @@ const ChartFrame = ({ title, children }) => (
     </Box>
 );
 
-const SucursalCharts = ({ series = {} }) => {
-    const ventasPorHora = series.ventasPorHoraHoy ?? [];
+const SucursalCharts = ({ series = {}, periodoDias }) => {
+    const periodo = obtenerPeriodoPanel(periodoDias);
+    const ventasPorHora = series.ventasPorHoraPeriodo ?? [];
     const ventasPorDia = (series.ventasPorDia ?? []).map(item => ({
         ...item,
         fechaLabel: formatearFechaCorta(item.fecha)
@@ -42,7 +44,7 @@ const SucursalCharts = ({ series = {} }) => {
                 mb: 2
             }}
         >
-            <ChartFrame title="Ventas por hora de hoy">
+            <ChartFrame title={`Ventas por hora ${periodo.fraseDe}`}>
                 <ResponsiveContainer>
                     <BarChart data={ventasPorHora} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -54,7 +56,7 @@ const SucursalCharts = ({ series = {} }) => {
                 </ResponsiveContainer>
             </ChartFrame>
 
-            <ChartFrame title="Ventas y margen del período">
+            <ChartFrame title={`Ventas y margen ${periodo.fraseDe}`}>
                 <ResponsiveContainer>
                     <LineChart data={ventasPorDia} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
