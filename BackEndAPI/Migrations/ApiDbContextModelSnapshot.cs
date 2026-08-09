@@ -527,6 +527,9 @@ namespace BackEndAPI.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
+                    b.Property<int>("PersonajeId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Telefono")
                         .HasColumnType("text");
 
@@ -538,7 +541,10 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdSucursal");
 
-                    b.ToTable("Personas");
+                    b.ToTable("Personas", t =>
+                        {
+                            t.HasCheckConstraint("CK_Personas_PersonajeId", "\"PersonajeId\" BETWEEN 0 AND 9");
+                        });
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Plano", b =>

@@ -11,6 +11,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<Persona?> BuscarPersonaPorDni(string Dni);
         Task<ICollection<Persona>> BuscarTodasLasPersonas();
         Task<Persona?> ActualizarPersona(ModificarPersonaDTO personaActualizada);
+        Task<Persona?> ActualizarPersonaje(Guid idPersona, int personajeId);
         Task<Persona?> CambiarEstado(Guid IdPersona);
         Task<Persona?> EliminarPersona(Guid IdPersona);
         Task<ICollection<Persona>> BuscarMozos();

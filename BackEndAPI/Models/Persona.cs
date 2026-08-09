@@ -16,6 +16,7 @@ namespace BackEndAPI.Models
         public string? Email { get; set; } = string.Empty;  
         public bool Activo { get; set; } = true;
         public string? CodigoDeServicio { get; set; } = string.Empty;
+        public int PersonajeId { get; set; } = 0;
 
         public byte[] PasswordHash { get; private set; } //Convierte la contraseña en un codigo aleatorio, para no ser guardada como texto plano en la db.
         public byte[] PasswordSalt { get; private set; } //Agrega valor aleatorio a la contraseña. Sirve para que dos contraseñas iguales no tengan el mismo hash.       

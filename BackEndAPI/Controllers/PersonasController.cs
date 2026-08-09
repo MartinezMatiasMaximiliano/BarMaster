@@ -32,6 +32,7 @@ namespace BackEndAPI.Controllers
                     CodigoDeServicio = persona.CodigoDeServicio,
                     Rol = persona.Rol,
                     IdEmpresa = persona.IdEmpresa,
+                    PersonajeId = persona.PersonajeId,
                     DatosPersonales = new DatosPersonales
                     {
                         Nombres = persona.Nombres,
@@ -78,6 +79,7 @@ namespace BackEndAPI.Controllers
                     CodigoDeServicio = persona.CodigoDeServicio,
                     Rol = persona.Rol,
                     IdEmpresa = persona.IdEmpresa,
+                    PersonajeId = persona.PersonajeId,
                     DatosPersonales = new DatosPersonales
                     {
                         Nombres = persona.Nombres,
@@ -184,6 +186,35 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpPut("/Persona/Personaje")]
+        public async Task<IActionResult> ModificarPersonaje([FromBody] ModificarPersonajeDTO request)
+        {
+            var idPersonaClaim = User.FindFirst("IdPersona")?.Value;
+            if (!Guid.TryParse(idPersonaClaim, out var idPersona))
+            {
+                return Unauthorized(new ErrorDTO(401, "UNAUTHORIZED", "Usuario no identificado"));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            try
+            {
+                var persona = await _personasServices.ActualizarPersonaje(idPersona, request.PersonajeId);
+                return Ok(new { personajeId = persona!.PersonajeId });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+            }
+            catch (Exception ex) when (ex.Message == "Persona no identificada")
+            {
+                return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
+            }
+        }
+
         [HttpDelete("/Eliminar/{Id}")]
         public async Task<IActionResult> EliminarPersona(Guid Id)
         {
@@ -217,6 +248,7 @@ namespace BackEndAPI.Controllers
                     CodigoDeServicio = persona.CodigoDeServicio,
                     Rol = persona.Rol,
                     IdEmpresa = persona.IdEmpresa,
+                    PersonajeId = persona.PersonajeId,
                     DatosPersonales = new DatosPersonales
                     {
                         Nombres = persona.Nombres,
