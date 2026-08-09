@@ -53,10 +53,9 @@ namespace BackEndAPI.Controllers
                     Id = ultimoPago.Id,
                     IdVisita = ultimoPago.IdVisita ?? Guid.Empty,
                     tipoMovimientoCaja = ultimoPago.TipoMovimientoCaja,
-                    Monto = ultimoPago.Monto,
-                    Vuelto = ultimoPago.TipoMovimientoCaja?.EsEfectivo == true
-                        ? Math.Max(0, ultimoPago.Monto - deliveryTakeaway.PrecioTotal)
-                        : null,
+                    MontoAbonado = ultimoPago.MontoAbonado,
+                    MontoTotal = ultimoPago.MontoTotal,
+                    Vuelto = ultimoPago.Vuelto,
                     FechaCreacion = ultimoPago.FechaMovimiento
                 } : null,
                 Productos = (deliveryTakeaway.Visita?.Productos ?? new List<ProductosPorVisita>()).Select(p => new ItemDTO

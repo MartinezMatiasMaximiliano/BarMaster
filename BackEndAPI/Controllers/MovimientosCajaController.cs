@@ -36,7 +36,9 @@ namespace BackEndAPI.Controllers
                         EsEfectivo = movimiento.TipoMovimientoCaja?.EsEfectivo ?? false
                     },
                     IdCaja = movimiento.IdCaja,
-                    Monto = movimiento.Monto,
+                    MontoAbonado = movimiento.MontoAbonado,
+                    Vuelto = movimiento.Vuelto,
+                    MontoTotal = movimiento.MontoTotal,
                     Descripcion = movimiento.Descripcion,
                     FechaMovimiento = movimiento.FechaMovimiento
                 }).ToList();
@@ -66,7 +68,9 @@ namespace BackEndAPI.Controllers
                         EsEfectivo = movimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
                     },
                     IdCaja = movimientoCaja.IdCaja,
-                    Monto = movimientoCaja.Monto,
+                    MontoAbonado = movimientoCaja.MontoAbonado,
+                    Vuelto = movimientoCaja.Vuelto,
+                    MontoTotal = movimientoCaja.MontoTotal,
                     Descripcion = movimientoCaja.Descripcion,
                     FechaMovimiento = movimientoCaja.FechaMovimiento
                 };
@@ -101,7 +105,9 @@ namespace BackEndAPI.Controllers
                         EsEfectivo = movimiento.TipoMovimientoCaja?.EsEfectivo ?? false
                     },
                     IdCaja = movimiento.IdCaja,
-                    Monto = movimiento.Monto,
+                    MontoAbonado = movimiento.MontoAbonado,
+                    Vuelto = movimiento.Vuelto,
+                    MontoTotal = movimiento.MontoTotal,
                     Descripcion = movimiento.Descripcion,
                     FechaMovimiento = movimiento.FechaMovimiento
                 }).ToList();
@@ -120,14 +126,18 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("/MovimientosCaja")]
         public async Task<IActionResult> CrearMovimientoCaja([FromBody] CrearMovimientoCajaDTO request)
         {
             try
             {
-                if (request == null || request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0) throw new Exception("Datos de movimiento de caja no proporcionados");
-                if (request.Monto <= 0) throw new Exception("El monto debe ser mayor a cero");
-                var nuevoMovimientoCaja = await _movimientosCajaServices.CrearMovimientoCaja(request);
+                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
+                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no encontrada");
+                
+                if (request == null || request.IdTipoMovimientoCaja == 0) throw new Exception("Datos de movimiento de caja no proporcionados");
+                if (request.MontoAbonado <= 0) throw new Exception("El monto Abonado debe ser mayor a cero");
+                var nuevoMovimientoCaja = await _movimientosCajaServices.CrearMovimientoCaja(IdSucursal, request);
                
                 var response = new MovimientoCajaDTO
                 {
@@ -140,7 +150,9 @@ namespace BackEndAPI.Controllers
                         EsEfectivo = nuevoMovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
                     },
                     IdCaja = nuevoMovimientoCaja.IdCaja,
-                    Monto = nuevoMovimientoCaja.Monto,
+                    MontoAbonado = nuevoMovimientoCaja.MontoAbonado,
+                    Vuelto = nuevoMovimientoCaja.Vuelto,
+                    MontoTotal = nuevoMovimientoCaja.MontoTotal,
                     Descripcion = nuevoMovimientoCaja.Descripcion,
                     FechaMovimiento = nuevoMovimientoCaja.FechaMovimiento
                 };

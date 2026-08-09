@@ -47,8 +47,9 @@ namespace BackEndAPI.Services
             if (infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
 
             visita.Total = TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal; //TODO: REVISAR
-            movimientoCaja.Monto = visita.Total;
-            CalcularVuelto(infoPago.MontoAbonado, TotalAPagar, movimientoCaja);
+            movimientoCaja.MontoAbonado = infoPago.MontoAbonado;
+            movimientoCaja.Vuelto = CalcularVuelto(TotalAPagar, movimientoCaja);
+            movimientoCaja.MontoTotal = visita.Total;
 
 
 
@@ -85,12 +86,13 @@ namespace BackEndAPI.Services
             return TotalAPagar;
         }
 
-        private void CalcularVuelto(decimal montoAbonado, decimal totalAPagar, MovimientoCaja movimientoCaja)
+        private decimal CalcularVuelto(decimal totalAPagar, MovimientoCaja movimientoCaja)
         {
-            var vuelto = Math.Max(0, montoAbonado - movimientoCaja.Monto);
+            var vuelto = Math.Max(0, totalAPagar - movimientoCaja.MontoAbonado);
             var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
             //formatear abonado tambien
-            movimientoCaja.Descripcion = $"{movimientoCaja.Descripcion} | Abonado: $ {montoAbonado} | Vuelto: $ {vueltoFormateado}";
+            movimientoCaja.Descripcion = $"{movimientoCaja.Descripcion} | Abonado: $ {movimientoCaja.MontoAbonado} | Vuelto: $ {vueltoFormateado}";
+            return vuelto;
 
         }
     }

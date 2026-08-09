@@ -56,11 +56,11 @@ namespace BackEndAPI.Services
             return await _cuentasCorrientesRepository.ActualizarDatosCuentaCorriente(CuentaBuscada);
 
         }
-        public async Task<CuentaCorriente?> CrearMovimientoCuentaCorriente(Guid idCuenta, CrearMovimientoCajaDTO request)
+        public async Task<CuentaCorriente?> CrearMovimientoCuentaCorriente(Guid IdSucursal, Guid idCuenta, CrearMovimientoCajaDTO request)
         {
             var cuentaCorriente = await _cuentasCorrientesRepository.GetCuentaCorrientePorId(idCuenta);
             if (cuentaCorriente == null) throw new Exception("No se encontro la cuenta");
-            var nuevoMovimiento = await _movimientosCajaServices.CrearMovimientoCaja(request);
+            var nuevoMovimiento = await _movimientosCajaServices.CrearMovimientoCaja(IdSucursal, request);
             if (nuevoMovimiento == null) throw new Exception("No se pudo crear el movimiento para la cuenta corriente.");
             cuentaCorriente.Movimientos.Add(new MovimientosCuentaCorriente
             {
@@ -69,7 +69,7 @@ namespace BackEndAPI.Services
             });
 
             var esIngreso = nuevoMovimiento.TipoMovimientoCaja?.EsIngreso ?? false;
-            cuentaCorriente.Balance += esIngreso ? request.Monto : -request.Monto;
+            cuentaCorriente.Balance += esIngreso ? request.MontoTotal : -request.MontoTotal;
             return await _cuentasCorrientesRepository.ActualizarDatosCuentaCorriente(cuentaCorriente);
         }
 

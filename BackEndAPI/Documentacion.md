@@ -108,12 +108,12 @@ Base: `/CuentasCorrientes`. **Requiere JWT**.
 | GET | `/CuentasCorrientes/{IdCuenta}` | `IdCuenta: Guid` | — | `CuentaCorrienteDTO` | Cuenta por id |
 | POST | `/CuentasCorrientes/Crear` | — | `CrearCuentaCorrienteDTO {Nombre, Telefono, Domicilio}` (todos requeridos) | `CuentaCorrienteDTO` | Crea cuenta corriente |
 | POST | `/CuentasCorrientes/Modificar` | — | `ModificarCuentaCorrienteDTO {IdCuenta, Nombre?, Telefono?, Domicilio?, Descuento?}` | `CuentaCorrienteDTO` | Modifica datos de la cuenta |
-| POST | `/CuentasCorrientes/CrearMovimiento` | query `IdCuenta: Guid` | `CrearMovimientoCajaDTO {IdTipoMovimientoCaja, IdCaja, Monto, Descripcion?}` | `CuentaCorrienteDTO` | Agrega un movimiento a la cuenta |
+| POST | `/CuentasCorrientes/CrearMovimiento` | query `IdCuenta: Guid`, claim `IdSucursal` | `CrearMovimientoCajaDTO {IdTipoMovimientoCaja, MontoAbonado, MontoTotal, Descripcion?}` | `CuentaCorrienteDTO` | Agrega un movimiento a la cuenta. La caja se toma automáticamente (la caja abierta de la sucursal del token), ya no se envía `IdCaja` en el body |
 | PATCH | `/CuentasCorrientes/Desactivar` | query `IdCuenta: Guid` | — | 200 | Desactiva cuenta (falla si el balance ≠ 0) |
 | DELETE | `/CuentasCorrientes/Eliminar` | query `IdCuenta: Guid` | — | 200 | Elimina cuenta (falla si el balance ≠ 0) |
 
 **CuentaCorrienteDTO**: `Id, Nombre, Telefono, Domicilio, Balance, Descuento, Movimientos: MovimientoCuentaCorrienteDTO[]`
-**MovimientoCuentaCorrienteDTO**: `IdMovimientoCaja, Descripcion, Monto, FechaMovimiento, EsIngreso, EsEfectivo`
+**MovimientoCuentaCorrienteDTO**: `IdMovimientoCaja, Descripcion, MontoTotal, FechaMovimiento, EsIngreso, EsEfectivo`
 
 ---
 
@@ -126,7 +126,7 @@ Base: `/DeliveryTakeaway`. **Requiere JWT**.
 | GET | `/DeliveryTakeaway` | claim `IdSucursal` | — | `List<DeliveryTakeawayResponseDTO>` | Todos los pedidos delivery/takeaway de la sucursal |
 | GET | `/DeliveryTakeaway/Caja/{idCaja}` | `idCaja: Guid`, claim `IdSucursal` | — | lista | Pedidos filtrados por caja |
 | GET | `/DeliveryTakeaway/{id}` | `id: Guid`, claim `IdSucursal` | — | `DeliveryTakeawayResponseDTO` | Pedido por id |
-| POST | `/DeliveryTakeaway/Crear` | claim `IdSucursal` | `CrearDeliveryTakeawayDTO {IdCadete?, IdTipoEnvio?, NombreCliente, Direccion?, Indicaciones?, Telefono?, Origen("Delivery"/"Takeaway"), montoAbonado, InfoPago: CrearPagoDTO, ListaIDProductos: AgregarProductoAVisita[]}` | `DeliveryTakeawayResponseDTO` | Crea pedido (internamente crea una Visita + un Pago) |
+| POST | `/DeliveryTakeaway/Crear` | claim `IdSucursal` | `CrearDeliveryTakeawayDTO {IdCadete?, IdTipoEnvio?, NombreCliente, Direccion?, Indicaciones?, Telefono?, Origen("Delivery"/"Takeaway"), ListaProductos: AgregarProductoAVisita[]}` | `DeliveryTakeawayResponseDTO` | Crea el pedido (crea una Visita con sus productos). **Ya no genera el pago automáticamente** — el cobro se hace aparte con `POST /Pagar` |
 | PATCH | `/DeliveryTakeaway/ModificarDatos` | — | `ModificarDeliveryTakeawayDTO {IdDeliveryTakeaway, NombreCliente?, Telefono?, Direccion?, Indicaciones?, IdTipoEnvio?, IdCadete?, Entregado?}` | 200 | Modifica datos / asigna cadete / marca entregado |
 | DELETE | `/DeliveryTakeaway` | `id: Guid` | — | 200 | Elimina pedido |
 
@@ -181,10 +181,10 @@ Base: `/MovimientosCaja`. **Requiere JWT**.
 | GET | `/MovimientosCaja` | — | — | `List<MovimientoCajaDTO>` | Todos los movimientos de caja |
 | GET | `/MovimientosCaja/{id}` | `id: Guid` | — | `MovimientoCajaDTO` | Movimiento por id |
 | GET | `/MovimientosCaja/Caja/{idCaja}` | `idCaja: Guid` | — | lista | Movimientos de una caja |
-| POST | `/MovimientosCaja` | — | `CrearMovimientoCajaDTO {IdTipoMovimientoCaja, IdCaja, Monto, Descripcion?}` | `MovimientoCajaDTO` | Crea movimiento de caja |
+| POST | `/MovimientosCaja` | claim `IdSucursal` | `CrearMovimientoCajaDTO {IdTipoMovimientoCaja, MontoAbonado, MontoTotal, Descripcion?}` | `MovimientoCajaDTO` | Crea movimiento en la caja abierta de la sucursal del token (ya no se envía `IdCaja`; `Vuelto` se calcula en el servidor cuando el tipo de movimiento es de entorno "Ventas") |
 | DELETE | `/MovimientosCaja/{id}` | `id: Guid` | — | 200 | Elimina movimiento |
 
-**MovimientoCajaDTO**: `Id, TipoMovimientoCaja: TipoMovimientoCajaDTO, IdCaja, Monto, Descripcion, FechaMovimiento`
+**MovimientoCajaDTO**: `Id, TipoMovimientoCaja: TipoMovimientoCajaDTO, IdCaja, MontoAbonado, Vuelto, MontoTotal, Descripcion, FechaMovimiento`
 
 ---
 
@@ -194,9 +194,9 @@ Base: `/Pagar`. **Sin `[Authorize]`** (acceso público).
 
 | Verbo | Ruta | Body | Devuelve | Descripción |
 |---|---|---|---|---|
-| POST | `/Pagar` | `CrearPagoDTO {IdTipoMovimiento, IdVisita, MontoAbonado, descuentoDecimal, recargoDecimal, descuentoPorcentaje, recargoPorcentaje, GenerarFactura, DatosFacturaARCA?, ListaIdsProductos: int[]}` | `PagoDTO` | Paga ítems seleccionados de una visita; si `GenerarFactura` es true, emite factura electrónica vía integración ARCA/AFIP |
+| POST | `/Pagar` | `CrearPagoDTO {IdTipoMovimiento, IdVisita, MontoAbonado, descuentoDecimal, recargoDecimal, descuentoPorcentaje, recargoPorcentaje, GenerarFactura, DatosFacturaARCA?, ListaIdsProductos: int[]}` | `PagoDTO` | Paga ítems seleccionados de una visita (si la visita es de origen Delivery, el total incluye automáticamente el precio de envío); si `GenerarFactura` es true, emite factura electrónica vía integración ARCA/AFIP. El `Vuelto` se calcula en el servidor |
 
-**PagoDTO**: `Id, IdVisita, tipoMovimientoCaja, Monto, Vuelto?, FechaCreacion`
+**PagoDTO**: `Id, IdVisita, tipoMovimientoCaja, MontoAbonado, Vuelto, MontoTotal, FechaCreacion`
 
 ---
 
@@ -301,7 +301,7 @@ Base: `/Ticket`. **Sin `[Authorize]`** (acceso público).
 |---|---|---|---|---|
 | GET | `/Ticket/{id}` | `id: Guid` | `TicketVirtualDTO` | Ticket virtual de un movimiento de caja (productos, mesa, mozo, sucursal, tipo de pago) |
 
-**TicketVirtualDTO**: `Id, Monto, FechaMovimiento, NombreMesa?, NombreSucursal?, NombreMozo?, TipoPago?, Productos: TicketVirtualProductoDTO[]`
+**TicketVirtualDTO**: `Id, MontoAbonado, Vuelto, MontoTotal, FechaMovimiento, NombreMesa?, NombreSucursal?, NombreMozo?, TipoPago?, Productos: TicketVirtualProductoDTO[]`
 
 ---
 
@@ -374,3 +374,6 @@ Base: `/`. Controlador **de pruebas/desarrollo**, no pensado para uso en producc
 4. **Subida de archivos**: `ProductosController` (crear/modificar) usa `multipart/form-data` con `[FromForm]` e `IFormFile`, no JSON.
 5. **Scoping por token**: muchas acciones derivan `IdSucursal`/`IdEmpresa` de los claims del JWT en lugar de recibirlos por ruta o query — es contexto implícito de la request, no opcional.
 6. **Facturación electrónica**: `PagosController.PagarItemsDeVisita` puede disparar la emisión de factura electrónica (ARCA/AFIP) si `GenerarFactura = true`.
+7. **Modelo de montos unificado**: el campo genérico `Monto` fue reemplazado en todos los DTOs de movimientos/pagos/tickets por tres campos explícitos: `MontoAbonado` (lo que efectivamente entrega/paga el cliente), `MontoTotal` (el importe que corresponde cobrar) y `Vuelto` (calculado por el servidor, solo aplica a movimientos de entorno "Ventas" en efectivo). Afecta a `MovimientoCajaDTO`, `PagoDTO`, `TicketVirtualDTO`, `MovimientoCuentaCorrienteDTO` (solo `MontoTotal`) y al request `CrearMovimientoCajaDTO`.
+8. **Creación de movimiento de caja sin `IdCaja`**: tanto `POST /MovimientosCaja` como `POST /CuentasCorrientes/CrearMovimiento` ahora resuelven la caja automáticamente a partir de la caja abierta de la sucursal (`claim IdSucursal`), en vez de recibir `IdCaja` en el body — falla con "Sucursal no encontrada"/"La caja no existe" si no hay una caja abierta para esa sucursal.
+9. **Delivery/Takeaway ya no cobra al crear**: `POST /DeliveryTakeaway/Crear` sólo crea el pedido (Visita + productos); ya no crea el `Pago` automáticamente, por lo que el body ya no incluye `montoAbonado` ni `InfoPago`. El cobro debe hacerse después con `POST /Pagar`.

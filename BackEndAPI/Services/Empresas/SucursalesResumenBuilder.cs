@@ -121,8 +121,8 @@ namespace BackEndAPI.Services.Empresas
         private static decimal CalcularMontoFirmado(MovimientoCajaResumenQueryDTO movimiento)
         {
             return movimiento.EsIngreso == false
-                ? -movimiento.Monto
-                : movimiento.Monto;
+                ? -movimiento.MontoTotal
+                : movimiento.MontoTotal;
         }
 
         private static decimal CalcularMargen(IEnumerable<VisitaResumenQueryDTO> visitas, out bool rentabilidadIncompleta)

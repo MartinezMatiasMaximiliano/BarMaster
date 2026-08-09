@@ -36,7 +36,9 @@ namespace BackEndAPI.Controllers
                     {
                         IdMovimimientoCaja = m.MovimientoCaja.Id,
                         Descripcion = m.MovimientoCaja.Descripcion,
-                        Monto = m.MovimientoCaja.Monto,
+                        MontoAbonado = m.MovimientoCaja.MontoAbonado,
+                        Vuelto = m.MovimientoCaja.Vuelto,
+                        MontoTotal = m.MovimientoCaja.MontoTotal,
                         FechaMovimiento = m.MovimientoCaja.FechaMovimiento
                     }).ToList()
                 });
@@ -72,7 +74,9 @@ namespace BackEndAPI.Controllers
                     {
                         IdMovimimientoCaja = m.MovimientoCaja.Id,
                         Descripcion = m.MovimientoCaja.Descripcion,
-                        Monto = m.MovimientoCaja.Monto,
+                        MontoAbonado = m.MovimientoCaja.MontoAbonado,
+                        Vuelto = m.MovimientoCaja.Vuelto,
+                        MontoTotal = m.MovimientoCaja.MontoTotal,
                         FechaMovimiento = m.MovimientoCaja.FechaMovimiento,
                         EsIngreso = m.MovimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
                         EsEfectivo = m.MovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
@@ -144,10 +148,15 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                if (request.IdCaja == Guid.Empty || request.IdTipoMovimientoCaja == 0) throw new Exception("Todos los campos son obligatorios");
-                if (request.Monto <= 0) throw new Exception("y el monto debe ser mayor a cero.");
+                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
+                if (IdSucursal == Guid.Empty)
+                {
+                    throw new Exception("Sucursal no encontrada");
+                }
+                if (request.IdTipoMovimientoCaja == 0) throw new Exception("Todos los campos son obligatorios");
+                if (request.MontoAbonado <= 0) throw new Exception("el monto Abonado debe ser mayor a cero.");
                 if (IdCuenta == Guid.Empty) throw new Exception("id vacio");
-                var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(IdCuenta, request);
+                var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(IdSucursal, IdCuenta, request);
                 CuentaCorrienteDTO response = new CuentaCorrienteDTO
                 {
                     Id = result.Id,
@@ -160,7 +169,7 @@ namespace BackEndAPI.Controllers
                     {
                         IdMovimientoCaja = m.MovimientoCaja.Id,
                         Descripcion = m.MovimientoCaja.Descripcion,
-                        Monto = m.MovimientoCaja.Monto,
+                        MontoTotal = m.MovimientoCaja.MontoTotal,
                         FechaMovimiento = m.MovimientoCaja.FechaMovimiento,
                         EsIngreso = m.MovimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
                         EsEfectivo = m.MovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
