@@ -114,6 +114,23 @@ namespace BackEndAPI.Services
             await _personasRepository.ActualizarPersona(persona);
             return persona;
         }
+        public async Task<Persona?> ActualizarPersonaje(Guid idPersona, int personajeId)
+        {
+            if (personajeId < 0 || personajeId > 9)
+            {
+                throw new ArgumentOutOfRangeException(nameof(personajeId), "El personaje seleccionado no es válido.");
+            }
+
+            var persona = await _personasRepository.GetPersonaPorId(idPersona);
+            if (persona == null)
+            {
+                throw new Exception("Persona no identificada");
+            }
+
+            persona.PersonajeId = personajeId;
+            await _personasRepository.ActualizarPersona(persona);
+            return persona;
+        }
         public async Task<Persona?> CambiarEstado(Guid IdPersona)
         {
             var persona =  await _personasRepository.GetPersonaPorId(IdPersona);

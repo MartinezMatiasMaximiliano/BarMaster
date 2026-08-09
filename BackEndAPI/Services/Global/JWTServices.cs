@@ -112,6 +112,7 @@ namespace BackEndAPI.Services.Global
                 Access_token = tokenString,
                 Token_type = "bearer",
                 Auth_type = "admin",
+                PersonajeId = persona.PersonajeId,
                 expires = token.ValidTo.ToString(),
                 Expires_in = 3600 * hours_expire
             };

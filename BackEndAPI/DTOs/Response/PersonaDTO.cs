@@ -8,6 +8,7 @@ namespace BackEndAPI.DTOs.Response
         public string? CodigoDeServicio { get; set; }
         public Rol? Rol { get; set; }
         public Guid IdEmpresa { get; set; }
+        public int PersonajeId { get; set; }
         public DatosPersonales DatosPersonales { get; set; }
     }
 

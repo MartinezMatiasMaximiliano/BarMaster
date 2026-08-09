@@ -110,6 +110,11 @@ namespace BackEndAPI.Data
                 .HasForeignKey(p => p.IdRol)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            modelBuilder.Entity<Persona>()
+                .ToTable(table => table.HasCheckConstraint(
+                    "CK_Personas_PersonajeId",
+                    "\"PersonajeId\" BETWEEN 0 AND 9"));
+
             // Relacion Persona N:1 Rol
             modelBuilder.Entity<Persona>()
                 .HasOne(p => p.Sucursal)
