@@ -189,10 +189,9 @@ namespace BackEndAPI.Controllers
         [HttpPut("/Persona/Personaje")]
         public async Task<IActionResult> ModificarPersonaje([FromBody] ModificarPersonajeDTO request)
         {
-            var idPersonaClaim = User.FindFirst("IdPersona")?.Value;
-            if (!Guid.TryParse(idPersonaClaim, out var idPersona))
+            if (request.IdPersona == Guid.Empty)
             {
-                return Unauthorized(new ErrorDTO(401, "UNAUTHORIZED", "Usuario no identificado"));
+                return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El idPersona es obligatorio"));
             }
 
             if (!ModelState.IsValid)
@@ -202,8 +201,8 @@ namespace BackEndAPI.Controllers
 
             try
             {
-                var persona = await _personasServices.ActualizarPersonaje(idPersona, request.PersonajeId);
-                return Ok(new { personajeId = persona!.PersonajeId });
+                var persona = await _personasServices.ActualizarPersonaje(request.IdPersona, request.PersonajeId);
+                return Ok(new { idPersona = persona!.Id, personajeId = persona.PersonajeId });
             }
             catch (ArgumentOutOfRangeException ex)
             {
