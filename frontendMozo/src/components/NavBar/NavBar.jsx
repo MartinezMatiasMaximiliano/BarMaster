@@ -41,8 +41,8 @@ function NavBar() {
         >
             <Box sx={{ textAlign: 'center' }}>
                 <img
-                    src="/logo.png"
-                    alt="Logo"
+                    src="/logo/isotipo.png"
+                    alt="BarMaster"
                     style={{ height: '20vh', objectFit: 'contain' }}
                 />
             </Box>

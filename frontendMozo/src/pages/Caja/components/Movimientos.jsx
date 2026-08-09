@@ -24,8 +24,6 @@ import {
 } from '@mui/material';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import LocalDiningIcon from '@mui/icons-material/LocalDining';
-import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
 import PaidIcon from '@mui/icons-material/Paid';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -147,13 +145,7 @@ export const Movimientos = ({
         { 
             key: 'descripcion', 
             label: 'Descripción', 
-            formatter: (val, fila) => {
-                const esApertura = fila.id === 'apertura' || fila.esApertura;
-                if (esApertura) return 'Caja abierta';
-                let desc = fila.descripcion || '';
-                if (fila.mesa) desc = `Mesa ${fila.mesa} - ${desc}`;
-                return desc;
-            }
+            formatter: (val) => val ?? ''
         },
         { 
             key: 'monto', 
@@ -305,6 +297,8 @@ export const Movimientos = ({
                                 <TableBody>
                                     {filasPaginadas.map((movimiento) => {
                                         const esApertura = movimiento.id === 'apertura' || movimiento.esApertura;
+                                        const [descripcionPrincipal, ...detalleDescripcion] = (movimiento.descripcion ?? '').split('|');
+                                        const descripcionSecundaria = detalleDescripcion.join('|').trim();
                                         return (
                                             <TableRow 
                                                 key={movimiento.id} 
@@ -333,40 +327,16 @@ export const Movimientos = ({
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    {esApertura ? (
-                                                        <Typography variant="body2" fontWeight={500}>
-                                                            Caja abierta
+                                                    <Box>
+                                                        <Typography variant="body2" fontWeight={esApertura ? 500 : 400}>
+                                                            {descripcionPrincipal.trim()}
                                                         </Typography>
-                                                    ) : (
-                                                        <Stack direction="row" spacing={1} alignItems="center">
-                                                            {movimiento.mesa && (
-                                                                <Chip
-                                                                    size="small"
-                                                                    icon={<LocalDiningIcon />}
-                                                                    label={`Mesa ${movimiento.mesa}`}
-                                                                    variant="outlined"
-                                                                />
-                                                            )}
-                                                            {!movimiento.mesa && movimiento.tipo === 'venta' && (
-                                                                <Chip
-                                                                    size="small"
-                                                                    icon={<DeliveryDiningIcon />}
-                                                                    label={movimiento.descripcion.includes('Delivery') ? 'Delivery' : 'Take Away'}
-                                                                    variant="outlined"
-                                                                />
-                                                            )}
-                                                            <Box>
-                                                                <Typography variant="body2">
-                                                                    {(movimiento.descripcion || '').split(' | Vuelto: ')[0]}
-                                                                </Typography>
-                                                                {movimiento.descripcion?.includes(' | Vuelto: ') && (
-                                                                    <Typography variant="caption" color="text.secondary">
-                                                                        Vuelto: {currencyFormatter.format(Number(movimiento.descripcion.split(' | Vuelto: ')[1]))}
-                                                                    </Typography>
-                                                                )}
-                                                            </Box>
-                                                        </Stack>
-                                                    )}
+                                                        {descripcionSecundaria && (
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                {descripcionSecundaria}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
                                                 </TableCell>
                                                 <TableCell align="right">
                                                     <Typography

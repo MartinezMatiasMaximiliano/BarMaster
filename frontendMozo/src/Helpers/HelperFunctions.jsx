@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import Toast_Notificacion from "../components/Toast_Notificacion";
-import { Chip } from "@mui/material";
-import Avatar from '@mui/material/Avatar';
+import { ChipNombreCompleto } from "../components/PersonajeSelector";
 import {
     getFieldError,
     isRequiredField,
@@ -94,19 +93,15 @@ export function formatearHoraCompleta(fecha) {
     });
 }
 
-export function GetChipNombreCompleto(Nombre, Apellido) {
-    const nombres = Nombre || localStorage.getItem('USER_nombres') || '';
-    const apellido = Apellido || localStorage.getItem('USER_apellido') || '';
- 
-    const ChipNombreCompleto =
-        <Chip
-            avatar={<Avatar>{nombres?.[0]?.toUpperCase() || ''}</Avatar>}
-            label={`${nombres} ${apellido}`}
-            variant="outlined"
-            color="success"
-        />;
-
-    return ChipNombreCompleto;
+export function GetChipNombreCompleto(Nombre, Apellido, opciones = {}) {
+    return (
+        <ChipNombreCompleto
+            nombre={Nombre}
+            apellido={Apellido}
+            editable={opciones.editable ?? true}
+            esUsuarioLogueado={opciones.esUsuarioLogueado ?? (!Nombre && !Apellido)}
+        />
+    );
 }
 
 export function MappearPedidos(visitas) {

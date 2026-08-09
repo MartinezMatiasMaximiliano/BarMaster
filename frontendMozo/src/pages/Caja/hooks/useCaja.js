@@ -19,6 +19,7 @@ export const useCaja = () => {
     const [fieldErrors, setFieldErrors] = useState({});
     const [tabValue, setTabValue] = useState(0);
     const [formCierre, setFormCierre] = useState(initialCierre);
+    const [confirmacionCierre, setConfirmacionCierre] = useState(null);
 
     const cargarDatos = async () => {
         setLoadingCaja(true);
@@ -194,16 +195,60 @@ export const useCaja = () => {
 
         setGuardando(true);
         try {
-            // Usar siempre la fecha y hora actual al cerrar la caja
-            const timestampActual = buildTimestampDefaults();
-            
-            // El endpoint solo necesita el ID de la caja, no el payload completo
-            await CerrarCaja(cajaActiva?.id, {
-                fechaCierre: timestampActual.fecha,
-                horaCierre: timestampActual.hora,
-                montoFinal: Number(formCierre.montoFinal),
+            // Volver a consultar la caja para que la confirmación compare contra
+            // el monto más reciente registrado por el sistema.
+            const cajaActualizada = await ObtenerCajaActiva();
+            if (!cajaActualizada || cajaActualizada.id !== cajaActiva?.id) {
+                throw new Error('La caja activa cambió. Recargá la información antes de continuar.');
+            }
+
+            setCajaActiva(cajaActualizada);
+            dispatch(setCajaActivaGlobal(cajaActualizada));
+
+            const montoFinal = Number(formCierre.montoFinal);
+            const montoSistema = typeof cajaActualizada.montoActual === 'number'
+                ? cajaActualizada.montoActual
+                : balanceActual;
+
+            setConfirmacionCierre({
+                idCaja: cajaActualizada.id,
+                montoFinal,
+                montoSistema,
+                diferencia: montoFinal - montoSistema,
                 observaciones: formCierre.observaciones
             });
+        } catch (err) {
+            setError(obtenerMensajeError(err, 'No pudimos verificar el monto actual de la caja.'));
+        } finally {
+            setGuardando(false);
+        }
+    };
+
+    const cancelarCierreCaja = () => {
+        if (!guardando) {
+            setConfirmacionCierre(null);
+        }
+    };
+
+    const confirmarCierreCaja = async () => {
+        if (!confirmacionCierre) {
+            return;
+        }
+
+        setMensaje('');
+        setError('');
+        setGuardando(true);
+        try {
+            // Usar siempre la fecha y hora actual al cerrar la caja
+            const timestampActual = buildTimestampDefaults();
+
+            await CerrarCaja(confirmacionCierre.idCaja, {
+                fechaCierre: timestampActual.fecha,
+                horaCierre: timestampActual.hora,
+                montoFinal: confirmacionCierre.montoFinal,
+                observaciones: confirmacionCierre.observaciones
+            });
+            setConfirmacionCierre(null);
             setMensaje('La caja se cerró correctamente.');
             setCajaActiva(null);
             dispatch(setCajaActivaGlobal(null)); // Actualizar estado global
@@ -211,6 +256,7 @@ export const useCaja = () => {
             setFieldErrors({});
             await cargarDatos();
         } catch (err) {
+            setConfirmacionCierre(null);
             setError(obtenerMensajeError(err, 'No pudimos cerrar la caja.'));
         } finally {
             setGuardando(false);
@@ -308,6 +354,7 @@ export const useCaja = () => {
         fieldErrors,
         tabValue,
         formCierre,
+        confirmacionCierre,
         diferencia,
         balanceActual,
         balanceNoEfectivo,
@@ -322,6 +369,8 @@ export const useCaja = () => {
         handleChange,
         onAbrirCaja,
         onCerrarCaja,
+        cancelarCierreCaja,
+        confirmarCierreCaja,
         setFormCierre
     };
 };

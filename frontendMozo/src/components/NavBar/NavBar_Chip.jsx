@@ -8,7 +8,7 @@ function NavBar_Chip(props) {
     }
 
     // Llamar a GetChipNombreCompleto dentro del componente para que lea los valores actuales de localStorage
-    const chip = GetChipNombreCompleto();
+    const chip = GetChipNombreCompleto(undefined, undefined, { editable: false, esUsuarioLogueado: true });
 
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>

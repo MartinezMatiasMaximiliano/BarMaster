@@ -38,8 +38,7 @@ export default function BotonCobrarPedido({
         () => productosPendientes.reduce((acc, producto) => acc + (Number(producto.precio) || 0), 0),
         [productosPendientes]
     );
-    const hayProductosPagados = productos.some((producto) => producto.estadoPagado);
-    const precioEnvio = !hayProductosPagados ? Number(pedido?.PrecioEnvio || 0) : 0;
+    const precioEnvio = Number(pedido?.PrecioEnvio || 0);
     const total = totalProductosPendientes + precioEnvio;
     const idVisita = pedido?.idVisita;
     const estaCobrado = productos.length > 0 && productosPendientes.length === 0;

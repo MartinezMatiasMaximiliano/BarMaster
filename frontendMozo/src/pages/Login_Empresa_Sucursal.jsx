@@ -141,6 +141,14 @@ const LoginEmpresaSucursal = () => {
                     width: '100%'
                 }}
             >
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                    <Box
+                        component="img"
+                        src="/logo/logo_completo.png"
+                        alt="BarMaster"
+                        sx={{ width: 'min(100%, 290px)', maxHeight: 130, objectFit: 'contain' }}
+                    />
+                </Box>
                 <Typography 
                     variant="h5" 
                     component="h1" 
