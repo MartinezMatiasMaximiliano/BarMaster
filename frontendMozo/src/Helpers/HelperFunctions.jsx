@@ -93,13 +93,15 @@ export function formatearHoraCompleta(fecha) {
     });
 }
 
-export function GetChipNombreCompleto(Nombre, Apellido, opciones = {}) {
+export function GetChipNombreCompleto(Nombre, Apellido, PersonajeId, opciones = {}) {
     return (
         <ChipNombreCompleto
             nombre={Nombre}
             apellido={Apellido}
-            editable={opciones.editable ?? true}
+            personajeIdInicial={PersonajeId}
+            editable={opciones.editable ?? false}
             esUsuarioLogueado={opciones.esUsuarioLogueado ?? (!Nombre && !Apellido)}
+            onPersonajeChange={opciones.onPersonajeChange}
         />
     );
 }
@@ -147,6 +149,7 @@ export function MappearPersonas(personas) {
                 email: datosPersonales.email ?? datosPersonales.Email ?? '',
                 rol: rol?.id ?? rol?.Id ?? persona.idRol ?? persona.IdRol,
                 rolNombre: rol?.nombre ?? rol?.Nombre ?? '',
+                personajeId: persona.personajeId ?? persona.PersonajeId ?? 0,
                 activo: Boolean(datosPersonales.activo ?? datosPersonales.Activo ?? persona.activo ?? persona.Activo ?? false),
             };
         })
@@ -156,11 +159,12 @@ export function MappearPersonas(personas) {
 export function MappearMozos(mozos) {
     return (
         mozos.map(mozo => ({
-            id: mozo.id,
+            id: mozo.id ?? mozo.Id,
             codigoDeServicio: mozo.codigoDeServicio,
             idRol: mozo.rol?.id,
             nombre: mozo.datosPersonales.nombres,
             apellido: mozo.datosPersonales.apellido,
+            personajeId: mozo.personajeId ?? mozo.PersonajeId ?? 0,
             dni: mozo.datosPersonales.dni,
             direccion: mozo.datosPersonales.direccion,
             telefono: mozo.datosPersonales.telefono,

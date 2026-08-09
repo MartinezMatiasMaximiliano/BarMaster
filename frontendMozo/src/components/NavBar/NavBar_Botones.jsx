@@ -46,7 +46,6 @@ import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
-import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 
 const menuConfig = {
     admin: {
@@ -85,7 +84,6 @@ const menuConfig = {
         ],
         "Configuración": [
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
-            { path: "/personaje", label: "Personaje", icon: FaceOutlinedIcon },
         ],
         "Ayuda": [
             { path: "/documentacion", label: "Documentación de uso", icon: ArticleOutlinedIcon },
@@ -127,7 +125,6 @@ const menuConfig = {
         ],
         "Configuración": [
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
-            { path: "/personaje", label: "Personaje", icon: FaceOutlinedIcon },
         ],
         "Ayuda": [
             { path: "/documentacion", label: "Documentación de uso", icon: ArticleOutlinedIcon },

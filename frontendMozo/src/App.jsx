@@ -60,7 +60,6 @@ import { agregar as agregarNotificaciones } from './redux/slices/notificacionesS
 import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
 import TicketVirtual from './pages/TicketVirtual/TicketVirtual';
-import Personaje from './pages/Personaje';
 
 export const LoginContext = createContext();
 export const SucursalContext = createContext();
@@ -441,7 +440,6 @@ function App() {
                             <Route path="/takeaway" element={<Control_Login><TakeAway recargarComponentes={recargarDeliveryTakeAway} titulo="Take Away" /></Control_Login>} />
                             <Route path="/kds" element={<Control_Login><KDS /></Control_Login>} />
                             <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
-                            <Route path="/personaje" element={<Control_Login><Personaje /></Control_Login>} />
                             <Route path="/documentacion" element={<Control_Login><Documentacion_Uso /></Control_Login>} />
                             <Route path="/comentarios" element={<Control_Login><Enviar_Comentarios /></Control_Login>} />
                             <Route path="/panel_sucursales" element={<Control_Login><PanelSucursales /></Control_Login>} />

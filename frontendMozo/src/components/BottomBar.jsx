@@ -7,6 +7,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { GetChipNombreCompleto, formatearFechaCompleta, formatearHoraCompleta } from '../Helpers/HelperFunctions';
 import { useDateTime } from '../hooks/useDateTime';
+import { ModificarPersonaje } from '../API/APIPersonas';
 
 export const BottomBar = ({
     codigoMozo,
@@ -28,7 +29,15 @@ export const BottomBar = ({
                     className="w-100"
                 />
             </Form.Group>
-            {mozo?.nombre ? GetChipNombreCompleto(mozo.nombre, mozo.apellido) : (
+            {mozo?.nombre ? GetChipNombreCompleto(
+                mozo.nombre,
+                mozo.apellido,
+                mozo.personajeId,
+                {
+                    editable: true,
+                    onPersonajeChange: (personajeId) => ModificarPersonaje(mozo.id, personajeId),
+                }
+            ) : (
                 <Chip label="Codigo incorrecto" variant="outlined" color="error" />
             )}
 
