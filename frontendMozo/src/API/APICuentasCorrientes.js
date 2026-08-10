@@ -1,12 +1,14 @@
 import api from '../services/axiosInstance';
-import { ObtenerCajaActiva } from './APICaja';
 import { construirError } from './APIError';
 
 function normalizarMovimiento(movimiento) {
     return {
-        idMovimientoCaja: movimiento.idMovimimientoCaja ?? movimiento.IdMovimimientoCaja ?? null,
+        idMovimientoCaja: movimiento.idMovimientoCaja ?? movimiento.IdMovimientoCaja
+            ?? movimiento.idMovimimientoCaja ?? movimiento.IdMovimimientoCaja ?? null,
         descripcion: (movimiento.descripcion ?? movimiento.Descripcion ?? '').toString().trim(),
-        monto: Number(movimiento.monto ?? movimiento.Monto ?? 0),
+        monto: Number(movimiento.montoTotal ?? movimiento.MontoTotal ?? movimiento.monto ?? movimiento.Monto ?? 0),
+        montoAbonado: Number(movimiento.montoAbonado ?? movimiento.MontoAbonado ?? 0),
+        vuelto: Number(movimiento.vuelto ?? movimiento.Vuelto ?? 0),
         fechaMovimiento: movimiento.fechaMovimiento ?? movimiento.FechaMovimiento ?? null,
         esIngreso: movimiento.esIngreso ?? movimiento.EsIngreso ?? false,
         esEfectivo: movimiento.esEfectivo ?? movimiento.EsEfectivo ?? false,
@@ -101,17 +103,11 @@ export async function EliminarCuentaCorriente(id) {
 
 export async function CrearMovimientoCuentaCorriente(idCuenta, datos) {
     try {
-        const cajaActiva = await ObtenerCajaActiva();
-
-        if (!cajaActiva?.id) {
-            throw new Error('No hay una caja abierta. Debes abrir una caja primero.');
-        }
-
         const payload = {
-            idTipoMovimientoCaja: Number(datos.idTipoMovimientoCaja),
-            idCaja: cajaActiva.id,
-            monto: Number(datos.monto),
-            descripcion: datos.descripcion || '',
+            IdTipoMovimientoCaja: Number(datos.idTipoMovimientoCaja),
+            MontoTotal: Number(datos.valorMovimiento),
+            MontoAbonado: Number(datos.montoAbonado),
+            Descripcion: datos.descripcion?.trim() || '',
         };
 
         const response = await api.post('CuentasCorrientes/CrearMovimiento', payload, {

@@ -6,7 +6,7 @@ import LaunchIcon from '@mui/icons-material/Launch';
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
 import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
-import Modal_Movimiento_CuentaCorriente from "../components/Modals/Modal_Movimiento_CuentaCorriente";
+import Modal_Movimiento_CuentaCorriente from "../components/Modals/MovimientoCuentaCorriente/Modal_Movimiento_CuentaCorriente";
 import MovimientosCuentaCorrienteDrawer from "../components/CuentasCorrientes/MovimientosCuentaCorrienteDrawer";
 import Ordenar from "../components/Ordenar/Ordenar";
 import Filtros from "../components/Filtros/Filtros";
