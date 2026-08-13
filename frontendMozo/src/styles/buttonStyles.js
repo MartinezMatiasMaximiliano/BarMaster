@@ -4,12 +4,12 @@
  */
 
 // Gradiente principal usado en botones y otros elementos
-export const gradientPrimary = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-export const gradientPrimaryHover = 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)';
+export const gradientPrimary = 'linear-gradient(135deg, #7098FA 0%, #3b5fd9 100%)';
+export const gradientPrimaryHover = 'linear-gradient(135deg, #3b5fd9 0%, #7098FA 100%)';
 
 // Sombra del botón
-export const buttonShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-export const buttonShadowHover = '0 6px 20px rgba(102, 126, 234, 0.6)';
+export const buttonShadow = '0 4px 15px rgba(112, 152, 250, 0.35)';
+export const buttonShadowHover = '0 6px 20px rgba(59, 95, 217, 0.45)';
 
 /**
  * Estilo completo para botón con gradiente (versión estándar)
@@ -64,7 +64,7 @@ export const cancelButtonStyles = {
 export const dialogTitleGradientStyles = {
     pb: 1.5,
     pt: 3,
-    background: `linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)`,
+    background: 'linear-gradient(135deg, #cfe0ff 0%, #e8e1ff 100%)',
 };
 
 /**

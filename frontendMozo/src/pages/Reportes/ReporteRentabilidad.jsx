@@ -84,10 +84,10 @@ const ReporteRentabilidad = () => {
                             <Typography variant="body1">
                                 <strong>Total Costos:</strong> {formatearMoneda(reportes.datosRentabilidad?.totalCostos || 0)}
                             </Typography>
-                            <Typography variant="body1" sx={{ color: (reportes.datosRentabilidad?.margenTotal || 0) >= 0 ? 'success.main' : 'error.main' }}>
+                            <Typography variant="body1" sx={{ color: (reportes.datosRentabilidad?.margenTotal || 0) >= 0 ? 'success.dark' : 'error.dark' }}>
                                 <strong>Margen Total:</strong> {formatearMoneda(reportes.datosRentabilidad?.margenTotal || 0)}
                             </Typography>
-                            <Typography variant="body1" sx={{ color: (reportes.datosRentabilidad?.margenPorcentaje || 0) >= 0 ? 'success.main' : 'error.main' }}>
+                            <Typography variant="body1" sx={{ color: (reportes.datosRentabilidad?.margenPorcentaje || 0) >= 0 ? 'success.dark' : 'error.dark' }}>
                                 <strong>Margen Porcentaje:</strong> {formatearPorcentaje(reportes.datosRentabilidad?.margenPorcentaje || 0)}
                             </Typography>
                         </Box>

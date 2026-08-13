@@ -64,7 +64,7 @@ function TicketVirtual() {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: 'background.default' }}>
                 <CircularProgress />
             </Box>
         );
@@ -72,7 +72,7 @@ function TicketVirtual() {
 
     if (error) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f5f5f5', p: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: 'background.default', p: 2 }}>
                 <Alert severity="error" sx={{ maxWidth: 400 }}>{error}</Alert>
             </Box>
         );
@@ -83,7 +83,7 @@ function TicketVirtual() {
     return (
         <Box sx={{
             minHeight: '100vh',
-            bgcolor: '#f5f5f5',
+            bgcolor: 'background.default',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'flex-start',
@@ -92,7 +92,7 @@ function TicketVirtual() {
         }}>
             <Paper elevation={3} sx={{ maxWidth: 500, width: '100%', borderRadius: 3, overflow: 'hidden' }}>
                 {/* Header */}
-                <Box sx={{ bgcolor: 'success.main', color: 'white', px: 3, py: 2.5, textAlign: 'center' }}>
+                <Box sx={{ bgcolor: 'success.main', color: 'text.primary', px: 3, py: 2.5, textAlign: 'center' }}>
                     <ReceiptIcon sx={{ fontSize: 40, mb: 1 }} />
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
                         Ticket de Pago
@@ -177,14 +177,14 @@ function TicketVirtual() {
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>
                             Total
                         </Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.dark' }}>
                             {currencyFormatter.format(ticket.monto)}
                         </Typography>
                     </Stack>
                 </Box>
 
                 {/* Footer */}
-                <Box sx={{ bgcolor: '#fafafa', px: 3, py: 1.5, textAlign: 'center', borderTop: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ bgcolor: 'background.paper', px: 3, py: 1.5, textAlign: 'center', borderTop: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="caption" color="text.secondary">
                         Ticket generado por BarMaster
                     </Typography>

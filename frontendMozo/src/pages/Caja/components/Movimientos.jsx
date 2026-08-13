@@ -287,11 +287,11 @@ export const Movimientos = ({
                             <Table size="small">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell><strong>Fecha/Hora</strong></TableCell>
-                                        <TableCell><strong>Tipo</strong></TableCell>
-                                        <TableCell><strong>Descripción</strong></TableCell>
-                                        <TableCell align="right"><strong>Monto</strong></TableCell>
-                                        <TableCell align="right"><strong>Saldo</strong></TableCell>
+                                        <TableCell>Fecha/Hora</TableCell>
+                                        <TableCell>Tipo</TableCell>
+                                        <TableCell>Descripción</TableCell>
+                                        <TableCell align="right">Monto</TableCell>
+                                        <TableCell align="right">Saldo</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -306,7 +306,7 @@ export const Movimientos = ({
                                                 sx={esApertura ? { backgroundColor: 'action.hover' } : {}}
                                             >
                                                 <TableCell>
-                                                    <Typography variant="body2" fontWeight={esApertura ? 500 : 400}>
+                                                    <Typography variant="body2" fontWeight={200}>
                                                         {formatearFechaCompleta(movimiento.fecha, movimiento.hora)}
                                                     </Typography>
                                                 </TableCell>
@@ -328,7 +328,7 @@ export const Movimientos = ({
                                                 </TableCell>
                                                 <TableCell>
                                                     <Box>
-                                                        <Typography variant="body2" fontWeight={esApertura ? 500 : 400}>
+                                                        <Typography variant="body2" fontWeight={200}>
                                                             {descripcionPrincipal.trim()}
                                                         </Typography>
                                                         {descripcionSecundaria && (
@@ -341,12 +341,12 @@ export const Movimientos = ({
                                                 <TableCell align="right">
                                                     <Typography
                                                         variant="body2"
-                                                        fontWeight={600}
+                                                        fontWeight={200}
                                                         color={
                                                             movimiento.esEfectivo
                                                                 ? movimiento.esIngreso || esApertura
-                                                                    ? 'success.main'
-                                                                    : 'error.main'
+                                                                    ? 'success.dark'
+                                                                    : 'error.dark'
                                                                 : 'text.secondary'
                                                         }
                                                     >
@@ -355,7 +355,7 @@ export const Movimientos = ({
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell align="right">
-                                                    <Typography variant="body2" fontWeight={500}>
+                                                    <Typography variant="body2" fontWeight={200}>
                                                         {currencyFormatter.format(movimiento.saldo ?? 0)}
                                                     </Typography>
                                                 </TableCell>

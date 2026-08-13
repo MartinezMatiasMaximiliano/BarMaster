@@ -101,6 +101,7 @@ export function GetChipNombreCompleto(Nombre, Apellido, PersonajeId, opciones = 
             personajeIdInicial={PersonajeId}
             editable={opciones.editable ?? false}
             esUsuarioLogueado={opciones.esUsuarioLogueado ?? (!Nombre && !Apellido)}
+            validarCodigo={opciones.validarCodigo ?? false}
             onPersonajeChange={opciones.onPersonajeChange}
         />
     );

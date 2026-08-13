@@ -11,6 +11,7 @@
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import writeExcelFile from 'write-excel-file/browser';
+import { brandColors } from '../styles/brandTokens';
 
 // Inicializar las fuentes de pdfmake
 if (pdfMake && !pdfMake.vfs) {
@@ -94,7 +95,7 @@ export const exportarTablaAPDF = async (config) => {
         const headers = columnas.map(col => ({
             text: col.label || col.key || '',
             bold: true,
-            fillColor: '#eeeeee',
+            fillColor: brandColors.grey[6],
             fontSize: 10
         }));
 
@@ -155,12 +156,12 @@ export const exportarTablaAPDF = async (config) => {
                 header: {
                     fontSize: 18,
                     bold: true,
-                    color: '#1976d2',
+                    color: brandColors.primary.dark,
                     margin: [0, 0, 0, 10]
                 },
                 subheader: {
                     fontSize: 12,
-                    color: '#666666',
+                    color: brandColors.grey[3],
                     margin: [0, 5, 0, 5]
                 }
             },

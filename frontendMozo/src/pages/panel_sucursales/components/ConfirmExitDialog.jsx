@@ -66,7 +66,9 @@ const ConfirmExitDialog = ({
                     sx={{
                         textTransform: 'none',
                         fontWeight: 600,
-                        px: 3
+                        px: 3,
+                        color: 'grey.50',
+                        '& .MuiSvgIcon-root': { color: 'grey.50' }
                     }}
                 >
                     Cancelar

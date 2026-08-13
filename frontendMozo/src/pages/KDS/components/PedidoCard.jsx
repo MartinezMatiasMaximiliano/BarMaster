@@ -42,24 +42,24 @@ const PedidoCard = memo(({
 
     const getColorEstado = () => {
         if (item.estado === 'Listo') return 'success';
-        if (item.estado === 'En Preparación') return 'info';
+        if (item.estado === 'En Preparación') return 'secondary';
         return 'default';
     };
 
     const getBorderColor = () => {
-        if (item.estado === 'Listo') return 'success.main';
-        if (item.estado === 'En Preparación') return 'info.main';
+        if (item.estado === 'Listo') return 'success.dark';
+        if (item.estado === 'En Preparación') return 'secondary.dark';
         return 'divider';
     };
 
     const getBackgroundColor = () => {
         if (item.estado === 'Listo') {
-            return 'rgba(76, 175, 80, 0.15)';
+            return 'success.light';
         }
         if (item.estado === 'En Preparación') {
-            return 'rgba(33, 150, 243, 0.08)';
+            return 'secondary.light';
         }
-        return 'rgba(158, 158, 158, 0.04)';
+        return 'background.paper';
     };
 
     const getEstadoLabel = () => item.estado || 'Pendiente';
@@ -195,9 +195,9 @@ const PedidoCard = memo(({
                                         size="small"
                                         onClick={() => onMarcarEnPreparacion(item.id)}
                                         sx={{
-                                            color: 'white',
-                                            bgcolor: 'info.main',
-                                            '&:hover': { bgcolor: 'info.dark', color: 'white' }
+                                            color: 'grey.50',
+                                            bgcolor: 'info.dark',
+                                            '&:hover': { bgcolor: 'info.dark', color: 'grey.50' }
                                         }}
                                     >
                                         <PlayArrowIcon />
@@ -212,9 +212,9 @@ const PedidoCard = memo(({
                                         size="small"
                                         onClick={() => onMarcarListo(item.id)}
                                         sx={{
-                                            color: 'white',
-                                            bgcolor: 'success.main',
-                                            '&:hover': { bgcolor: 'success.dark', color: 'white' }
+                                            color: 'grey.50',
+                                            bgcolor: 'success.dark',
+                                            '&:hover': { bgcolor: 'success.dark', color: 'grey.50' }
                                         }}
                                     >
                                         <CheckCircleIcon />

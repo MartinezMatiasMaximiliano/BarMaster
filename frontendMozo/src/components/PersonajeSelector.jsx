@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Avatar, Box, Chip, CircularProgress, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Chip, CircularProgress, Tooltip, Typography, useTheme } from '@mui/material';
 
 export const PERSONAJES = Array.from({ length: 10 }, (_, index) => ({
     id: index,
@@ -95,8 +95,10 @@ export function ChipNombreCompleto({
     personajeIdInicial,
     editable = true,
     esUsuarioLogueado = false,
+    validarCodigo = false,
     onPersonajeChange,
 }) {
+    const theme = useTheme();
     const nombres = nombre || localStorage.getItem('USER_nombres') || '';
     const apellidos = apellido || localStorage.getItem('USER_apellido') || '';
     const storageKey = useMemo(
@@ -113,6 +115,9 @@ export function ChipNombreCompleto({
     const [tooltipAbierto, setTooltipAbierto] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
+    const colorCodigoCorrecto = theme.palette.mode === 'dark'
+        ? theme.palette.success.light
+        : theme.palette.success.main;
 
     useEffect(() => {
         setPersonajeId(obtenerValorInicial());
@@ -159,6 +164,10 @@ export function ChipNombreCompleto({
             onClick={editable ? () => setTooltipAbierto((actual) => !actual) : undefined}
             aria-label={editable ? `Elegir personaje de ${nombres} ${apellidos}`.trim() : undefined}
             sx={{
+                ...(validarCodigo ? {
+                    color: colorCodigoCorrecto,
+                    borderColor: colorCodigoCorrecto,
+                } : {}),
                 '& .MuiChip-avatar': {
                     width: '27.6px',
                     height: '27.6px',
@@ -210,7 +219,7 @@ export function ChipNombreCompleto({
                         </Box>
                     )}
                     {error && (
-                        <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 1 }}>
+                        <Typography variant="caption" color="error.dark" sx={{ display: 'block', mt: 1 }}>
                             {error}
                         </Typography>
                     )}

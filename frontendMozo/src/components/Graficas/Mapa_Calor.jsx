@@ -13,7 +13,7 @@ const Mapa_Calor = (props) => {
     }, {});
     const maxCount = ocupacion.length > 0 ? Math.max(...ocupacion.map(o => o.value)) : 0;
     function colorPorOcupacion(count, maxCount) {
-        if (count === 0 || maxCount === 0) return "#9fb3c7";
+        if (count === 0 || maxCount === 0) return "var(--bm-grey-05)";
 
         // Normalizar entre 0 y 1
         let intensidad = count / maxCount;
@@ -22,13 +22,13 @@ const Mapa_Calor = (props) => {
         intensidad = Math.pow(intensidad, 0.5); // raíz cuadrada
 
         // colores en RGB
-        const amarillo = { r: 255, g: 255, b: 153 }; // #ffff99
-        const bordo = { r: 128, g: 0, b: 0 }; // #800000
+        const amarillo = { r: 255, g: 228, b: 67 };
+        const rojo = { r: 214, g: 56, b: 13 };
 
         // interpolación lineal
-        const r = Math.round(amarillo.r + (bordo.r - amarillo.r) * intensidad);
-        const g = Math.round(amarillo.g + (bordo.g - amarillo.g) * intensidad);
-        const b = Math.round(amarillo.b + (bordo.b - amarillo.b) * intensidad);
+        const r = Math.round(amarillo.r + (rojo.r - amarillo.r) * intensidad);
+        const g = Math.round(amarillo.g + (rojo.g - amarillo.g) * intensidad);
+        const b = Math.round(amarillo.b + (rojo.b - amarillo.b) * intensidad);
 
         return `rgb(${r},${g},${b})`;
     }
@@ -47,6 +47,9 @@ const Mapa_Calor = (props) => {
                     const nombreMesa = mesa.nombre ?? mesa.i;
                     const count = ocupacionMap[nombreMesa] ?? 0;
                     const color = colorPorOcupacion(count, maxCount);
+                    const colorTexto = maxCount > 0 && count / maxCount > 0.55
+                        ? 'var(--bm-grey-07)'
+                        : 'var(--bm-grey-01)';
 
                     return (
                         <div key={mesa.i}>
@@ -59,7 +62,7 @@ const Mapa_Calor = (props) => {
                                     elevation={3}
                                     sx={{
                                         backgroundColor: color,
-                                        color: "#fff",
+                                        color: colorTexto,
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",

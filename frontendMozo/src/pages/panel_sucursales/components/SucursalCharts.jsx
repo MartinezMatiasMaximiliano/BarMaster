@@ -51,7 +51,7 @@ const SucursalCharts = ({ series = {}, periodoDias }) => {
                         <XAxis dataKey="hora" tick={{ fontSize: 11 }} interval={3} />
                         <YAxis tickFormatter={chartMoney} width={72} tick={{ fontSize: 11 }} />
                         <Tooltip formatter={(value) => [formatearMoneda(value), 'Ventas']} />
-                        <Bar dataKey="total" fill="#1976d2" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="total" fill="var(--bm-primary-dark)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </ChartFrame>
@@ -63,8 +63,8 @@ const SucursalCharts = ({ series = {}, periodoDias }) => {
                         <XAxis dataKey="fechaLabel" tick={{ fontSize: 11 }} />
                         <YAxis tickFormatter={chartMoney} width={72} tick={{ fontSize: 11 }} />
                         <Tooltip formatter={(value, name) => [formatearMoneda(value), name === 'ventas' ? 'Ventas' : 'Margen']} />
-                        <Line type="monotone" dataKey="ventas" stroke="#1976d2" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="margen" stroke="#2e7d32" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="ventas" stroke="var(--bm-primary-dark)" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="margen" stroke="var(--bm-success-dark)" strokeWidth={2} dot={false} />
                     </LineChart>
                 </ResponsiveContainer>
             </ChartFrame>

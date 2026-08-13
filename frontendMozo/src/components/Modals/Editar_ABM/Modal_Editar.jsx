@@ -145,8 +145,8 @@ function Modal_Editar(props) {
                                 sx={{
                                     p: 1,
                                     borderRadius: 2,
-                                    bgcolor: 'primary.main',
-                                    color: 'white',
+                                    bgcolor: 'primary.dark',
+                                    color: 'grey.50',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',

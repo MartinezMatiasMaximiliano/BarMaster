@@ -74,7 +74,7 @@ function Abm_CuentasCorrientes(props) {
                     style={{
                         border: 0,
                         background: 'transparent',
-                        color: '#1976d2',
+                        color: 'primary.dark',
                         cursor: 'pointer',
                         padding: 0,
                         font: 'inherit',

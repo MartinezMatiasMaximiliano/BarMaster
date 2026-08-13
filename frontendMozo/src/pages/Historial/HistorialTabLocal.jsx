@@ -164,7 +164,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
                             partes.push({
                                 text: `Ticket ${index + 1}`,
                                 link: obtenerUrlTicket(ticket.id),
-                                color: '#1976d2',
+                                color: 'primary.dark',
                                 decoration: 'underline',
                             });
 

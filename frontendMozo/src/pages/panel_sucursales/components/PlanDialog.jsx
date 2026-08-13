@@ -102,11 +102,11 @@ const PlanDialog = ({
                                             </TableRow>
                                         </React.Fragment>
                                     ))}
-                                    <TableRow sx={{ bgcolor: 'primary.main' }}>
-                                        <TableCell colSpan={3} align="right" sx={{ fontWeight: 700, fontSize: '1rem', color: 'white' }}>
+                                    <TableRow sx={{ bgcolor: 'primary.dark' }}>
+                                        <TableCell colSpan={3} align="right" sx={{ fontWeight: 700, fontSize: '1rem', color: 'grey.50' }}>
                                             TOTAL:
                                         </TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700, fontSize: '1rem', color: 'white' }}>
+                                        <TableCell align="right" sx={{ fontWeight: 700, fontSize: '1rem', color: 'grey.50' }}>
                                             ${formatearMoneda(totalCalculado)}
                                         </TableCell>
                                     </TableRow>

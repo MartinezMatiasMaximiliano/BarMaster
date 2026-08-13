@@ -1,14 +1,12 @@
 // components/Mesa/MesaButton.jsx
 import React from 'react';
-import { Button, Stack, Typography } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBurger } from '@fortawesome/free-solid-svg-icons';
+import { Button, Typography } from '@mui/material';
 
 // Mapeo de variantes de react-bootstrap a Material UI
 const variantMap = {
     'primary': 'contained',
     'success': 'contained',
-    'secondary': 'outlined',
+    'secondary': 'contained',
     'danger': 'contained',
     'warning': 'contained',
     'info': 'contained',
@@ -31,6 +29,9 @@ const colorMap = {
 export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = false, prefix = "Mesa", simpleStyle = false }) => {
     const muiVariant = variantMap[variant] || 'contained';
     const muiColor = colorMap[variant] || 'primary';
+    const iconoMesa = variant === 'secondary'
+        ? '/iconos/mesa_blanca.png'
+        : '/iconos/mesa_ocupada_blanca.png';
 
     // Si simpleStyle es true, renderizar como botón simple sin iconos ni estilos personalizados
     if (simpleStyle) {
@@ -49,6 +50,8 @@ export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = fa
                     fontSize: '0.75rem',
                     textTransform: 'none',
                     ...estilo,
+                    ...(variant === 'success' ? { bgcolor: 'primary.main' } : {}),
+                    ...(variant === 'success' ? { '&:hover': { bgcolor: 'primary.dark' } } : {}),
                 }}
             >
                 {prefix} {numeroMesa}
@@ -76,11 +79,17 @@ export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = fa
                 '&:hover': {
                     transform: 'translateY(-2px)',
                     boxShadow: 4,
+                    ...(variant === 'success' ? { bgcolor: 'primary.dark' } : {}),
                 },
+                ...(variant === 'success' ? { bgcolor: 'primary.main' } : {}),
                 transition: 'all 0.2s ease-in-out',
             }}
         >
-            <FontAwesomeIcon icon={faBurger} style={{ fontSize: '1.5rem' }} />
+            <img
+                src={iconoMesa}
+                alt={variant === 'secondary' ? 'Mesa libre' : 'Mesa ocupada'}
+                style={{ width: 49.68, height: 49.68, objectFit: 'contain' }}
+            />
             <Typography variant="body2" component="span" sx={{ fontWeight: 500 }}>
                 {prefix} {numeroMesa}
             </Typography>

@@ -23,7 +23,6 @@ import { MesaModalHeader } from './components/MesaModalHeader';
 import { MesaProductosPanel } from './components/MesaProductosPanel';
 import { PedidoTotalMesa } from './components/PedidoTotalMesa';
 import { useAutoSubmitPedidos } from './hooks/useAutoSubmitPedidos';
-import { boxDividerLine } from '../../styles/boxStyles';
 import { formatearFecha } from './dateFormatter';
 
 const AUTO_SUBMIT_MS = 5000;
@@ -177,7 +176,7 @@ export const MesaModalUnificado = ({
             maxWidth="xl"
             fullWidth
             disableEnforceFocus
-            PaperProps={{ sx: { borderRadius: 3, height: '92vh', overflow: 'hidden', bgcolor: '#f3f6f9' } }}
+            PaperProps={{ sx: { borderRadius: 3, height: '92vh', overflow: 'hidden', bgcolor: 'background.default' } }}
         >
             <MesaModalHeader
                 fecha={fechaFormateada}
@@ -185,7 +184,7 @@ export const MesaModalUnificado = ({
                 onClose={handleCloseWithCleanup}
             />
 
-            <DialogContent sx={{ p: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: '#f3f6f9' }}>
+            <DialogContent sx={{ p: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
                 <Box
                     sx={{
                         flex: 1,
@@ -197,13 +196,31 @@ export const MesaModalUnificado = ({
                         overflow: 'hidden'
                     }}
                 >
-                    <Box sx={{ minHeight: 0, bgcolor: '#ffffff', borderRadius: 2, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <Tabs value={tabValue} onChange={handleTabChange} sx={{ ...boxDividerLine, px: 2, flexShrink: 0 }}>
+                    <Box sx={{
+                        minHeight: 0,
+                        bgcolor: (theme) => theme.palette.mode === 'light'
+                            ? theme.palette.grey[200]
+                            : theme.palette.background.paper,
+                        borderRadius: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden'
+                    }}>
+                        <Tabs value={tabValue} onChange={handleTabChange} sx={{ px: 2, flexShrink: 0 }}>
                             <Tab label="Resumen" icon={<RestaurantMenuIcon />} iconPosition="start" />
                             <Tab label="Pagos registrados" icon={<CheckCircleIcon />} iconPosition="start" disabled={!visitaMesaFinal} />
                         </Tabs>
 
-                        <Box sx={{ px: 2, pt: 2, pb: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, bgcolor: '#ffffff' }}>
+                        <Box sx={{
+                            px: 2,
+                            pt: 2,
+                            pb: 1,
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            alignItems: 'center',
+                            gap: 1,
+                            bgcolor: 'transparent'
+                        }}>
                             <Tooltip title={motivoBloqueoCerrarMesa}>
                                 <span style={{ display: 'inline-flex' }}>
                                     <Modal_Generico
@@ -232,7 +249,7 @@ export const MesaModalUnificado = ({
                             />
                         </Box>
 
-                        <Box sx={{ p: 2, pt: 1, flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: '#ffffff' }}>
+                        <Box sx={{ p: 2, pt: 1, flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: 'transparent' }}>
                             {tabValue === 0 && (
                                 <PedidoTotalMesa
                                     visitaMesa={visitaMesaFinal}

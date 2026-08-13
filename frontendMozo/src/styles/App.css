@@ -3,8 +3,144 @@
 @import 'datatables.net-select-dt';
 @import 'datatables.net-buttons-dt';
 
+:root {
+    --dt-row-selected: 59, 95, 217;
+    --dt-row-selected-text: 249, 249, 249;
+    --dt-row-selected-link: 207, 224, 255;
+    --dt-row-hover: 112, 152, 250;
+    --dt-row-stripe: 25, 25, 25;
+    --dt-column-ordering: 112, 152, 250;
+    --dt-html-background: #F9F9F9;
+}
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear,
 input[type="password"]::-webkit-credentials-auto-fill-button {
     display: none;
+}
+
+/* Bootstrap y DataTables quedan alineados con los tokens del tema MUI. */
+.btn-primary {
+    --bs-btn-bg: var(--bm-primary-dark, #3b5fd9);
+    --bs-btn-border-color: var(--bm-primary-dark, #3b5fd9);
+    --bs-btn-hover-bg: var(--bm-primary, #7098FA);
+    --bs-btn-hover-border-color: var(--bm-primary-dark, #3b5fd9);
+    --bs-btn-color: var(--bm-grey-07, #F9F9F9);
+    --bs-btn-hover-color: var(--bm-grey-01, #191919);
+}
+
+.btn-secondary {
+    --bs-btn-bg: var(--bm-secondary-dark, #7961e0);
+    --bs-btn-border-color: var(--bm-secondary-dark, #7961e0);
+    --bs-btn-hover-bg: var(--bm-secondary-dark, #7961e0);
+    --bs-btn-hover-border-color: var(--bm-secondary-dark, #7961e0);
+}
+
+.btn-success {
+    --bs-btn-bg: var(--bm-success-dark, #1a7700);
+    --bs-btn-border-color: var(--bm-success-dark, #1a7700);
+    --bs-btn-hover-bg: var(--bm-success-dark, #1a7700);
+    --bs-btn-hover-border-color: var(--bm-success-dark, #1a7700);
+}
+
+.btn-warning {
+    --bs-btn-bg: var(--bm-warning-dark, #b8850a);
+    --bs-btn-border-color: var(--bm-warning-dark, #b8850a);
+    --bs-btn-hover-bg: var(--bm-warning-dark, #b8850a);
+    --bs-btn-hover-border-color: var(--bm-warning-dark, #b8850a);
+}
+
+.btn-danger {
+    --bs-btn-bg: var(--bm-error-dark, #d6380d);
+    --bs-btn-border-color: var(--bm-error-dark, #d6380d);
+    --bs-btn-hover-bg: var(--bm-error-dark, #d6380d);
+    --bs-btn-hover-border-color: var(--bm-error-dark, #d6380d);
+}
+
+.btn-info {
+    --bs-btn-bg: var(--bm-secondary-dark, #7961e0);
+    --bs-btn-border-color: var(--bm-secondary-dark, #7961e0);
+    --bs-btn-hover-bg: var(--bm-secondary-dark, #7961e0);
+    --bs-btn-hover-border-color: var(--bm-secondary-dark, #7961e0);
+}
+
+.text-primary {
+    color: var(--bm-primary-dark, #3b5fd9) !important;
+}
+
+.bg-primary {
+    color: var(--bm-grey-07, #F9F9F9) !important;
+    background-color: var(--bm-primary-dark, #3b5fd9) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bm-primary, #7098FA);
+    box-shadow: 0 0 0 0.2rem rgba(112, 152, 250, 0.22);
+}
+
+table.dataTable {
+    color: var(--bm-grey-01, #191919);
+    background: var(--bm-grey-07, #F9F9F9);
+}
+
+table.dataTable thead > tr > th,
+table.dataTable thead > tr > td {
+    color: var(--bm-grey-01, #191919);
+    background: var(--bm-primary-light, #cfe0ff);
+    font-weight: 200;
+}
+
+table :is(th, td, th *, td *),
+table.dataTable :is(th, td, th *, td *) {
+    font-weight: 200 !important;
+}
+
+.MuiChip-root {
+    color: var(--bm-success-dark, #1a7700) !important;
+    background-color: transparent !important;
+    border-color: var(--bm-success-dark, #1a7700) !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+}
+
+.MuiChip-root .MuiChip-icon,
+.MuiChip-root .MuiChip-deleteIcon {
+    color: var(--bm-success-dark, #1a7700) !important;
+}
+
+.MuiChip-root.MuiChip-colorError {
+    color: var(--bm-error, #fc6131) !important;
+    background-color: transparent !important;
+    border-color: var(--bm-error, #fc6131) !important;
+}
+
+.MuiChip-root.MuiChip-colorError .MuiChip-icon,
+.MuiChip-root.MuiChip-colorError .MuiChip-deleteIcon {
+    color: var(--bm-error, #fc6131) !important;
+}
+
+.MuiButton-contained,
+.MuiButton-contained .MuiSvgIcon-root,
+.MuiButton-contained .MuiButton-startIcon,
+.MuiButton-contained .MuiButton-endIcon,
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info,
+.MuiFab-root {
+    color: var(--bm-grey-07, #F9F9F9) !important;
+}
+
+table.dataTable tbody > tr:hover > * {
+    background: var(--bm-secondary-light, #e8e1ff);
+}
+
+.dt-container .dt-paging .dt-paging-button.current,
+.dt-container .dt-paging .dt-paging-button.current:hover {
+    color: var(--bm-grey-07, #F9F9F9) !important;
+    background: var(--bm-primary-dark, #3b5fd9) !important;
+    border-color: var(--bm-primary-dark, #3b5fd9) !important;
 }

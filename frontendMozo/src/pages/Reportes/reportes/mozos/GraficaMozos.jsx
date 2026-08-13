@@ -23,7 +23,18 @@ import { formatearMoneda, formatearPorcentaje } from '../../utils/formatters';
 import { boxEmptyMessage } from '../../../../styles/boxStyles';
 import { StyledTableCell, StyledTableRow } from '../../../../components/Tabla/Tabla.styles';
 
-const PALETA = ['#1976d2', '#388e3c', '#f57c00', '#7b1fa2', '#0288d1', '#5c6bc0', '#00897b', '#c62828', '#d32f2f', '#795548'];
+const PALETA = [
+    'var(--bm-primary-dark)',
+    'var(--bm-success-dark)',
+    'var(--bm-warning-dark)',
+    'var(--bm-secondary-dark)',
+    'var(--bm-primary)',
+    'var(--bm-secondary)',
+    'var(--bm-success)',
+    'var(--bm-error-dark)',
+    'var(--bm-error)',
+    'var(--bm-grey-03)'
+];
 
 const GraficaMozos = ({ datosMozos }) => {
     const lista = datosMozos?.porVentas ?? [];
@@ -73,7 +84,7 @@ const GraficaMozos = ({ datosMozos }) => {
                             <XAxis dataKey="nombreCompleto" tick={{ fontSize: 11 }} interval={0} />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} labelFormatter={(label) => `Mozo: ${label}`} />
-                            <Bar dataKey="ventas" fill="#1976d2" />
+                            <Bar dataKey="ventas" fill="var(--bm-primary-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -90,7 +101,7 @@ const GraficaMozos = ({ datosMozos }) => {
                             <XAxis dataKey="nombreCompleto" tick={{ fontSize: 11 }} interval={0} />
                             <YAxis />
                             <Tooltip labelFormatter={(label) => `Mozo: ${label}`} formatter={(value) => [`${value}`, 'Cantidad de visitas']} />
-                            <Bar dataKey="cantidadVisitas" name="Cantidad de visitas" fill="#388e3c" />
+                            <Bar dataKey="cantidadVisitas" name="Cantidad de visitas" fill="var(--bm-success-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -132,7 +143,7 @@ const GraficaMozos = ({ datosMozos }) => {
                                     );
                                 }}
                             />
-                            <Scatter name="Mozos" data={datosVentas} fill="#7b1fa2" label={{ dataKey: 'nombreCompleto', position: 'bottom', fontSize: 11 }} />
+                            <Scatter name="Mozos" data={datosVentas} fill="var(--bm-secondary-dark)" label={{ dataKey: 'nombreCompleto', position: 'bottom', fontSize: 11 }} />
                         </ScatterChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -152,7 +163,7 @@ const GraficaMozos = ({ datosMozos }) => {
                                 formatter={(value) => [formatearMoneda(value), 'Promedio por visita']}
                                 labelFormatter={(label) => `Mozo: ${label}`}
                             />
-                            <Bar dataKey="promedio" name="Promedio por visita" fill="#f57c00" />
+                            <Bar dataKey="promedio" name="Promedio por visita" fill="var(--bm-warning-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -175,8 +186,8 @@ const GraficaMozos = ({ datosMozos }) => {
                                 formatter={(value) => [formatearPorcentaje(value), 'Porcentaje del promedio del local']}
                                 labelFormatter={(label) => `Mozo: ${label}`}
                             />
-                            <ReferenceLine y={100} stroke="#666" strokeDasharray="3 3" />
-                            <Bar dataKey="pctVsPromedioLocal" name="Porcentaje del promedio del local" fill="#5c6bc0" />
+                            <ReferenceLine y={100} stroke="var(--bm-grey-03)" strokeDasharray="3 3" />
+                            <Bar dataKey="pctVsPromedioLocal" name="Porcentaje del promedio del local" fill="var(--bm-secondary)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -196,7 +207,7 @@ const GraficaMozos = ({ datosMozos }) => {
                                 formatter={(value) => [value, 'Promedio de productos por visita']}
                                 labelFormatter={(label) => `Mozo: ${label}`}
                             />
-                            <Bar dataKey="promedioProductosPorVisita" name="Promedio de productos por visita" fill="#00897b" />
+                            <Bar dataKey="promedioProductosPorVisita" name="Promedio de productos por visita" fill="var(--bm-success)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -272,7 +283,7 @@ const GraficaMozos = ({ datosMozos }) => {
                                 formatter={(value) => [formatearMoneda(value), 'Margen de ganancia']}
                                 labelFormatter={(label) => `Mozo: ${label}`}
                             />
-                            <Bar dataKey="margenGanancia" name="Margen de ganancia" fill="#c62828" />
+                            <Bar dataKey="margenGanancia" name="Margen de ganancia" fill="var(--bm-error-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>

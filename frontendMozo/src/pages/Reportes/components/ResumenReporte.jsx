@@ -10,6 +10,7 @@ import PaymentIcon from '@mui/icons-material/Payment';
 import PercentIcon from '@mui/icons-material/Percent';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import { formatearMoneda, formatearPorcentaje } from '../utils/formatters';
+import { brandColors } from '../../../styles/brandTokens';
 
 const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) => {
     // Calcular métricas adicionales
@@ -47,77 +48,77 @@ const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) 
             titulo: 'Total de Ventas',
             valor: formatearMoneda(metricas.totalVentas || 0),
             icono: <AttachMoneyIcon sx={{ fontSize: 40 }} />,
-            color: '#1976d2',
+            color: brandColors.primary.dark,
             explicacion: 'Es todo el dinero que entró por ventas en el período que elegiste.'
         },
         {
             titulo: 'Cantidad de Visitas',
             valor: metricas.cantidadVisitas || 0,
             icono: <ReceiptIcon sx={{ fontSize: 40 }} />,
-            color: '#388e3c',
+            color: brandColors.success.dark,
             explicacion: 'Cuántas veces hubo un consumo o venta en el período (cada mesa atendida, delivery o takeaway, cuenta).'
         },
         {
             titulo: 'Promedio por Visita',
             valor: formatearMoneda(metricas.promedioPorVisita || 0),
             icono: <TrendingUpIcon sx={{ fontSize: 40 }} />,
-            color: '#f57c00',
+            color: brandColors.warning.dark,
             explicacion: 'Cuánto se vendió en promedio en cada visita: el total de ventas repartido entre la cantidad de visitas.'
         },
         {
             titulo: 'Productos Vendidos',
             valor: metricas.productosVendidos || 0,
             icono: <ShoppingCartIcon sx={{ fontSize: 40 }} />,
-            color: '#7b1fa2',
+            color: brandColors.secondary.dark,
             explicacion: 'Cuántas unidades de productos se vendieron en total en el período (cada bebida, plato o producto cuenta).'
         },
         {
             titulo: 'Margen de Ganancia',
             valor: formatearMoneda(metricas.margenGanancia || 0),
             icono: <TrendingUpIcon sx={{ fontSize: 40 }} />,
-            color: '#c62828',
+            color: brandColors.error.dark,
             explicacion: 'La ganancia neta: lo que pagó el cliente menos lo que te costó a vos el producto, sumado para todas las ventas.'
         },
         {
             titulo: 'Total de Pagos',
             valor: metricasAdicionales.totalPagos || 0,
             icono: <PaymentIcon sx={{ fontSize: 40 }} />,
-            color: '#0288d1',
+            color: brandColors.primary.main,
             explicacion: 'Cuántas veces se cobró: si en una mesa pagaron con efectivo y tarjeta, son 2 pagos; cada forma de pago cuenta por separado.'
         },
         {
             titulo: 'Promedio Productos/Visita',
             valor: metricasAdicionales.promedioProductosPorVisita || 0,
             icono: <InventoryIcon sx={{ fontSize: 40 }} />,
-            color: '#5c6bc0',
+            color: brandColors.secondary.main,
             explicacion: 'Cuántos productos se llevaron en promedio en cada visita (por ejemplo: 4 productos por mesa).'
         },
         {
             titulo: 'Mesas Ocupadas',
             valor: metricasAdicionales.mesasOcupadas || 0,
             icono: <TableRestaurantIcon sx={{ fontSize: 40 }} />,
-            color: '#00897b',
+            color: brandColors.success.main,
             explicacion: 'Cuántas mesas distintas tuvieron al menos un consumo en el período; cada mesa se cuenta una sola vez.'
         },
         {
             titulo: 'Mozos Activos',
             valor: metricasAdicionales.mozosActivos || 0,
             icono: <PeopleIcon sx={{ fontSize: 40 }} />,
-            color: '#7b1fa2',
+            color: brandColors.secondary.dark,
             explicacion: 'Cuántos mozos distintos atendieron al menos una mesa en el período; cada persona se cuenta una sola vez.'
         },
         {
             titulo: 'Margen Porcentual',
             valor: formatearPorcentaje(metricasAdicionales.margenPorcentual || 0),
             icono: <PercentIcon sx={{ fontSize: 40 }} />,
-            color: '#c62828',
+            color: brandColors.error.dark,
             explicacion: 'Qué parte de lo que vendiste es ganancia: el porcentaje que te quedás después de restar los costos de lo vendido.'
         },
         {
             titulo: 'Total de Costos',
             valor: formatearMoneda(metricasAdicionales.totalCostos || 0),
             icono: <AttachMoneyIcon sx={{ fontSize: 40 }} />,
-            color: '#d32f2f',
+            color: brandColors.error.main,
             explicacion: 'Cuánto te costaron en total los productos que vendiste (lo que gastaste en insumos para esas ventas).'
         }
     ];
@@ -171,7 +172,7 @@ const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) 
                                     variant="h5"
                                     component="div"
                                     sx={{
-                                        fontWeight: 700,
+                                        fontWeight: 500,
                                         color: 'text.primary',
                                         mb: 0.5
                                     }}

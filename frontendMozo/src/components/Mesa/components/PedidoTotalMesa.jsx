@@ -35,7 +35,13 @@ export const PedidoTotalMesa = ({
 
     if (productosPendientes.length === 0 && productosProvisorios.length === 0) {
         return (
-            <Box sx={{ bgcolor: '#f7f9fc', borderRadius: 2, p: 2 }}>
+            <Box sx={{
+                bgcolor: (theme) => theme.palette.mode === 'dark'
+                    ? theme.palette.primary.main
+                    : '#cfe0ff',
+                borderRadius: 2,
+                p: 2
+            }}>
                 <Typography variant="h6" sx={{ fontWeight: 800 }}>
                     {titulo}
                 </Typography>
@@ -54,7 +60,9 @@ export const PedidoTotalMesa = ({
                 alignItems="center"
                 sx={{
                     flexShrink: 0,
-                    bgcolor: '#f7f9fc',
+                    bgcolor: (theme) => theme.palette.mode === 'dark'
+                        ? theme.palette.primary.main
+                        : '#cfe0ff',
                     borderRadius: 2,
                     px: 2,
                     py: 1.5
@@ -73,7 +81,7 @@ export const PedidoTotalMesa = ({
                     flex: '1 1 auto',
                     overflowY: 'auto',
                     minHeight: 0,
-                    bgcolor: '#fbfcfe',
+                    bgcolor: 'background.paper',
                     borderRadius: 2,
                     p: 1
                 }}

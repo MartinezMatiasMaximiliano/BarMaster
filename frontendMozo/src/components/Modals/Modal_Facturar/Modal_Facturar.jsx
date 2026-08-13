@@ -132,13 +132,31 @@ export default function Modal_Facturar({
             fullWidth
             PaperProps={{ sx: { borderRadius: 2 } }}
         >
-            <DialogTitle sx={dialogTitleGradientStyles}>
+            <DialogTitle sx={(theme) => ({
+                ...dialogTitleGradientStyles,
+                ...(theme.palette.mode === 'dark' && {
+                    background: '#7098FA',
+                    color: theme.palette.common.white
+                })
+            })}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Stack direction="row" spacing={1} alignItems="center">
-                        <ReceiptIcon color="primary" />
+                        <ReceiptIcon sx={{
+                            color: (theme) => theme.palette.mode === 'dark'
+                                ? theme.palette.common.white
+                                : theme.palette.primary.main
+                        }} />
                         <Typography variant="h6" component="span">{titulo}</Typography>
                     </Stack>
-                    <IconButton aria-label="cerrar" onClick={handleClose} sx={{ color: (theme) => theme.palette.grey[500] }}>
+                    <IconButton
+                        aria-label="cerrar"
+                        onClick={handleClose}
+                        sx={{
+                            color: (theme) => theme.palette.mode === 'dark'
+                                ? theme.palette.common.white
+                                : theme.palette.grey[500]
+                        }}
+                    >
                         <CloseIcon />
                     </IconButton>
                 </Stack>
@@ -146,9 +164,27 @@ export default function Modal_Facturar({
 
             <DialogContent dividers>
                 <Stack spacing={2.5} sx={{ pt: 0.5 }}>
-                    <Box sx={{ ...boxCardBorder, p: 2 }}>
-                        <Typography variant="subtitle2" color="text.secondary">Total a pagar</Typography>
-                        <Typography variant="h5" color="primary.main">{currencyFormatter.format(totalNum)}</Typography>
+                    <Box sx={(theme) => ({
+                        ...boxCardBorder,
+                        p: 2,
+                        ...(theme.palette.mode === 'dark' && {
+                            bgcolor: '#7098FA',
+                            borderColor: '#7098FA',
+                            color: theme.palette.common.white
+                        })
+                    })}>
+                        <Typography
+                            variant="subtitle2"
+                            color={(theme) => theme.palette.mode === 'dark' ? 'inherit' : 'text.secondary'}
+                        >
+                            Total a pagar
+                        </Typography>
+                        <Typography
+                            variant="h5"
+                            color={(theme) => theme.palette.mode === 'dark' ? 'inherit' : 'primary.main'}
+                        >
+                            {currencyFormatter.format(totalNum)}
+                        </Typography>
                     </Box>
 
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
@@ -192,7 +228,7 @@ export default function Modal_Facturar({
                                 helperText={cajaInsuficiente ? `La caja no tiene suficiente efectivo (disponible: ${currencyFormatter.format(montoCaja)})` : ''}
                             />
                             {vuelto !== null && vuelto >= 0 && (
-                                <Typography variant="body2" color={cajaInsuficiente ? 'error.main' : 'success.main'} sx={{ mt: 0.5, fontWeight: 600 }}>
+                                <Typography variant="body2" color={cajaInsuficiente ? 'error.dark' : 'success.dark'} sx={{ mt: 0.5, fontWeight: 600 }}>
                                     Vuelto: {currencyFormatter.format(vuelto)}
                                 </Typography>
                             )}

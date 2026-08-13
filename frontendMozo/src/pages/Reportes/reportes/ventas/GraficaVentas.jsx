@@ -17,7 +17,7 @@ const GraficaVentas = ({ datosVentas }) => {
                             <XAxis dataKey="fecha" />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Line type="monotone" dataKey="total" stroke="#1976d2" strokeWidth={2} />
+                            <Line type="monotone" dataKey="total" stroke="var(--bm-primary-dark)" strokeWidth={2} />
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -34,7 +34,7 @@ const GraficaVentas = ({ datosVentas }) => {
                             <XAxis dataKey="hora" />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Bar dataKey="total" fill="#388e3c" />
+                            <Bar dataKey="total" fill="var(--bm-success-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -51,7 +51,7 @@ const GraficaVentas = ({ datosVentas }) => {
                             <XAxis dataKey="dia" />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Bar dataKey="total" fill="#f57c00" />
+                            <Bar dataKey="total" fill="var(--bm-warning-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -68,7 +68,7 @@ const GraficaVentas = ({ datosVentas }) => {
                             <XAxis dataKey="fecha" />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Area type="monotone" dataKey="total" stroke="#7b1fa2" fill="#7b1fa2" fillOpacity={0.6} />
+                            <Area type="monotone" dataKey="total" stroke="var(--bm-secondary-dark)" fill="var(--bm-secondary-dark)" fillOpacity={0.6} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -85,7 +85,7 @@ const GraficaVentas = ({ datosVentas }) => {
                             <XAxis dataKey="nombre" />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Bar dataKey="total" fill="#c62828" />
+                            <Bar dataKey="total" fill="var(--bm-error-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>

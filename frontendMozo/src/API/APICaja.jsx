@@ -187,6 +187,15 @@ export async function ObtenerMovimientosCaja(idCaja) {
             const nombreTipo = tipoMovRaw?.nombre || tipoMovRaw?.Nombre || '';
             const esEfectivo = tipoMovRaw?.esEfectivo ?? tipoMovRaw?.EsEfectivo ?? false;
             const esIngreso = tipoMovRaw?.esIngreso ?? tipoMovRaw?.EsIngreso ?? false;
+            const montoTotal = Number(
+                mov.montoTotal
+                ?? mov.MontoTotal
+                ?? mov.monto
+                ?? mov.Monto
+                ?? 0
+            );
+            const montoAbonado = Number(mov.montoAbonado ?? mov.MontoAbonado ?? montoTotal);
+            const vuelto = Number(mov.vuelto ?? mov.Vuelto ?? 0);
             
             return {
                 id: mov.id || mov.Id,
@@ -194,7 +203,10 @@ export async function ObtenerMovimientosCaja(idCaja) {
                 hora: fechaMov.hora,
                 tipo: nombreTipo.toLowerCase() || 'movimiento',
                 descripcion: mov.descripcion || mov.Descripcion || '',
-                monto: parseFloat(mov.monto || mov.Monto) || 0,
+                monto: Number.isFinite(montoTotal) ? montoTotal : 0,
+                montoTotal: Number.isFinite(montoTotal) ? montoTotal : 0,
+                montoAbonado: Number.isFinite(montoAbonado) ? montoAbonado : 0,
+                vuelto: Number.isFinite(vuelto) ? vuelto : 0,
                 esEfectivo: esEfectivo,
                 esIngreso: esIngreso,
                 saldo: 0 // Se calculará después

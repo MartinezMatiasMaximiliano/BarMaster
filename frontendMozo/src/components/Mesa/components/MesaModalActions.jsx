@@ -15,7 +15,17 @@ export const MesaModalActions = ({
     onAgregarPedidos,
     onClose
 }) => (
-    <DialogActions sx={{ px: 3, py: 2, bgcolor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+    <DialogActions sx={{
+        px: 3,
+        py: 2,
+        bgcolor: (theme) => theme.palette.mode === 'light'
+            ? theme.palette.grey[200]
+            : theme.palette.background.paper,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 1.5
+    }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
             <Button
                 variant="contained"

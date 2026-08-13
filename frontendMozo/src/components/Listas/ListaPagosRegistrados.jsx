@@ -65,7 +65,7 @@ function TicketAccordion({ ticket, index, surfaceVariant = false }) {
                 boxShadow: surfaceVariant ? 'none' : '0 1px 4px rgba(0,0,0,0.06)',
                 border: surfaceVariant ? 0 : '1px solid',
                 borderColor: surfaceVariant ? 'transparent' : 'divider',
-                bgcolor: surfaceVariant ? '#ffffff' : 'background.paper',
+                bgcolor: 'background.paper',
                 '&:before': { display: 'none' },
                 overflow: 'hidden',
             }}
@@ -76,8 +76,8 @@ function TicketAccordion({ ticket, index, surfaceVariant = false }) {
             >
                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%', mr: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <ReceiptIcon sx={{ fontSize: '0.95rem', color: 'success.main' }} />
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'success.main', lineHeight: 1 }}>
+                        <ReceiptIcon sx={{ fontSize: '0.95rem', color: 'success.dark' }} />
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'success.dark', lineHeight: 1 }}>
                             Pago #{index + 1}
                         </Typography>
                     </Stack>
@@ -93,7 +93,7 @@ function TicketAccordion({ ticket, index, surfaceVariant = false }) {
                 </Stack>
             </AccordionSummary>
             <AccordionDetails sx={{ px: 2, pt: surfaceVariant ? 0.5 : 0, pb: 1.5 }}>
-                <Box sx={{ maxHeight: 200, overflowY: 'auto', bgcolor: surfaceVariant ? '#f7f9fc' : 'transparent', borderRadius: 1.5, p: surfaceVariant ? 1 : 0 }}>
+                <Box sx={{ maxHeight: 200, overflowY: 'auto', bgcolor: surfaceVariant ? 'primary.light' : 'transparent', borderRadius: 1.5, p: surfaceVariant ? 1 : 0 }}>
                     {Object.entries(ticket.resumen).map(([nombre, data]) => (
                         <Box
                             key={nombre}
@@ -127,7 +127,7 @@ function ListaPagosRegistrados({ productos, surfaceVariant = false }) {
                         flex: '1 1 auto',
                         minHeight: 0,
                         overflowY: 'auto',
-                        bgcolor: '#f7f9fc',
+                        bgcolor: 'primary.light',
                         borderRadius: 2,
                         p: 1.25
                     })

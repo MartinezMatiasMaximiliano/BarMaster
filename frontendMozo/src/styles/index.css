@@ -1,0 +1,24 @@
+html,
+body,
+#root {
+    min-height: 100%;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+    font-family: var(--bm-font-primary, "Stack Sans Headline", Arial, sans-serif);
+}
+
+body {
+    color: var(--bm-grey-01, #191919);
+    background: var(--bm-grey-06, #ededed);
+    font-weight: 200;
+}
+
+.bm-texto-acento {
+    font-family: var(--bm-font-accent, Domine, Georgia, serif);
+    font-weight: 400;
+}

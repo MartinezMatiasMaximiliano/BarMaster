@@ -15,8 +15,22 @@ export const MesaProductosPanel = ({
     onCategoriaChange,
     onAgregarProducto
 }) => (
-    <Box sx={{ minHeight: 0, bgcolor: '#fbfcfe', borderRadius: 2, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Box sx={{ px: 2, pt: 2, pb: 1, flexShrink: 0 }}>
+    <Box sx={{
+        minHeight: 0,
+        bgcolor: (theme) => theme.palette.mode === 'light'
+            ? theme.palette.grey[200]
+            : theme.palette.background.paper,
+        borderRadius: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+    }}>
+        <Box sx={{
+            px: 2,
+            pt: 2,
+            pb: 1,
+            flexShrink: 0
+        }}>
             <Stack direction="row" spacing={1} alignItems="center">
                 <AddShoppingCartIcon color="success" />
                 <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>

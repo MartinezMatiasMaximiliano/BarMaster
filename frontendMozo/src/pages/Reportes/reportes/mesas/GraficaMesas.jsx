@@ -73,7 +73,7 @@ const GraficaMesas = ({ datosMesas }) => {
                             <XAxis dataKey="nombre" angle={-45} textAnchor="end" height={100} />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Bar dataKey="ingresos" fill="#1976d2" />
+                            <Bar dataKey="ingresos" fill="var(--bm-primary-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -90,7 +90,7 @@ const GraficaMesas = ({ datosMesas }) => {
                             <XAxis dataKey="nombre" angle={-45} textAnchor="end" height={100} />
                             <YAxis />
                             <Tooltip />
-                            <Bar dataKey="cantidadVisitas" fill="#388e3c" />
+                            <Bar dataKey="cantidadVisitas" fill="var(--bm-success-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -127,7 +127,7 @@ const GraficaMesas = ({ datosMesas }) => {
                                     );
                                 }}
                             />
-                            <Bar dataKey="pctParticipacion" fill="#0288d1" name="% participación" />
+                            <Bar dataKey="pctParticipacion" fill="var(--bm-primary)" name="% participación" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -144,7 +144,7 @@ const GraficaMesas = ({ datosMesas }) => {
                             <XAxis dataKey="nombre" angle={-45} textAnchor="end" height={100} />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Bar dataKey="promedioPorVisita" fill="#7b1fa2" name="Promedio por visita" />
+                            <Bar dataKey="promedioPorVisita" fill="var(--bm-secondary-dark)" name="Promedio por visita" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>

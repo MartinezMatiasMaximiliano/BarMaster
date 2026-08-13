@@ -5,7 +5,7 @@ import ListaPagosRegistrados from './ListaPagosRegistrados';
 import ListaResumen from './ListaResumen';
 
 const mensajeVacio = (titulo, surfaceVariant = false) => surfaceVariant ? (
-    <Box sx={{ bgcolor: '#f7f9fc', borderRadius: 2, p: 2 }}>
+    <Box sx={{ bgcolor: 'primary.light', borderRadius: 2, p: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 800 }}>
             {titulo}
         </Typography>

@@ -107,7 +107,7 @@ function Modal_Movimiento_CuentaCorriente(props) {
                                         slotProps={{
                                             inputLabel: { shrink: true },
                                             formHelperText: vuelto !== null && !errors.montoAbonado
-                                                ? { sx: { color: 'success.main' } }
+                                                ? { sx: { color: 'success.dark' } }
                                                 : undefined
                                         }}
                                         fullWidth

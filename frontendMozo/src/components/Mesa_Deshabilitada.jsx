@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Button, Typography } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBurger } from '@fortawesome/free-solid-svg-icons';
 import { Button as BsButton, Modal } from 'react-bootstrap';
 import Lista_Items from './Listas/Lista_Items';
 import Alert from '@mui/material/Alert';
+
+const COLOR_MESA_OTRO_MOZO = '#cfe0ff';
 
 export default function Mesa_Deshabilitada(props) {
     const { estilo, deshabilitadaPorCaja, datos_mesa, visitaMesa, simpleStyle = false } = props;
@@ -31,7 +31,7 @@ export default function Mesa_Deshabilitada(props) {
         : 0;
     const datosMozo = datos_mesa?.visita?.mozo || null;
 
-    // Mismo aspecto que MesaButton (MUI): azul siempre, mismo layout
+    // Mismo layout que MesaButton, con color propio para mesas atendidas por otro mozo.
     const botonSx = simpleStyle
         ? {
             width: '100%',
@@ -42,6 +42,9 @@ export default function Mesa_Deshabilitada(props) {
             fontSize: '0.75rem',
             textTransform: 'none',
             ...estilo,
+            backgroundColor: COLOR_MESA_OTRO_MOZO,
+            color: '#191919',
+            '&:hover': { backgroundColor: COLOR_MESA_OTRO_MOZO },
         }
         : {
             ...estilo,
@@ -53,7 +56,13 @@ export default function Mesa_Deshabilitada(props) {
             flexDirection: 'column',
             gap: 0.5,
             textTransform: 'none',
-            '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 },
+            backgroundColor: COLOR_MESA_OTRO_MOZO,
+            color: '#191919',
+            '&:hover': {
+                backgroundColor: COLOR_MESA_OTRO_MOZO,
+                transform: 'translateY(-2px)',
+                boxShadow: 4,
+            },
             transition: 'all 0.2s ease-in-out',
         };
 
@@ -70,7 +79,11 @@ export default function Mesa_Deshabilitada(props) {
                     <>Mesa {datos_mesa.nombre}</>
                 ) : (
                     <>
-                        <FontAwesomeIcon icon={faBurger} style={{ fontSize: '1.5rem' }} />
+                        <img
+                            src="/iconos/mesa_ocupada_blanca.png"
+                            alt="Mesa ocupada"
+                            style={{ width: 49.68, height: 49.68, objectFit: 'contain' }}
+                        />
                         <Typography variant="body2" component="span" sx={{ fontWeight: 500 }}>
                             Mesa {datos_mesa.nombre}
                         </Typography>

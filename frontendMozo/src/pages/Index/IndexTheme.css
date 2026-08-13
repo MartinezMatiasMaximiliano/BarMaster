@@ -1,0 +1,47 @@
+.bm-index-theme {
+    background-color: var(--bm-grey-07, #F9F9F9);
+    color: var(--bm-grey-01, #191919);
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.bm-index-host {
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.bm-index-host--light {
+    background-color: var(--bm-grey-07, #F9F9F9);
+}
+
+.bm-index-host--dark {
+    background-color: var(--bm-grey-01, #191919);
+}
+
+.bm-index-theme--dark {
+    background-color: var(--bm-grey-01, #191919);
+    color: var(--bm-grey-07, #F9F9F9);
+}
+
+.bm-index-theme--dark .form-label {
+    color: var(--bm-grey-07, #F9F9F9);
+}
+
+.bm-index-theme--dark .form-control {
+    color: var(--bm-grey-07, #F9F9F9);
+    background-color: var(--bm-grey-02, #343434);
+    border-color: var(--bm-grey-03, #5f5f5f);
+}
+
+.bm-index-theme--dark .form-control:focus {
+    border-color: var(--bm-primary, #7098FA);
+    box-shadow: 0 0 0 0.2rem rgba(112, 152, 250, 0.25);
+}
+
+.bm-index-theme--dark .text-muted {
+    color: var(--bm-primary-light, #cfe0ff) !important;
+}
+
+.bm-index-theme .alert-warning {
+    color: var(--bm-grey-01, #191919);
+    background-color: var(--bm-warning-light, #fffa57);
+    border-color: var(--bm-warning, #ffe443);
+}

@@ -26,7 +26,7 @@ const FilaMonto = ({ etiqueta, monto, destacado = false, color = 'text.primary' 
 
 export const ConfirmacionCierre = ({ datos, guardando, onCancelar, onConfirmar }) => {
     const diferencia = datos?.diferencia ?? 0;
-    const colorDiferencia = diferencia === 0 ? 'text.primary' : diferencia > 0 ? 'success.main' : 'error.main';
+    const colorDiferencia = diferencia === 0 ? 'text.primary' : diferencia > 0 ? 'success.dark' : 'error.dark';
 
     return (
         <Dialog

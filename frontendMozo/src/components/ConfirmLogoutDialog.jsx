@@ -57,7 +57,13 @@ export const ConfirmLogoutDialog = ({
                     variant="contained"
                     color="error"
                     startIcon={<LogoutIcon />}
-                    sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
+                    sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        px: 3,
+                        color: 'grey.50',
+                        '& .MuiSvgIcon-root': { color: 'grey.50' }
+                    }}
                 >
                     Salir
                 </Button>

@@ -94,7 +94,7 @@ export default function BotonCobrarPedido({
                     >
                         <Typography
                             variant="body2"
-                            fontWeight={600}
+                            fontWeight={200}
                             component="span"
                             tabIndex={0}
                             sx={{ cursor: 'help' }}
@@ -106,7 +106,7 @@ export default function BotonCobrarPedido({
                         </Typography>
                     </Tooltip>
                 ) : (
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" fontWeight={200}>
                     {metodoPagoTexto}
                 </Typography>
                 )}

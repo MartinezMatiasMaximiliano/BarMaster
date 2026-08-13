@@ -267,7 +267,7 @@ function Distribucion_mesas() {
                             <Box
                                 key={item.i}
                                 sx={{
-                                    bgcolor: 'primary.main',
+                                    bgcolor: 'primary.dark',
                                     color: 'primary.contrastText',
                                     display: 'flex',
                                     alignItems: 'center',

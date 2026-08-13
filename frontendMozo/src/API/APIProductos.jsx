@@ -11,6 +11,24 @@ function normalizarDecimal(valor, fallback = undefined) {
     return Number.isNaN(numero) ? fallback : numero;
 }
 
+function normalizarProducto(producto) {
+    if (!producto) return producto;
+
+    return {
+        ...producto,
+        // La API expone actualmente PrecioNeto/porcentajeIVA, mientras que las
+        // vistas y cálculos de comandas consumen la propiedad histórica `precio`.
+        precio: normalizarDecimal(
+            producto.precio ?? producto.precioNeto ?? producto.Precio ?? producto.PrecioNeto,
+            0
+        ),
+        porcentajeIVA: normalizarDecimal(
+            producto.porcentajeIVA ?? producto.PorcentajeIVA,
+            0
+        ),
+    };
+}
+
 class CrearProductoDTO {
     constructor(nombre, descripcion, precio, activo, listaIdCategorias, imagen, codigo, costoProduccion) {
         this.Codigo = codigo;
@@ -27,7 +45,9 @@ class CrearProductoDTO {
 export async function BuscarTodosLosProductos() {
     try {
         const response = await api.get('Productos/');
-        return response.data;
+        return Array.isArray(response.data)
+            ? response.data.map(normalizarProducto)
+            : [];
     } catch (error) {
         console.error("Error:", construirError(error, 'Error al buscar productos'));
     }
@@ -36,7 +56,7 @@ export async function BuscarTodosLosProductos() {
 export async function BuscarUnProducto(Id) {
     try {
         const response = await api.get('Productos/' + Id);
-        return response.data;
+        return normalizarProducto(response.data);
     } catch (error) {
         console.error("Error:", construirError(error, 'Error al buscar el producto'));
     }

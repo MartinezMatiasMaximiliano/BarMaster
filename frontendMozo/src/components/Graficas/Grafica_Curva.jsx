@@ -12,7 +12,7 @@ const GraficaGananciasPorFecha = ({ data, calcularDatos }) => {
                     <XAxis dataKey={dataGanancias.length > 0 ? Object.keys(dataGanancias[0])[0] : null} tick={{ fontSize: 12 }} />
                     <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
                     <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-                    <Line type="monotone" dataKey={dataGanancias.length > 0 ? Object.keys(dataGanancias[0])[1] : null} stroke="#4CAF50" strokeWidth={2} dot={true} />
+                    <Line type="monotone" dataKey={dataGanancias.length > 0 ? Object.keys(dataGanancias[0])[1] : null} stroke="var(--bm-success-dark)" strokeWidth={2} dot={true} />
                 </LineChart>
             </ResponsiveContainer>
         </div>
