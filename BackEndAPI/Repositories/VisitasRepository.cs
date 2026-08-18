@@ -22,6 +22,7 @@ namespace BackEndAPI.Repositories
         {
             return await db.Visitas
                 .Include(v => v.Mesa)
+                .Include(v => v.Caja)
                 .Include(v => v.Productos)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }

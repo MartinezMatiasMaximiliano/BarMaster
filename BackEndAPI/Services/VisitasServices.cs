@@ -2,6 +2,7 @@ using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
+using BackEndAPI.Tenancy.Services;
 using System.Runtime.CompilerServices;
 using static QuestPDF.Helpers.Colors;
 
@@ -12,11 +13,20 @@ namespace BackEndAPI.Services
         private readonly IVisitasRepository _visitasRepository;
         private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
         private readonly IProductosRepository _productosRepository;
-        public VisitasServices(IVisitasRepository repository, IProductosRepository productosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository)
+        private readonly IStockServices _stockServices;
+        private readonly IDatabaseTransactionManager _transactionManager;
+        public VisitasServices(
+            IVisitasRepository repository,
+            IProductosRepository productosRepository,
+            IDeliveryTakeawayRepository deliveryTakeawayRepository,
+            IStockServices stockServices,
+            IDatabaseTransactionManager transactionManager)
         {
             _visitasRepository = repository;
             _productosRepository = productosRepository;
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
+            _stockServices = stockServices;
+            _transactionManager = transactionManager;
         }
 
         public async Task<Visita> BuscarVisitaPorId(Guid IdVisita)
@@ -28,7 +38,10 @@ namespace BackEndAPI.Services
             }
             return visita;
         }
-        public async Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> productos, Guid IdVisita)
+        public Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> productos, Guid IdVisita) =>
+            _transactionManager.ExecuteAsync(() => AgregarProductosCoreAsync(productos, IdVisita));
+
+        private async Task<Visita> AgregarProductosCoreAsync(ICollection<AgregarProductoAVisita> productos, Guid IdVisita)
         {
             decimal totalAgregado = 0;
             if (productos == null || productos.Count <= 0) throw new Exception("Lista de productos vacia");
@@ -69,6 +82,14 @@ namespace BackEndAPI.Services
                 }
             }
 
+            var cantidadesStock = productos
+                .GroupBy(x => x.IdProducto)
+                .ToDictionary(x => x.Key, x => x.Sum(y => y.Cantidad));
+            await _stockServices.DescontarVentaAsync(
+                visita.Caja.IdSucursal,
+                cantidadesStock,
+                IdVisita,
+                CanalesMovimientoStock.DesdeOrigen(visita.Origen));
 
             if (esDeliveryTakeaway)
             {
@@ -105,7 +126,10 @@ namespace BackEndAPI.Services
             return visita.Productos?.Sum(p => p.PrecioDelMomento) ?? 0;
         }
 
-        public async Task<bool> EliminarProductos(Guid IdVisita, ICollection<int> IdsProductos)
+        public Task<bool> EliminarProductos(Guid IdVisita, ICollection<int> IdsProductos) =>
+            _transactionManager.ExecuteAsync(() => EliminarProductosCoreAsync(IdVisita, IdsProductos));
+
+        private async Task<bool> EliminarProductosCoreAsync(Guid IdVisita, ICollection<int> IdsProductos)
         {
             if (IdVisita == Guid.Empty) throw new Exception("El IdVisita no puede estar vacío");
             if (IdsProductos == null || IdsProductos.Count == 0) throw new Exception("Lista de IDs de productos vacía");
@@ -122,6 +146,16 @@ namespace BackEndAPI.Services
 
             var productosAEliminar = visita.Productos.Where(p => IdsProductos.Contains(p.Id)).ToList();
             var totalAEliminar = productosAEliminar.Sum(p => p.PrecioDelMomento);
+            var cantidadesStock = productosAEliminar
+                .Where(x => x.IdProducto.HasValue)
+                .GroupBy(x => x.IdProducto!.Value)
+                .ToDictionary(x => x.Key, x => x.Count());
+
+            await _stockServices.ReponerVentaAsync(
+                visita.Caja.IdSucursal,
+                cantidadesStock,
+                IdVisita,
+                CanalesMovimientoStock.DesdeOrigen(visita.Origen));
 
             if (esDeliveryTakeaway)
             {
@@ -155,5 +189,3 @@ namespace BackEndAPI.Services
         }
     }
 }
-
-

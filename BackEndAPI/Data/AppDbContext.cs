@@ -40,6 +40,8 @@ namespace BackEndAPI.Data
         public DbSet<TipoEnvio> TipoEnvios => Set<TipoEnvio>();
         public DbSet<FacturaElectronica> FacturasElectronicas => Set<FacturaElectronica>();
         public DbSet<FETokenAuth> FETokenAuths => Set<FETokenAuth>();
+        public DbSet<StockProductoSucursal> StockProductosSucursales => Set<StockProductoSucursal>();
+        public DbSet<MovimientoStock> MovimientosStock => Set<MovimientoStock>();
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -270,6 +272,34 @@ namespace BackEndAPI.Data
                 .HasMany(p => p.Categorias)
                 .WithMany(c => c.Productos);
 
+            modelBuilder.Entity<StockProductoSucursal>(entity =>
+            {
+                entity.HasIndex(x => new { x.IdProducto, x.IdSucursal }).IsUnique();
+                entity.HasOne(x => x.Producto)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdProducto)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(x => x.Sucursal)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdSucursal)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<MovimientoStock>(entity =>
+            {
+                entity.ToTable(table => table.HasCheckConstraint(
+                    "CK_MovimientosStock_Canal",
+                    "\"Canal\" IN (0, 1, 2, 3)"));
+                entity.HasOne(x => x.StockProductoSucursal)
+                    .WithMany(x => x.Movimientos)
+                    .HasForeignKey(x => x.IdStockProductoSucursal)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(x => x.Visita)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdVisita)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
             modelBuilder.Entity<Caja>()
                 .HasIndex(c => new { c.IdSucursal, c.FechaCierre });
 
@@ -378,4 +408,3 @@ namespace BackEndAPI.Data
         }
     }
 }
-
