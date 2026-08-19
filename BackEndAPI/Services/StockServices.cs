@@ -110,7 +110,10 @@ namespace BackEndAPI.Services
                 StockPosterior = movimiento.StockPosterior,
                 Fecha = movimiento.Fecha,
                 Motivo = movimiento.Motivo,
-                IdVisita = movimiento.IdVisita
+                IdVisita = movimiento.IdVisita,
+                IdMesa = movimiento.IdMesa,
+                NombreMesa = movimiento.NombreMesa,
+                NombreMozo = movimiento.NombreMozo
             };
         }
     }

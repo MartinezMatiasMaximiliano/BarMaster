@@ -13,5 +13,8 @@ namespace BackEndAPI.DTOs.Response
         public DateTime Fecha { get; set; }
         public string? Motivo { get; set; }
         public Guid? IdVisita { get; set; }
+        public Guid? IdMesa { get; set; }
+        public string? NombreMesa { get; set; }
+        public string? NombreMozo { get; set; }
     }
 }

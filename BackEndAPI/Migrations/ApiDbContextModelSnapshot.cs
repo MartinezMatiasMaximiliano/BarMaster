@@ -486,10 +486,19 @@ namespace BackEndAPI.Migrations
                     b.Property<Guid>("IdStockProductoSucursal")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("IdMesa")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("IdVisita")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Motivo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NombreMesa")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NombreMozo")
                         .HasColumnType("text");
 
                     b.Property<int>("StockAnterior")
@@ -506,11 +515,15 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdStockProductoSucursal");
 
+                    b.HasIndex("IdMesa");
+
                     b.HasIndex("IdVisita");
 
                     b.ToTable("MovimientosStock", t =>
                         {
                             t.HasCheckConstraint("CK_MovimientosStock_Canal", "\"Canal\" IN (0, 1, 2, 3)");
+
+                            t.HasCheckConstraint("CK_MovimientosStock_ContextoCanal", "\"Canal\" = 1 OR (\"IdMesa\" IS NULL AND \"NombreMesa\" IS NULL AND \"NombreMozo\" IS NULL)");
                         });
                 });
 
@@ -1294,6 +1307,11 @@ namespace BackEndAPI.Migrations
 
             modelBuilder.Entity("BackEndAPI.Models.MovimientoStock", b =>
                 {
+                    b.HasOne("BackEndAPI.Models.Mesa", "Mesa")
+                        .WithMany()
+                        .HasForeignKey("IdMesa")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BackEndAPI.Models.StockProductoSucursal", "StockProductoSucursal")
                         .WithMany("Movimientos")
                         .HasForeignKey("IdStockProductoSucursal")
@@ -1306,6 +1324,8 @@ namespace BackEndAPI.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("StockProductoSucursal");
+
+                    b.Navigation("Mesa");
 
                     b.Navigation("Visita");
                 });
