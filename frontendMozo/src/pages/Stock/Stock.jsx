@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Chip, Container, Stack, Tooltip } from '@mui/material';
+import { Container } from 'react-bootstrap';
+import { Button, Stack, Tooltip } from '@mui/material';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import Tabla from '../../components/Tabla/Tabla';
@@ -9,18 +10,38 @@ import { LoadingWrapper } from '../../components/common/LoadingWrapper';
 import { useSnackbar } from '../../hooks/useSnackbar';
 import { useStock } from './hooks/useStock';
 import StockDialog from './components/StockDialog';
+import MovimientosStockDrawer from './components/MovimientosStockDrawer';
 
-const estadoStock = (fila) => {
-    if (!fila.configurado) return { label: 'Sin configurar', color: 'warning' };
-    if (!fila.controlaStock) return { label: 'Sin control', color: 'default' };
-    if (fila.sinStock) return { label: 'Sin stock', color: 'error' };
-    if (fila.stockBajo) return { label: 'Stock bajo', color: 'warning' };
-    return { label: 'Disponible', color: 'success' };
+const GRUPOS_STOCK = [
+    {
+        key: 'critico',
+        label: 'Stock bajo o sin stock',
+    },
+    {
+        key: 'suficiente',
+        label: 'Stock suficiente',
+    },
+    {
+        key: 'sinSeguimiento',
+        label: 'Sin seguimiento de stock',
+    },
+];
+
+const obtenerGrupoStock = (fila) => {
+    if (fila.configurado && fila.controlaStock && (fila.sinStock || fila.stockBajo)) {
+        return 'critico';
+    }
+    if (fila.configurado && fila.controlaStock) {
+        return 'suficiente';
+    }
+    return 'sinSeguimiento';
 };
 
-const configuradosPrimero = (filas) => [...filas].sort(
-    (a, b) => Number(b.configurado) - Number(a.configurado)
+const agruparPorPrioridad = (filas) => GRUPOS_STOCK.flatMap(
+    (grupo) => filas.filter((fila) => obtenerGrupoStock(fila) === grupo.key)
 );
+
+const obtenerClaveGrupoStock = (fila) => fila.grupoStock;
 
 export default function Stock() {
     const { stock, cargando, error, cargar, guardarConfiguracion, registrarMovimiento } = useStock();
@@ -28,11 +49,11 @@ export default function Stock() {
     const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [dialogo, setDialogo] = useState({ abierto: false, tipo: null, producto: null });
+    const [productoMovimientos, setProductoMovimientos] = useState(null);
 
-    const filasStock = useMemo(() => configuradosPrimero(stock.map((fila) => ({
+    const filasStock = useMemo(() => agruparPorPrioridad(stock.map((fila) => ({
         ...fila,
-        ordenConfiguracion: fila.configurado ? 0 : 1,
-        estado: estadoStock(fila).label,
+        grupoStock: obtenerGrupoStock(fila),
     }))), [stock]);
 
     useEffect(() => {
@@ -45,7 +66,7 @@ export default function Stock() {
     }, [filasStock]);
 
     useEffect(() => {
-        setFilasOrdenadas(configuradosPrimero(filasFiltradas));
+        setFilasOrdenadas(agruparPorPrioridad(filasFiltradas));
     }, [filasFiltradas]);
 
     const abrirDialogo = (tipo, producto) => setDialogo({ abierto: true, tipo, producto });
@@ -64,16 +85,23 @@ export default function Stock() {
     const columnas = useMemo(() => [
         { key: 'codigoProducto', label: 'Código' },
         { key: 'nombreProducto', label: 'Producto' },
-        {
-            key: 'estado',
-            label: 'Estado',
-            render: (fila) => {
-                const estado = estadoStock(fila);
-                return <Chip label={estado.label} color={estado.color} size="small" />;
-            },
-        },
         { key: 'cantidadActual', label: 'Cantidad actual', align: 'right' },
         { key: 'cantidadMinima', label: 'Cantidad mínima', align: 'right' },
+        {
+            key: '__movimientos',
+            label: 'Movimientos',
+            align: 'right',
+            filtrable: false,
+            render: (fila) => (
+                <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => setProductoMovimientos(fila)}
+                >
+                    Ver
+                </Button>
+            ),
+        },
         {
             key: '__acciones',
             label: 'Acciones',
@@ -106,10 +134,8 @@ export default function Stock() {
     ], []);
 
     const opcionesOrdenamiento = useMemo(() => ([
-        { label: 'Configuración', campo: 'ordenConfiguracion', tipoOrden: 'numero' },
-        { label: 'Código', campo: 'codigoProducto', tipoOrden: 'texto' },
         { label: 'Producto', campo: 'nombreProducto', tipoOrden: 'texto' },
-        { label: 'Estado', campo: 'estado', tipoOrden: 'texto' },
+        { label: 'Código', campo: 'codigoProducto', tipoOrden: 'texto' },
         { label: 'Cantidad actual', campo: 'cantidadActual', tipoOrden: 'numero' },
         { label: 'Cantidad mínima', campo: 'cantidadMinima', tipoOrden: 'numero' },
     ]), []);
@@ -117,7 +143,6 @@ export default function Stock() {
     const configuracionFiltros = useMemo(() => ({
         codigoProducto: { tipo: 'text' },
         nombreProducto: { tipo: 'text' },
-        estado: { tipo: 'select' },
         cantidadActual: { tipo: 'number' },
         cantidadMinima: { tipo: 'number' },
     }), []);
@@ -132,6 +157,8 @@ export default function Stock() {
                 columnas={columnas}
                 onRefresh={cargar}
                 mostrarExportacion={false}
+                paginacion={false}
+                maxHeightTabla={{ xs: '60vh', md: 600 }}
                 renderFiltros={() => (
                     <Filtros
                         filas={filasStock}
@@ -144,15 +171,21 @@ export default function Stock() {
                     <Ordenar
                         filas={filasFiltradas}
                         opcionesOrdenamiento={opcionesOrdenamiento}
-                        onOrdenar={setFilasOrdenadas}
+                        onOrdenar={(filas) => setFilasOrdenadas(agruparPorPrioridad(filas))}
                     />
                 )}
-                getRowSx={(fila) => fila.stockBajo ? { bgcolor: 'warning.50' } : {}}
+                grupos={GRUPOS_STOCK}
+                getGrupoFila={obtenerClaveGrupoStock}
             />
             <StockDialog
                 {...dialogo}
                 onCerrar={cerrarDialogo}
                 onGuardar={guardar}
+            />
+            <MovimientosStockDrawer
+                open={Boolean(productoMovimientos)}
+                producto={productoMovimientos}
+                onClose={() => setProductoMovimientos(null)}
             />
             <SnackbarComponent />
         </Container>

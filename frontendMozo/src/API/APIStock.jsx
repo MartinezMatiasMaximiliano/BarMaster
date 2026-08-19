@@ -10,6 +10,15 @@ export async function BuscarStock() {
     }
 }
 
+export async function BuscarMovimientosStock(idProducto) {
+    try {
+        const response = await api.get(`Stock/movimientos/${idProducto}`);
+        return response.data;
+    } catch (error) {
+        throw construirError(error, 'Error al buscar los movimientos de stock');
+    }
+}
+
 export async function ConfigurarStock(idProducto, configuracion) {
     try {
         const response = await api.put(`Stock/${idProducto}`, {

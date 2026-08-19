@@ -12,10 +12,11 @@ import {
 import SouthOutlinedIcon from '@mui/icons-material/SouthOutlined';
 import { ObtenerHistorialCaja } from '../../API/APICaja';
 import Tabla from '../../components/Tabla/Tabla';
+import BuscadorTabla from '../../components/Tabla/BuscadorTabla';
 import { Movimientos } from '../Caja/components/Movimientos';
 import { useCajaHistorial } from '../Caja/hooks/useCajaHistorial';
 import { currencyFormatter, formatearFechaCompleta, obtenerMensajeError } from '../Caja/utils/constants';
-import { estaFechaEnRango, tieneFiltroHistorialActivo } from './utils';
+import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
 
 export default function HistorialTabCajas({ fechaInicio, fechaFin, modoHistorico }) {
     const [historialCompleto, setHistorialCompleto] = useState([]);
@@ -23,6 +24,7 @@ export default function HistorialTabCajas({ fechaInicio, fechaFin, modoHistorico
     const [error, setError] = useState('');
     const [datosCargados, setDatosCargados] = useState(false);
     const [cajaSeleccionada, setCajaSeleccionada] = useState(null);
+    const [textoBusqueda, setTextoBusqueda] = useState('');
 
     const {
         movimientos,
@@ -95,7 +97,7 @@ export default function HistorialTabCajas({ fechaInicio, fechaFin, modoHistorico
             return [];
         }
 
-        return historialCompleto.filter((caja) => {
+        const filtradosPorFecha = historialCompleto.filter((caja) => {
             if (modoHistorico) {
                 return true;
             }
@@ -103,7 +105,13 @@ export default function HistorialTabCajas({ fechaInicio, fechaFin, modoHistorico
             const fechaArqueo = caja.fechaCierre ?? caja.fechaApertura;
             return estaFechaEnRango(fechaArqueo, fechaInicio, fechaFin);
         });
-    }, [historialCompleto, filtroActivo, modoHistorico, fechaInicio, fechaFin]);
+
+        return filtrarPorBusqueda(
+            filtradosPorFecha,
+            textoBusqueda,
+            ['id', 'fechaApertura', 'horaApertura', 'fechaCierre', 'horaCierre', 'montoInicial', 'montoFinal', 'diferencia']
+        );
+    }, [historialCompleto, filtroActivo, modoHistorico, fechaInicio, fechaFin, textoBusqueda]);
 
     const handleSeleccionArqueo = (arqueo) => {
         if (cajaSeleccionada?.id === arqueo.id) {
@@ -183,7 +191,7 @@ export default function HistorialTabCajas({ fechaInicio, fechaFin, modoHistorico
             {!loadingHistorial && !error && !filtroActivo && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                        Seleccioná un rango de fechas o presioná "Histórico" para ver los arqueos.
+                        {'Seleccioná un rango de fechas o presioná "Histórico" para ver los arqueos.'}
                     </Typography>
                 </Box>
             )}
@@ -196,6 +204,13 @@ export default function HistorialTabCajas({ fechaInicio, fechaFin, modoHistorico
                         paginacion={true}
                         rowsPerPage={5}
                         ajustarAlturaAlContenido={true}
+                        renderBuscar={() => (
+                            <BuscadorTabla
+                                value={textoBusqueda}
+                                onChange={setTextoBusqueda}
+                                placeholder="Fecha, monto, diferencia..."
+                            />
+                        )}
                         onRefresh={cargarHistorial}
                         onRowClick={handleSeleccionArqueo}
                         getRowSx={(fila) => (

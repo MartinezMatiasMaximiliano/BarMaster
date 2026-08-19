@@ -3,8 +3,9 @@ import { Box, CircularProgress, Alert, Chip, Typography } from '@mui/material';
 import { BuscarTodasLasReservas } from '../../API/APIReservas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
+import BuscadorTabla from '../../components/Tabla/BuscadorTabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
-import { estaFechaEnRango, tieneFiltroHistorialActivo } from './utils';
+import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
 const COLORES_ESTADO_RESERVA = { 1: 'warning', 2: 'info', 3: 'error', 4: 'success' };
 
 export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistorico }) {
@@ -13,6 +14,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
     const [error, setError] = useState('');
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [datosCargados, setDatosCargados] = useState(false);
+    const [textoBusqueda, setTextoBusqueda] = useState('');
     const filtroActivo = tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico });
 
     React.useEffect(() => {
@@ -61,7 +63,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
             );
         }
 
-        return filtradas.map((r) => {
+        const filasMapeadas = filtradas.map((r) => {
             const estadoObj = r.estado ?? r.Estado;
             const idEstado = estadoObj?.id ?? estadoObj?.Id ?? r.IdEstadoReserva ?? r.idEstadoReserva;
             const nombreEstado = estadoObj?.nombre ?? estadoObj?.Nombre ?? r.estado ?? r.Estado ?? '-';
@@ -80,7 +82,13 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
                 tipoPago: tipoPagoStr || '-',
             };
         });
-    }, [reservas, fechaInicio, fechaFin, modoHistorico]);
+
+        return filtrarPorBusqueda(
+            filasMapeadas,
+            textoBusqueda,
+            ['id', 'fechaHora', 'nombreReserva', 'cantidadDePersonas', 'estado', 'tipoPago']
+        );
+    }, [reservas, fechaInicio, fechaFin, modoHistorico, textoBusqueda]);
 
     React.useEffect(() => {
         setFilasOrdenadas(filas);
@@ -124,7 +132,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
             {!loading && !error && !filtroActivo && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                        Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.
+                        {'Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.'}
                     </Typography>
                 </Box>
             )}
@@ -137,6 +145,13 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
                         paginacion={true}
                         rowsPerPage={10}
                         mostrarExportacion={true}
+                        renderBuscar={() => (
+                            <BuscadorTabla
+                                value={textoBusqueda}
+                                onChange={setTextoBusqueda}
+                                placeholder="Nombre, estado, pago..."
+                            />
+                        )}
                         renderOrdenar={() => (
                             <Ordenar
                                 filas={filas}

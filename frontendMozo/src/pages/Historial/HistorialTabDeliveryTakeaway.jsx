@@ -2,16 +2,18 @@ import React, { useState, useMemo } from 'react';
 import { Box, CircularProgress, Alert, Typography } from '@mui/material';
 import { esDelivery, esTakeaway, GetDeliveryTakeaway, normalizarDeliveryTakeaway } from '../../API/APIDeliveryTakeaway';
 import Tabla from '../../components/Tabla/Tabla';
+import BuscadorTabla from '../../components/Tabla/BuscadorTabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
 import Filtros from '../../components/Filtros/Filtros';
-import { estaFechaEnRango, tieneFiltroHistorialActivo } from './utils';
+import IdTruncado from '../../components/common/IdTruncado';
+import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
 
 export function mapearDeliveryTakeawayARow(item) {
     const normalizado = normalizarDeliveryTakeaway(item);
     const fecha = normalizado.fechaHora ?? '';
     const fechaStr = typeof fecha === 'string' ? fecha.substring(0, 19).replace('T', ' ') : '-';
     return {
-        id: normalizado.id,
+        id: normalizado.idVisita,
         fechaHora: fechaStr,
         fechaHoraRaw: fecha,
         nombreCliente: (normalizado.cliente ?? '-').toString().trim(),
@@ -35,6 +37,7 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
     const [filasFiltradas, setFilasFiltradas] = useState([]);
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [datosCargados, setDatosCargados] = useState(false);
+    const [textoBusqueda, setTextoBusqueda] = useState('');
     const filtroActivo = tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico });
 
     React.useEffect(() => {
@@ -86,8 +89,12 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
             );
         }
 
-        return rows;
-    }, [datos, tipo, fechaInicio, fechaFin, modoHistorico]);
+        return filtrarPorBusqueda(
+            rows,
+            textoBusqueda,
+            ['id', 'fechaHora', 'nombreCliente', 'direccion', 'telefono', 'indicaciones', 'precioTotal', 'entregado']
+        );
+    }, [datos, tipo, fechaInicio, fechaFin, modoHistorico, textoBusqueda]);
 
     React.useEffect(() => {
         setFilasFiltradas(filas);
@@ -99,6 +106,7 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
     }, [filasFiltradas]);
 
     const opcionesOrden = useMemo(() => [
+        { label: 'Id', campo: 'id', tipoOrden: 'texto' },
         { label: 'Fecha y hora', campo: 'fechaHoraRaw', tipoOrden: 'fecha' },
         { label: 'Cliente', campo: 'nombreCliente', tipoOrden: 'texto' },
         { label: 'Total', campo: 'precioTotal', tipoOrden: 'numero' },
@@ -106,6 +114,7 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
 
     const columnas = useMemo(() => {
         const columnasBase = [
+            { key: 'id', label: 'Id', align: 'left', render: (fila) => <IdTruncado value={fila.id} /> },
             { key: 'fechaHora', label: 'Fecha y hora', align: 'left' },
             { key: 'nombreCliente', label: 'Cliente', align: 'left' },
             { key: 'telefono', label: 'Teléfono', align: 'left' },
@@ -132,7 +141,7 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
             {!loading && !error && !filtroActivo && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                        Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.
+                        {'Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.'}
                     </Typography>
                 </Box>
             )}
@@ -145,6 +154,13 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
                         paginacion={true}
                         rowsPerPage={10}
                         mostrarExportacion={true}
+                        renderBuscar={() => (
+                            <BuscadorTabla
+                                value={textoBusqueda}
+                                onChange={setTextoBusqueda}
+                                placeholder="Id, cliente, teléfono..."
+                            />
+                        )}
                         renderFiltros={() => (
                             <Filtros
                                 filas={filas}

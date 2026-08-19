@@ -17,7 +17,9 @@ import { useMemo } from "react";
  * @param {string} props.titulo - Título de la tabla
  * @param {number} [props.rowsPerPage=10] - Número de filas por página
  * @param {boolean} [props.paginacion=true] - Si la paginación está habilitada
+ * @param {number|string|Object} [props.maxHeightTabla='70vh'] - Alto máximo del área desplazable
  * @param {Function} [props.renderAgregar] - Función para renderizar botón de agregar
+ * @param {Function} [props.renderBuscar] - Función para renderizar el buscador de la tabla
  * @param {Function} [props.renderFiltros] - Función para renderizar filtros
  * @param {Function} [props.renderOrdenar] - Función para renderizar ordenamiento
  * @param {Function} [props.onRefresh] - Callback para refrescar la tabla
@@ -28,9 +30,12 @@ import { useMemo } from "react";
  * @param {Object} [props.exportacionConfig] - Configuración personalizada para exportación (opcional)
  */
 export default function Tabla(props) {
+    const filasTabla = props.filas;
+    const obtenerGrupoFila = props.getGrupoFila;
     const rowsPerPage = props.rowsPerPage || 10;
     const habilitarPaginacion = props.paginacion !== false;
     const minHeightContenido = props.minHeightContenido || '80vh';
+    const maxHeightTabla = props.maxHeightTabla || '70vh';
     const ajustarAlturaAlContenido = props.ajustarAlturaAlContenido === true;
     // Los botones se muestran siempre por defecto, solo se ocultan si mostrarExportacion es explícitamente false
     const mostrarExportacion = props.mostrarExportacion === undefined ? true : props.mostrarExportacion;
@@ -62,6 +67,18 @@ export default function Tabla(props) {
     const filasParaExportar = useMemo(() => {
         return props.filas.filter(fila => !fila.esGrupo);
     }, [props.filas]);
+
+    const conteosGrupos = useMemo(() => {
+        if (!obtenerGrupoFila) return {};
+
+        return filasTabla.reduce((conteos, fila) => {
+            const grupo = obtenerGrupoFila(fila);
+            if (grupo != null) {
+                conteos[grupo] = (conteos[grupo] || 0) + 1;
+            }
+            return conteos;
+        }, {});
+    }, [filasTabla, obtenerGrupoFila]);
 
     // Configurar exportación automática si no se proporcionan funciones personalizadas
     const configExportacion = useMemo(() => {
@@ -99,14 +116,14 @@ export default function Tabla(props) {
                 };
             }
             return {
-                maxHeight: "70vh",
+                maxHeight: maxHeightTabla,
                 overflow: "hidden",
                 flex: "1 1 0",
                 minHeight: 0,
             };
         }
         return {
-            maxHeight: "70vh",
+            maxHeight: maxHeightTabla,
             overflowY: "auto",
         };
     };
@@ -114,6 +131,7 @@ export default function Tabla(props) {
     return (
         <Box sx={{ mt: 2 }}>
             <TablaFiltros 
+                renderBuscar={props.renderBuscar}
                 renderFiltros={props.renderFiltros}
                 renderOrdenar={props.renderOrdenar}
             />
@@ -164,6 +182,9 @@ export default function Tabla(props) {
                                 columnas={props.columnas}
                                 onRowClick={props.onRowClick}
                                 getRowSx={props.getRowSx}
+                                grupos={props.grupos}
+                                getGrupoFila={props.getGrupoFila}
+                                conteosGrupos={conteosGrupos}
                             />
                         </Table>
                     </TableContainer>

@@ -3,9 +3,11 @@ import { Box, CircularProgress, Alert, Typography, Button, Stack, Popover, List,
 import { ObtenerTodasLasVisitas } from '../../API/APIVisitas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
+import BuscadorTabla from '../../components/Tabla/BuscadorTabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
+import IdTruncado from '../../components/common/IdTruncado';
 import { exportarTablaAPDF, exportarTablaAExcel } from '../../utils/exportacionTabla';
-import { estaFechaEnRango, tieneFiltroHistorialActivo } from './utils';
+import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
 
 export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico }) {
     const [visitas, setVisitas] = useState([]);
@@ -15,6 +17,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
     const [datosCargados, setDatosCargados] = useState(false);
     const [ticketsAnchorEl, setTicketsAnchorEl] = useState(null);
     const [ticketIdsActivos, setTicketIdsActivos] = useState([]);
+    const [textoBusqueda, setTextoBusqueda] = useState('');
     const filtroActivo = tieneFiltroHistorialActivo({ fechaInicio, fechaFin, modoHistorico });
 
     React.useEffect(() => {
@@ -63,7 +66,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
             );
         }
 
-        return filtradas.map((v) => {
+        const filasMapeadas = filtradas.map((v) => {
             const productosConsumidos = v.productosConsumidos ?? v.ProductosConsumidos ?? [];
             const ticketsMap = new Map();
 
@@ -110,7 +113,13 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
                 tickets,
             };
         });
-    }, [visitas, fechaInicio, fechaFin, modoHistorico]);
+
+        return filtrarPorBusqueda(
+            filasMapeadas,
+            textoBusqueda,
+            ['id', 'numeroMesa', 'mozo', 'fecha', 'total']
+        );
+    }, [visitas, fechaInicio, fechaFin, modoHistorico, textoBusqueda]);
 
     React.useEffect(() => {
         setFilasOrdenadas(filas);
@@ -121,6 +130,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
     const ticketsPopoverOpen = Boolean(ticketsAnchorEl);
 
     const columnasExportacion = useMemo(() => ([
+        { key: 'id', label: 'Id' },
         { key: 'numeroMesa', label: 'Mesa' },
         { key: 'mozo', label: 'Mozo' },
         {
@@ -148,6 +158,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
                 { label: 'Fecha de exportación', value: new Date().toLocaleDateString('es-AR') }
             ],
             formatearFila: (fila) => ([
+                { text: fila.id ?? '-', fontSize: 9 },
                 { text: fila.numeroMesa ?? '-', fontSize: 9 },
                 { text: fila.mozo ?? '-', fontSize: 9 },
                 { text: fila.fecha ? formatearFechaCompleta(fila.fecha) : '-', fontSize: 9 },
@@ -187,6 +198,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
                 { label: 'Fecha de exportación', value: new Date().toLocaleDateString('es-AR') }
             ],
             formatearFila: (fila) => ([
+                fila.id ?? '-',
                 fila.numeroMesa ?? '-',
                 fila.mozo ?? '-',
                 fila.fecha ? formatearFechaCompleta(fila.fecha) : '-',
@@ -209,6 +221,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
     };
 
     const columnas = [
+        { key: 'id', label: 'Id', align: 'left', render: (fila) => <IdTruncado value={fila.id} /> },
         { key: 'numeroMesa', label: 'Mesa', align: 'left' },
         { key: 'mozo', label: 'Mozo', align: 'left' },
         { key: 'fecha', label: 'Fecha y hora', align: 'left', render: (f) => (f.fecha ? formatearFechaCompleta(f.fecha) : '-') },
@@ -236,6 +249,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
     ];
 
     const opcionesOrden = useMemo(() => [
+        { label: 'Id', campo: 'id', tipoOrden: 'texto' },
         { label: 'Mesa', campo: 'numeroMesaOrden', tipoOrden: 'numero' },
         { label: 'Mozo', campo: 'mozo', tipoOrden: 'texto' },
         { label: 'Fecha y hora', campo: 'fecha', tipoOrden: 'fecha' },
@@ -253,7 +267,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
             {!loading && !error && !filtroActivo && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                        Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.
+                        {'Seleccioná un rango de fechas o presioná "Histórico" para ver los datos.'}
                     </Typography>
                 </Box>
             )}
@@ -266,6 +280,13 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
                         paginacion={true}
                         rowsPerPage={10}
                         mostrarExportacion={true}
+                        renderBuscar={() => (
+                            <BuscadorTabla
+                                value={textoBusqueda}
+                                onChange={setTextoBusqueda}
+                                placeholder="Id, mesa, mozo..."
+                            />
+                        )}
                         onExportarPDF={handleExportarPDF}
                         onExportarExcel={handleExportarExcel}
                         renderOrdenar={() => (
