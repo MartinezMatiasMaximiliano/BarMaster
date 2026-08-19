@@ -7,6 +7,7 @@ namespace BackEndAPI.DTOs.Response
         public string NombreProducto { get; set; } = null!;
         public Guid IdSucursal { get; set; }
         public bool ControlaStock { get; set; }
+        public bool EnviarAlerta { get; set; }
         public int CantidadActual { get; set; }
         public int CantidadMinima { get; set; }
         public bool SinStock => ControlaStock && CantidadActual == 0;

@@ -11,6 +11,10 @@ namespace BackEndAPI.DTOs.Request.Crear
         public decimal PorcentajeIVA { get; set; }
         public decimal? CostoProduccion { get; set; }
         public bool Activo { get; set; } = true;
+        public bool ControlaStock { get; set; }
+        public bool EnviarAlerta { get; set; }
+        public int? CantidadMinima { get; set; }
+        public int? CantidadInicial { get; set; }
 
         public IEnumerable<Guid> ListaIdCategorias { get; set; } = new List<Guid>();
         public IFormFile? Imagen { get; set; }

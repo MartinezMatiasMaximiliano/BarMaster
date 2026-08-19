@@ -46,6 +46,7 @@ namespace BackEndAPI.Repositories
             Guid idProducto,
             Guid idSucursal,
             bool controlaStock,
+            bool enviarAlerta,
             int cantidadMinima,
             int? cantidadInicial)
         {
@@ -60,6 +61,7 @@ namespace BackEndAPI.Repositories
                         IdProducto = idProducto,
                         IdSucursal = idSucursal,
                         ControlaStock = controlaStock,
+                        EnviarAlerta = enviarAlerta,
                         CantidadActual = cantidad,
                         CantidadMinima = cantidadMinima
                     };
@@ -74,6 +76,7 @@ namespace BackEndAPI.Repositories
                 else
                 {
                     stock.ControlaStock = controlaStock;
+                    stock.EnviarAlerta = enviarAlerta;
                     stock.CantidadMinima = cantidadMinima;
                 }
 

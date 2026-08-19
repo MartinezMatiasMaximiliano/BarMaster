@@ -100,7 +100,8 @@ namespace BackEndAPI.Controllers
                 if (request.Nombre == null) throw new Exception("Nombre nulo");
                 if (request.PrecioNeto <= 0) throw new Exception("Precio invalido");
 
-                var producto = await _productosServices.CrearProducto(request);
+                var idSucursal = request.ControlaStock ? ObtenerIdSucursal() : Guid.Empty;
+                var producto = await _productosServices.CrearProducto(request, idSucursal);
 
                 return Ok();
             }
@@ -113,11 +114,22 @@ namespace BackEndAPI.Controllers
                     case "El producto ya existe":
                         return Conflict(new ErrorDTO(409, "CONFLICT", ex.Message));
                     case "Nombre nulo":
+                    case "La cantidad mínima es obligatoria":
+                    case "La cantidad inicial es obligatoria":
+                    case "La cantidad mínima no puede ser negativa":
+                    case "La cantidad inicial no puede ser negativa":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     default:
                         return StatusCode(500, "Error interno del servidor");
                 }
             }
+        }
+
+        private Guid ObtenerIdSucursal()
+        {
+            var claim = User.Claims.FirstOrDefault(x => x.Type == "IdSucursal")?.Value;
+            if (!Guid.TryParse(claim, out var idSucursal)) throw new Exception("Sucursal no identificada");
+            return idSucursal;
         }
 
         [HttpPatch()]

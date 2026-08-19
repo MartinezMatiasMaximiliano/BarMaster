@@ -44,6 +44,7 @@ namespace BackEndAPI.Services
                 idProducto,
                 idSucursal,
                 request.ControlaStock,
+                request.EnviarAlerta,
                 request.CantidadMinima,
                 request.CantidadInicial);
 
@@ -88,6 +89,7 @@ namespace BackEndAPI.Services
                 NombreProducto = stock.Producto.Nombre,
                 IdSucursal = stock.IdSucursal,
                 ControlaStock = stock.ControlaStock,
+                EnviarAlerta = stock.EnviarAlerta,
                 CantidadActual = stock.CantidadActual,
                 CantidadMinima = stock.CantidadMinima,
                 FechaActualizacion = stock.FechaActualizacion

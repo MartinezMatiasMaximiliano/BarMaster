@@ -6,6 +6,7 @@ namespace BackEndAPI.Models
         public Guid IdProducto { get; set; }
         public Guid IdSucursal { get; set; }
         public bool ControlaStock { get; set; }
+        public bool EnviarAlerta { get; set; }
         public int CantidadActual { get; set; }
         public int CantidadMinima { get; set; }
         public DateTime FechaActualizacion { get; set; } = DateTime.UtcNow;

@@ -829,6 +829,9 @@ namespace BackEndAPI.Migrations
                     b.Property<bool>("ControlaStock")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("EnviarAlerta")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("timestamp with time zone");
 
