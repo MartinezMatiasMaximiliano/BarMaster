@@ -1,7 +1,7 @@
 import Input_Imagen from "../../Input_Imagen";
 import Multiple_Select from "../../Select_Multiple";
 import Select from "../../Select";
-import { TextField } from "@mui/material";
+import { FormControlLabel, Switch, TextField } from "@mui/material";
 import { esCampoObligatorio } from "../../../Helpers/HelperFunctions";
 
 function getFieldUiState(campo, errors = {}) {
@@ -12,7 +12,7 @@ function getFieldUiState(campo, errors = {}) {
   };
 }
 
-export const Renderizados = (props, handleChange, errors = {}) => ({
+export const Renderizados = (props, handleChange, errors = {}, values = {}) => ({
   image: (campo, index) => (
     <Input_Imagen
       key={index}
@@ -39,6 +39,18 @@ export const Renderizados = (props, handleChange, errors = {}) => ({
       handleChange={handleChange}
       error={getFieldUiState(campo, errors).error}
       helperText={getFieldUiState(campo, errors).helperText}
+    />
+  ),
+  checkbox: (campo, index) => (
+    <FormControlLabel
+      key={index}
+      control={(
+        <Switch
+          checked={Boolean(values[campo.name])}
+          onChange={(e) => handleChange(e, campo.name, campo.type)}
+        />
+      )}
+      label={campo.label}
     />
   ),
 

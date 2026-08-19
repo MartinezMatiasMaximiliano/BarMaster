@@ -30,7 +30,7 @@ function normalizarProducto(producto) {
 }
 
 class CrearProductoDTO {
-    constructor(nombre, descripcion, precio, activo, listaIdCategorias, imagen, codigo, costoProduccion) {
+    constructor(nombre, descripcion, precio, activo, listaIdCategorias, imagen, codigo, costoProduccion, controlaStock, cantidadMinima, cantidadInicial) {
         this.Codigo = codigo;
         this.Nombre = nombre;
         this.Descripcion = descripcion;
@@ -39,6 +39,11 @@ class CrearProductoDTO {
         this.CostoProduccion = costoProduccion || 0;
         this.Activo = activo;
         this.Imagen = imagen;
+        this.ControlaStock = Boolean(controlaStock);
+        if (this.ControlaStock) {
+            this.CantidadMinima = Number(cantidadMinima);
+            this.CantidadInicial = Number(cantidadInicial);
+        }
     }
 }
 
@@ -75,6 +80,9 @@ export async function CrearProducto(datos) {
                 datos.imagen,
                 datos.codigo,
                 normalizarDecimal(datos.costoProduccion, 0),
+                datos.controlaStock,
+                datos.cantidadMinima,
+                datos.cantidadInicial,
             ), {
             headers: {
                 "Content-Type": "multipart/form-data"
