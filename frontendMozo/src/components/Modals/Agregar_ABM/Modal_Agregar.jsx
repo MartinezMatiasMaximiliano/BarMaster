@@ -29,7 +29,7 @@ import {
 function Modal_Agregar(props) {
     const [show, setShow] = useState(false);
 
-    const { errors, setErrors, handleChange, handleSave, resetForm } = Handlers({
+    const { errors, setErrors, values, handleChange, handleSave, resetForm } = Handlers({
         agregar: props.agregar,
         recargarComponentes: props.recargarComponentes,
         handleClose: () => setShow(false),
@@ -46,7 +46,7 @@ function Modal_Agregar(props) {
         setShow(true);
     };
 
-    const renderizados = Renderizados(props, handleChange, errors);
+    const renderizados = Renderizados(props, handleChange, errors, values);
     const nombreRegistro = props.nombre || 'registro';
 
     return (
@@ -120,6 +120,7 @@ function Modal_Agregar(props) {
                     <Box component="form" sx={{ mt: 1 }}>
                         <Stack spacing={3}>
                             {props.campos.map((campo, index) => {   
+                                if (campo.visibleWhen && !campo.visibleWhen(values)) return null;
                                 const renderer = renderizados[campo.type] || renderizados.text;
                                 return renderer(campo, index);
                             })}

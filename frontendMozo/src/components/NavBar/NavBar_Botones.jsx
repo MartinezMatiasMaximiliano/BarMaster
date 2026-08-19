@@ -46,11 +46,13 @@ import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 
 const menuConfig = {
     admin: {
         "Gestión": [
             { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
+            { path: "/stock", label: "Stock", icon: Inventory2OutlinedIcon },
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_envios", label: "Tipos de Envío", icon: DeliveryDiningOutlinedIcon },
@@ -93,6 +95,7 @@ const menuConfig = {
     cajero: {
         "Gestión": [
             { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
+            { path: "/stock", label: "Stock", icon: Inventory2OutlinedIcon },
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_envios", label: "Tipos de Envío", icon: DeliveryDiningOutlinedIcon },

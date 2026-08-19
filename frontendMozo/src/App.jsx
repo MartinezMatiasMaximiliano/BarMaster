@@ -60,6 +60,7 @@ import { agregar as agregarNotificaciones } from './redux/slices/notificacionesS
 import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
 import TicketVirtual from './pages/TicketVirtual/TicketVirtual';
+import Stock from './pages/Stock/Stock';
 
 export const LoginContext = createContext();
 export const SucursalContext = createContext();
@@ -405,6 +406,7 @@ function App() {
                             <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
                             <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarPlanos} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                             <Route path="/abm_productos" element={<Control_Login><Abm_Productos recargarComponentes={recargarProductos} datos_productos={datos_menu_abm} categorias={categorias} titulo="Productos" /></Control_Login>} />
+                            <Route path="/stock" element={<Control_Login><Stock /></Control_Login>} />
                             <Route
                                 path="/abm_menus"
                                 element={
