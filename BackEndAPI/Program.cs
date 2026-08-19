@@ -116,8 +116,11 @@ builder.Services.AddScoped<ITipoMovimientosCajaServices, TipoMovimientosCajaServ
 builder.Services.AddScoped<ITipoEnviosRepository, TipoEnviosRepository>();
 builder.Services.AddScoped<ITipoEnviosServices, TipoEnviosServices>();
 builder.Services.AddScoped<ICurrentDbContext, CurrentDbContext>();
+builder.Services.AddScoped<IDatabaseTransactionManager, DatabaseTransactionManager>();
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
 builder.Services.AddScoped<IProductosServices, ProductosServices>();
+builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddScoped<IStockServices, StockServices>();
 builder.Services.AddScoped<ICategoriasServices, CategoriasServices>();
 builder.Services.AddScoped<ICategoriasRepository, CategoriasRepository>();
 builder.Services.AddScoped<IPersonasRepository, PersonasRepository>();

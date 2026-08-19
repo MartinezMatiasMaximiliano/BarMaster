@@ -466,6 +466,54 @@ namespace BackEndAPI.Migrations
                     b.ToTable("MovimientosCajas");
                 });
 
+            modelBuilder.Entity("BackEndAPI.Models.MovimientoStock", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Canal")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IdStockProductoSucursal")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("IdVisita")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Motivo")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StockAnterior")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StockPosterior")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdStockProductoSucursal");
+
+                    b.HasIndex("IdVisita");
+
+                    b.ToTable("MovimientosStock", t =>
+                        {
+                            t.HasCheckConstraint("CK_MovimientosStock_Canal", "\"Canal\" IN (0, 1, 2, 3)");
+                        });
+                });
+
             modelBuilder.Entity("BackEndAPI.Models.MovimientosCuentaCorriente", b =>
                 {
                     b.Property<Guid>("IdCuentaCorriente")
@@ -764,6 +812,43 @@ namespace BackEndAPI.Migrations
                     b.HasIndex("IdEmpresa");
 
                     b.ToTable("Sucursales");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.StockProductoSucursal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CantidadActual")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CantidadMinima")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("ControlaStock")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("EnviarAlerta")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IdProducto")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdSucursal");
+
+                    b.HasIndex("IdProducto", "IdSucursal")
+                        .IsUnique();
+
+                    b.ToTable("StockProductosSucursales");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.TipoEnvio", b =>
@@ -1207,6 +1292,24 @@ namespace BackEndAPI.Migrations
                     b.Navigation("facturaElectronica");
                 });
 
+            modelBuilder.Entity("BackEndAPI.Models.MovimientoStock", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.StockProductoSucursal", "StockProductoSucursal")
+                        .WithMany("Movimientos")
+                        .HasForeignKey("IdStockProductoSucursal")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Visita", "Visita")
+                        .WithMany()
+                        .HasForeignKey("IdVisita")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("StockProductoSucursal");
+
+                    b.Navigation("Visita");
+                });
+
             modelBuilder.Entity("BackEndAPI.Models.MovimientosCuentaCorriente", b =>
                 {
                     b.HasOne("BackEndAPI.Models.CuentaCorriente", "CuentaCorriente")
@@ -1311,6 +1414,25 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Empresa");
                 });
 
+            modelBuilder.Entity("BackEndAPI.Models.StockProductoSucursal", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("IdProducto")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
+                        .WithMany()
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
+
+                    b.Navigation("Sucursal");
+                });
+
             modelBuilder.Entity("BackEndAPI.Models.Visita", b =>
                 {
                     b.HasOne("BackEndAPI.Models.Caja", "Caja")
@@ -1401,6 +1523,11 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Planos");
 
                     b.Navigation("Reservas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.StockProductoSucursal", b =>
+                {
+                    b.Navigation("Movimientos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Visita", b =>

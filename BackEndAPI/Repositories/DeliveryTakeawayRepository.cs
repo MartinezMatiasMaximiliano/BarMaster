@@ -10,11 +10,15 @@ namespace BackEndAPI.Repositories
     {
         private readonly ICurrentDbContext _context;
         private readonly AppDbContext Db;
+        private readonly IDatabaseTransactionManager _transactionManager;
 
-        public DeliveryTakeawayRepository(ICurrentDbContext context)
+        public DeliveryTakeawayRepository(
+            ICurrentDbContext context,
+            IDatabaseTransactionManager transactionManager)
         {
             _context = context;
             Db = context.Db;
+            _transactionManager = transactionManager;
         }
 
         public async Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdSucursal(Guid idSucursal)
@@ -81,21 +85,20 @@ namespace BackEndAPI.Repositories
         }
         public async Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(DeliveryAndTakeaway deliveryAndTakeaway, Visita visita)
         {
-            var transaccion = await Db.Database.BeginTransactionAsync();
-            try
+            return await _transactionManager.ExecuteAsync<DeliveryAndTakeaway?>(async () =>
             {
-                await Db.Visitas.AddAsync(visita);
-                await Db.DeliveriesTakeaways.AddAsync(deliveryAndTakeaway);
-                await Db.SaveChangesAsync();
-
-                transaccion.Commit();
-                return deliveryAndTakeaway;
-            }
-            catch (Exception ex)
-            {
-                transaccion.Rollback();
-                throw new Exception("Error al crear el pedido: " + ex.Message);
-            }
+                try
+                {
+                    await Db.Visitas.AddAsync(visita);
+                    await Db.DeliveriesTakeaways.AddAsync(deliveryAndTakeaway);
+                    await Db.SaveChangesAsync();
+                    return deliveryAndTakeaway;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error al crear el pedido: " + ex.Message, ex);
+                }
+            });
         }
         public async Task<DeliveryAndTakeaway?> ModificarDeliveryTakeaway(DeliveryAndTakeaway deliveryTakeaway)
         {
@@ -111,10 +114,9 @@ namespace BackEndAPI.Repositories
         }
         public async Task<bool> EliminarDeliveryTakeaway(DeliveryAndTakeaway deliveryTakeaway)
         {
-            // Eliminar explícitamente la Visita asociada (el FK está en DeliveryAndTakeaway: IdVisita)
-            using var transaccion = await Db.Database.BeginTransactionAsync();
-            try
+            return await _transactionManager.ExecuteAsync(async () =>
             {
+                // Eliminar explícitamente la Visita asociada (el FK está en DeliveryAndTakeaway: IdVisita)
                 if (deliveryTakeaway.IdVisita != Guid.Empty)
                 {
                     var visita = await Db.Visitas.FindAsync(deliveryTakeaway.IdVisita);
@@ -126,14 +128,8 @@ namespace BackEndAPI.Repositories
 
                 Db.DeliveriesTakeaways.Remove(deliveryTakeaway);
                 await Db.SaveChangesAsync();
-                await transaccion.CommitAsync();
                 return true;
-            }
-            catch
-            {
-                await transaccion.RollbackAsync();
-                throw;
-            }
+            });
         }
     }
 }

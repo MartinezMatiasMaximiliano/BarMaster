@@ -5,6 +5,7 @@ using BackEndAPI.Models;
 using BackEndAPI.Repositories;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
+using BackEndAPI.Tenancy.Services;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using static QuestPDF.Helpers.Colors;
@@ -19,7 +20,17 @@ namespace BackEndAPI.Services
         private readonly IProductosRepository _productosRepository;
         private readonly IPersonasRepository _personasRepository;
         private readonly IPagosRepository _pagosRepository;
-        public DeliveryTakeawayServices(IDeliveryTakeawayRepository deliveryTakeawayRepository, ICajasServices cajasServices, IProductosRepository productosRepository, IPersonasRepository personasRepository, IPagosRepository pagosRepository,IPagosServices pagosServices)
+        private readonly IStockServices _stockServices;
+        private readonly IDatabaseTransactionManager _transactionManager;
+        public DeliveryTakeawayServices(
+            IDeliveryTakeawayRepository deliveryTakeawayRepository,
+            ICajasServices cajasServices,
+            IProductosRepository productosRepository,
+            IPersonasRepository personasRepository,
+            IPagosRepository pagosRepository,
+            IPagosServices pagosServices,
+            IStockServices stockServices,
+            IDatabaseTransactionManager transactionManager)
         {
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _cajasServices = cajasServices;
@@ -27,6 +38,8 @@ namespace BackEndAPI.Services
             _personasRepository = personasRepository;
             _pagosRepository = pagosRepository;
             _pagosServices = pagosServices;
+            _stockServices = stockServices;
+            _transactionManager = transactionManager;
         }
         public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeaways(Guid IdSucursal)
         {
@@ -41,7 +54,10 @@ namespace BackEndAPI.Services
         {
             return await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
         }
-        public async Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(Guid Idsucursal, CrearDeliveryTakeawayDTO request)
+        public Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(Guid Idsucursal, CrearDeliveryTakeawayDTO request) =>
+            _transactionManager.ExecuteAsync(() => CrearDeliveryTakeawayCoreAsync(Idsucursal, request));
+
+        private async Task<DeliveryAndTakeaway?> CrearDeliveryTakeawayCoreAsync(Guid Idsucursal, CrearDeliveryTakeawayDTO request)
         {
             if (request == null) throw new Exception("Datos del pedido no enviados");
             var IdCaja = await _cajasServices.BuscarCajaAbiertaPorIdSucursal(Idsucursal);
@@ -114,6 +130,15 @@ namespace BackEndAPI.Services
             //DeliveryTakeaway.PrecioProductos = visitaCreada.Total;//DISCRIMINAR PRECRIO
             DeliveryAndTakeaway dtwk = await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
 
+            var cantidadesStock = request.ListaProductos
+                .GroupBy(x => x.IdProducto)
+                .ToDictionary(x => x.Key, x => x.Sum(y => y.Cantidad));
+            await _stockServices.DescontarVentaAsync(
+                Idsucursal,
+                cantidadesStock,
+                visitaCreada.Id,
+                CanalesMovimientoStock.DesdeOrigen(request.Origen));
+
             return dtwk;
         }
         public async Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway)
@@ -154,10 +179,24 @@ namespace BackEndAPI.Services
             }
             return await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(deliveryTakeawayExistente);
         }
-        public async Task<bool> EliminarDeliveryTakeaway(Guid IdDeliveryTakeaway)
+        public Task<bool> EliminarDeliveryTakeaway(Guid IdDeliveryTakeaway) =>
+            _transactionManager.ExecuteAsync(() => EliminarDeliveryTakeawayCoreAsync(IdDeliveryTakeaway));
+
+        private async Task<bool> EliminarDeliveryTakeawayCoreAsync(Guid IdDeliveryTakeaway)
         {
             var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
             if (deliveryTakeawayExistente == null) throw new Exception("No se encontró el pedido");
+
+            var cantidadesStock = deliveryTakeawayExistente.Visita.Productos
+                .Where(x => x.IdProducto.HasValue)
+                .GroupBy(x => x.IdProducto!.Value)
+                .ToDictionary(x => x.Key, x => x.Count());
+            await _stockServices.ReponerVentaAsync(
+                deliveryTakeawayExistente.IdSucursal,
+                cantidadesStock,
+                deliveryTakeawayExistente.IdVisita,
+                CanalesMovimientoStock.DesdeOrigen(deliveryTakeawayExistente.Visita.Origen));
+
             return await _deliveryTakeawayRepository.EliminarDeliveryTakeaway(deliveryTakeawayExistente);
         }
 
