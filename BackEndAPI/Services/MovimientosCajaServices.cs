@@ -55,7 +55,7 @@ namespace BackEndAPI.Services
 
         private void CalcularVuelto(MovimientoCaja movimiento, TipoMovimientoCaja tipoMovimiento)
         {
-            movimiento.Vuelto = tipoMovimiento.Entorno == "Ventas"
+            movimiento.Vuelto = tipoMovimiento.EsIngreso == true
                 ? movimiento.MontoAbonado - movimiento.MontoTotal
                 : 0;
         }
