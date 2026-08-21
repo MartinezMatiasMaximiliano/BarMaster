@@ -113,7 +113,10 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                if (request == null || request.IdRol == 0 || string.IsNullOrEmpty(request.Nombres) || string.IsNullOrEmpty(request.Apellido) || string.IsNullOrEmpty(request.Dni) || string.IsNullOrEmpty(request.Direccion) || string.IsNullOrEmpty(request.Telefono) || string.IsNullOrEmpty(request.Email)) throw new Exception("Dato de persona no proporcionados");
+                if (request == null 
+                    || request.IdRol == 0 
+                    || string.IsNullOrEmpty(request.Nombres) 
+                    || string.IsNullOrEmpty(request.Apellido)) throw new Exception("Dato de persona no proporcionados");
 
                 var IdEmpresa = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa")!.Value) : Guid.Empty;
                 if (IdEmpresa == Guid.Empty) throw new Exception("Empresa no identificada");
