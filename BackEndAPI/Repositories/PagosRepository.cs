@@ -47,6 +47,7 @@ namespace BackEndAPI.Repositories
                 if (generarFactura)
                 {
                     var facturaElectronica = await _wsfeService.CrearFacturaElectronica(DatosFactura);
+                    movimientoCaja.Facturado = true;
                     movimientoCaja.IdFactura = facturaElectronica.Id;
 
                     await Db.MovimientosCajas.AddAsync(movimientoCaja);
