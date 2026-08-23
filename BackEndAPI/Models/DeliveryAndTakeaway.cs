@@ -23,7 +23,7 @@
         public Sucursal Sucursal { get; set; }
         public Visita Visita { get; set; }
         //public Persona PersonaRegistro { get; set; }
-        public Persona Cadete {  get; set; }
+        public Persona? Cadete {  get; set; }
         public TipoEnvio TipoEnvio { get; set; }
 
 
