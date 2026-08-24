@@ -218,8 +218,8 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPatch("AgregarProducto/{id}")]
-        public async Task<IActionResult> AgregarProductos(Guid id,List<AgregarProductoAVisita> ListaProductos)
+        [HttpPatch("AgregarProductos")]
+        public async Task<IActionResult> AgregarProductos([FromQuery] Guid id,List<AgregarProductoAVisita> ListaProductos)
         {
             try
             {
@@ -241,8 +241,8 @@ namespace BackEndAPI.Controllers
 
         }
 
-        [HttpPatch("RemoverProducto/{id}")]
-        public async Task<IActionResult> RemoverProductos(Guid id,List<int> ListaProductos)
+        [HttpPatch("RemoverProductos")]
+        public async Task<IActionResult> RemoverProductos([FromQuery] Guid id, List<int> ListaProductos)
         {
             try
             {
@@ -253,7 +253,8 @@ namespace BackEndAPI.Controllers
             }
             catch (Exception ex)
             {
-                switch (ex.Message) {
+                switch (ex.Message)
+                {
                     case "lista invalida":
                         return BadRequest("la lista enviada no es valida");
                     default:
@@ -263,8 +264,8 @@ namespace BackEndAPI.Controllers
 
         }
 
-        [HttpPatch("Entregado/{id}")]
-        public async Task<IActionResult> MarcarEntregado(Guid id)
+        [HttpPatch("Entregado")]
+        public async Task<IActionResult> MarcarEntregado([FromQuery] Guid id)
         {
             try
             {
@@ -289,7 +290,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> EliminarDeliveryTakeaway(Guid id)
+        public async Task<IActionResult> EliminarDeliveryTakeaway([FromQuery] Guid id)
         {
             try
             {
