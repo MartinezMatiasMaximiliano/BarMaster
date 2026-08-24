@@ -12,8 +12,12 @@ namespace BackEndAPI.Models
         public DateTime Fecha { get; set; } = DateTime.UtcNow;
         public string? Motivo { get; set; }
         public Guid? IdVisita { get; set; }
+        public Guid? IdMesa { get; set; }
+        public string? NombreMesa { get; set; }
+        public string? NombreMozo { get; set; }
 
         public StockProductoSucursal StockProductoSucursal { get; set; } = null!;
         public Visita? Visita { get; set; }
+        public Mesa? Mesa { get; set; }
     }
 }

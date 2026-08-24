@@ -2,6 +2,7 @@ using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
+using System.Globalization;
 
 namespace BackEndAPI.Services
 {
@@ -43,21 +44,22 @@ namespace BackEndAPI.Services
 
             if (TipoMovimiento.EsEfectivo == true)
             {
-                CalcularVuelto(nuevoMovimiento,TipoMovimiento); 
-                caja.MontoActual = TipoMovimiento.EsIngreso
-                    ? caja.MontoActual + nuevoMovimiento.MontoTotal
-                    : caja.MontoActual - nuevoMovimiento.MontoTotal;
+                nuevoMovimiento.Vuelto = TipoMovimiento.EsIngreso ? CalcularVuelto(nuevoMovimiento, TipoMovimiento) : 0;
+                caja.MontoActual = TipoMovimiento.EsIngreso ? caja.MontoActual + nuevoMovimiento.MontoTotal : caja.MontoActual - nuevoMovimiento.MontoTotal;
             }
 
             var movimientoCreado = await _movimientosCajaRepository.CrearMovimientoCaja(nuevoMovimiento, caja);
             return movimientoCreado;
         }
 
-        private void CalcularVuelto(MovimientoCaja movimiento, TipoMovimientoCaja tipoMovimiento)
+        private decimal CalcularVuelto(MovimientoCaja movimiento, TipoMovimientoCaja tipoMovimiento)
         {
-            movimiento.Vuelto = tipoMovimiento.Entorno == "Ventas"
-                ? movimiento.MontoAbonado - movimiento.MontoTotal
-                : 0;
+
+            var vuelto = Math.Max(0, movimiento.MontoAbonado - movimiento.MontoTotal);
+            var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+            var AbonadoFormateado = movimiento.MontoAbonado.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+            movimiento.Descripcion = $"{movimiento.Descripcion} | Abonado: $ {AbonadoFormateado} | Vuelto: $ {vueltoFormateado}";
+            return vuelto;
         }
 
         public async Task<IEnumerable<MovimientoCaja>> BuscarListaMovimientosCaja()

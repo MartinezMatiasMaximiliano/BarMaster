@@ -90,8 +90,8 @@ namespace BackEndAPI.Services
         {
             var vuelto = Math.Max(0, totalAPagar - movimientoCaja.MontoAbonado);
             var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
-            //formatear abonado tambien
-            movimientoCaja.Descripcion = $"{movimientoCaja.Descripcion} | Abonado: $ {movimientoCaja.MontoAbonado} | Vuelto: $ {vueltoFormateado}";
+            var AbonadoFormateado = movimientoCaja.MontoAbonado.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+            movimientoCaja.Descripcion = $"{movimientoCaja.Descripcion} | Abonado: $ {AbonadoFormateado} | Vuelto: $ {vueltoFormateado}";
             return vuelto;
 
         }

@@ -287,9 +287,15 @@ namespace BackEndAPI.Data
 
             modelBuilder.Entity<MovimientoStock>(entity =>
             {
-                entity.ToTable(table => table.HasCheckConstraint(
-                    "CK_MovimientosStock_Canal",
-                    "\"Canal\" IN (0, 1, 2, 3)"));
+                entity.ToTable(table =>
+                {
+                    table.HasCheckConstraint(
+                        "CK_MovimientosStock_Canal",
+                        "\"Canal\" IN (0, 1, 2, 3)");
+                    table.HasCheckConstraint(
+                        "CK_MovimientosStock_ContextoCanal",
+                        "\"Canal\" = 1 OR (\"IdMesa\" IS NULL AND \"NombreMesa\" IS NULL AND \"NombreMozo\" IS NULL)");
+                });
                 entity.HasOne(x => x.StockProductoSucursal)
                     .WithMany(x => x.Movimientos)
                     .HasForeignKey(x => x.IdStockProductoSucursal)
@@ -297,6 +303,10 @@ namespace BackEndAPI.Data
                 entity.HasOne(x => x.Visita)
                     .WithMany()
                     .HasForeignKey(x => x.IdVisita)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(x => x.Mesa)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdMesa)
                     .OnDelete(DeleteBehavior.SetNull);
             });
 

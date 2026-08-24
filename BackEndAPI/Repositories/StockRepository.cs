@@ -70,7 +70,7 @@ namespace BackEndAPI.Repositories
                     if (cantidad != 0)
                     {
                         await Db.MovimientosStock.AddAsync(CrearMovimiento(
-                            stock, cantidad, 0, cantidad, "Inventario inicial", CanalMovimientoStock.Manual, null, "Inventario inicial"));
+                            stock, cantidad, 0, cantidad, "Inventario inicial", CanalMovimientoStock.Manual, null, null, "Inventario inicial"));
                     }
                 }
                 else
@@ -107,6 +107,7 @@ namespace BackEndAPI.Repositories
                     cantidad > 0 ? "Ingreso" : "Merma",
                     CanalMovimientoStock.Manual,
                     null,
+                    null,
                     motivo));
 
                 stock.CantidadActual = cantidadPosterior;
@@ -127,6 +128,8 @@ namespace BackEndAPI.Repositories
 
             await _transactionManager.ExecuteAsync(async () =>
             {
+                var contexto = await ObtenerContextoVentaAsync(idVisita, idSucursal, canal);
+
                 foreach (var producto in productos.OrderBy(x => x.Key))
                 {
                     var stock = await ObtenerConBloqueoAsync(producto.Key, idSucursal);
@@ -142,6 +145,7 @@ namespace BackEndAPI.Repositories
                         reponer ? "Reposición" : "Venta",
                         canal,
                         idVisita,
+                        contexto,
                         reponer ? "Producto eliminado de la venta" : "Producto agregado a la venta"));
 
                     stock.CantidadActual = cantidadPosterior;
@@ -187,6 +191,7 @@ namespace BackEndAPI.Repositories
             string tipo,
             CanalMovimientoStock canal,
             Guid? idVisita,
+            ContextoMovimientoVenta? contexto,
             string? motivo)
         {
             return new MovimientoStock
@@ -198,8 +203,46 @@ namespace BackEndAPI.Repositories
                 StockAnterior = stockAnterior,
                 StockPosterior = stockPosterior,
                 Motivo = motivo,
-                IdVisita = idVisita
+                IdVisita = idVisita,
+                IdMesa = contexto?.IdMesa,
+                NombreMesa = contexto?.NombreMesa,
+                NombreMozo = contexto?.NombreMozo
             };
         }
+
+        private async Task<ContextoMovimientoVenta> ObtenerContextoVentaAsync(
+            Guid idVisita,
+            Guid idSucursal,
+            CanalMovimientoStock canal)
+        {
+            if (canal == CanalMovimientoStock.Local)
+            {
+                var visita = await Db.Visitas
+                    .AsNoTracking()
+                    .Include(x => x.Mesa)
+                    .Include(x => x.Mozo)
+                    .SingleOrDefaultAsync(x => x.Id == idVisita && x.Caja.IdSucursal == idSucursal)
+                    ?? throw new Exception("No se encontró la visita local asociada al movimiento de stock");
+
+                return new ContextoMovimientoVenta(
+                    visita.IdMesa,
+                    visita.Mesa?.Nombre,
+                    visita.Mozo == null
+                        ? null
+                        : $"{visita.Mozo.Nombres} {visita.Mozo.Apellido}".Trim());
+            }
+
+            if (canal is CanalMovimientoStock.Delivery or CanalMovimientoStock.Takeaway)
+            {
+                return new ContextoMovimientoVenta(null, null, null);
+            }
+
+            throw new Exception("El canal del movimiento automático no es válido");
+        }
+
+        private sealed record ContextoMovimientoVenta(
+            Guid? IdMesa,
+            string? NombreMesa,
+            string? NombreMozo);
     }
 }
