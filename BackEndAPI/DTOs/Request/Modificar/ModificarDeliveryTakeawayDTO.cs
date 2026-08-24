@@ -11,8 +11,5 @@ namespace BackEndAPI.DTOs.Request.Modificar
         public string? Indicaciones { get; set; } 
         public int? IdTipoEnvio { get; set; }
         public Guid? IdCadete { get; set; }
-        public bool? Entregado { get; set; }
-
-
     }
 }

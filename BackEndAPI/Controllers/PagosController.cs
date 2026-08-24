@@ -23,12 +23,10 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                if (request.ListaIdsProductos == null || request.ListaIdsProductos.Count <= 0) throw new Exception("Lista de ids vacia");
+                if (request.ListaIdsProductos == null) throw new Exception("Lista de ids vacia");
                 if (request.IdVisita == Guid.Empty) throw new Exception("IdVisita vacio");
                 if (request.MontoAbonado <= 0) throw new Exception("Monto abonado inválido");
                 if (request.GenerarFactura && request.DatosFacturaARCA == null) throw new Exception("Datos de factura vacios");
-
-
                 var (movimientoCaja, facturaElectronica) = await _PagosServices.PagarProductos(request);
 
                 //TODO: agregar los datos de la factura al response si se generó una factura
@@ -48,6 +46,10 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
+                    case "delivery id no encontrado":
+                        return NotFound("delivery id no encontrado");
+                    case "La visita ya fue cerrada":
+                        return BadRequest("La visita ya fue cerrada");
                     case "No se encontró la ubicación del certificado de la empresa":
                         return BadRequest("No se encontró l2a ubicación del certificado de la empresa.");
                     case "IdVisita vacio":

@@ -29,10 +29,10 @@ namespace BackEndAPI.Tenancy.Services
                 await action();
                 await transaction.CommitAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw;
+                throw new Exception(ex.Message);
             }
         }
 
@@ -50,10 +50,10 @@ namespace BackEndAPI.Tenancy.Services
                 await transaction.CommitAsync();
                 return result;
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw;
+                throw new Exception(ex.Message);
             }
         }
     }

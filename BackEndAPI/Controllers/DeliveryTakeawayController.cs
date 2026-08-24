@@ -6,6 +6,8 @@ using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Build.Framework;
+using System.Configuration;
 
 namespace BackEndAPI.Controllers
 {
@@ -138,7 +140,6 @@ namespace BackEndAPI.Controllers
             return Ok(response);
         }
 
-
         [HttpPost("Crear")]
         public async Task<IActionResult> CreateDeliveryTakeaway(CrearDeliveryTakeawayDTO request)
         {
@@ -165,12 +166,12 @@ namespace BackEndAPI.Controllers
                     case "Producto no encontrado":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Uno o más productos no fueron encontrados. Verifica los IDs de los productos enviados y vuelve a intentarlo."));
                     case "Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.":
-                        return BadRequest(new ErrorDTO(400,"BAD REQUEST","Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'."));
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'."));
                     case "Error al crear el pedido":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST","Error al crear el pedido. Verifica los datos enviados y vuelve a intentarlo."));
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Error al crear el pedido. Verifica los datos enviados y vuelve a intentarlo."));
 
                     case "Sucursal no identificada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST","Sucursal no identificada. Asegúrate de que el token contenga el claim 'IdSucursal'."));
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Sucursal no identificada. Asegúrate de que el token contenga el claim 'IdSucursal'."));
 
                     default:
                         return StatusCode(500, $"Internal server error: {ex.Message}");
@@ -184,7 +185,7 @@ namespace BackEndAPI.Controllers
             try
             {
                 if (request.IdDeliveryTakeaway == Guid.Empty) throw new Exception("Id del pedido nulo");
-                var result = await _deliveryTakeawayServices.ModificarDatosDeliveryTakeaway(request);
+                var result = await _deliveryTakeawayServices.ModificarDeliveryTakeaway(request);
                 if (result == null) throw new Exception("Error al modificar el pedido");
                 var response = MappearDeliveryTakeawayDTO(result);
                 return Ok(response);
@@ -193,6 +194,8 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
+                    case "No se puede modificar un pedido entregado":
+                        return BadRequest("No se puede modificar un pedido entregado");
                     case "Id del pedido nulo":
                         return BadRequest("Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'.");
                     case "Error al modificar el pedido":
@@ -215,8 +218,79 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpPatch("AgregarProductos")]
+        public async Task<IActionResult> AgregarProductos([FromQuery] Guid id,List<AgregarProductoAVisita> ListaProductos)
+        {
+            try
+            {
+                if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
+                var result = await _deliveryTakeawayServices.AgregarProductosADeliveryAndTakeaway(id, ListaProductos);
+                var response = MappearDeliveryTakeawayDTO(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "lista invalida":
+                        return BadRequest("la lista enviada no es valida");
+                    default:
+                        return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+            }
+
+        }
+
+        [HttpPatch("RemoverProductos")]
+        public async Task<IActionResult> RemoverProductos([FromQuery] Guid id, List<int> ListaProductos)
+        {
+            try
+            {
+                if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
+                var result = await _deliveryTakeawayServices.RemoverProductosADeliveryAndTakeaway(id, ListaProductos);
+                var response = MappearDeliveryTakeawayDTO(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "lista invalida":
+                        return BadRequest("la lista enviada no es valida");
+                    default:
+                        return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+            }
+
+        }
+
+        [HttpPatch("Entregado")]
+        public async Task<IActionResult> MarcarEntregado([FromQuery] Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty) throw new Exception("Id vacio");
+                var action = await _deliveryTakeawayServices.MarcarComoEntregado(id);
+                if (action == null) throw new Exception("");
+                var result = MappearDeliveryTakeawayDTO(action);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "no encontrado":
+                        return BadRequest("No se encontró el Delivery o Takeaway");
+                    case "Id vacio":
+                        return BadRequest("Id vacio. Asegúrate de enviar un Id válido en el campo 'id.");
+                    default:
+                        return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+            }
+        }
+
         [HttpDelete]
-        public async Task<IActionResult> EliminarDeliveryTakeaway(Guid id)
+        public async Task<IActionResult> EliminarDeliveryTakeaway([FromQuery] Guid id)
         {
             try
             {
@@ -230,9 +304,9 @@ namespace BackEndAPI.Controllers
                 switch (ex.Message)
                 {
                     case "Id del pedido nulo":
-                        return BadRequest(new ErrorDTO(400,"BAD REQUEST", "Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'.") );
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'."));
                     case "Error al eliminar el pedido":
-                        return BadRequest(new ErrorDTO(400,"BAD REQUEST", "Error al eliminar el pedido. Verifica el Id enviado y vuelve a intentarlo."));
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Error al eliminar el pedido. Verifica el Id enviado y vuelve a intentarlo."));
                     default:
                         return StatusCode(500, $"Internal server error: {ex.Message}");
                 }

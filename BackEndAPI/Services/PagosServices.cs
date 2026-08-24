@@ -14,22 +14,20 @@ namespace BackEndAPI.Services
         private readonly IVisitasRepository _visitasRepository;
         private readonly IPagosRepository _pagosRepository;
         private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
-        private readonly WsfeService _wsfeService;
-        private readonly WsaaAuthService _wasaaAuthService;
 
-        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository, WsfeService wsfeService, WsaaAuthService wsaaAuthService)
+        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository)
         {
             _visitasRepository = visitasRepository;
             _pagosRepository = pagosRepository;
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
-            _wsfeService = wsfeService;
-            _wasaaAuthService = wsaaAuthService;
         }
 
         public async Task<(MovimientoCaja, FacturaElectronica?)> PagarProductos(CrearPagoDTO infoPago)
         {
             var visita = await _visitasRepository.BuscarVisitaPorId(infoPago.IdVisita);
             if (visita == null) throw new Exception("Visita no encontrada");
+            if (visita.Estado == "Cerrada") throw new Exception("La visita ya fue cerrada");
+
 
             var movimientoCaja = new MovimientoCaja
             {
@@ -43,36 +41,41 @@ namespace BackEndAPI.Services
                  $"Pago de {visita.Origen}"
             };
 
-            decimal TotalAPagar = await CalcularTotalProductos(infoPago.ListaIdsProductos, visita, movimientoCaja.Id);
-            if (infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
-
+            decimal TotalAPagar = 
+                visita.Origen == "Delivery" || visita.Origen == "Takeaway" ? 
+                await CalcularTotalDeliveryTakeaway(visita,movimientoCaja.Id)
+                : 
+                await CalcularTotalProductos(infoPago.ListaIdsProductos, visita, movimientoCaja.Id);
             visita.Total = TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal; //TODO: REVISAR
+
+            if (infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
             movimientoCaja.MontoAbonado = infoPago.MontoAbonado;
             movimientoCaja.Vuelto = CalcularVuelto(TotalAPagar, movimientoCaja);
             movimientoCaja.MontoTotal = visita.Total;
 
-
-
             var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(visita, movimientoCaja, infoPago.DatosFacturaARCA, TotalAPagar, infoPago.GenerarFactura, infoPago.MontoAbonado);
-
             return (ResultadoPagoCreado, FacturaElectronica);
         }
 
-        public async Task<decimal> CalcularTotalProductos(ICollection<int> IdProductos, Visita visita, Guid IdMovimientoCaja)
+
+        private async Task<decimal> CalcularTotalDeliveryTakeaway(Visita visita, Guid IdMovimientoCaja)
+        {
+            //RECORDATORIO: en caso de DyTKW,la funcion de crearPago solo se llama con todos los productos de la visita, por lo que el envio
+            //solo se cobra una vez, no pueden existir multiples pagos del mismo  DyTKW
+            var deliveryTakeaway = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorIdVisita(visita.Id);
+            if (deliveryTakeaway == null) throw new Exception("no encontrado");
+            deliveryTakeaway.Visita.Estado = "Cerrada";
+            foreach (var item in deliveryTakeaway.Visita.Productos)
+            {
+                item.EstadoPagado = true;
+                item.IdMovimientoCaja = IdMovimientoCaja;
+            }
+            return deliveryTakeaway.PrecioTotal;
+        }
+
+        private async Task<decimal> CalcularTotalProductos(ICollection<int> IdProductos, Visita visita, Guid IdMovimientoCaja)
         {
             decimal TotalAPagar = 0;
-            if (visita.Origen == "Delivery")
-            {
-                //RECORDATORIO: en caso de DyTKW,la funcion de crearPago solo se llama con todos los productos de la visita, por lo que el envio
-                //solo se cobra una vez, no pueden existir multiples pagos del mismo  DyTKW
-                var deliveryTakeaway = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorIdVisita(visita.Id);
-
-                if (deliveryTakeaway.TipoEnvio != null)
-                {
-                  TotalAPagar += deliveryTakeaway.TipoEnvio.Precio;
-                }
-            }
-
             foreach (int id in IdProductos)
             {
                 var productoPorVisita = visita.Productos.FirstOrDefault(p => p.Id == id);
@@ -88,7 +91,7 @@ namespace BackEndAPI.Services
 
         private decimal CalcularVuelto(decimal totalAPagar, MovimientoCaja movimientoCaja)
         {
-            var vuelto = Math.Max(0, totalAPagar - movimientoCaja.MontoAbonado);
+            var vuelto = movimientoCaja.MontoAbonado - totalAPagar;
             var vueltoFormateado = vuelto.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
             var AbonadoFormateado = movimientoCaja.MontoAbonado.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
             movimientoCaja.Descripcion = $"{movimientoCaja.Descripcion} | Abonado: $ {AbonadoFormateado} | Vuelto: $ {vueltoFormateado}";
