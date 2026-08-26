@@ -8,6 +8,7 @@ namespace BackEndAPI.Services.Interfaces
     public interface IStockServices
     {
         Task<IReadOnlyCollection<StockProductoDTO>> ObtenerStockAsync(Guid idSucursal);
+        Task<IReadOnlyCollection<AlertaStockDTO>> ObtenerAlertasAsync(Guid idSucursal);
         Task<IReadOnlyCollection<MovimientoStockDTO>> ObtenerMovimientosAsync(Guid idProducto, Guid idSucursal);
         Task<StockProductoDTO> ConfigurarAsync(Guid idProducto, Guid idSucursal, ConfigurarStockDTO request);
         Task<StockProductoDTO> RegistrarMovimientoAsync(Guid idProducto, Guid idSucursal, RegistrarMovimientoStockDTO request);

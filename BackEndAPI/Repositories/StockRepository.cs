@@ -1,3 +1,4 @@
+using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
@@ -27,6 +28,33 @@ namespace BackEndAPI.Repositories
                 .Include(x => x.Producto)
                 .Where(x => x.IdSucursal == idSucursal)
                 .OrderBy(x => x.Producto.Nombre)
+                .ToListAsync();
+        }
+
+        public async Task<IReadOnlyCollection<AlertaStockDTO>> ObtenerAlertasAsync(Guid idSucursal)
+        {
+            return await Db.StockProductosSucursales
+                .AsNoTracking()
+                .Where(x => x.IdSucursal == idSucursal
+                    && x.ControlaStock
+                    && x.EnviarAlerta
+                    && x.CantidadActual < x.CantidadMinima)
+                .Select(x => new AlertaStockDTO
+                {
+                    IdProducto = x.IdProducto,
+                    CodigoProducto = x.Producto.Codigo,
+                    NombreProducto = x.Producto.Nombre,
+                    CantidadActual = x.CantidadActual,
+                    CantidadMinima = x.CantidadMinima,
+                    FechaInicioStockBajo = x.Movimientos
+                        .Where(movimiento => movimiento.StockAnterior >= x.CantidadMinima
+                            && movimiento.StockPosterior < x.CantidadMinima)
+                        .OrderByDescending(movimiento => movimiento.Fecha)
+                        .Select(movimiento => (DateTime?)movimiento.Fecha)
+                        .FirstOrDefault() ?? x.FechaActualizacion
+                })
+                .OrderBy(x => x.FechaInicioStockBajo)
+                .ThenBy(x => x.NombreProducto)
                 .ToListAsync();
         }
 

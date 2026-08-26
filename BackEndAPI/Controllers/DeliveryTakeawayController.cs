@@ -180,7 +180,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPatch("ModificarDatos")]
-        public async Task<IActionResult> ModificarDatosDeliveryTakeaway(ModificarDeliveryTakeawayDTO request)
+        public async Task<IActionResult> ModificarDeliveryTakeaway(ModificarDeliveryTakeawayDTO request)
         {
             try
             {
@@ -194,8 +194,10 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
-                    case "No se puede modificar un pedido entregado":
-                        return BadRequest("No se puede modificar un pedido entregado");
+                    case "item no encontrado":
+                        return NotFound("Uno de los productos a eliminar no pertenece a este Pedido.");
+                    case "item pagado":
+                        return BadRequest("No se puede modificar un producto pagado");
                     case "Id del pedido nulo":
                         return BadRequest("Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'.");
                     case "Error al modificar el pedido":
@@ -218,51 +220,51 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpPatch("AgregarProductos")]
-        public async Task<IActionResult> AgregarProductos([FromQuery] Guid id,List<AgregarProductoAVisita> ListaProductos)
-        {
-            try
-            {
-                if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
-                var result = await _deliveryTakeawayServices.AgregarProductosADeliveryAndTakeaway(id, ListaProductos);
-                var response = MappearDeliveryTakeawayDTO(result);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "lista invalida":
-                        return BadRequest("la lista enviada no es valida");
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+        //[HttpPatch("AgregarProductos")]
+        //public async Task<IActionResult> AgregarProductos([FromQuery] Guid id,List<AgregarProductoAVisita> ListaProductos)
+        //{
+        //    try
+        //    {
+        //        if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
+        //        var result = await _deliveryTakeawayServices.AgregarProductosADeliveryAndTakeaway(id, ListaProductos);
+        //        var response = MappearDeliveryTakeawayDTO(result);
+        //        return Ok(response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        switch (ex.Message)
+        //        {
+        //            case "lista invalida":
+        //                return BadRequest("la lista enviada no es valida");
+        //            default:
+        //                return StatusCode(500, $"Internal server error: {ex.Message}");
+        //        }
+        //    }
 
-        }
+        //}
 
-        [HttpPatch("RemoverProductos")]
-        public async Task<IActionResult> RemoverProductos([FromQuery] Guid id, List<int> ListaProductos)
-        {
-            try
-            {
-                if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
-                var result = await _deliveryTakeawayServices.RemoverProductosADeliveryAndTakeaway(id, ListaProductos);
-                var response = MappearDeliveryTakeawayDTO(result);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "lista invalida":
-                        return BadRequest("la lista enviada no es valida");
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+        //[HttpPatch("RemoverProductos")]
+        //public async Task<IActionResult> RemoverProductos([FromQuery] Guid id, List<int> ListaProductos)
+        //{
+        //    try
+        //    {
+        //        if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
+        //        var result = await _deliveryTakeawayServices.RemoverProductosADeliveryAndTakeaway(id, ListaProductos);
+        //        var response = MappearDeliveryTakeawayDTO(result);
+        //        return Ok(response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        switch (ex.Message)
+        //        {
+        //            case "lista invalida":
+        //                return BadRequest("la lista enviada no es valida");
+        //            default:
+        //                return StatusCode(500, $"Internal server error: {ex.Message}");
+        //        }
+        //    }
 
-        }
+        //}
 
         [HttpPatch("Entregado")]
         public async Task<IActionResult> MarcarEntregado([FromQuery] Guid id)

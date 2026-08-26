@@ -24,6 +24,11 @@ namespace BackEndAPI.Services
             return stock.Select(MapearStock).ToArray();
         }
 
+        public async Task<IReadOnlyCollection<AlertaStockDTO>> ObtenerAlertasAsync(Guid idSucursal)
+        {
+            return await _stockRepository.ObtenerAlertasAsync(idSucursal);
+        }
+
         public async Task<IReadOnlyCollection<MovimientoStockDTO>> ObtenerMovimientosAsync(Guid idProducto, Guid idSucursal)
         {
             var movimientos = await _stockRepository.ObtenerMovimientosAsync(idProducto, idSucursal);

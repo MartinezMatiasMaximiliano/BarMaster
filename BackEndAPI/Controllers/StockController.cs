@@ -25,6 +25,13 @@ namespace BackEndAPI.Controllers
             return Ok(await _stockServices.ObtenerStockAsync(idSucursal));
         }
 
+        [HttpGet("alertas")]
+        public async Task<IActionResult> ObtenerAlertas()
+        {
+            var idSucursal = ObtenerIdSucursal();
+            return Ok(await _stockServices.ObtenerAlertasAsync(idSucursal));
+        }
+
         [HttpGet("movimientos/{idProducto:guid}")]
         public async Task<IActionResult> ObtenerMovimientos(Guid idProducto)
         {
