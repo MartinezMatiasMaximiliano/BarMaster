@@ -6,17 +6,17 @@ import { construirError } from './APIError';
  * @param {string} idVisita - Guid de la visita
  * @param {number[]} listaIdsProductos - IDs de productos (ProductosPorVisita) a marcar como pagados
  * @param {number} idTipoPago - ID del tipo de pago (ej. 1 Efectivo, 2 Tarjeta)
- * @param {number} monto - Efectivo: monto con el que paga el cliente. Otros: total de los productos
+ * @param {number} montoAbonado - Efectivo: monto con el que paga el cliente. Otros: total de los productos
  * @returns {Promise<object>} Pago creado
  */
-export async function Pagar(idVisita, listaIdsProductos, idTipoPago, monto) {
+export async function Pagar(idVisita, listaIdsProductos, idTipoPago, montoAbonado) {
     try {
         const response = await api.post(
             'Pagar',
             {
                 idTipoMovimiento: idTipoPago,
                 idVisita,
-                monto: Number(monto),
+                montoAbonado: Number(montoAbonado),
                 listaIdsProductos: Array.isArray(listaIdsProductos) ? listaIdsProductos : []
             }
         );

@@ -104,10 +104,10 @@ export async function EliminarCuentaCorriente(id) {
 export async function CrearMovimientoCuentaCorriente(idCuenta, datos) {
     try {
         const payload = {
-            IdTipoMovimientoCaja: Number(datos.idTipoMovimientoCaja),
-            MontoTotal: Number(datos.valorMovimiento),
-            MontoAbonado: Number(datos.montoAbonado),
-            Descripcion: datos.descripcion?.trim() || '',
+            idTipoMovimientoCaja: Number(datos.idTipoMovimientoCaja),
+            montoTotal: Number(datos.valorMovimiento),
+            montoAbonado: Number(datos.montoAbonado),
+            descripcion: datos.descripcion?.trim() || '',
         };
 
         const response = await api.post('CuentasCorrientes/CrearMovimiento', payload, {
