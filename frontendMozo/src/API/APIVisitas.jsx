@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance';
+import { sendHubMessage } from '../connections/HubConnMozo';
 import { construirError } from './APIError';
 
 /** GET /TodasLasVisitas - Obtiene todas las visitas (activas y cerradas) para reportes y gráficas */
@@ -38,7 +39,7 @@ export async function AgregarProductosAVisita(idVisita, productos) {
             `AgregarProductoAVisita?IdVisita=${idVisita}`,
             productos
         );
-        
+        await sendHubMessage('StockActualizado');
         return response.data;
     } catch (error) {
         console.error('Error al agregar productos a la visita:', construirError(error, 'Error al agregar productos a la visita'));
@@ -66,6 +67,7 @@ export async function EliminarProductosVisita(idVisita, idsProductos) {
                 }
             }
         );
+        await sendHubMessage('StockActualizado');
         return response.data;
     } catch (error) {
         console.error('Error al eliminar productos de la visita:', construirError(error, 'Error al eliminar productos de la visita'));

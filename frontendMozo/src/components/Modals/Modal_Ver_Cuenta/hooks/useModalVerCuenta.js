@@ -5,7 +5,7 @@ import { BuscarTipoMovimientosPorEntorno } from '../../../../API/APITipoMovimien
 import { GenerarTicketPDF } from '../../../../API/APIPedidos';
 import { cambiarEstadoPagadoProductos } from '../../../../redux/slices/visitasActivasSlice';
 import { eliminar as eliminarTicket } from '../../../../redux/slices/ticketSlice';
-import connection from '../../../../connections/HubConnMozo';
+import { sendHubMessage } from '../../../../connections/HubConnMozo';
 
 /**
  * Hook personalizado para manejar toda la lógica de negocio del modal Ver Cuenta
@@ -117,7 +117,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
             const idMovimientoCaja = pagoCreado?.id || pagoCreado?.Id;
 
             GenerarTicketPDF(datosMesa.nombre, arregloIds);
-            connection.send("RecargarTicket", datosMesa.nombre);
+            await sendHubMessage("RecargarTicket", datosMesa.nombre);
             dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true, idMovimientoCaja }));
             dispatch(eliminarTicket(arregloIds));
             setTabValue(tabIndexPagosRegistrados);

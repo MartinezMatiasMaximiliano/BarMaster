@@ -1,5 +1,5 @@
 import api from '../services/axiosInstance'
-import connection from '../connections/HubConnMozo'
+import { sendHubMessage } from '../connections/HubConnMozo'
 import { construirError } from './APIError';
 
 export async function CambiarEstadoItems(ListaIds, Estado) {
@@ -21,7 +21,7 @@ export async function EliminarItems(ListaIds,numeroMesa) {
                 'Content-Type': 'application/json',
             }
         });
-        connection.send("RecargarTicket", numeroMesa); //Envio mensaje al cliente para que se actualice su cuenta y se quiten los productos eliminados
+        await sendHubMessage("RecargarTicket", numeroMesa); //Envio mensaje al cliente para que se actualice su cuenta y se quiten los productos eliminados
         return response.data;
     } catch (error) {
         console.error('Error al eliminar items:', construirError(error, 'Error al eliminar los items'));

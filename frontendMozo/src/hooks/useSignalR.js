@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import connection from '../connections/HubConnMozo'
+import connection, { sendHubMessage } from '../connections/HubConnMozo'
 
 export default function useSignalR(handlers = {}) {
     const handlersRef = useRef(handlers);
@@ -15,6 +15,7 @@ export default function useSignalR(handlers = {}) {
         const onPagarMesaSeparado = (...args) => handlersRef.current.onPagarMesaSeparado?.(...args);
         const onRecargarTicket = (...args) => handlersRef.current.onRecargarTicket?.(...args);
         const onRecargarDeliveryTakeaway = (...args) => handlersRef.current.onRecargarDeliveryTakeaway?.(...args);
+        const onStockActualizado = (...args) => handlersRef.current.onStockActualizado?.(...args);
 
         connection.on('RegistrarProducto', onRegistrarProducto);
         connection.on('VisitaActualizada', onVisitaActualizada);
@@ -23,6 +24,7 @@ export default function useSignalR(handlers = {}) {
         connection.on('PagarMesaSeparado', onPagarMesaSeparado);
         connection.on('RecargarTicket', onRecargarTicket);
         connection.on('RecargarDeliveryTakeaway', onRecargarDeliveryTakeaway);
+        connection.on('StockActualizado', onStockActualizado);
 
         return () => {
             connection.off('RegistrarProducto', onRegistrarProducto);
@@ -32,27 +34,24 @@ export default function useSignalR(handlers = {}) {
             connection.off('PagarMesaSeparado', onPagarMesaSeparado);
             connection.off('RecargarTicket', onRecargarTicket);
             connection.off('RecargarDeliveryTakeaway', onRecargarDeliveryTakeaway);
+            connection.off('StockActualizado', onStockActualizado);
         }
     }, []);
 
     const sendRecargarTicket = (numeroMesa) => {
-        if (!connection) return;
-        try { connection.send('RecargarTicket', numeroMesa); } catch (e) { console.error(e); }
+        return sendHubMessage('RecargarTicket', numeroMesa);
     }
 
     const sendRecargarMenu = () => {
-        if (!connection) return;
-        try { connection.send('RecargarMenu'); } catch (e) { console.error(e); }
+        return sendHubMessage('RecargarMenu');
     }
 
     const sendRecargarDeliveryTakeaway = () => {
-        if (!connection) return;
-        try { connection.send('RecargarDeliveryTakeaway'); } catch (e) { console.error(e); }
+        return sendHubMessage('RecargarDeliveryTakeaway');
     }
 
     const registrarMozoAGrupo = (connectionId) => {
-        if (!connection) return;
-        try { connection.send('RegistrarMozoAGrupo', connectionId); } catch (e) { console.error(e); }
+        return sendHubMessage('RegistrarMozoAGrupo', connectionId);
     }
 
     return { sendRecargarTicket, sendRecargarMenu, sendRecargarDeliveryTakeaway, registrarMozoAGrupo };

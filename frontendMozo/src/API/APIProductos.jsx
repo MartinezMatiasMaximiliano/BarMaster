@@ -1,5 +1,5 @@
 import api from '../services/axiosInstance'
-import connection from '../connections/HubConnMozo'
+import { sendHubMessage } from '../connections/HubConnMozo'
 import { construirError } from './APIError';
 
 function normalizarDecimal(valor, fallback = undefined) {
@@ -88,7 +88,8 @@ export async function CrearProducto(datos) {
                 "Content-Type": "multipart/form-data"
             }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
+        if (datos.controlaStock) await sendHubMessage("StockActualizado");
         return response.data;
     } catch (error) {
         console.error("Error al crear producto:", construirError(error, 'Error al crear el producto'));
@@ -115,7 +116,7 @@ export async function ModificarProducto(datos) {
                 "Content-Type": "multipart/form-data"
             }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error("Error al modificar producto:", construirError(error, 'Error al modificar el producto'));
@@ -135,7 +136,7 @@ export async function ActivarProducto(Id) {
                 "Content-Type": "multipart/form-data"
             }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error("Error al activar producto:", construirError(error, 'Error al activar el producto'));
@@ -155,7 +156,7 @@ export async function DesactivarProducto(Id) {
                 "Content-Type": "multipart/form-data"
             }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error("Error al desactivar producto:", construirError(error, 'Error al desactivar el producto'));
@@ -169,7 +170,7 @@ export async function BorrarProducto(Id, Token) {
         const response = await api.delete('Productos/', {
             params: { IdProducto: Id }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error('Error al borrar producto:', construirError(error, 'Error al eliminar el producto'));

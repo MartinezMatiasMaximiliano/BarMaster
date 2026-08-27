@@ -230,6 +230,7 @@ export async function CrearDeliveryTakeaway(values, origen = 'Delivery') {
             body
         );
         await sendHubMessage('RecargarDeliveryTakeaway');
+        await sendHubMessage('StockActualizado');
         return response.data ?? null;
     } catch (error) {
         console.error('Error al crear delivery/takeaway:', construirError(error, 'Error al crear delivery/takeaway'));
@@ -251,6 +252,7 @@ export async function CrearDeliveryTakeawayFromComanda(formValues, comanda, orig
             body
         );
         await sendHubMessage('RecargarDeliveryTakeaway');
+        await sendHubMessage('StockActualizado');
         return response.data ?? null;
     } catch (error) {
         console.error('Error al crear delivery/takeaway:', construirError(error, 'Error al crear delivery/takeaway'));
@@ -378,6 +380,7 @@ export async function EliminarDeliveryTakeaway(id) {
             params: { id },
         });
         await sendHubMessage('RecargarDeliveryTakeaway');
+        await sendHubMessage('StockActualizado');
         return response.data ?? null;
     } catch (error) {
         console.error('Error al eliminar delivery/takeaway:', construirError(error, 'Error al eliminar delivery/takeaway'));

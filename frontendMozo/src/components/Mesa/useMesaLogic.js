@@ -10,7 +10,7 @@ import {
 import { EliminarProductosVisita, ObtenerVisitaPorId } from '../../API/APIVisitas';
 import { AbrirCerrarMesa } from '../../API/APIMesas';
 import { GenerarTicketPDF } from '../../API/APIPedidos';
-import connection, { sendHubMessage } from '../../connections/HubConnMozo';
+import { sendHubMessage } from '../../connections/HubConnMozo';
 
 export const useMesaLogic = () => {
     const dispatch = useDispatch();
@@ -71,7 +71,7 @@ export const useMesaLogic = () => {
             await AbrirCerrarMesa(requestDTO); // Usa el mismo endpoint AbrirCerrar
 
             // Notificar al cliente
-            connection.send("MesaCerrada", numeroMesa);
+            await sendHubMessage("MesaCerrada", numeroMesa);
 
             // Recargar vista manteniendo la pestaña actual (Index2 o grid)
             if (index2) {

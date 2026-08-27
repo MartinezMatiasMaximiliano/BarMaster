@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance';
+import { sendHubMessage } from '../connections/HubConnMozo';
 import { construirError } from './APIError';
 
 export async function BuscarStock() {
@@ -7,6 +8,15 @@ export async function BuscarStock() {
         return response.data;
     } catch (error) {
         throw construirError(error, 'Error al buscar el stock');
+    }
+}
+
+export async function BuscarAlertasStock() {
+    try {
+        const response = await api.get('Stock/alertas');
+        return response.data;
+    } catch (error) {
+        throw construirError(error, 'Error al buscar las alertas de stock');
     }
 }
 
@@ -27,6 +37,7 @@ export async function ConfigurarStock(idProducto, configuracion) {
             CantidadMinima: configuracion.cantidadMinima,
             CantidadInicial: configuracion.cantidadInicial,
         });
+        await sendHubMessage('StockActualizado');
         return response.data;
     } catch (error) {
         throw construirError(error, 'Error al configurar el stock');
@@ -39,6 +50,7 @@ export async function RegistrarMovimientoStock(idProducto, movimiento) {
             Cantidad: movimiento.cantidad,
             Motivo: movimiento.motivo || null,
         });
+        await sendHubMessage('StockActualizado');
         return response.data;
     } catch (error) {
         throw construirError(error, 'Error al registrar el movimiento de stock');

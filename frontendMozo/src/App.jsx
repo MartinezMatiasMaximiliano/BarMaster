@@ -61,6 +61,7 @@ import { agregar as agregarTicket } from './redux/slices/ticketSlice'
 import Control_Login from './components/Control_Login';
 import TicketVirtual from './pages/TicketVirtual/TicketVirtual';
 import Stock from './pages/Stock/Stock';
+import StockAlerts from './components/StockAlerts';
 
 export const LoginContext = createContext();
 export const SucursalContext = createContext();
@@ -388,7 +389,7 @@ function App() {
     return (
         <LoginContext.Provider value={{ logeadoUsuario, setLogeadoUsuario, rol, setRol }}>
             <AuthTypeContext.Provider value={{ authType, setAuthType }}>
-                <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+                <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', position: 'relative' }}>
                     <Box component="aside" sx={{ width: { xs: 220, md: 260 }, minWidth: { xs: 220, md: 260 }, flexShrink: 0, borderRight: 1, borderColor: 'divider', position: 'sticky', top: 0, alignSelf: 'flex-start', minHeight: '100vh', bgcolor: 'background.paper' }}>
                         <Navbar />
                     </Box>
@@ -449,9 +450,23 @@ function App() {
                             <Route path="*" element={<Navigate to="/sistema_sucursal" replace />} />
                         </Routes>
                     </Box>
-                    {/*<Box component="aside" sx={{ width: { xs: 0, md: 260 }, borderLeft: { md: 1 }, borderColor: 'divider', display: { xs: 'none', md: 'block' }, bgcolor: 'background.paper', px: 2, py: 3 }} className="container-notificaciones">
-                        {[...Notificaciones].reverse()}
-                    </Box>*/}
+                    {(location.pathname === '/sistema_sucursal' || location.pathname === '/Index2') && (
+                        <Box
+                            component="aside"
+                            sx={{
+                                position: 'absolute',
+                                top: 16,
+                                right: 16,
+                                zIndex: 20,
+                                width: { xs: 220, md: 260 },
+                                maxHeight: 'calc(100vh - 32px)',
+                                overflowY: 'auto'
+                            }}
+                        >
+                            <StockAlerts refreshKey={location.search} />
+                            {[...Notificaciones].reverse()}
+                        </Box>
+                    )}
                 </Box>
             </AuthTypeContext.Provider>
         </LoginContext.Provider>
