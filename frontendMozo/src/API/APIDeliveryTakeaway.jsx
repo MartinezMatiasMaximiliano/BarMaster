@@ -362,9 +362,10 @@ export async function ModificarDeliveryTakeaway(values) {
 
 export async function CambiarEstadoEntregaDeliveryTakeaway(id, entregado) {
     try {
-        const response = await api.patch('DeliveryTakeaway/ModificarDatos', {
-            IdDeliveryTakeaway: id,
+        const response = await api.patch('DeliveryTakeaway/Entregado', {
             Entregado: entregado,
+        }, {
+            params: { id },
         });
         await sendHubMessage('RecargarDeliveryTakeaway');
         return response.data ?? null;
