@@ -3,6 +3,10 @@ using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.Data;
 using BackEndAPI.Hubs;
+using BackEndAPI.Printing;
+using BackEndAPI.Printing.Identity;
+using BackEndAPI.Printing.Qz;
+using BackEndAPI.Printing.Stations;
 using BackEndAPI.Repositories;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
@@ -11,12 +15,15 @@ using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,10 +87,16 @@ builder.Services.AddSwaggerGen(options =>
 #region CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader());
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+    options.AddPolicy("BarMaster", policy =>
+    {
+        if (allowedOrigins.Length == 0 && builder.Environment.IsDevelopment())
+            policy.WithOrigins("http://localhost:3006", "https://localhost:3006");
+        else
+            policy.WithOrigins(allowedOrigins);
+
+        policy.AllowAnyMethod().AllowAnyHeader();
+    });
 });
 #endregion
 
@@ -142,6 +155,14 @@ builder.Services.AddScoped<IRolesServices, RolesServices>();
 builder.Services.AddScoped<ICuentasCorrientesRepository, CuentasCorrientesRepository>();
 builder.Services.AddScoped<ICuentasCorrientesServices, CuentasCorrientesServices>();
 builder.Services.AddScoped<S3Service>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IPrintingRequestIdentity, PrintingRequestIdentity>();
+builder.Services.AddScoped<IPrintingStationService, PrintingStationService>();
+builder.Services.AddSingleton<IValidateOptions<QzSigningOptions>, QzSigningOptionsValidator>();
+builder.Services.AddOptions<QzSigningOptions>()
+    .Bind(builder.Configuration.GetSection(QzSigningOptions.SectionName))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IQzSigningService, QzSigningService>();
 //builder.Services.AddAWSService<IAmazonS3>();
 
 builder.Services.AddDbContext<MasterDbContext>(options =>
@@ -174,6 +195,55 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Printing.Use", policy => policy.RequireAssertion(context =>
+        context.User.HasClaim("TipoAuth", "sucursal")
+        && context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
+        && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))));
+
+    options.AddPolicy("Printing.Configure", policy => policy.RequireAssertion(context =>
+        context.User.HasClaim("TipoAuth", "admin")
+        && context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
+        && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))
+        && context.User.Claims.Any(claim => claim.Type == "RequestedRole" && string.Equals(claim.Value, "Admin", StringComparison.OrdinalIgnoreCase))));
+
+    options.AddPolicy("Printing.Diagnostics", policy => policy.RequireAssertion(context =>
+        context.User.Identity?.IsAuthenticated == true
+        && context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
+        && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))));
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            error = new { code = "QZ_RATE_LIMITED", message = "Se excedió el límite temporal del firmador QZ." }
+        }, cancellationToken);
+    };
+    options.AddPolicy("QzSigning", httpContext =>
+    {
+        var user = httpContext.User;
+        var key = string.Join('|',
+            user.FindFirst("TenantId")?.Value ?? "anonymous",
+            user.FindFirst("IdSucursal")?.Value ?? "none",
+            httpContext.Request.Headers["X-Printing-Station-ID"].ToString(),
+            user.FindFirst("jti")?.Value ?? "none",
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+
+        return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+        {
+            AutoReplenishment = true,
+            PermitLimit = 120,
+            QueueLimit = 0,
+            Window = TimeSpan.FromMinutes(1)
+        });
+    });
+});
+
 #endregion
 
 var app = builder.Build();
@@ -192,7 +262,7 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseRouting();
-app.UseCors("AllowAll");
+app.UseCors("BarMaster");
 
 if (app.Environment.IsDevelopment())
 {
@@ -200,10 +270,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMiddleware<TenantDbMiddleware>();
-
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseRateLimiter();
+app.UseMiddleware<PrintingExceptionMiddleware>();
+app.UseMiddleware<TenantDbMiddleware>();
 app.UseAuthorization();
 #endregion
 
@@ -213,3 +284,5 @@ app.MapHub<NotificacionesHub>("/NotificacionesHub");
 #endregion
 
 app.Run();
+
+public partial class Program;

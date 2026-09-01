@@ -1,6 +1,7 @@
 ﻿using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Controllers;
 using BackEndAPI.Models;
+using BackEndAPI.Models.Printing;
 using BackEndAPI.Tenancy.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -42,9 +43,37 @@ namespace BackEndAPI.Data
         public DbSet<FETokenAuth> FETokenAuths => Set<FETokenAuth>();
         public DbSet<StockProductoSucursal> StockProductosSucursales => Set<StockProductoSucursal>();
         public DbSet<MovimientoStock> MovimientosStock => Set<MovimientoStock>();
+        public DbSet<PrintingStation> PrintingStations => Set<PrintingStation>();
+        public DbSet<PrinterAssignment> PrinterAssignments => Set<PrinterAssignment>();
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PrintingStation>(entity =>
+            {
+                entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
+                entity.HasIndex(x => new { x.IdSucursal, x.ClientInstallationId }).IsUnique();
+                entity.HasOne(x => x.Sucursal)
+                    .WithMany(x => x.PrintingStations)
+                    .HasForeignKey(x => x.IdSucursal)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<PrinterAssignment>(entity =>
+            {
+                entity.Property(x => x.QzPrinterName).HasMaxLength(260).IsRequired();
+                entity.Property(x => x.Role).HasConversion<string>().HasMaxLength(32);
+                entity.Property(x => x.Format).HasConversion<string>().HasMaxLength(16);
+                entity.HasIndex(x => new { x.StationId, x.Role }).IsUnique();
+                entity.ToTable(table =>
+                {
+                    table.HasCheckConstraint("CK_PrinterAssignments_Copies", "\"Copies\" BETWEEN 1 AND 10");
+                    table.HasCheckConstraint("CK_PrinterAssignments_PaperWidthMm", "\"PaperWidthMm\" IN (58, 80)");
+                });
+                entity.HasOne(x => x.Station)
+                    .WithMany(x => x.Assignments)
+                    .HasForeignKey(x => x.StationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             modelBuilder.Entity<Rol>().HasData(
                 new Rol { Id = 1, Nombre = "Admin" },

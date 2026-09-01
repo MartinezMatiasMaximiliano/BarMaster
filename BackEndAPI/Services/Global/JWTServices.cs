@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BackEndAPI.Tenancy.Services;
 
 namespace BackEndAPI.Services.Global
 {
@@ -11,11 +12,14 @@ namespace BackEndAPI.Services.Global
     {
         private readonly IConfiguration _config;
         private readonly SymmetricSecurityKey _key;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public JWTServices(IConfiguration config)
+        public JWTServices(IConfiguration config, IHttpContextAccessor httpContextAccessor)
         {
             _config = config;
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SigningKey"]));
+            _httpContextAccessor = httpContextAccessor;
+            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _config["JWT:SigningKey"] ?? throw new InvalidOperationException("JWT SigningKey not configured")));
         }
 
         public JWTToken CrearJWTSucursal(Sucursal request)
@@ -26,6 +30,7 @@ namespace BackEndAPI.Services.Global
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
                 new Claim("IdEmpresa", request.IdEmpresa.ToString()),
                 new Claim("IdSucursal", request.Id.ToString()),
+                new Claim("TenantId", GetTenantId()),
                 new Claim("TipoAuth","sucursal")
             };
 
@@ -33,8 +38,8 @@ namespace BackEndAPI.Services.Global
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "BackendAPI",
-                audience: "FrontendCliente",
+                issuer: _config["JWT:Issuer"],
+                audience: _config["JWT:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddHours(hours_expire),
                 signingCredentials: creds);
@@ -58,6 +63,7 @@ namespace BackEndAPI.Services.Global
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
                 new Claim("IdEmpresa", request.Id.ToString()),
+                new Claim("TenantId", GetTenantId()),
                 new Claim("TipoAuth","empresa")
             };
 
@@ -65,8 +71,8 @@ namespace BackEndAPI.Services.Global
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "BackendAPI",
-                audience: "FrontendCliente",
+                issuer: _config["JWT:Issuer"],
+                audience: _config["JWT:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddHours(hours_expire),
                 signingCredentials: creds);
@@ -90,8 +96,11 @@ namespace BackEndAPI.Services.Global
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
                 new Claim("IdPersona", persona.Id.ToString()),
+                new Claim("IdEmpresa", persona.IdEmpresa.ToString()),
+                new Claim("IdSucursal", persona.IdSucursal?.ToString() ?? string.Empty),
+                new Claim("TenantId", GetTenantId()),
                 new Claim("RequestedBy",$"{persona.Apellido},{persona.Nombres}"),
-                new Claim("RequestedRole",$"{persona.Rol}"),
+                new Claim("RequestedRole", persona.Rol?.Nombre ?? string.Empty),
                 new Claim("TipoAuth","admin"),
             };
 
@@ -99,8 +108,8 @@ namespace BackEndAPI.Services.Global
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "BackendAPI",
-                audience: "FrontendCliente",
+                issuer: _config["JWT:Issuer"],
+                audience: _config["JWT:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddHours(hours_expire),
                 signingCredentials: creds);
@@ -116,6 +125,14 @@ namespace BackEndAPI.Services.Global
                 expires = token.ValidTo.ToString(),
                 Expires_in = 3600 * hours_expire
             };
+        }
+
+        private string GetTenantId()
+        {
+            var value = _httpContextAccessor.HttpContext?.Request.Headers["X-Tenant-ID"].ToString();
+            if (string.IsNullOrWhiteSpace(value))
+                throw new InvalidOperationException("X-Tenant-ID es obligatorio para emitir un JWT.");
+            return TenantIdentifier.Normalize(value);
         }
     }
 }

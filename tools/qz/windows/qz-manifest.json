@@ -1,0 +1,18 @@
+{
+  "version": "2.2.6",
+  "publisherSubjectPattern": "CN=QZ Industries LLC(?:,|$)",
+  "rootCertificate": "public/override.crt",
+  "rootCertificateSha256": "18769873BDCD313C8822BAF27E268BD1344946D035C5EBF8B0E0169CBBBAD997",
+  "downloads": {
+    "x64": {
+      "fileName": "qz-tray-2.2.6-x86_64.exe",
+      "url": "https://github.com/qzind/tray/releases/download/v2.2.6/qz-tray-2.2.6-x86_64.exe",
+      "sha256": "AEB93A601C27F5FA6BB464F63471E7ACD43052BA384FEF49DCEEC8290D4F7587"
+    },
+    "arm64": {
+      "fileName": "qz-tray-2.2.6-arm64.exe",
+      "url": "https://github.com/qzind/tray/releases/download/v2.2.6/qz-tray-2.2.6-arm64.exe",
+      "sha256": "EC08EEE87768753651C9F3E1EF0E83A297A0B9E8950793875D686931228A7069"
+    }
+  }
+}

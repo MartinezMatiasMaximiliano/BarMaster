@@ -24,18 +24,21 @@ namespace BackEndAPI.Controllers
         private readonly WsfeService _wsfeService;
         private readonly WsaaAuthService _wasaaAuthService;
         private readonly S3Service _s3Service;
+        private readonly IWebHostEnvironment _environment;
 
-        public Test(ICurrentDbContext currentDbContext, WsfeService wsfeService, WsaaAuthService wsaaAuthService, S3Service s3Service)
+        public Test(ICurrentDbContext currentDbContext, WsfeService wsfeService, WsaaAuthService wsaaAuthService, S3Service s3Service, IWebHostEnvironment environment)
         {
             _currentDbContext = currentDbContext;
             _wsfeService = wsfeService;
             _wasaaAuthService = wsaaAuthService;
             _s3Service = s3Service;
+            _environment = environment;
         }
 
         [HttpPost("/migrar")]
         public async Task<IActionResult> migrar()
         {
+            if (!_environment.IsDevelopment()) return NotFound();
             _currentDbContext.Db.Database.Migrate();
             return Ok($"Merged");
         }
@@ -44,6 +47,7 @@ namespace BackEndAPI.Controllers
         [HttpPost("/test-ARCA")]
         public async Task<IActionResult> testARCA()
         {
+            if (!_environment.IsDevelopment()) return NotFound();
             try
             {
                 //1. Cargar el certificado
@@ -106,6 +110,7 @@ namespace BackEndAPI.Controllers
         [HttpGet("file")]
         public async Task<IActionResult> filetest([FromQuery] string key)
         {
+            if (!_environment.IsDevelopment()) return NotFound();
             try
             {
                 //var fileStream = await _s3Service.ObtenerArchivo(key);

@@ -7,14 +7,14 @@ import {
     validateFieldAndSetError,
     validateForm,
 } from "../validation/formValidation";
+import { clearBranchSession } from "../services/sessionCleanup";
 
 /* Funcion para confirmar el del sistema (sirve para el sistema de una sucursal y para el panel de sucursales) */
-export const handleConfirmarSalir = (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
+export const handleConfirmarSalir = async (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
     // Cerrar diálogo primero
     setOpenConfirmDialog(false);
     
-    // Limpiar localStorage
-    localStorage.clear();
+    await clearBranchSession();
     
     // Limpiar contextos - verificar qué método está disponible
     if (loginContext?.setLogeadoEmpresaSucursal) {

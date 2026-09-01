@@ -13,6 +13,8 @@ export const MesaModalActions = ({
     onFacturarTodo,
     onFacturarPartes,
     onAgregarPedidos,
+    onPrintPreticket,
+    printing,
     onClose
 }) => (
     <DialogActions sx={{
@@ -60,10 +62,12 @@ export const MesaModalActions = ({
             <Button
                 variant="outlined"
                 color="primary"
+                onClick={onPrintPreticket}
+                disabled={printing || !puedeFacturarTodo}
                 startIcon={<PrintIcon />}
                 size="small"
             >
-                Imprimir Preticket
+                {printing ? 'Imprimiendo…' : 'Imprimir Preticket'}
             </Button>
         </Box>
         <Button onClick={onClose} variant="outlined" size="small">

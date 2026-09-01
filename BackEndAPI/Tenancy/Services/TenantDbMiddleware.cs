@@ -12,6 +12,25 @@ namespace BackEndAPI.Tenancy.Services
         }
         public async Task InvokeAsync(HttpContext context, AppDbContextFactory factory)
         {
+            if (context.User.Identity?.IsAuthenticated == true)
+            {
+                var tenantClaim = context.User.FindFirst("TenantId")?.Value;
+                var tenantHeader = context.Request.Headers["X-Tenant-ID"].ToString();
+                if (string.IsNullOrWhiteSpace(tenantClaim)
+                    || string.IsNullOrWhiteSpace(tenantHeader)
+                    || !string.Equals(
+                        TenantIdentifier.Normalize(tenantClaim),
+                        TenantIdentifier.Normalize(tenantHeader),
+                        StringComparison.Ordinal))
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        error = new { code = "TENANT_MISMATCH", message = "El tenant autenticado no coincide con la solicitud." }
+                    });
+                    return;
+                }
+            }
 
             using var dbContext = await factory.CreateAsync(context);
 

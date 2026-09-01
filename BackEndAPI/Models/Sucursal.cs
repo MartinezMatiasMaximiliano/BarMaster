@@ -24,6 +24,7 @@ namespace BackEndAPI.Models
         public ICollection<Menu> Menus { get; set; } = new List<Menu>();
         public ICollection<Caja> Cajas { get; set; } = new List<Caja>();
         public ICollection<DeliveryAndTakeaway> Deliveries { get; set; } = new List<DeliveryAndTakeaway>();
+        public ICollection<Printing.PrintingStation> PrintingStations { get; set; } = new List<Printing.PrintingStation>();
 
         //public ICollection<Persona> Personas { get; set; } = new List<Persona>();
         //public Persona? Encargado { get; set; } 

@@ -62,6 +62,8 @@ import Control_Login from './components/Control_Login';
 import TicketVirtual from './pages/TicketVirtual/TicketVirtual';
 import Stock from './pages/Stock/Stock';
 import StockAlerts from './components/StockAlerts';
+import ConfiguracionImpresion from './pages/ConfiguracionImpresion/ConfiguracionImpresion';
+import { PrintingProvider } from './contexts/PrintingContext';
 
 export const LoginContext = createContext();
 export const SucursalContext = createContext();
@@ -81,7 +83,9 @@ function App() {
         return !!(token && authType); // Solo está logeado si hay token Y auth_type
     });
 
-    const [logeadoUsuario, setLogeadoUsuario] = useState(false);
+    const [logeadoUsuario, setLogeadoUsuario] = useState(() =>
+        authService.isTokenValid(localStorage.getItem('USER_token'))
+    );
 
     const [rol, setRol] = useState(
         () => localStorage.getItem('USER_auth_type') || localStorage.getItem('rol') || ''
@@ -389,6 +393,7 @@ function App() {
     return (
         <LoginContext.Provider value={{ logeadoUsuario, setLogeadoUsuario, rol, setRol }}>
             <AuthTypeContext.Provider value={{ authType, setAuthType }}>
+                <PrintingProvider>
                 <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', position: 'relative' }}>
                     <Box component="aside" sx={{ width: { xs: 220, md: 260 }, minWidth: { xs: 220, md: 260 }, flexShrink: 0, borderRight: 1, borderColor: 'divider', position: 'sticky', top: 0, alignSelf: 'flex-start', minHeight: '100vh', bgcolor: 'background.paper' }}>
                         <Navbar />
@@ -445,6 +450,7 @@ function App() {
                             <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
                             <Route path="/documentacion" element={<Control_Login><Documentacion_Uso /></Control_Login>} />
                             <Route path="/comentarios" element={<Control_Login><Enviar_Comentarios /></Control_Login>} />
+                            <Route path="/configuracion_impresion" element={<Control_Login><ConfiguracionImpresion /></Control_Login>} />
                             <Route path="/panel_sucursales" element={<Control_Login><PanelSucursales /></Control_Login>} />
                             <Route path="/login" element={<LoginUsuarios />} />
                             <Route path="*" element={<Navigate to="/sistema_sucursal" replace />} />
@@ -468,6 +474,7 @@ function App() {
                         </Box>
                     )}
                 </Box>
+                </PrintingProvider>
             </AuthTypeContext.Provider>
         </LoginContext.Provider>
     )

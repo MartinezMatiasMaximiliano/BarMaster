@@ -85,6 +85,7 @@ const menuConfig = {
             { path: "/historial", label: "Historial", icon: HistoryIcon },
         ],
         "Configuración": [
+            { path: "/configuracion_impresion", label: "Impresoras", icon: SettingsOutlinedIcon },
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         ],
         "Ayuda": [

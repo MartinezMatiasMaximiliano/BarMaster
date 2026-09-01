@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearBranchSession } from './sessionCleanup';
 
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL,
@@ -22,14 +23,9 @@ axiosInstance.interceptors.request.use((config) => {
 // Response interceptor: manejo centralizado de 401
 axiosInstance.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
         if (error.response?.status === 401) {
-            // Token expirado o inválido — limpiar sesión y redirigir al login
-            localStorage.removeItem('token');
-            localStorage.removeItem('auth_type');
-            localStorage.removeItem('tenantId');
-            localStorage.removeItem('USER_token');
-            localStorage.removeItem('USER_auth_type');
+            await clearBranchSession();
 
             // Solo redirigir si no estamos ya en la página de login
             if (window.location.pathname !== '/') {

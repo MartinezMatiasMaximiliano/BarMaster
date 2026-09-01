@@ -24,6 +24,8 @@ import { MesaProductosPanel } from './components/MesaProductosPanel';
 import { PedidoTotalMesa } from './components/PedidoTotalMesa';
 import { useAutoSubmitPedidos } from './hooks/useAutoSubmitPedidos';
 import { formatearFecha } from './dateFormatter';
+import { printPreticket } from '../../services/printing/printingOrchestrator';
+import { normalizeQzError } from '../../services/printing/qzErrors';
 
 const AUTO_SUBMIT_MS = 5000;
 
@@ -52,6 +54,7 @@ export const MesaModalUnificado = ({
 
     const [productosSeleccionados, setProductosSeleccionados] = useState([]);
     const [showModalFacturar, setShowModalFacturar] = useState(null);
+    const [printingPreticket, setPrintingPreticket] = useState(false);
     const [snackbarFacturacion, setSnackbarFacturacion] = useState({
         open: false,
         message: '',
@@ -168,6 +171,30 @@ export const MesaModalUnificado = ({
             'success'
         );
     }, [onCancelarPedidos, showSnackbar]);
+
+    const handlePrintPreticket = useCallback(async () => {
+        const unpaidIds = new Set(productosAPagar);
+        const products = (visitaMesaFinal?.productosConsumidos || [])
+            .filter((product) => unpaidIds.has(product.id ?? product.Id));
+        if (products.length === 0) {
+            showSnackbar('No hay productos pendientes para imprimir', 'warning');
+            return;
+        }
+
+        setPrintingPreticket(true);
+        try {
+            await printPreticket({
+                branchName: localStorage.getItem('username') || 'BarMaster',
+                tableName: datos_mesa?.nombre || datos_mesa?.numeroMesa,
+                products,
+            });
+            showSnackbar('Preticket enviado a la impresora', 'success');
+        } catch (error) {
+            showSnackbar(normalizeQzError(error).message, 'error');
+        } finally {
+            setPrintingPreticket(false);
+        }
+    }, [datos_mesa, productosAPagar, showSnackbar, visitaMesaFinal]);
 
     return (
         <Dialog
@@ -305,6 +332,8 @@ export const MesaModalUnificado = ({
                 totalItems={totalItems}
                 onFacturarTodo={() => setShowModalFacturar('todo')}
                 onFacturarPartes={handleFacturarPartes}
+                onPrintPreticket={handlePrintPreticket}
+                printing={printingPreticket}
                 onAgregarPedidos={handleEnviarPedidos}
                 onClose={handleCloseWithCleanup}
             />
