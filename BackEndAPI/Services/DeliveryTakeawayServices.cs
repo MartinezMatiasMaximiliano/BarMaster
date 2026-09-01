@@ -44,12 +44,12 @@ namespace BackEndAPI.Services
         {
             return await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
         }
-        public async Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway)
+        public async Task<DeliveryAndTakeaway?> CambiarEntregado(Guid IdDeliveryTakeaway, bool entregado)
         {
             var busqueda = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
             if (busqueda == null) throw new Exception("no encontrado");
-            busqueda.Entregado = true;
-            busqueda.Visita.Estado = "Cerrada";
+            busqueda.Entregado = entregado;
+            busqueda.Visita.Estado = entregado ? "Cerrada" : "Abierta";
             await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(busqueda);
             return busqueda;
 

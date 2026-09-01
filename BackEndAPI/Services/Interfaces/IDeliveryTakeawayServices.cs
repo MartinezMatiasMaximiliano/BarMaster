@@ -11,7 +11,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeawaysPorCaja(Guid IdSucursal, Guid IdCaja);
         Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid IdDeliveryTakeaway);
         Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(Guid Idsucursal, CrearDeliveryTakeawayDTO request);
-        Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway);
+        Task<DeliveryAndTakeaway?> CambiarEntregado(Guid IdDeliveryTakeaway, bool entregado);
         Task<DeliveryAndTakeaway?> ModificarDeliveryTakeaway(ModificarDeliveryTakeawayDTO request);
         //Task<DeliveryAndTakeaway?> AgregarProductosADeliveryAndTakeaway(Guid Id, List<AgregarProductoAVisita> ListaProductos);
         //Task<DeliveryAndTakeaway?> RemoverProductosADeliveryAndTakeaway(Guid Id, List<int> ListaProductos);
