@@ -1,6 +1,6 @@
 import api from '../services/axiosInstance';
 import { construirError } from './APIError';
-import { AgregarProductosAVisita, EliminarProductosVisita, ObtenerTodasLasVisitas } from './APIVisitas';
+import { ObtenerTodasLasVisitas } from './APIVisitas';
 import { sendHubMessage } from '../connections/HubConnMozo';
 
 export function normalizarDeliveryTakeaway(item) {
@@ -295,8 +295,6 @@ export async function ModificarDeliveryTakeaway(values) {
             }
         }
 
-        await api.patch('DeliveryTakeaway/ModificarDatos', payload);
-
         const productosOriginales = Array.isArray(values.productosOriginales) ? values.productosOriginales : [];
         const comandaActual = Array.isArray(values.comanda) ? values.comanda : [];
 
@@ -340,15 +338,13 @@ export async function ModificarDeliveryTakeaway(values) {
             }
         });
 
-        if (idsARemover.length > 0) {
-            await EliminarProductosVisita(idVisita, idsARemover);
-        }
+        payload.ProductosEliminados = idsARemover;
+        payload.ProductosAgregados = productosAAgregar;
 
-        if (productosAAgregar.length > 0) {
-            await AgregarProductosAVisita(idVisita, productosAAgregar);
-        }
+        await api.patch('DeliveryTakeaway/ModificarDatos', payload);
 
         await sendHubMessage('RecargarDeliveryTakeaway');
+        await sendHubMessage('StockActualizado');
 
         return {
             id: idDeliveryTakeaway,
