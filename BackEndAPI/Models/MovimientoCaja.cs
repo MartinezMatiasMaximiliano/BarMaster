@@ -12,7 +12,7 @@ namespace BackEndAPI.Models
         public decimal Vuelto { get; set; } = decimal.Zero;
         public decimal MontoTotal { get; set; } 
         public string Descripcion { get; set; } = string.Empty;
-        public bool Facturado { get; set; } = false;
+        public bool? Facturado { get; set; } = null;
         public Guid? IdFactura { get; set; } = null;
         public DateTime FechaMovimiento { get; set; } = DateTime.UtcNow;
 

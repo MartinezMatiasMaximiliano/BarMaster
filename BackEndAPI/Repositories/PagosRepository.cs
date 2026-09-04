@@ -56,6 +56,7 @@ namespace BackEndAPI.Repositories
                     await transaccion.CommitAsync();
                     return (movimientoCaja, facturaElectronica);
                 }
+                movimientoCaja.Facturado = false;
 
                 await Db.MovimientosCajas.AddAsync(movimientoCaja);
                 Db.Entry(visita).State = EntityState.Modified;

@@ -149,13 +149,11 @@ namespace BackEndAPI.Controllers
             try
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-                if (IdSucursal == Guid.Empty)
-                {
-                    throw new Exception("Sucursal no encontrada");
-                }
+                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no encontrada");
                 if (request.IdTipoMovimientoCaja == 0) throw new Exception("Todos los campos son obligatorios");
                 if (request.MontoAbonado <= 0) throw new Exception("el monto Abonado debe ser mayor a cero.");
                 if (IdCuenta == Guid.Empty) throw new Exception("id vacio");
+
                 var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(IdSucursal, IdCuenta, request);
                 CuentaCorrienteDTO response = new CuentaCorrienteDTO
                 {

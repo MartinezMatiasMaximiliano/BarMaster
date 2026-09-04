@@ -39,6 +39,7 @@ namespace BackEndAPI.Services
                 Descripcion = request.Descripcion?.Trim() ?? string.Empty,
                 FechaMovimiento = DateTime.UtcNow,
                 TipoMovimientoCaja = TipoMovimiento,
+                Facturado = null
             };
 
 
