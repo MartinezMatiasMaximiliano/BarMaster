@@ -3,10 +3,16 @@ using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.Data;
 using BackEndAPI.Hubs;
-using BackEndAPI.Printing;
-using BackEndAPI.Printing.Identity;
-using BackEndAPI.Printing.Qz;
-using BackEndAPI.Printing.Stations;
+using BackEndAPI.Impresion;
+using BackEndAPI.Impresion.Identidad;
+using BackEndAPI.Impresion.Qz;
+using BackEndAPI.Impresion.Estaciones;
+using BackEndAPI.Impresion.Seguridad;
+using BackEndAPI.Impresion.Dispositivos;
+using BackEndAPI.Impresion.Reglas;
+using BackEndAPI.Impresion.Trabajos;
+using BackEndAPI.Impresion.Notificaciones;
+using BackEndAPI.Impresion.Documentos;
 using BackEndAPI.Repositories;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
@@ -156,13 +162,26 @@ builder.Services.AddScoped<ICuentasCorrientesRepository, CuentasCorrientesReposi
 builder.Services.AddScoped<ICuentasCorrientesServices, CuentasCorrientesServices>();
 builder.Services.AddScoped<S3Service>();
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddScoped<IPrintingRequestIdentity, PrintingRequestIdentity>();
-builder.Services.AddScoped<IPrintingStationService, PrintingStationService>();
-builder.Services.AddSingleton<IValidateOptions<QzSigningOptions>, QzSigningOptionsValidator>();
-builder.Services.AddOptions<QzSigningOptions>()
-    .Bind(builder.Configuration.GetSection(QzSigningOptions.SectionName))
+builder.Services.AddScoped<IIdentidadSolicitudImpresion, IdentidadSolicitudImpresion>();
+builder.Services.AddScoped<IServicioEstacionImpresion, ServicioEstacionImpresion>();
+builder.Services.AddScoped<IServicioCredencialEstacion, ServicioCredencialEstacion>();
+builder.Services.AddScoped<IServicioImpresora, ServicioImpresora>();
+builder.Services.AddScoped<IServicioReglaImpresion, ServicioReglaImpresion>();
+builder.Services.AddScoped<IServicioTrabajoImpresion, ServicioTrabajoImpresion>();
+builder.Services.AddScoped<IServicioDocumentoImpresion, ServicioDocumentoImpresion>();
+builder.Services.AddScoped<INotificadorImpresion, NotificadorHubImpresion>();
+builder.Services.AddHostedService<ServicioMantenimientoImpresion>();
+builder.Services.AddOptions<OpcionesImpresionDistribuida>()
+    .Bind(builder.Configuration.GetSection(OpcionesImpresionDistribuida.NombreSeccion))
+    .ValidateDataAnnotations()
+    .Validate(options => options.SegundosHastaFueraDeLinea > options.SegundosLatido,
+        "SegundosHastaFueraDeLinea debe ser mayor que SegundosLatido.")
     .ValidateOnStart();
-builder.Services.AddSingleton<IQzSigningService, QzSigningService>();
+builder.Services.AddSingleton<IValidateOptions<OpcionesFirmaQz>, ValidadorOpcionesFirmaQz>();
+builder.Services.AddOptions<OpcionesFirmaQz>()
+    .Bind(builder.Configuration.GetSection(OpcionesFirmaQz.NombreSeccion))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IServicioFirmaQz, ServicioFirmaQz>();
 //builder.Services.AddAWSService<IAmazonS3>();
 
 builder.Services.AddDbContext<MasterDbContext>(options =>
@@ -193,23 +212,50 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["JWT:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey))
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrWhiteSpace(accessToken)
+                    && context.HttpContext.Request.Path.StartsWithSegments("/hubs/impresion"))
+                    context.Token = accessToken;
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Printing.Use", policy => policy.RequireAssertion(context =>
+    options.AddPolicy("Impresion.Usar", policy => policy.RequireAssertion(context =>
         context.User.HasClaim("TipoAuth", "sucursal")
         && context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
         && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))));
 
-    options.AddPolicy("Printing.Configure", policy => policy.RequireAssertion(context =>
-        context.User.HasClaim("TipoAuth", "admin")
+    options.AddPolicy("Impresion.Configurar", policy => policy.RequireAssertion(context =>
+        AutorizacionImpresion.PuedeConfigurar(context.User)));
+
+    options.AddPolicy("Impresion.Diagnosticos", policy => policy.RequireAssertion(context =>
+        context.User.Identity?.IsAuthenticated == true
+        && context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
+        && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))));
+
+    options.AddPolicy("Impresion.Estacion", policy => policy.RequireAssertion(context =>
+        context.User.HasClaim("TipoAuth", "estacion_impresion")
         && context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
         && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))
-        && context.User.Claims.Any(claim => claim.Type == "RequestedRole" && string.Equals(claim.Value, "Admin", StringComparison.OrdinalIgnoreCase))));
+        && context.User.HasClaim(claim => claim.Type == "EstacionImpresionId" && Guid.TryParse(claim.Value, out _))));
 
-    options.AddPolicy("Printing.Diagnostics", policy => policy.RequireAssertion(context =>
-        context.User.Identity?.IsAuthenticated == true
+    options.AddPolicy("Impresion.Firmar", policy => policy.RequireAssertion(context =>
+        context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
+        && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))
+        && ((context.User.HasClaim("TipoAuth", "estacion_impresion")
+                && context.User.HasClaim(claim => claim.Type == "EstacionImpresionId" && Guid.TryParse(claim.Value, out _)))
+            || context.User.HasClaim("TipoAuth", "sucursal"))));
+
+    options.AddPolicy("Impresion.OperarEstacion", policy => policy.RequireAssertion(context =>
+        (context.User.HasClaim("TipoAuth", "estacion_impresion")
+            || context.User.HasClaim("TipoAuth", "sucursal"))
         && context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
         && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))));
 });
@@ -221,16 +267,16 @@ builder.Services.AddRateLimiter(options =>
     {
         await context.HttpContext.Response.WriteAsJsonAsync(new
         {
-            error = new { code = "QZ_RATE_LIMITED", message = "Se excedió el límite temporal del firmador QZ." }
+            error = new { codigo = "LIMITE_SOLICITUDES", mensaje = "Se realizaron demasiadas solicitudes. Espere un momento." }
         }, cancellationToken);
     };
-    options.AddPolicy("QzSigning", httpContext =>
+    options.AddPolicy("FirmaQz", httpContext =>
     {
         var user = httpContext.User;
         var key = string.Join('|',
             user.FindFirst("TenantId")?.Value ?? "anonymous",
             user.FindFirst("IdSucursal")?.Value ?? "none",
-            httpContext.Request.Headers["X-Printing-Station-ID"].ToString(),
+            httpContext.Request.Headers["X-Estacion-Impresion-ID"].ToString(),
             user.FindFirst("jti")?.Value ?? "none",
             httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
 
@@ -242,6 +288,16 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromMinutes(1)
         });
     });
+    options.AddPolicy("SesionEstacionImpresion", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            $"{httpContext.Request.Headers["X-Tenant-ID"]}|{httpContext.Connection.RemoteIpAddress}",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 10,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
 });
 
 #endregion
@@ -273,7 +329,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseRateLimiter();
-app.UseMiddleware<PrintingExceptionMiddleware>();
+app.UseMiddleware<MiddlewareExcepcionesImpresion>();
 app.UseMiddleware<TenantDbMiddleware>();
 app.UseAuthorization();
 #endregion
@@ -281,6 +337,7 @@ app.UseAuthorization();
 #region ENDPOINTS
 app.MapControllers();
 app.MapHub<NotificacionesHub>("/NotificacionesHub");
+app.MapHub<HubImpresion>("/hubs/impresion");
 #endregion
 
 app.Run();

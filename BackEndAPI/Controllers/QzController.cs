@@ -1,5 +1,5 @@
-using BackEndAPI.Printing.Qz;
-using BackEndAPI.Printing.Stations;
+using BackEndAPI.Impresion.Qz;
+using BackEndAPI.Impresion.Estaciones;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -11,85 +11,89 @@ namespace BackEndAPI.Controllers;
 [Route("api/qz")]
 public sealed class QzController : ControllerBase
 {
-    private readonly IQzSigningService signingService;
-    private readonly IPrintingStationService stationService;
-    private readonly QzSigningOptions options;
-    private readonly IWebHostEnvironment environment;
+    private readonly IServicioFirmaQz servicioFirma;
+    private readonly IServicioEstacionImpresion servicioEstacion;
+    private readonly OpcionesFirmaQz opciones;
+    private readonly IWebHostEnvironment entorno;
 
     public QzController(
-        IQzSigningService signingService,
-        IPrintingStationService stationService,
-        IOptions<QzSigningOptions> options,
-        IWebHostEnvironment environment)
+        IServicioFirmaQz servicioFirma,
+        IServicioEstacionImpresion servicioEstacion,
+        IOptions<OpcionesFirmaQz> opciones,
+        IWebHostEnvironment entorno)
     {
-        this.signingService = signingService;
-        this.stationService = stationService;
-        this.options = options.Value;
-        this.environment = environment;
+        this.servicioFirma = servicioFirma;
+        this.servicioEstacion = servicioEstacion;
+        this.opciones = opciones.Value;
+        this.entorno = entorno;
     }
 
     [AllowAnonymous]
-    [HttpGet("certificate")]
+    [HttpGet("certificado")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public IActionResult Certificate()
+    public IActionResult ObtenerCertificado()
     {
-        if (!signingService.State.Ready)
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, "QZ_SIGNING_DISABLED");
-        return Content(signingService.GetPublicCertificatePem(), "text/plain; charset=utf-8");
+        if (!servicioFirma.Estado.Lista)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "FIRMA_QZ_DESHABILITADA");
+        return Content(servicioFirma.ObtenerCertificadoPublicoPem(), "text/plain; charset=utf-8");
     }
 
-    [Authorize(Policy = "Printing.Use")]
-    [EnableRateLimiting("QzSigning")]
-    [HttpPost("sign")]
+    [Authorize(Policy = "Impresion.Firmar")]
+    [EnableRateLimiting("FirmaQz")]
+    [HttpPost("firmar")]
     [RequestSizeLimit(4096)]
-    public async Task<IActionResult> Sign(QzSignRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Firmar(SolicitudFirmaQz solicitud, CancellationToken tokenCancelacion)
     {
-        if (!signingService.State.Ready)
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, "QZ_SIGNING_DISABLED");
+        if (!servicioFirma.Estado.Lista)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "FIRMA_QZ_DESHABILITADA");
 
-        var stationHeader = Request.Headers["X-Printing-Station-ID"].ToString();
-        if (!Guid.TryParse(stationHeader, out var headerStationId) || headerStationId != request.StationId)
-            return BadRequest(new { error = new { code = "STATION_HEADER_MISMATCH", message = "La estación del header y del body no coinciden." } });
+        var claimEstacion = User.FindFirst("EstacionImpresionId")?.Value;
+        var cabeceraEstacion = Request.Headers["X-Estacion-Impresion-ID"].ToString();
+        var estacionProporcionada = Guid.TryParse(claimEstacion, out var idEstacionClaim)
+            ? idEstacionClaim
+            : Guid.TryParse(cabeceraEstacion, out var idEstacionCabecera) ? idEstacionCabecera : Guid.Empty;
+        if (estacionProporcionada == Guid.Empty || estacionProporcionada != solicitud.IdEstacion)
+            return BadRequest(new { error = new { codigo = "ESTACION_NO_COINCIDE", mensaje = "La estación del encabezado y del cuerpo no coinciden." } });
 
-        var allowDevelopmentPoc = environment.IsDevelopment() && options.AllowUnregisteredStationsInDevelopment;
-        if (!allowDevelopmentPoc && !await stationService.CanUseAsync(request.StationId, cancellationToken))
-            return StatusCode(StatusCodes.Status403Forbidden, new { error = new { code = "STATION_NOT_AUTHORIZED", message = "La estación no está autorizada." } });
+        var permitirDesarrollo = entorno.IsDevelopment() && opciones.PermitirEstacionesNoRegistradasEnDesarrollo;
+        if (!permitirDesarrollo && !await servicioEstacion.PuedeUsarAsync(solicitud.IdEstacion, tokenCancelacion))
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = new { codigo = "ESTACION_NO_AUTORIZADA", mensaje = "La estación no está autorizada." } });
 
         try
         {
-            return Content(signingService.SignDigest(request.Request), "text/plain; charset=utf-8");
+            return Content(servicioFirma.FirmarResumen(solicitud.Solicitud), "text/plain; charset=utf-8");
         }
         catch (ArgumentException)
         {
-            return BadRequest(new { error = new { code = "INVALID_QZ_DIGEST", message = "El digest QZ es inválido." } });
+            return BadRequest(new { error = new { codigo = "RESUMEN_QZ_INVALIDO", mensaje = "El resumen QZ es inválido." } });
         }
     }
 
     [AllowAnonymous]
-    [HttpGet("health")]
-    public IActionResult Health() => Ok(new
+    [HttpGet("estado")]
+    public IActionResult ObtenerEstado() => Ok(new
     {
-        enabled = signingService.State.Enabled,
-        ready = signingService.State.Ready
+        habilitada = servicioFirma.Estado.Habilitada,
+        lista = servicioFirma.Estado.Lista
     });
 
-    [Authorize(Policy = "Printing.Diagnostics")]
-    [HttpGet("health/details")]
-    public IActionResult HealthDetails()
+    [Authorize(Policy = "Impresion.Diagnosticos")]
+    [HttpGet("estado/detalle")]
+    public IActionResult ObtenerDetalleEstado()
     {
-        var state = signingService.State;
+        var estado = servicioFirma.Estado;
         return Ok(new
         {
-            state.Enabled,
-            state.Ready,
-            state.Degraded,
-            state.NotBeforeUtc,
-            state.NotAfterUtc,
-            state.RemainingDays,
-            certificateSha256 = Abbreviate(state.CertificateSha256),
-            rootCertificateSha256 = Abbreviate(state.RootCertificateSha256)
+            estado.Habilitada,
+            estado.Lista,
+            estado.Degradado,
+            estado.ValidoDesdeUtc,
+            estado.ValidoHastaUtc,
+            estado.DiasRestantes,
+            sha256Certificado = Abreviar(estado.Sha256Certificado),
+            sha256CertificadoRaiz = Abreviar(estado.Sha256CertificadoRaiz)
         });
     }
 
-    private static string? Abbreviate(string? value) => value is null ? null : $"{value[..12]}…{value[^12..]}";
+    private static string? Abreviar(string? valor) => valor is null ? null : $"{valor[..12]}…{valor[^12..]}";
 }

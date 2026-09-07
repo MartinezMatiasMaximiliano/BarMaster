@@ -22,7 +22,7 @@ namespace BackEndAPI.Controllers
             _deliveryTakeawayServices = deliveryTakeawayServices;
         }
 
-        private static DeliveryTakeawayResponseDTO MappearDeliveryTakeawayDTO(DeliveryAndTakeaway deliveryTakeaway)
+        private static DeliveryTakeawayResponseDTO MapearpearDeliveryTakeawayDTO(DeliveryAndTakeaway deliveryTakeaway)
         {
             var ultimoPago = deliveryTakeaway.Visita?.Pagos
                 .OrderByDescending(p => p.FechaMovimiento)
@@ -83,7 +83,7 @@ namespace BackEndAPI.Controllers
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
                 var result = await _deliveryTakeawayServices.GetListaDeliveryTakeaways(IdSucursal);
                 if (result == null) throw new Exception("Error al obtener los pedidos");
-                var response = result.Select(MappearDeliveryTakeawayDTO).ToList();
+                var response = result.Select(MapearpearDeliveryTakeawayDTO).ToList();
                 return Ok(response);
             }
             catch (Exception ex)
@@ -110,7 +110,7 @@ namespace BackEndAPI.Controllers
                 if (idCaja == Guid.Empty) throw new Exception("Caja no identificada");
                 var result = await _deliveryTakeawayServices.GetListaDeliveryTakeawaysPorCaja(IdSucursal, idCaja);
                 if (result == null) throw new Exception("Error al obtener los pedidos");
-                var response = result.Select(MappearDeliveryTakeawayDTO).ToList();
+                var response = result.Select(MapearpearDeliveryTakeawayDTO).ToList();
                 return Ok(response);
             }
             catch (Exception ex)
@@ -136,7 +136,7 @@ namespace BackEndAPI.Controllers
             if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
             var result = await _deliveryTakeawayServices.ObtenerDeliveryTakeawayPorId(id);
             if (result == null) throw new Exception("Error al obtener los pedidos");
-            var response = MappearDeliveryTakeawayDTO(result);
+            var response = MapearpearDeliveryTakeawayDTO(result);
             return Ok(response);
         }
 
@@ -153,7 +153,7 @@ namespace BackEndAPI.Controllers
                 var result = await _deliveryTakeawayServices.CrearDeliveryTakeaway(IdSucursal, request);
 
                 if (result == null) throw new Exception("Error al crear el pedido");
-                var response = MappearDeliveryTakeawayDTO(result);
+                var response = MapearpearDeliveryTakeawayDTO(result);
                 return Ok(response);
 
             }
@@ -187,7 +187,7 @@ namespace BackEndAPI.Controllers
                 if (request.IdDeliveryTakeaway == Guid.Empty) throw new Exception("Id del pedido nulo");
                 var result = await _deliveryTakeawayServices.ModificarDeliveryTakeaway(request);
                 if (result == null) throw new Exception("Error al modificar el pedido");
-                var response = MappearDeliveryTakeawayDTO(result);
+                var response = MapearpearDeliveryTakeawayDTO(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -227,7 +227,7 @@ namespace BackEndAPI.Controllers
         //    {
         //        if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
         //        var result = await _deliveryTakeawayServices.AgregarProductosADeliveryAndTakeaway(id, ListaProductos);
-        //        var response = MappearDeliveryTakeawayDTO(result);
+        //        var response = MapearpearDeliveryTakeawayDTO(result);
         //        return Ok(response);
         //    }
         //    catch (Exception ex)
@@ -250,7 +250,7 @@ namespace BackEndAPI.Controllers
         //    {
         //        if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
         //        var result = await _deliveryTakeawayServices.RemoverProductosADeliveryAndTakeaway(id, ListaProductos);
-        //        var response = MappearDeliveryTakeawayDTO(result);
+        //        var response = MapearpearDeliveryTakeawayDTO(result);
         //        return Ok(response);
         //    }
         //    catch (Exception ex)
@@ -274,7 +274,7 @@ namespace BackEndAPI.Controllers
                 if (id == Guid.Empty) throw new Exception("Id vacio");
                 var action = await _deliveryTakeawayServices.MarcarComoEntregado(id);
                 if (action == null) throw new Exception("");
-                var result = MappearDeliveryTakeawayDTO(action);
+                var result = MapearpearDeliveryTakeawayDTO(action);
                 return Ok(result);
             }
             catch (Exception ex)

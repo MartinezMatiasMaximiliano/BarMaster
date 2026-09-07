@@ -19,7 +19,7 @@ namespace BackEndAPI.Controllers
             _ReservasServices = _reservasServices;
         }
 
-        private static ReservaDTO MappearReservaDTO(Reserva reserva)
+        private static ReservaDTO MapearpearReservaDTO(Reserva reserva)
         {
             return new ReservaDTO
             {
@@ -42,7 +42,7 @@ namespace BackEndAPI.Controllers
             try
             {
                 var reservas = await _ReservasServices.BuscarReservas();
-                var ListaReservas = reservas.Select(MappearReservaDTO).ToList();
+                var ListaReservas = reservas.Select(MapearpearReservaDTO).ToList();
 
                 return Ok(ListaReservas);
             }
@@ -63,7 +63,7 @@ namespace BackEndAPI.Controllers
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
 
                 var reservas = await _ReservasServices.BuscarReservasPorRangoFechas(IdSucursal, Desde, Hasta);
-                var ListaReservas = reservas.Select(MappearReservaDTO).ToList();
+                var ListaReservas = reservas.Select(MapearpearReservaDTO).ToList();
 
                 return Ok(ListaReservas);
             }

@@ -151,7 +151,7 @@ namespace BackEndAPI.Controllers
             {
                 var planoModificado = await _planosServices.ActualizarPlano(request);
                 
-                // Mapear a DTO para evitar ciclos de referencia en la serialización
+                // Mapearear a DTO para evitar ciclos de referencia en la serialización
                 var response = new PlanoDTO
                 {
                     Id = planoModificado.Id,

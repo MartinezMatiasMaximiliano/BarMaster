@@ -97,7 +97,7 @@ namespace BackEndAPI.Services.Global
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
                 new Claim("IdPersona", persona.Id.ToString()),
                 new Claim("IdEmpresa", persona.IdEmpresa.ToString()),
-                new Claim("IdSucursal", persona.IdSucursal?.ToString() ?? string.Empty),
+                new Claim("IdSucursal", ResolvePersonaSucursal(persona)),
                 new Claim("TenantId", GetTenantId()),
                 new Claim("RequestedBy",$"{persona.Apellido},{persona.Nombres}"),
                 new Claim("RequestedRole", persona.Rol?.Nombre ?? string.Empty),
@@ -133,6 +133,14 @@ namespace BackEndAPI.Services.Global
             if (string.IsNullOrWhiteSpace(value))
                 throw new InvalidOperationException("X-Tenant-ID es obligatorio para emitir un JWT.");
             return TenantIdentifier.Normalize(value);
+        }
+
+        private string ResolvePersonaSucursal(Persona persona)
+        {
+            if (persona.IdSucursal.HasValue) return persona.IdSucursal.Value.ToString();
+
+            var branchClaim = _httpContextAccessor.HttpContext?.User.FindFirst("IdSucursal")?.Value;
+            return Guid.TryParse(branchClaim, out var branchId) ? branchId.ToString() : string.Empty;
         }
     }
 }

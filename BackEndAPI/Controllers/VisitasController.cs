@@ -148,11 +148,15 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost("/AgregarProductoAVisita")]
-        public async Task<IActionResult> AgregarproductosAVisita([FromBody] ICollection<AgregarProductoAVisita> listaProductos, [FromQuery]Guid IdVisita)
+        public async Task<IActionResult> AgregarproductosAVisita(
+            [FromBody] ICollection<AgregarProductoAVisita> listaProductos,
+            [FromQuery] Guid IdVisita,
+            [FromQuery] Guid? idComando)
         {
             try
             {
-                var visitaActualizada = await _visitasServices.AgregarProductos(listaProductos, IdVisita);
+                var visitaActualizada = await _visitasServices.AgregarProductos(
+                    listaProductos, IdVisita, idComando.GetValueOrDefault(Guid.NewGuid()));
                 
                 var response = new VisitaResponseDTO
                 {

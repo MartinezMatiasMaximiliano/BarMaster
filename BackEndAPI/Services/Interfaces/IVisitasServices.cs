@@ -6,7 +6,7 @@ namespace BackEndAPI.Services.Interfaces
     public interface IVisitasServices
     {
         Task<Visita> BuscarVisitaPorId(Guid IdVisita);
-        Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> ListaProductos,Guid IdVisita);
+        Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> ListaProductos, Guid IdVisita, Guid idComando);
         Task<IEnumerable<Visita>> ObtenerVisitasActivas();
         Task<IEnumerable<Visita>> ObtenerTodasLasVisitas();
         Task<decimal> CalcularTotal(Guid IdVisita);

@@ -1,6 +1,6 @@
 # Instalación e integración de QZ Tray con certificado propio en BarMaster
 
-> Estado del documento: revisión técnica finalizada el 28 de agosto de 2026 contra QZ Tray 2.2.6, su documentación y código fuente oficiales, OpenSSL 3.5.4 y el estado actual del repositorio BarMaster.
+> Estado del documento: revisión técnica actualizada el 4 de septiembre de 2026 contra QZ Tray 2.2.6, su documentación y código fuente oficiales, OpenSSL 3.5.4 y el estado actual del repositorio BarMaster.
 >
 > Alcance: conectar `frontendMozo` con las impresoras instaladas en cada PC mediante QZ Tray y permitir impresiones directas, firmadas y sin mostrar el diálogo de impresión del navegador.
 
@@ -17,7 +17,7 @@ Este documento cubre únicamente:
 - Integración de `qz-tray` en `frontendMozo`.
 - Conexión con QZ Tray desde Chrome o Edge.
 - Enumeración y configuración de impresoras instaladas en Windows.
-- Impresión raw ESC/POS y pixel PDF/PNG.
+- Impresión exclusivamente mediante comandos ESC/POS enviados en modo `raw`.
 - Eliminación de los diálogos propios de QZ mediante mensajes firmados.
 - Tratamiento del permiso Local Network Access del navegador.
 - Instalación, reparación, diagnóstico, actualización y rotación.
@@ -51,7 +51,7 @@ Esta tabla debe actualizarse en el mismo commit en que se complete cada fase.
 | 4 | Servicio y endpoints de firma .NET | Implementada |
 | 5 | Cliente QZ singleton en `frontendMozo` | Implementada |
 | 6 | Pantalla de configuración y diagnóstico | Implementada |
-| 7 | Impresión de prueba raw y pixel | En curso |
+| 7 | Impresión de prueba ESC/POS raw | Implementada |
 | 8 | Instalador/reparador Windows | Implementada |
 | 9 | Piloto físico y matriz de fallos | Bloqueada: falta URL HTTPS definitiva, una impresora física compatible y validación interactiva del navegador |
 | 10 | PKI de producción y despliegue gradual | Pendiente |
@@ -67,7 +67,7 @@ Bloqueada: <motivo concreto>
 
 No marcar una fase como `Implementada` solo porque compiló. Cada fase debe cumplir sus criterios de aceptación y pruebas indicados en este documento.
 
-### 3.1. Registro de implementación al 28 de agosto de 2026
+### 3.1. Registro de implementación al 4 de septiembre de 2026
 
 Implementado y verificado:
 
@@ -76,17 +76,17 @@ Implementado y verificado:
 - Entidades, restricciones, migración tenant, servicios y endpoints de estaciones/asignaciones. El UUID de instalación local está separado del ID de estación emitido por el backend para permitir que una PC opere en distintas sucursales sin colisiones.
 - Herramienta administrativa multi-tenant con dry-run, backup obligatorio mediante `pg_dump`, validación del dump mediante `pg_restore --list`, migración y log JSONL sin secretos. El dry-run detectó una migración pendiente en `c` y diecisiete —incluidas migraciones históricas ajenas a QZ— en `probando-nueva-empresa`; por eso no se aplicó nada sin backup.
 - Firmador RSA/SHA-512, validación de PFX/raíz/cadena/extensiones/vigencia/pins, health público y detallado, certificado público sin caché y firma limitada a estaciones autorizadas.
-- Cliente QZ singleton, registro previo a conexión, selección exacta de impresora, asignaciones autoritativas con caché namespaced, logout selectivo, pantalla de configuración y envío de preticket raw más pruebas raw/PDF.
+- Cliente QZ singleton, registro previo a conexión, selección exacta de impresora, asignaciones autoritativas con caché namespaced, logout selectivo, pantalla de configuración y envío de trabajos exclusivamente como ESC/POS raw.
 - QZ Tray 2.2.6 instalado en esta PC x64, firma Authenticode válida, `override.crt` con hash exacto, CA BarMaster cargada, runtime iniciado bajo el usuario normal y puertos locales 8181/8182 activos.
 - Scripts PowerShell de PKI, instalación, diagnóstico y reparación parseados y ejecutados. La detección de versión usa el registro de Windows para no iniciar accidentalmente otra instancia de QZ.
-- Prueba end-to-end real correcta: cliente `qz-tray` → WebSocket 8182 → certificado del backend → firma autenticada con tenant/estación → QZ Tray 2.2.6 → enumeración de `Microsoft Print to PDF` → desconexión limpia.
-- `dotnet build` de la solución: correcto, sin errores; 17 tests backend correctos; 7 tests frontend correctos; build Vite de producción correcto; lint dirigido de archivos QZ: cero errores.
+- Prueba end-to-end real correcta: cliente `qz-tray` → WebSocket 8182 → certificado del backend → firma autenticada con tenant/estación → QZ Tray 2.2.6 → enumeración de impresoras instaladas → desconexión limpia.
+- `dotnet test` Release: 30 tests backend correctos; 12 tests frontend correctos, incluida la aserción exacta del payload ESC/POS; build Vite de producción correcto; lint dirigido de archivos de impresión: cero errores.
 
 Pendiente por depender del ambiente operativo:
 
 - Definir el origen HTTPS real del frontend y la URL HTTPS real del backend; luego configurar `Cors:AllowedOrigins` y `VITE_BASE_URL` con esos valores.
 - Instalar/localizar `pg_dump`, elegir directorio de backups y revisar las dieciséis migraciones históricas adicionales antes de aplicar la migración QZ a `probando-nueva-empresa`.
-- Conectar una impresora física soportada, confirmar su nombre/driver y ejecutar toda la matriz raw, PDF, errores, reinicios y ausencia de diálogos.
+- Confirmar en cada modelo físico el texto ESC/POS, caracteres, avance, corte, errores, reinicios y ausencia de diálogos.
 - Crear la CA de producción mediante ceremonia realmente offline; no se genera deliberadamente una raíz productiva en esta PC conectada.
 - La validación visual automatizada quedó impedida por una inconsistencia local del plugin de navegador de Codex; no afecta al código ni sustituye la prueba manual obligatoria.
 
@@ -745,7 +745,7 @@ Responsabilidades:
 - `qzClient.js`: única importación de `qz-tray` y configuración de certificado/firma.
 - `qzConnection.js`: única `connectPromise`, conexión, desconexión y versión.
 - `qzPrinters.js`: enumeración y validación de nombres.
-- `qzPrint.js`: configuración y envío raw/pixel.
+- `qzPrint.js`: configuración y envío exclusivo de ESC/POS raw.
 - `printingApi.js`: endpoints QZ, estaciones y asignaciones; elige el JWT apropiado.
 - `stationStorage.js`: identidad local y caché namespaced.
 - `qzErrors.js`: normalización de errores para la UI.
@@ -899,11 +899,9 @@ La pantalla debe incluir:
 - Identidad de estación.
 - Lista y actualización de impresoras.
 - Asignación por rol de impresión.
-- Formato raw o pixel.
-- Ancho 58/80 mm.
+- Impresora instalada que recibirá los comandos ESC/POS.
 - Cantidad de copias.
-- Botón de prueba raw.
-- Botón de prueba PDF/PNG.
+- Botón de prueba ESC/POS.
 - Botón reconectar.
 - Último error normalizado.
 - Instrucciones de Local Network Access.
@@ -933,8 +931,8 @@ PrinterAssignment
 - StationId: Guid
 - Role: Preticket | PaymentReceipt | Kitchen | Bar
 - QzPrinterName: string
-- Format: Raw | Pdf | Png
-- PaperWidthMm: 58 | 80
+- Format: Raw (valor fijo; no configurable por el usuario)
+- PaperWidthMm: dato técnico interno para construir el ticket, no selector de formato de impresión
 - Copies: short
 - Enabled: bool
 - UpdatedAt: DateTime UTC
@@ -967,7 +965,7 @@ Agregar entidades, configuraciones EF, `DbSet` e índices a `AppDbContext`, y ge
 
 ## 14. Impresión
 
-### 14.1. Raw mínima
+### 14.1. ESC/POS raw mínimo
 
 ```javascript
 const config = qz.configs.create(printerName, {
@@ -979,7 +977,7 @@ const data = [{
     type: 'raw',
     format: 'command',
     flavor: 'plain',
-    data: 'BARMASTER QZ TEST\n\n\n'
+    data: '\x1B\x40BARMASTER QZ TEST\n\n\n\x1D\x56\x00'
 }];
 
 await qz.print(config, data);
@@ -993,43 +991,13 @@ Primero validar texto ASCII. Después probar:
 - Apertura de cajón, si aplica.
 - Comandos ESC/POS del modelo real.
 
-### 14.2. Pixel
+### 14.2. Invariante de formato
 
-Para PDF/PNG usar el driver oficial del fabricante y las opciones de tamaño QZ acordes al rollo.
+BarMaster no ofrece ni implementa rutas PDF, PNG, HTML o impresión del navegador. Todos los documentos se convierten primero en una secuencia de comandos ESC/POS y se entregan a QZ como `type: 'raw'`, `format: 'command'` y `flavor: 'plain'`.
 
-Ejemplo PDF Base64, evitando que QZ tenga que descargar un recurso protegido por Bearer:
+El backend fija `Raw` al crear cualquier trabajo. Los contratos públicos no aceptan un formato seleccionable y el worker local utiliza una sola ruta de ejecución ESC/POS. Las columnas o valores de formato conservados en la base existen únicamente por compatibilidad histórica y no gobiernan la impresión.
 
-```javascript
-const config = qz.configs.create(printerName, {
-    copies: 1,
-    jobName: 'BarMaster PDF Test',
-    units: 'mm',
-    margins: 0,
-    scaleContent: true
-});
-
-const data = [{
-    type: 'pixel',
-    format: 'pdf',
-    flavor: 'base64',
-    data: pdfBase64
-}];
-
-await qz.print(config, data);
-```
-
-El PDF debe generarse previamente con el ancho y alto de página correctos. No fijar una altura genérica en QZ sin probar el driver: el papel continuo, los márgenes no imprimibles y el corte varían por modelo.
-
-No usar `Generic / Text Only` para PDF, HTML o imágenes. Esa cola es apropiada para raw, no para contenido pixel.
-
-Preferencia:
-
-1. Driver oficial con soporte adecuado para raw y pixel.
-2. Si no existe modo dual, crear dos colas lógicas:
-   - `BarMaster Caja Pixel`.
-   - `BarMaster Caja Raw`.
-
-En Windows, QZ Tray 2.2.6 documenta y aplica que `forceRaw` no está soportado como bypass: si se solicita, QZ lo desactiva. Usar una cola o driver compatible con raw.
+En Windows debe usarse una cola y un driver que permitan el paso de datos raw a la impresora. No se debe usar `forceRaw` como bypass: QZ Tray 2.2.6 lo desactiva en Windows. La compatibilidad ESC/POS del modelo físico sigue siendo un requisito del hardware.
 
 ### 14.3. Integración inicial en la interfaz
 
@@ -1271,7 +1239,7 @@ No usar `start /wait` dentro de un script PowerShell: `start` es un alias de `St
 10. Iniciar QZ sin elevación dentro de la sesión interactiva del cajero y comprobar que queda en la bandeja.
 11. Abrir `/configuracion_impresion` en el mismo usuario y perfil de navegador que se usarán en producción.
 12. Guiar el permiso Local Network Access.
-13. Ejecutar pruebas raw y pixel.
+13. Ejecutar las pruebas ESC/POS raw.
 14. Guardar logs sin secretos.
 
 La separación entre las fases elevada e interactiva es obligatoria. Si el instalador inicia QZ como administrador, puede crear estado en otro contexto y no valida el funcionamiento real del usuario de caja.
@@ -1305,7 +1273,7 @@ QZ no debe actualizarse automáticamente sin validar la aplicación. Para adopta
 
 1. Crear un nuevo manifiesto fijando versión, archivos por arquitectura, URLs, SHA-256 y firmante.
 2. Descargar desde el release oficial y repetir la validación Authenticode/hash.
-3. Validar en laboratorio la conexión, firma, Local Network Access, raw, pixel, corte y cajón que estén en uso.
+3. Validar en laboratorio la conexión, firma, Local Network Access, ESC/POS raw, corte y cajón que estén en uso.
 4. Instalar sobre la versión existente en una caja piloto; no desinstalar primero salvo que la documentación de esa versión lo exija.
 5. Confirmar que `override.crt` sigue presente y coincide, que el inicio de sesión funciona y que QZ reporta la versión esperada.
 6. Observar el piloto antes de desplegar por lotes.
@@ -1416,8 +1384,8 @@ Casos:
 - Digest enviado sin modificar.
 - Listado de impresoras.
 - Impresora configurada ausente.
-- Impresión raw correcta.
-- Impresión pixel correcta.
+- Impresión ESC/POS raw correcta.
+- Ausencia de rutas PDF, PNG, HTML y `window.print()`.
 - Error de firma `401`, `403` y `429`.
 - QZ no disponible.
 - Reconexión después de cierre de QZ.
@@ -1466,8 +1434,7 @@ Casos:
 - USB desconectado o red caída.
 - Driver oficial.
 - Cola Generic/Text.
-- Texto raw.
-- PDF/PNG.
+- Texto y comandos ESC/POS raw.
 - Acentos y `ñ`.
 - Ticket largo.
 - Papel 58 y 80 mm según alcance del modelo.
@@ -1514,7 +1481,7 @@ Casos:
 - QZ inicia con el usuario de caja.
 - `override.crt` sobrevive reinicios.
 - Driver y nombre de impresora validados.
-- Raw y pixel probados según uso.
+- ESC/POS raw probado según el modelo físico.
 - Errores principales distinguibles.
 - Reinicio de Windows no rompe la configuración.
 - Impresión física confirmada por un operador.
@@ -1532,8 +1499,8 @@ Casos:
 9. Implementar cliente singleton y tests frontend.
 10. Crear identidad local de estación y corregir logout selectivo.
 11. Crear pantalla de configuración y diagnóstico.
-12. Conectar el botón de preticket a la impresión raw.
-13. Probar impresión pixel.
+12. Conectar el botón de preticket a la impresión ESC/POS raw.
+13. Comprobar que no existan rutas alternativas PDF/PNG/HTML.
 14. Instalar QZ en la PC piloto.
 15. Aplicar la raíz de desarrollo.
 16. Resolver Local Network Access.
@@ -1553,7 +1520,6 @@ Casos:
 - [QZ: comandos](https://qz.io/docs/command-line)
 - [QZ: Local Network Access](https://qz.io/docs/lna)
 - [QZ: impresión raw](https://qz.io/docs/raw)
-- [QZ: impresión pixel/PDF](https://qz.io/docs/pixel)
 - [QZ: estado de impresoras](https://qz.io/docs/printer-status)
 - [QZ 2.2.6: parser/validador X.509](https://github.com/qzind/tray/blob/4be94301797d04684f4d70c6bbbff5d9acc36987/src/qz/auth/Certificate.java)
 - [QZ 2.2.6: opciones de impresión](https://github.com/qzind/tray/blob/4be94301797d04684f4d70c6bbbff5d9acc36987/src/qz/printer/PrintOptions.java)
@@ -1569,7 +1535,7 @@ Casos:
 
 ## 25. Nota de aprobación
 
-El alcance de este documento termina cuando BarMaster puede conectarse a QZ Tray, seleccionar una impresora Windows, enviar trabajos raw o pixel sin usar el diálogo de impresión del navegador y operar sin diálogos QZ gracias a la firma con certificado propio.
+El alcance de este documento termina cuando BarMaster puede conectarse a QZ Tray, seleccionar una impresora Windows y enviar exclusivamente comandos ESC/POS raw sin usar el diálogo de impresión del navegador ni mostrar diálogos QZ, gracias a la firma con certificado propio.
 
 Este documento queda técnicamente aprobado como base de implementación: sus versiones, comandos PKI, artefactos, contratos, límites de seguridad y procedimiento Windows fueron contrastados con las fuentes primarias citadas y con las pruebas reproducibles enumeradas en 4.1.
 

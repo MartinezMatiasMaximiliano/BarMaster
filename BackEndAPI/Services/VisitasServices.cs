@@ -5,6 +5,10 @@ using BackEndAPI.Services.Interfaces;
 using BackEndAPI.Tenancy.Services;
 using System.Runtime.CompilerServices;
 using static QuestPDF.Helpers.Colors;
+using BackEndAPI.Impresion.Documentos;
+using BackEndAPI.Impresion.Trabajos;
+using BackEndAPI.Models.Impresion;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackEndAPI.Services
 {
@@ -15,18 +19,27 @@ namespace BackEndAPI.Services
         private readonly IProductosRepository _productosRepository;
         private readonly IStockServices _stockServices;
         private readonly IDatabaseTransactionManager _transactionManager;
+        private readonly IServicioDocumentoImpresion _servicioDocumentoImpresion;
+        private readonly IServicioTrabajoImpresion _servicioTrabajoImpresion;
+        private readonly ICurrentDbContext _contextoDbActual;
         public VisitasServices(
             IVisitasRepository repository,
             IProductosRepository productosRepository,
             IDeliveryTakeawayRepository deliveryTakeawayRepository,
             IStockServices stockServices,
-            IDatabaseTransactionManager transactionManager)
+            IDatabaseTransactionManager transactionManager,
+            IServicioDocumentoImpresion servicioDocumentoImpresion,
+            IServicioTrabajoImpresion servicioTrabajoImpresion,
+            ICurrentDbContext contextoDbActual)
         {
             _visitasRepository = repository;
             _productosRepository = productosRepository;
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _stockServices = stockServices;
             _transactionManager = transactionManager;
+            _servicioDocumentoImpresion = servicioDocumentoImpresion;
+            _servicioTrabajoImpresion = servicioTrabajoImpresion;
+            _contextoDbActual = contextoDbActual;
         }
 
         public async Task<Visita> BuscarVisitaPorId(Guid IdVisita)
@@ -38,21 +51,49 @@ namespace BackEndAPI.Services
             }
             return visita;
         }
-        public Task<Visita> AgregarProductos(ICollection<AgregarProductoAVisita> productos, Guid IdVisita) =>
-            _transactionManager.ExecuteAsync(() => AgregarProductosCoreAsync(productos, IdVisita));
+        public async Task<Visita> AgregarProductos(
+            ICollection<AgregarProductoAVisita> productos,
+            Guid IdVisita,
+            Guid idComando)
+        {
+            IReadOnlyList<CrearSolicitudImpresionRespuesta> solicitudesImpresion = [];
+            var visita = await _transactionManager.ExecuteAsync(async () =>
+            {
+                var resultado = await AgregarProductosNucleoAsync(productos, IdVisita, idComando);
+                if (!resultado.YaProcesado)
+                {
+                    solicitudesImpresion = await _servicioDocumentoImpresion.EncolarComandasAsync(
+                        resultado.Visita, resultado.ProductosAgregados, idComando, CancellationToken.None);
+                }
+                return resultado.Visita;
+            });
 
-        private async Task<Visita> AgregarProductosCoreAsync(ICollection<AgregarProductoAVisita> productos, Guid IdVisita)
+            foreach (var solicitudImpresion in solicitudesImpresion)
+                await _servicioTrabajoImpresion.NotificarAsync(solicitudImpresion, CancellationToken.None);
+            return visita;
+        }
+
+        private async Task<ResultadoProductosAgregados> AgregarProductosNucleoAsync(
+            ICollection<AgregarProductoAVisita> productos,
+            Guid IdVisita,
+            Guid idComando)
         {
             decimal totalAgregado = 0;
             if (productos == null || productos.Count <= 0) throw new Exception("Lista de productos vacia");
             if (IdVisita == Guid.Empty) throw new Exception("IdVisita vacio");
 
+            var comandoInsertado = await RegistrarComandoAsync(idComando, IdVisita);
+
             var visita = await _visitasRepository.BuscarVisitaPorId(IdVisita);
 
             if (visita == null) throw new Exception("Visita no encontrada");
+            if (idComando == Guid.Empty) throw new Exception("El identificador del pedido es inválido");
+            if (!comandoInsertado || visita.Productos.Any(x => x.IdComandoAgregado == idComando))
+                return new(visita, [], true);
             var esDeliveryTakeaway = visita.Origen == "Delivery" || visita.Origen == "Takeaway";
             if (visita.Estado == "Cerrada" && !esDeliveryTakeaway) throw new Exception("No se pueden agregar productos a una visita cerrada");
 
+            var productosAgregados = new List<ProductosPorVisita>();
             foreach (var item in productos)
             {
                 if (item.Cantidad <= 0) throw new Exception("Cantidad no válida");
@@ -76,9 +117,11 @@ namespace BackEndAPI.Services
                         PrecioDelMomento = producto.PrecioNeto,
                         EstadoPagado = false,
                         EstadoPedido = "Pendiente",
+                        IdComandoAgregado = idComando,
                     };
                     totalAgregado += producto.PrecioNeto;
                     visita.Productos.Add(productoPorVisita);
+                    productosAgregados.Add(productoPorVisita);
                 }
             }
 
@@ -103,8 +146,33 @@ namespace BackEndAPI.Services
             }
 
             visita.Total = visita.Productos.Sum(p => p.PrecioDelMomento);
-            return await _visitasRepository.ModificarVisita(visita);
+            var visitaGuardada = await _visitasRepository.ModificarVisita(visita);
+            return new(visitaGuardada, productosAgregados, false);
         }
+
+        private async Task<bool> RegistrarComandoAsync(Guid idComando, Guid idVisita)
+        {
+            if (idComando == Guid.Empty) throw new Exception("El identificador del pedido es inválido");
+            var db = _contextoDbActual.Db;
+            if (db.Database.IsRelational())
+            {
+                var inserted = await db.Database.ExecuteSqlInterpolatedAsync($$"""
+                    INSERT INTO "ComandosPedidoVisita" ("IdComando", "IdVisita", "CreadoEn")
+                    VALUES ({{idComando}}, {{idVisita}}, {{DateTime.UtcNow}})
+                    ON CONFLICT ("IdComando") DO NOTHING
+                    """);
+                return inserted == 1;
+            }
+            if (await db.ComandosPedidoVisita.AnyAsync(x => x.IdComando == idComando)) return false;
+            db.ComandosPedidoVisita.Add(new ComandoPedidoVisita { IdComando = idComando, IdVisita = idVisita, CreadoEn = DateTime.UtcNow });
+            await db.SaveChangesAsync();
+            return true;
+        }
+
+        private sealed record ResultadoProductosAgregados(
+            Visita Visita,
+            IReadOnlyList<ProductosPorVisita> ProductosAgregados,
+            bool YaProcesado);
         
         public async Task<IEnumerable<Visita>> ObtenerVisitasActivas()
         {

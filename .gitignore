@@ -565,3 +565,7 @@ BackEndAPI/.config/dotnet-tools.json
 **/secrets/**
 **/qz-pki-private/**
 .tmp/
+
+# Operational database migration artifacts (may contain tenant metadata/data)
+tenant-migration-*.jsonl
+*.dump

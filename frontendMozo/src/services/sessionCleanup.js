@@ -1,5 +1,5 @@
 import { persistor } from '../redux/store';
-import { isPrintingStorageKey } from './printing/stationStorage';
+import { esClaveAlmacenamientoImpresion } from './impresion/almacenamientoEstacion';
 
 const PERSON_PREFIX = 'USER_';
 
@@ -11,14 +11,16 @@ export function clearPersonSession() {
 
 export async function clearBranchSession() {
     try {
-        const { disconnectQz } = await import('./printing/qzConnection');
-        await disconnectQz();
+        const { desconectarQz } = await import('./impresion/conexionQz');
+        const { detenerTrabajadorImpresion } = await import('./impresion/trabajadorImpresion');
+        detenerTrabajadorImpresion();
+        await desconectarQz();
     } catch {
         // El cierre de sesión no debe quedar bloqueado si QZ no responde.
     }
 
     const printingEntries = Object.keys(localStorage)
-        .filter(isPrintingStorageKey)
+        .filter(esClaveAlmacenamientoImpresion)
         .map((key) => [key, localStorage.getItem(key)]);
 
     localStorage.clear();

@@ -17,7 +17,7 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "frontendmozo", "..\frontend
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackEndAPI.Tests", "..\BackEndAPI.Tests\BackEndAPI.Tests.csproj", "{5C0CC7E8-A3D3-4CD5-9F23-5D2EABC6EB6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackEndAPI.MigrationTool", "..\BackEndAPI.MigrationTool\BackEndAPI.MigrationTool.csproj", "{4A6BD9A8-9E3B-4190-A66C-CC60E30BBFB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarMaster.MigrationTool", "..\tools\BarMaster.MigrationTool\BarMaster.MigrationTool.csproj", "{4A6BD9A8-9E3B-4190-A66C-CC60E30BBFB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

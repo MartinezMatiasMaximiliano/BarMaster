@@ -24,8 +24,8 @@ import { MesaProductosPanel } from './components/MesaProductosPanel';
 import { PedidoTotalMesa } from './components/PedidoTotalMesa';
 import { useAutoSubmitPedidos } from './hooks/useAutoSubmitPedidos';
 import { formatearFecha } from './dateFormatter';
-import { printPreticket } from '../../services/printing/printingOrchestrator';
-import { normalizeQzError } from '../../services/printing/qzErrors';
+import { solicitarPreticket } from '../../services/impresion/apiImpresion';
+import { normalizarErrorQz } from '../../services/impresion/erroresQz';
 
 const AUTO_SUBMIT_MS = 5000;
 
@@ -183,18 +183,14 @@ export const MesaModalUnificado = ({
 
         setPrintingPreticket(true);
         try {
-            await printPreticket({
-                branchName: localStorage.getItem('username') || 'BarMaster',
-                tableName: datos_mesa?.nombre || datos_mesa?.numeroMesa,
-                products,
-            });
-            showSnackbar('Preticket enviado a la impresora', 'success');
+            await solicitarPreticket(idVisita, products.map((product) => product.id ?? product.Id));
+            showSnackbar('Solicitud recibida. La cuenta se imprimirá en el equipo configurado.', 'success');
         } catch (error) {
-            showSnackbar(normalizeQzError(error).message, 'error');
+            showSnackbar(normalizarErrorQz(error).mensaje, 'error');
         } finally {
             setPrintingPreticket(false);
         }
-    }, [datos_mesa, productosAPagar, showSnackbar, visitaMesaFinal]);
+    }, [idVisita, productosAPagar, showSnackbar, visitaMesaFinal]);
 
     return (
         <Dialog

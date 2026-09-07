@@ -33,10 +33,10 @@ export async function BuscarVisitasActivas() {
     }
 }
 
-export async function AgregarProductosAVisita(idVisita, productos) {
+export async function AgregarProductosAVisita(idVisita, productos, idComando = crypto.randomUUID()) {
     try {
         const response = await api.post(
-            `AgregarProductoAVisita?IdVisita=${idVisita}`,
+            `AgregarProductoAVisita?IdVisita=${idVisita}&idComando=${idComando}`,
             productos
         );
         await sendHubMessage('StockActualizado');

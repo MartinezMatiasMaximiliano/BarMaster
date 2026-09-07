@@ -47,6 +47,7 @@ import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 
 const menuConfig = {
     admin: {
@@ -85,7 +86,7 @@ const menuConfig = {
             { path: "/historial", label: "Historial", icon: HistoryIcon },
         ],
         "Configuración": [
-            { path: "/configuracion_impresion", label: "Impresoras", icon: SettingsOutlinedIcon },
+            { path: "/impresiones", label: "Impresiones", icon: PrintOutlinedIcon },
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         ],
         "Ayuda": [
