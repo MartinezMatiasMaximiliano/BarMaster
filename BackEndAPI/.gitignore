@@ -1,0 +1,17 @@
+# Build
+bin/
+obj/
+
+# Logs
+
+logs/
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Uploads de usuario (contenido, no código)
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep

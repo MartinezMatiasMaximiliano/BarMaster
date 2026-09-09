@@ -9,10 +9,12 @@ namespace BackEndAPI.Tenancy.Services
     public class DatabaseTransactionManager : IDatabaseTransactionManager
     {
         private readonly ICurrentDbContext _currentDbContext;
+        private readonly ILogger<DatabaseTransactionManager> _logger;
 
-        public DatabaseTransactionManager(ICurrentDbContext currentDbContext)
+        public DatabaseTransactionManager(ICurrentDbContext currentDbContext, ILogger<DatabaseTransactionManager> logger)
         {
             _currentDbContext = currentDbContext;
+            _logger = logger;
         }
 
         public async Task ExecuteAsync(Func<Task> action)
@@ -31,8 +33,12 @@ namespace BackEndAPI.Tenancy.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Se hizo rollback de una transacción por una excepción");
                 await transaction.RollbackAsync();
-                throw new Exception(ex.Message);
+                // Se re-lanza la excepción original (con su tipo y stack trace intactos) en vez de
+                // envolverla en un Exception genérico: así el logging de más arriba y cualquier
+                // catch tipado aguas arriba siguen funcionando.
+                throw;
             }
         }
 
@@ -52,8 +58,9 @@ namespace BackEndAPI.Tenancy.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Se hizo rollback de una transacción por una excepción");
                 await transaction.RollbackAsync();
-                throw new Exception(ex.Message);
+                throw;
             }
         }
     }

@@ -3,6 +3,7 @@ using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.Data;
 using BackEndAPI.Hubs;
+using BackEndAPI.Middlewares;
 using BackEndAPI.Repositories;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
@@ -16,9 +17,40 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
+using Serilog;
+using Serilog.Exceptions;
 using System.Text;
 
+#region LOGGING (bootstrap)
+// Logger mínimo para poder loguear errores que ocurran durante el arranque
+// (antes de que builder.Configuration esté disponible para configurar el logger definitivo).
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+try
+{
+    Log.Information("Iniciando BackEndAPI...");
+#endregion
+
 var builder = WebApplication.CreateBuilder(args);
+
+#region LOGGING (definitivo)
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithExceptionDetails()
+    .WriteTo.Console(outputTemplate:
+        "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}{NewLine}{Message:lj} {Properties:j}{NewLine}{Exception}")
+    .WriteTo.File(
+        path: "logs/backendapi-.log",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 31,
+        outputTemplate:
+            "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {SourceContext}{NewLine}{Message:lj} {Properties:j}{NewLine}{Exception}"));
+#endregion
 
 #region CONTROLLERS Y SWAGGER
 
@@ -185,6 +217,15 @@ DirectoryInfo infoUploads = Directory.CreateDirectory(uploads);
 
 #region MIDDLEWARES
 
+// Loguea un resumen de cada request (método, path, status, duración) enriquecido con
+// tenant y usuario (ver TenantDbMiddleware y RequestUserContextMiddleware más abajo).
+app.UseSerilogRequestLogging();
+
+// Red de seguridad: cualquier excepción no capturada por los controllers (o lanzada antes
+// de llegar a uno, ej. al resolver el tenant) se loguea acá con el contexto completo y
+// se devuelve como un error 500 consistente en vez de la página de error por defecto.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(uploads),
@@ -205,6 +246,7 @@ app.UseMiddleware<TenantDbMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<RequestUserContextMiddleware>();
 #endregion
 
 #region ENDPOINTS
@@ -213,3 +255,15 @@ app.MapHub<NotificacionesHub>("/NotificacionesHub");
 #endregion
 
 app.Run();
+
+#region LOGGING (cierre)
+}
+catch (Exception ex) when (ex is not HostAbortedException) 
+{
+    Log.Fatal(ex, "BackEndAPI terminó inesperadamente durante el arranque");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+#endregion

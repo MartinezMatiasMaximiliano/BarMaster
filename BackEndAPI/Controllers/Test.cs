@@ -117,5 +117,11 @@ namespace BackEndAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("/error")]
+        public async Task<IActionResult> error()
+        {
+            throw new Exception("tuki");
+        }
     }
 }
