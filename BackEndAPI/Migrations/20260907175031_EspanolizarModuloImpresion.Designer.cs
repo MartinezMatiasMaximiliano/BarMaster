@@ -3,6 +3,7 @@ using System;
 using BackEndAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260907175031_EspanolizarModuloImpresion")]
+    partial class EspanolizarModuloImpresion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -594,6 +597,9 @@ namespace BackEndAPI.Migrations
                     b.Property<Guid>("IdEstacion")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("IdImpresora")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("IdPersonaSolicitante")
                         .HasColumnType("uuid");
 
@@ -616,11 +622,6 @@ namespace BackEndAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(260)
                         .HasColumnType("character varying(260)");
-
-                    b.Property<string>("NombreVisibleImpresora")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
 
                     b.Property<DateTime?>("ReservaVenceEn")
                         .HasColumnType("timestamp with time zone");
@@ -655,6 +656,8 @@ namespace BackEndAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IdEstacion");
+
+                    b.HasIndex("IdImpresora");
 
                     b.HasIndex("IdRegla");
 
@@ -1644,6 +1647,12 @@ namespace BackEndAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BackEndAPI.Models.Impresion.Impresora", "Impresora")
+                        .WithMany("Trabajos")
+                        .HasForeignKey("IdImpresora")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("BackEndAPI.Models.Impresion.ReglaImpresion", "Regla")
                         .WithMany("Trabajos")
                         .HasForeignKey("IdRegla")
@@ -1661,6 +1670,8 @@ namespace BackEndAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Estacion");
+
+                    b.Navigation("Impresora");
 
                     b.Navigation("Regla");
 
@@ -1955,6 +1966,8 @@ namespace BackEndAPI.Migrations
             modelBuilder.Entity("BackEndAPI.Models.Impresion.Impresora", b =>
                 {
                     b.Navigation("Reglas");
+
+                    b.Navigation("Trabajos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Impresion.ReglaImpresion", b =>

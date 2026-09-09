@@ -136,10 +136,10 @@ Estas validaciones prueban los comandos y artefactos. No sustituyen la prueba po
 ```text
 frontendMozo HTTPS
 │
-├── GET /api/qz/certificate
+├── GET /qz/certificate
 │   └── obtiene la hoja pública del certificado firmante
 │
-├── POST /api/qz/sign
+├── POST /qz/sign
 │   └── envía el digest QZ y recibe una firma Base64
 │
 └── WebSocket seguro local
@@ -189,7 +189,7 @@ QZ 2.2.6 incluye su propio runtime Java. No instalar un JRE o JDK adicional en l
 
 ## 7. Seguridad previa al firmador
 
-El endpoint `/api/qz/sign` autoriza operaciones privilegiadas de QZ. No debe publicarse como un firmador anónimo.
+El endpoint `/qz/sign` autoriza operaciones privilegiadas de QZ. No debe publicarse como un firmador anónimo.
 
 Antes de habilitarlo fuera de `Development`:
 
@@ -217,7 +217,7 @@ Para un POC local, el firmador puede habilitarse temporalmente solo en `Developm
 
 La decisión para esta integración es:
 
-- `Printing.Use` y `/api/qz/sign`: sesión de sucursal, vinculada a tenant, `IdSucursal` y una estación registrada. Esto permite imprimir aunque no haya una sesión de empleado activa.
+- `Printing.Use` y `/qz/sign`: sesión de sucursal, vinculada a tenant, `IdSucursal` y una estación registrada. Esto permite imprimir aunque no haya una sesión de empleado activa.
 - `Printing.Configure`: sesión de persona administradora mediante un cliente HTTP específico que envíe `USER_token`.
 - El JWT de persona debe ampliarse con tenant, sucursal, identificador de persona y permisos antes de usarlo para configurar impresoras.
 - La autorización backend es obligatoria; ocultar botones o rutas en React es solo una ayuda visual.
@@ -227,12 +227,12 @@ No sustituir globalmente el token del `axiosInstance`, porque las APIs existente
 ### 7.2. Modo POC y modo producción
 
 - En `Development`, el POC puede aceptar un `stationId` local no registrado, siempre que QZ Signing esté expresamente en modo POC y el backend no sea accesible desde Internet.
-- Fuera de `Development`, `/api/qz/sign` debe exigir una estación existente, habilitada y perteneciente a la sucursal del JWT.
+- Fuera de `Development`, `/qz/sign` debe exigir una estación existente, habilitada y perteneciente a la sucursal del JWT.
 - Un GUID guardado en localStorage identifica una instalación, pero no es por sí solo una credencial. La seguridad principal sigue siendo JWT, tenant/sucursal, políticas, HTTPS y rate limiting.
 
 ### 7.3. Límite inevitable del firmador
 
-El backend recibe un digest irreversible, no la llamada QZ original. Un sujeto autorizado para usar `/api/qz/sign` puede solicitar la firma de cualquier llamada privilegiada QZ representada por un digest válido; el backend no puede inferir impresora, payload u operación desde esos 64 caracteres.
+El backend recibe un digest irreversible, no la llamada QZ original. Un sujeto autorizado para usar `/qz/sign` puede solicitar la firma de cualquier llamada privilegiada QZ representada por un digest válido; el backend no puede inferir impresora, payload u operación desde esos 64 caracteres.
 
 Las políticas y límites reducen quién puede acceder al oráculo de firma. La autorización de documentos y asignaciones protege los datos de BarMaster, pero no amplía la información visible dentro del digest.
 
@@ -674,15 +674,15 @@ No aplicar `Trim()`, conversión a mayúsculas/minúsculas ni otro SHA-256. QZ 2
 ### 10.3. Endpoints
 
 ```text
-GET  /api/qz/certificate
-POST /api/qz/sign
-GET  /api/qz/health
-GET  /api/qz/health/details
+GET  /qz/certificate
+POST /qz/sign
+GET  /qz/health
+GET  /qz/health/details
 ```
 
-Fijar la ruta mediante `[Route("api/qz")]`; BarMaster no posee un prefijo `/api` global. Con el `VITE_BASE_URL` actual, el frontend usa rutas relativas `api/qz/...` y no debe agregar `/api` también al valor de `VITE_BASE_URL`.
+Fijar la ruta mediante `[Route("qz")]`; BarMaster no posee un prefijo `/api` global. Con el `VITE_BASE_URL` actual, el frontend usa rutas relativas `qz/...`.
 
-`GET /api/qz/certificate`:
+`GET /qz/certificate`:
 
 - Puede ser anónimo.
 - Responde `text/plain; charset=utf-8`.
@@ -690,7 +690,7 @@ Fijar la ruta mediante `[Route("api/qz")]`; BarMaster no posee un prefijo `/api`
 - Devuelve exactamente un PEM de la hoja firmante.
 - Debe devolverse como texto crudo: `return Content(pem, "text/plain; charset=utf-8")`; no usar un objeto JSON ni envolverlo entre comillas.
 
-`POST /api/qz/sign`:
+`POST /qz/sign`:
 
 - Requiere `[Authorize(Policy = "Printing.Use")]`.
 - Acepta `{ "request": "64-caracteres-hexadecimales", "stationId": "guid" }`.
@@ -701,12 +701,12 @@ Fijar la ruta mediante `[Route("api/qz")]`; BarMaster no posee un prefijo `/api`
 - Tiene rate limiting por tenant, sucursal, estación, `jti` e IP.
 - No registra el digest o firma en logs normales.
 
-`GET /api/qz/health` público:
+`GET /qz/health` público:
 
 - Devuelve únicamente `enabled` y `ready`.
 - No expone rutas, fechas, pins ni inventario criptográfico.
 
-`GET /api/qz/health/details` requiere `Printing.Diagnostics` y puede informar vencimiento, días restantes, versión de emisión y SHA-256 abreviado. Nunca expone rutas, contraseñas, claves ni el certificado completo.
+`GET /qz/health/details` requiere `Printing.Diagnostics` y puede informar vencimiento, días restantes, versión de emisión y SHA-256 abreviado. Nunca expone rutas, contraseñas, claves ni el certificado completo.
 
 ### 10.4. Despliegue backend coordinado
 
@@ -777,7 +777,7 @@ export function configureQzSecurity() {
     if (configured) return;
 
     qz.security.setCertificatePromise((resolve, reject) => {
-        api.get('api/qz/certificate', {
+        api.get('qz/certificate', {
             responseType: 'text',
             headers: { 'Cache-Control': 'no-cache' }
         })
@@ -789,7 +789,7 @@ export function configureQzSecurity() {
 
     qz.security.setSignaturePromise((toSign) => {
         return (resolve, reject) => {
-            api.post('api/qz/sign', {
+            api.post('qz/sign', {
                 request: toSign,
                 stationId: requireRegisteredStationId()
             }, {
@@ -805,7 +805,7 @@ export function configureQzSecurity() {
 }
 ```
 
-`VITE_BASE_URL` debe terminar en la raíz HTTPS del backend, por ejemplo `https://api.example.com/`. Las rutas QZ incluyen una sola vez `api/qz`; no configurar `VITE_BASE_URL` con `/api/` al final.
+`VITE_BASE_URL` debe terminar en la raíz HTTPS del backend, por ejemplo `https://api.example.com/`. Las rutas QZ comienzan con `qz`; no configurar `VITE_BASE_URL` con `/api/` al final.
 
 ### 11.4. Conexión idempotente
 
@@ -951,12 +951,12 @@ Restricciones:
 Endpoints:
 
 ```text
-POST  /api/printing/stations/register
-POST  /api/printing/stations/{id}/heartbeat
-GET   /api/printing/stations/current
-GET   /api/printing/stations/{id}/assignments
-PUT   /api/printing/stations/{id}/assignments/{role}
-PATCH /api/printing/stations/{id}/enabled
+POST  /printing/stations/register
+POST  /printing/stations/{id}/heartbeat
+GET   /printing/stations/current
+GET   /printing/stations/{id}/assignments
+PUT   /printing/stations/{id}/assignments/{role}
+PATCH /printing/stations/{id}/enabled
 ```
 
 `register` es idempotente por sucursal e instalación. Consultar y reportar heartbeat requiere `Printing.Use`; modificar o habilitar requiere `Printing.Configure`.

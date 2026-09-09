@@ -33,6 +33,7 @@ public sealed record CrearSolicitudImpresionRespuesta(Guid IdSolicitud, IReadOnl
 public sealed record TrabajoImpresionReservadoRespuesta(
     Guid Id,
     Guid IdSolicitud,
+    DateTime CreadoEn,
     Guid IdReserva,
     DateTime ReservaVenceEn,
     TipoDocumentoImpresion TipoDocumento,

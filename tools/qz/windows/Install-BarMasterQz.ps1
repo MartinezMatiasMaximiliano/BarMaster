@@ -60,8 +60,8 @@ if (-not (Test-Path -LiteralPath $installDirectory -PathType Container)) {
 }
 
 $overrideDestination = Join-Path $installDirectory 'override.crt'
-if ($PSCmdlet.ShouldProcess($overrideDestination, 'Instalar raíz pública BarMaster')) {
-    Copy-Item -LiteralPath $rootSource -Destination $overrideDestination -Force
+if ($PSCmdlet.ShouldProcess($overrideDestination, 'Instalar y configurar raíz pública BarMaster')) {
+    Set-QzRootCertificate -Source $rootSource -Manifest $manifest
 }
 
 $installedVersion = Get-QzInstalledVersion

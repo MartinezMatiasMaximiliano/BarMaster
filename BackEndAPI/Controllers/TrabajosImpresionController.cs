@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace BackEndAPI.Controllers;
 
 [ApiController]
-[Route("api/impresion")]
+[Route("impresion")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public sealed class TrabajosImpresionController : ControllerBase
 {
     private readonly IServicioTrabajoImpresion servicioTrabajo;

@@ -69,9 +69,48 @@ function Get-QzInstalledVersion {
 
 function Test-QzRootCertificate {
     param([Parameter(Mandatory)]$Manifest)
-    $installed = Join-Path (Get-QzInstallDirectory) 'override.crt'
+    $installDirectory = Get-QzInstallDirectory
+    $installed = Join-Path $installDirectory 'override.crt'
     if (-not (Test-Path -LiteralPath $installed -PathType Leaf)) { return $false }
-    return (Get-FileHash -LiteralPath $installed -Algorithm SHA256).Hash -eq $Manifest.rootCertificateSha256
+    if ((Get-FileHash -LiteralPath $installed -Algorithm SHA256).Hash -ne $Manifest.rootCertificateSha256) {
+        return $false
+    }
+
+    $propertiesPath = Join-Path $installDirectory 'qz-tray.properties'
+    if (-not (Test-Path -LiteralPath $propertiesPath -PathType Leaf)) { return $false }
+    return [bool](Select-String -LiteralPath $propertiesPath -Pattern '^authcert\.override=override\.crt$' -Quiet)
+}
+
+function Set-QzRootCertificate {
+    param(
+        [Parameter(Mandatory)][string]$Source,
+        [Parameter(Mandatory)]$Manifest
+    )
+
+    $installDirectory = Get-QzInstallDirectory
+    $destination = Join-Path $installDirectory 'override.crt'
+    Copy-Item -LiteralPath $Source -Destination $destination -Force
+
+    $propertiesPath = Join-Path $installDirectory 'qz-tray.properties'
+    if (-not (Test-Path -LiteralPath $propertiesPath -PathType Leaf)) {
+        throw "No existe la configuración de QZ Tray '$propertiesPath'."
+    }
+
+    $property = 'authcert.override=override.crt'
+    $lines = @(Get-Content -LiteralPath $propertiesPath)
+    $updated = $false
+    for ($index = 0; $index -lt $lines.Count; $index++) {
+        if ($lines[$index] -match '^authcert\.override=') {
+            $lines[$index] = $property
+            $updated = $true
+        }
+    }
+    if (-not $updated) { $lines += $property }
+    [IO.File]::WriteAllLines($propertiesPath, $lines, [Text.UTF8Encoding]::new($false))
+
+    if (-not (Test-QzRootCertificate -Manifest $Manifest)) {
+        throw 'La raíz personalizada de QZ no quedó instalada y configurada correctamente.'
+    }
 }
 
 function Test-QzRunning {
@@ -99,4 +138,4 @@ function Assert-QzRootArtifact {
     return $source
 }
 
-Export-ModuleMember -Function Get-QzManifest, Get-QzArchitecture, Test-QzInstaller, Get-QzInstallDirectory, Get-QzConsolePath, Get-QzInstalledVersion, Test-QzRootCertificate, Test-QzRunning, Test-QzAutoStart, Assert-QzRootArtifact
+Export-ModuleMember -Function Get-QzManifest, Get-QzArchitecture, Test-QzInstaller, Get-QzInstallDirectory, Get-QzConsolePath, Get-QzInstalledVersion, Test-QzRootCertificate, Set-QzRootCertificate, Test-QzRunning, Test-QzAutoStart, Assert-QzRootArtifact

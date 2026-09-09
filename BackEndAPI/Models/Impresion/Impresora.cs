@@ -17,5 +17,4 @@ public sealed class Impresora
     public DateTime ActualizadoEn { get; set; } = DateTime.UtcNow;
     public EstacionImpresion Estacion { get; set; } = null!;
     public ICollection<ReglaImpresion> Reglas { get; set; } = new List<ReglaImpresion>();
-    public ICollection<TrabajoImpresion> Trabajos { get; set; } = new List<TrabajoImpresion>();
 }

@@ -6,7 +6,7 @@ namespace BackEndAPI.Controllers;
 
 [ApiController]
 [Authorize(Policy = "Impresion.Configurar")]
-[Route("api/impresion/reglas")]
+[Route("impresion/reglas")]
 public sealed class ReglasImpresionController : ControllerBase
 {
     private readonly IServicioReglaImpresion servicioRegla;
@@ -23,9 +23,9 @@ public sealed class ReglasImpresionController : ControllerBase
         Ok(await servicioRegla.GuardarAsync(solicitud, tokenCancelacion));
 
     [HttpDelete("{idRegla:guid}")]
-    public async Task<IActionResult> Deshabilitar(Guid idRegla, CancellationToken tokenCancelacion)
+    public async Task<IActionResult> Eliminar(Guid idRegla, CancellationToken tokenCancelacion)
     {
-        await servicioRegla.DeshabilitarAsync(idRegla, tokenCancelacion);
+        await servicioRegla.EliminarAsync(idRegla, tokenCancelacion);
         return NoContent();
     }
 

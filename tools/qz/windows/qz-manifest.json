@@ -2,7 +2,7 @@
   "version": "2.2.6",
   "publisherSubjectPattern": "CN=QZ Industries LLC(?:,|$)",
   "rootCertificate": "public/override.crt",
-  "rootCertificateSha256": "18769873BDCD313C8822BAF27E268BD1344946D035C5EBF8B0E0169CBBBAD997",
+  "rootCertificateSha256": "53BB79FB28F449A1DE052B30CA76AA6CC766C4535E6E6FFD04A88ABBF1398E08",
   "downloads": {
     "x64": {
       "fileName": "qz-tray-2.2.6-x86_64.exe",

@@ -6,6 +6,7 @@ import { AgregarProductosAVisita } from '../../../../API/APIVisitas';
 import { actualizarVisita } from '../../../../redux/slices/visitasActivasSlice';
 import { sendHubMessage } from '../../../../connections/HubConnMozo';
 import { useSnackbar } from '../../../../hooks/useSnackbar.jsx';
+import { registrarDiagnosticoImpresion } from '../../../../services/impresion/registroDiagnosticoImpresion';
 
 export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
     const dispatch = useDispatch();
@@ -123,6 +124,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
         enviandoRef.current = true;
         setLoading(true);
+        const inicioEnvio = performance.now();
         try {
             const itemsParaEnviar = [];
             comanda.forEach(item => {
@@ -135,7 +137,18 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
             });
             
             commandIdRef.current ||= crypto.randomUUID();
+            registrarDiagnosticoImpresion('pedido.envio_iniciado', {
+                idComando: commandIdRef.current,
+                idVisita,
+                cantidadLineas: itemsParaEnviar.length,
+                cantidadProductos: itemsParaEnviar.reduce((total, item) => total + item.cantidad, 0),
+            });
             const visitaActualizada = await AgregarProductosAVisita(idVisita, itemsParaEnviar, commandIdRef.current);
+            registrarDiagnosticoImpresion('pedido.backend_respondio', {
+                idComando: commandIdRef.current,
+                idVisita,
+                duracionMs: Math.round(performance.now() - inicioEnvio),
+            });
             
             if (visitaActualizada) {
                 const visitaActualizadaConMesa = {
@@ -159,6 +172,12 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
                 onClose();
             }
         } catch (error) {
+            registrarDiagnosticoImpresion('pedido.envio_error', {
+                idComando: commandIdRef.current,
+                idVisita,
+                duracionMs: Math.round(performance.now() - inicioEnvio),
+                error: error?.message || String(error),
+            });
             console.error('Error al enviar pedidos:', error);
             showSnackbar('Error al agregar los pedidos. Por favor, intenta nuevamente.', 'error');
         } finally {

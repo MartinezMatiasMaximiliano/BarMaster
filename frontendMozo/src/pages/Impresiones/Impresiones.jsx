@@ -1,10 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import RuleOutlinedIcon from '@mui/icons-material/RuleOutlined';
-import HistoryIcon from '@mui/icons-material/History';
 import EncontrarImpresoras from './componentes/EncontrarImpresoras';
 import ReglasImpresion from './componentes/ReglasImpresion';
-import EstadoImpresiones from './componentes/EstadoImpresiones';
+import { ObtenerCajaActiva } from '../../API/APICaja';
 
 function TituloSeccion({ numero, icono, titulo, descripcion }) {
     return <Stack direction="row" spacing={2} alignItems="flex-start">
@@ -20,29 +20,41 @@ function TituloSeccion({ numero, icono, titulo, descripcion }) {
 }
 
 export default function Impresiones() {
+    const [estadoCaja, establecerEstadoCaja] = useState({ cargando: true, activa: false, error: false });
+    useEffect(() => {
+        let montado = true;
+        ObtenerCajaActiva()
+            .then((caja) => {
+                if (montado) establecerEstadoCaja({ cargando: false, activa: Boolean(caja), error: false });
+            })
+            .catch(() => {
+                if (montado) establecerEstadoCaja({ cargando: false, activa: false, error: true });
+            });
+        return () => { montado = false; };
+    }, []);
+    const configuracionBloqueada = estadoCaja.cargando || estadoCaja.activa || estadoCaja.error;
+
     return <Stack spacing={4} sx={{ maxWidth: 1100, mx: 'auto', pb: 5 }}>
-        <Box>
-            <Typography variant="h4" fontWeight={700}>Impresiones</Typography>
-            <Typography color="text.secondary">Encontrá las impresoras, definí qué debe imprimir cada una y controlá los trabajos enviados.</Typography>
-        </Box>
-
         <Stack component="section" spacing={3}>
-            <TituloSeccion numero="1" icono={<PrintOutlinedIcon />} titulo="Encontrar impresoras" descripcion="Buscá las impresoras de este equipo y asignales un nombre fácil de reconocer." />
-            <EncontrarImpresoras integrada />
+            <EncontrarImpresoras
+                integrada
+                bloqueadaPorCaja={configuracionBloqueada}
+                encabezadoPagina={<Box>
+                    <Typography variant="h4" fontWeight={700}>Impresiones</Typography>
+                    <Typography color="text.secondary">Encontrá las impresoras y definí qué debe imprimir cada una.</Typography>
+                </Box>}
+                encabezado={<TituloSeccion numero="1" icono={<PrintOutlinedIcon />} titulo="Buscar impresoras" descripcion="Buscá las impresoras de este equipo y asignales un nombre fácil de reconocer." />}
+            />
         </Stack>
 
         <Divider />
 
         <Stack component="section" spacing={3}>
-            <TituloSeccion numero="2" icono={<RuleOutlinedIcon />} titulo="Reglas de impresión" descripcion="Elegí la impresora, qué se imprime y en qué momento debe imprimirse." />
-            <ReglasImpresion integrada />
-        </Stack>
-
-        <Divider />
-
-        <Stack component="section" spacing={3}>
-            <TituloSeccion numero="3" icono={<HistoryIcon />} titulo="Estado de impresiones" descripcion="Consultá el estado de cada trabajo y cancelá o rehacé los que necesiten intervención." />
-            <EstadoImpresiones integrada />
+            <ReglasImpresion
+                integrada
+                bloqueadaPorCaja={configuracionBloqueada}
+                encabezado={<TituloSeccion numero="2" icono={<RuleOutlinedIcon />} titulo="Reglas de impresión" descripcion="Elegí la impresora, qué se imprime y en qué momento debe imprimirse." />}
+            />
         </Stack>
     </Stack>;
 }

@@ -9,6 +9,7 @@ using BackEndAPI.Impresion.Documentos;
 using BackEndAPI.Impresion.Trabajos;
 using BackEndAPI.Models.Impresion;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace BackEndAPI.Services
 {
@@ -22,6 +23,7 @@ namespace BackEndAPI.Services
         private readonly IServicioDocumentoImpresion _servicioDocumentoImpresion;
         private readonly IServicioTrabajoImpresion _servicioTrabajoImpresion;
         private readonly ICurrentDbContext _contextoDbActual;
+        private readonly ILogger<VisitasServices> _logger;
         public VisitasServices(
             IVisitasRepository repository,
             IProductosRepository productosRepository,
@@ -30,7 +32,8 @@ namespace BackEndAPI.Services
             IDatabaseTransactionManager transactionManager,
             IServicioDocumentoImpresion servicioDocumentoImpresion,
             IServicioTrabajoImpresion servicioTrabajoImpresion,
-            ICurrentDbContext contextoDbActual)
+            ICurrentDbContext contextoDbActual,
+            ILogger<VisitasServices> logger)
         {
             _visitasRepository = repository;
             _productosRepository = productosRepository;
@@ -40,6 +43,7 @@ namespace BackEndAPI.Services
             _servicioDocumentoImpresion = servicioDocumentoImpresion;
             _servicioTrabajoImpresion = servicioTrabajoImpresion;
             _contextoDbActual = contextoDbActual;
+            _logger = logger;
         }
 
         public async Task<Visita> BuscarVisitaPorId(Guid IdVisita)
@@ -56,20 +60,33 @@ namespace BackEndAPI.Services
             Guid IdVisita,
             Guid idComando)
         {
+            var inicio = Stopwatch.GetTimestamp();
+            _logger.LogInformation("[IMPRESION_DIAGNOSTICO] {TimestampUtc:o} pedido.backend_recibido IdComando={IdComando} IdVisita={IdVisita} Lineas={Lineas}",
+                DateTime.UtcNow, idComando, IdVisita, productos.Count);
             IReadOnlyList<CrearSolicitudImpresionRespuesta> solicitudesImpresion = [];
             var visita = await _transactionManager.ExecuteAsync(async () =>
             {
                 var resultado = await AgregarProductosNucleoAsync(productos, IdVisita, idComando);
+                _logger.LogInformation("[IMPRESION_DIAGNOSTICO] {TimestampUtc:o} pedido.productos_guardados IdComando={IdComando} DuracionMs={DuracionMs}",
+                    DateTime.UtcNow, idComando, Stopwatch.GetElapsedTime(inicio).TotalMilliseconds);
                 if (!resultado.YaProcesado)
                 {
                     solicitudesImpresion = await _servicioDocumentoImpresion.EncolarComandasAsync(
                         resultado.Visita, resultado.ProductosAgregados, idComando, CancellationToken.None);
+                    _logger.LogInformation("[IMPRESION_DIAGNOSTICO] {TimestampUtc:o} pedido.comandas_encoladas IdComando={IdComando} Solicitudes={Solicitudes} DuracionMs={DuracionMs}",
+                        DateTime.UtcNow, idComando, solicitudesImpresion.Count, Stopwatch.GetElapsedTime(inicio).TotalMilliseconds);
                 }
                 return resultado.Visita;
             });
 
+            _logger.LogInformation("[IMPRESION_DIAGNOSTICO] {TimestampUtc:o} pedido.transaccion_confirmada IdComando={IdComando} DuracionMs={DuracionMs}",
+                DateTime.UtcNow, idComando, Stopwatch.GetElapsedTime(inicio).TotalMilliseconds);
             foreach (var solicitudImpresion in solicitudesImpresion)
+            {
                 await _servicioTrabajoImpresion.NotificarAsync(solicitudImpresion, CancellationToken.None);
+                _logger.LogInformation("[IMPRESION_DIAGNOSTICO] {TimestampUtc:o} pedido.signalr_notificado IdComando={IdComando} IdSolicitud={IdSolicitud} Trabajos={Trabajos} DuracionMs={DuracionMs}",
+                    DateTime.UtcNow, idComando, solicitudImpresion.IdSolicitud, solicitudImpresion.Trabajos.Count, Stopwatch.GetElapsedTime(inicio).TotalMilliseconds);
+            }
             return visita;
         }
 

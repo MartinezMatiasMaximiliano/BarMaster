@@ -94,13 +94,13 @@ try {
         $rootX509.Dispose()
     }
 
-    & dotnet user-secrets set 'QzSigning:PfxPath' $pfx --project $BackendProject | Out-Null
-    & dotnet user-secrets set 'QzSigning:PfxPassword' $pfxPassword --project $BackendProject | Out-Null
-    & dotnet user-secrets set 'QzSigning:RootCertificatePath' $rootCertificate --project $BackendProject | Out-Null
-    & dotnet user-secrets set 'QzSigning:ExpectedCertificateSha256' $leafHash --project $BackendProject | Out-Null
-    & dotnet user-secrets set 'QzSigning:ExpectedRootCertificateSha256' $rootHash --project $BackendProject | Out-Null
-    & dotnet user-secrets set 'QzSigning:AllowUnregisteredStationsInDevelopment' 'true' --project $BackendProject | Out-Null
-    & dotnet user-secrets set 'QzSigning:Enabled' 'true' --project $BackendProject | Out-Null
+    & dotnet user-secrets set 'FirmaQz:RutaPfx' $pfx --project $BackendProject | Out-Null
+    & dotnet user-secrets set 'FirmaQz:ContrasenaPfx' $pfxPassword --project $BackendProject | Out-Null
+    & dotnet user-secrets set 'FirmaQz:RutaCertificadoRaiz' $rootCertificate --project $BackendProject | Out-Null
+    & dotnet user-secrets set 'FirmaQz:Sha256CertificadoEsperado' $leafHash --project $BackendProject | Out-Null
+    & dotnet user-secrets set 'FirmaQz:Sha256CertificadoRaizEsperado' $rootHash --project $BackendProject | Out-Null
+    & dotnet user-secrets set 'FirmaQz:PermitirEstacionesNoRegistradasEnDesarrollo' 'true' --project $BackendProject | Out-Null
+    & dotnet user-secrets set 'FirmaQz:Habilitada' 'true' --project $BackendProject | Out-Null
 
     [pscustomobject]@{
         PkiRoot = $resolvedOutput

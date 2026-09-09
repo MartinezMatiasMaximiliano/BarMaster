@@ -8,7 +8,8 @@ using Microsoft.Extensions.Options;
 namespace BackEndAPI.Controllers;
 
 [ApiController]
-[Route("api/qz")]
+[Route("qz")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public sealed class QzController : ControllerBase
 {
     private readonly IServicioFirmaQz servicioFirma;

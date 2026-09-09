@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEndAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260904222221_EspanolizarModuloImpresion")]
-    partial class EspanolizarModuloImpresion
+    [Migration("20260907191830_DesacoplarTrabajosDeImpresoras")]
+    partial class DesacoplarTrabajosDeImpresoras
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -597,9 +597,6 @@ namespace BackEndAPI.Migrations
                     b.Property<Guid>("IdEstacion")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("IdImpresora")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("IdPersonaSolicitante")
                         .HasColumnType("uuid");
 
@@ -622,6 +619,11 @@ namespace BackEndAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(260)
                         .HasColumnType("character varying(260)");
+
+                    b.Property<string>("NombreVisibleImpresora")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
 
                     b.Property<DateTime?>("ReservaVenceEn")
                         .HasColumnType("timestamp with time zone");
@@ -656,8 +658,6 @@ namespace BackEndAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IdEstacion");
-
-                    b.HasIndex("IdImpresora");
 
                     b.HasIndex("IdRegla");
 
@@ -1647,12 +1647,6 @@ namespace BackEndAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("BackEndAPI.Models.Impresion.Impresora", "Impresora")
-                        .WithMany("Trabajos")
-                        .HasForeignKey("IdImpresora")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("BackEndAPI.Models.Impresion.ReglaImpresion", "Regla")
                         .WithMany("Trabajos")
                         .HasForeignKey("IdRegla")
@@ -1670,8 +1664,6 @@ namespace BackEndAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Estacion");
-
-                    b.Navigation("Impresora");
 
                     b.Navigation("Regla");
 
@@ -1966,8 +1958,6 @@ namespace BackEndAPI.Migrations
             modelBuilder.Entity("BackEndAPI.Models.Impresion.Impresora", b =>
                 {
                     b.Navigation("Reglas");
-
-                    b.Navigation("Trabajos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Impresion.ReglaImpresion", b =>

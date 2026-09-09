@@ -13,7 +13,7 @@ const headers = {
 };
 
 qz.security.setCertificatePromise((resolve, reject) => {
-    fetch(`${backend}/api/qz/certificate`, { cache: 'no-store' })
+    fetch(`${backend}/qz/certificado`, { cache: 'no-store' })
         .then(async (response) => {
             if (!response.ok) throw new Error(`certificate HTTP ${response.status}`);
             return response.text();
@@ -23,10 +23,10 @@ qz.security.setCertificatePromise((resolve, reject) => {
 qz.security.setSignatureAlgorithm('SHA512');
 qz.security.setSignaturePromise((request) => async (resolve, reject) => {
     try {
-        const response = await fetch(`${backend}/api/qz/sign`, {
+        const response = await fetch(`${backend}/qz/firmar`, {
             method: 'POST',
-            headers: { ...headers, 'Content-Type': 'application/json', 'X-Printing-Station-ID': stationId },
-            body: JSON.stringify({ request, stationId }),
+            headers: { ...headers, 'Content-Type': 'application/json', 'X-Estacion-Impresion-ID': stationId },
+            body: JSON.stringify({ solicitud: request, idEstacion: stationId }),
         });
         if (!response.ok) throw new Error(`sign HTTP ${response.status}: ${await response.text()}`);
         resolve(await response.text());

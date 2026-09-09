@@ -173,24 +173,26 @@ export const MesaModalUnificado = ({
     }, [onCancelarPedidos, showSnackbar]);
 
     const handlePrintPreticket = useCallback(async () => {
-        const unpaidIds = new Set(productosAPagar);
-        const products = (visitaMesaFinal?.productosConsumidos || [])
-            .filter((product) => unpaidIds.has(product.id ?? product.Id));
-        if (products.length === 0) {
+        if (productosAPagar.length === 0) {
             showSnackbar('No hay productos pendientes para imprimir', 'warning');
+            return;
+        }
+
+        if (!idVisita) {
+            showSnackbar('No se pudo identificar la visita de la mesa', 'error');
             return;
         }
 
         setPrintingPreticket(true);
         try {
-            await solicitarPreticket(idVisita, products.map((product) => product.id ?? product.Id));
+            await solicitarPreticket(idVisita);
             showSnackbar('Solicitud recibida. La cuenta se imprimirá en el equipo configurado.', 'success');
         } catch (error) {
             showSnackbar(normalizarErrorQz(error).mensaje, 'error');
         } finally {
             setPrintingPreticket(false);
         }
-    }, [idVisita, productosAPagar, showSnackbar, visitaMesaFinal]);
+    }, [idVisita, productosAPagar.length, showSnackbar]);
 
     return (
         <Dialog

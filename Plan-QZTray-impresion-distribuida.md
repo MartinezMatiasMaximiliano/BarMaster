@@ -380,15 +380,15 @@ Las rutas exactas pueden adaptarse a la convención existente, pero no deben mez
 ### 8.1. Estaciones e inventario
 
 ```text
-POST /api/printing/stations/enroll
-POST /api/printing/stations/session
-POST /api/printing/stations/{stationId}/rotate-credential
-POST /api/printing/stations/{stationId}/revoke
-POST /api/printing/stations/{stationId}/heartbeat
-PUT  /api/printing/stations/{stationId}/printers/sync
-GET  /api/printing/stations/{stationId}/printers
-PATCH /api/printing/printers/{printerId}
-POST /api/printing/printers/{printerId}/test-jobs
+POST /printing/stations/enroll
+POST /printing/stations/session
+POST /printing/stations/{stationId}/rotate-credential
+POST /printing/stations/{stationId}/revoke
+POST /printing/stations/{stationId}/heartbeat
+PUT  /printing/stations/{stationId}/printers/sync
+GET  /printing/stations/{stationId}/printers
+PATCH /printing/printers/{printerId}
+POST /printing/printers/{printerId}/test-jobs
 ```
 
 - `enroll`, rotación, revocación y edición requieren `Printing.Configure`.
@@ -398,11 +398,11 @@ POST /api/printing/printers/{printerId}/test-jobs
 ### 8.2. Reglas
 
 ```text
-GET    /api/printing/routes
-POST   /api/printing/routes
-PUT    /api/printing/routes/{routeId}
-DELETE /api/printing/routes/{routeId}       (borrado lógico)
-POST   /api/printing/routes/validate
+GET    /printing/routes
+POST   /printing/routes
+PUT    /printing/routes/{routeId}
+DELETE /printing/routes/{routeId}       (borrado lógico)
+POST   /printing/routes/validate
 ```
 
 Todos requieren `Printing.Configure`.
@@ -418,9 +418,9 @@ La validación debe detectar:
 ### 8.3. Intenciones de impresión
 
 ```text
-POST /api/printing/requests/preticket
-POST /api/printing/requests/payment-receipt
-GET  /api/printing/requests/{requestId}
+POST /printing/requests/preticket
+POST /printing/requests/payment-receipt
+GET  /printing/requests/{requestId}
 ```
 
 Ejemplo de solicitud de preticket:
@@ -453,11 +453,11 @@ La respuesta normal será `202 Accepted`:
 ### 8.4. Consumo por estación
 
 ```text
-POST /api/printing/station/jobs/claim
-POST /api/printing/station/jobs/{jobId}/dispatching
-POST /api/printing/station/jobs/{jobId}/spool-accepted
-POST /api/printing/station/jobs/{jobId}/failed
-POST /api/printing/station/jobs/{jobId}/renew-lease
+POST /printing/station/jobs/claim
+POST /printing/station/jobs/{jobId}/dispatching
+POST /printing/station/jobs/{jobId}/spool-accepted
+POST /printing/station/jobs/{jobId}/failed
+POST /printing/station/jobs/{jobId}/renew-lease
 ```
 
 El `stationId` se obtiene del JWT de estación, no de un valor libre enviado por el cliente. Las transiciones requieren el `leaseId` vigente.
@@ -465,10 +465,10 @@ El `stationId` se obtiene del JWT de estación, no de un valor libre enviado por
 ### 8.5. Administración y soporte
 
 ```text
-GET  /api/printing/jobs?status=&stationId=&from=&to=
-POST /api/printing/jobs/{jobId}/retry
-POST /api/printing/jobs/{jobId}/cancel
-GET  /api/printing/dashboard
+GET  /printing/jobs?status=&stationId=&from=&to=
+POST /printing/jobs/{jobId}/retry
+POST /printing/jobs/{jobId}/cancel
+GET  /printing/dashboard
 ```
 
 ## 9. Autenticación y aislamiento
@@ -880,7 +880,7 @@ Criterio: migración y rollback verificados sobre una copia de cada tipo de tena
 - Credencial aleatoria, hash, rotación y revocación.
 - JWT corto `printing_station`.
 - Política `Printing.Station`.
-- Adaptar `/api/qz/sign` para aceptar la identidad de estación sin ampliar permisos.
+- Adaptar `/qz/sign` para aceptar la identidad de estación sin ampliar permisos.
 
 Criterio: una estación no puede usar ID, secreto, trabajo o firmador de otra sucursal.
 

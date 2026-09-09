@@ -59,6 +59,7 @@ public static class ConfiguracionImpresionDistribuida
             entity.Property(x => x.Estado).HasConversion<string>().HasMaxLength(24);
             entity.Property(x => x.ContenidoJson).HasColumnType("jsonb").IsRequired();
             entity.Property(x => x.NombreSistemaImpresora).HasMaxLength(260).IsRequired();
+            entity.Property(x => x.NombreVisibleImpresora).HasMaxLength(120).IsRequired();
             entity.Property(x => x.Codificacion).HasMaxLength(32).IsRequired();
             entity.Property(x => x.ClaveIdempotencia).HasMaxLength(220).IsRequired();
             entity.Property(x => x.TipoEntidadOrigen).HasMaxLength(64).IsRequired();
@@ -68,7 +69,6 @@ public static class ConfiguracionImpresionDistribuida
             entity.HasIndex(x => new { x.IdSucursal, x.ClaveIdempotencia }).IsUnique();
             entity.HasIndex(x => new { x.IdSucursal, x.IdSolicitud });
             entity.HasIndex(x => x.IdEstacion);
-            entity.HasIndex(x => x.IdImpresora);
             entity.HasIndex(x => x.IdRegla);
             entity.HasIndex(x => x.IdTrabajoReimpreso);
             entity.HasIndex(x => new { x.IdEstacion, x.Estado, x.DisponibleEn, x.CreadoEn })
@@ -87,8 +87,6 @@ public static class ConfiguracionImpresionDistribuida
                 .HasForeignKey(x => x.IdSucursal).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(x => x.Estacion).WithMany(x => x.TrabajosImpresion)
                 .HasForeignKey(x => x.IdEstacion).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(x => x.Impresora).WithMany(x => x.Trabajos)
-                .HasForeignKey(x => x.IdImpresora).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(x => x.Regla).WithMany(x => x.Trabajos)
                 .HasForeignKey(x => x.IdRegla).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(x => x.TrabajoReimpreso).WithMany()

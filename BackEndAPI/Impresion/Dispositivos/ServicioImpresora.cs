@@ -43,7 +43,10 @@ public sealed class ServicioImpresora : IServicioImpresora
             .Select(x => x.First())
             .ToDictionary(x => NormalizarNombre(x.Nombre), StringComparer.Ordinal);
 
-        var existentes = await db.Impresoras.Where(x => x.IdEstacion == idEstacion).ToListAsync(tokenCancelacion);
+        var existentes = await db.Impresoras
+            .Include(x => x.Reglas)
+            .Where(x => x.IdEstacion == idEstacion)
+            .ToListAsync(tokenCancelacion);
         foreach (var impresora in existentes)
         {
             impresora.Presente = false;
@@ -92,6 +95,7 @@ public sealed class ServicioImpresora : IServicioImpresora
         AsegurarIdentidadEstacion(idEstacion);
         var estacion = await ObtenerEstacionPropiaAsync(contextoDbActual.Db, idEstacion, tokenCancelacion);
         var impresoras = await contextoDbActual.Db.Impresoras.AsNoTracking()
+            .Include(x => x.Reglas)
             .Where(x => x.IdEstacion == idEstacion)
             .OrderBy(x => x.NombreVisible)
             .ToListAsync(tokenCancelacion);
@@ -103,6 +107,7 @@ public sealed class ServicioImpresora : IServicioImpresora
         var ahora = AhoraUtc;
         var impresoras = await contextoDbActual.Db.Impresoras.AsNoTracking()
             .Include(x => x.Estacion)
+            .Include(x => x.Reglas)
             .Where(x => x.Estacion.IdSucursal == identidad.IdSucursal)
             .OrderBy(x => x.Estacion.Nombre).ThenBy(x => x.NombreVisible)
             .ToListAsync(tokenCancelacion);
@@ -118,8 +123,11 @@ public sealed class ServicioImpresora : IServicioImpresora
             throw OpcionInvalida();
         var impresora = await contextoDbActual.Db.Impresoras
             .Include(x => x.Estacion)
+            .Include(x => x.Reglas)
             .SingleOrDefaultAsync(x => x.Id == idImpresora && x.Estacion.IdSucursal == identidad.IdSucursal, tokenCancelacion)
             ?? throw new ExcepcionEstacionImpresion("IMPRESORA_NO_ENCONTRADA", "La impresora no existe en esta sucursal.", StatusCodes.Status404NotFound);
+        await ProteccionConfiguracionImpresion.AsegurarSinCajaActivaAsync(
+            contextoDbActual.Db, identidad.IdSucursal, tokenCancelacion);
         impresora.NombreVisible = solicitud.NombreVisible.Trim();
         impresora.Formato = FormatoImpresion.Crudo;
         impresora.AnchoPapelMm = solicitud.AnchoPapelMm;
@@ -128,6 +136,25 @@ public sealed class ServicioImpresora : IServicioImpresora
         impresora.ActualizadoEn = AhoraUtc;
         await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
         return Mapear(impresora, impresora.Estacion, AhoraUtc);
+    }
+
+    public async Task EliminarAsync(Guid idImpresora, CancellationToken tokenCancelacion)
+    {
+        var db = contextoDbActual.Db;
+        var impresora = await db.Impresoras.SingleOrDefaultAsync(
+            x => x.Id == idImpresora && x.Estacion.IdSucursal == identidad.IdSucursal,
+            tokenCancelacion)
+            ?? throw new ExcepcionEstacionImpresion("IMPRESORA_NO_ENCONTRADA", "La impresora no existe en esta sucursal.", StatusCodes.Status404NotFound);
+        await ProteccionConfiguracionImpresion.AsegurarSinCajaActivaAsync(
+            db, identidad.IdSucursal, tokenCancelacion);
+        if (await db.ReglasImpresion.AnyAsync(x => x.IdImpresora == idImpresora, tokenCancelacion))
+            throw new ExcepcionEstacionImpresion(
+                "IMPRESORA_CON_REGLAS",
+                "La impresora tiene reglas asociadas. Eliminá primero esas reglas para poder quitarla.",
+                StatusCodes.Status409Conflict);
+
+        db.Impresoras.Remove(impresora);
+        await db.SaveChangesAsync(tokenCancelacion);
     }
 
     private async Task<EstacionImpresion> ObtenerEstacionPropiaAsync(AppDbContext db, Guid idEstacion, CancellationToken tokenCancelacion)
@@ -152,7 +179,8 @@ public sealed class ServicioImpresora : IServicioImpresora
         impresora.Id, impresora.IdEstacion, estacion.Nombre, impresora.NombreSistema, impresora.NombreVisible,
         impresora.AnchoPapelMm, impresora.Codificacion, impresora.Habilitada, impresora.Presente,
         impresora.VistaPorUltimaVezEn, impresora.UltimoEstado,
-        estacion.Habilitada && estacion.RevocadaEn is null && estacion.VistaPorUltimaVezEn >= ahora.AddSeconds(-opciones.SegundosHastaFueraDeLinea));
+        estacion.Habilitada && estacion.RevocadaEn is null && estacion.VistaPorUltimaVezEn >= ahora.AddSeconds(-opciones.SegundosHastaFueraDeLinea),
+        impresora.Reglas.Count);
 
     private static string NormalizarNombre(string nombre) => nombre.Trim().ToUpperInvariant();
     private static ExcepcionEstacionImpresion OpcionInvalida() =>

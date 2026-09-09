@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace BackEndAPI.Controllers;
 
 [ApiController]
-[Route("api/impresion")]
+[Route("impresion")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public sealed class ImpresorasController : ControllerBase
 {
     private readonly IServicioImpresora servicio;
@@ -40,6 +41,14 @@ public sealed class ImpresorasController : ControllerBase
     public async Task<ActionResult<ImpresoraRespuesta>> Actualizar(
         Guid idImpresora, ActualizarImpresoraSolicitud solicitud, CancellationToken tokenCancelacion) =>
         Ok(await servicio.ActualizarAsync(idImpresora, solicitud, tokenCancelacion));
+
+    [Authorize(Policy = "Impresion.Configurar")]
+    [HttpDelete("impresoras/{idImpresora:guid}")]
+    public async Task<IActionResult> Eliminar(Guid idImpresora, CancellationToken tokenCancelacion)
+    {
+        await servicio.EliminarAsync(idImpresora, tokenCancelacion);
+        return NoContent();
+    }
 
     [Authorize(Policy = "Impresion.Configurar")]
     [HttpPost("impresoras/{idImpresora:guid}/trabajos-prueba")]

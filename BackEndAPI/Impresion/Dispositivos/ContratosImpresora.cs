@@ -29,4 +29,5 @@ public sealed record ImpresoraRespuesta(
     bool Presente,
     DateTime VistaPorUltimaVezEn,
     string? UltimoEstado,
-    bool EstacionEnLinea);
+    bool EstacionEnLinea,
+    int CantidadReglas);

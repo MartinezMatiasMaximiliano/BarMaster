@@ -68,7 +68,6 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
                 IdSolicitud = comando.IdSolicitud,
                 IdSucursal = identidad.IdSucursal,
                 IdEstacion = impresora.IdEstacion,
-                IdImpresora = impresora.Id,
                 IdRegla = regla.Id,
                 IdPersonaSolicitante = comando.IdPersonaSolicitante,
                 TipoDocumento = comando.TipoDocumento,
@@ -76,6 +75,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
                 VersionPlantilla = comando.VersionPlantilla,
                 ContenidoJson = comando.ContenidoJson,
                 NombreSistemaImpresora = impresora.NombreSistema,
+                NombreVisibleImpresora = impresora.NombreVisible,
                 Formato = FormatoImpresion.Crudo,
                 AnchoPapelMm = impresora.AnchoPapelMm,
                 Codificacion = impresora.Codificacion,
@@ -131,13 +131,14 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         var trabajo = new TrabajoImpresion
         {
             IdSolicitud = Guid.NewGuid(), IdSucursal = identidad.IdSucursal, IdEstacion = impresora.IdEstacion,
-            IdImpresora = impresora.Id, IdPersonaSolicitante = identidad.IdPersona,
+            IdPersonaSolicitante = identidad.IdPersona,
             TipoDocumento = TipoDocumentoImpresion.Preticket, ContenidoJson = contenido,
-            NombreSistemaImpresora = impresora.NombreSistema, Formato = FormatoImpresion.Crudo,
+            NombreSistemaImpresora = impresora.NombreSistema, NombreVisibleImpresora = impresora.NombreVisible,
+            Formato = FormatoImpresion.Crudo,
             AnchoPapelMm = impresora.AnchoPapelMm, Codificacion = impresora.Codificacion,
             Copias = 1, Estado = EstadoTrabajoImpresion.Pendiente,
             ClaveIdempotencia = $"prueba:{Guid.NewGuid():N}", TipoEntidadOrigen = "PruebaImpresora", IdEntidadOrigen = impresora.Id.ToString("N"),
-            CreadoEn = ahora, DisponibleEn = ahora, VenceEn = ahora.AddMinutes(10), Impresora = impresora, Estacion = impresora.Estacion
+            CreadoEn = ahora, DisponibleEn = ahora, VenceEn = ahora.AddMinutes(10), Estacion = impresora.Estacion
         };
         contextoDbActual.Db.TrabajosImpresion.Add(trabajo);
         await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
@@ -253,7 +254,6 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
             IdSolicitud = Guid.NewGuid(),
             IdSucursal = original.IdSucursal,
             IdEstacion = original.IdEstacion,
-            IdImpresora = original.IdImpresora,
             IdRegla = original.IdRegla,
             IdPersonaSolicitante = identidad.IdPersona,
             IdTrabajoReimpreso = original.Id,
@@ -262,6 +262,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
             VersionPlantilla = original.VersionPlantilla,
             ContenidoJson = original.ContenidoJson,
             NombreSistemaImpresora = original.NombreSistemaImpresora,
+            NombreVisibleImpresora = original.NombreVisibleImpresora,
             Formato = FormatoImpresion.Crudo,
             AnchoPapelMm = original.AnchoPapelMm,
             Codificacion = original.Codificacion,
@@ -274,7 +275,6 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
             DisponibleEn = ahora,
             VenceEn = ahora.AddMinutes(30)
         };
-        copy.Impresora = original.Impresora;
         copy.Estacion = original.Estacion;
         original.UltimoDetalleError = $"Reimpresión solicitada: {Truncar(motivo, 300)}";
         contextoDbActual.Db.TrabajosImpresion.Add(copy);
@@ -365,7 +365,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         trabajo.UltimoDetalleError = null;
         await db.SaveChangesAsync(tokenCancelacion);
         await transaction.CommitAsync(tokenCancelacion);
-        return new(trabajo.Id, trabajo.IdSolicitud, idReserva, trabajo.ReservaVenceEn.Value, trabajo.TipoDocumento,
+        return new(trabajo.Id, trabajo.IdSolicitud, trabajo.CreadoEn, idReserva, trabajo.ReservaVenceEn.Value, trabajo.TipoDocumento,
             trabajo.VersionEsquema, trabajo.VersionPlantilla, trabajo.ContenidoJson, trabajo.NombreSistemaImpresora,
             trabajo.AnchoPapelMm, trabajo.Codificacion, trabajo.Copias);
     }
@@ -423,7 +423,6 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
     }
 
     private IQueryable<TrabajoImpresion> TrabajosConDestino() => contextoDbActual.Db.TrabajosImpresion
-        .Include(x => x.Impresora)
         .Include(x => x.Estacion);
 
     private Guid RequerirIdEstacion()
@@ -462,7 +461,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
     private static ExcepcionEstacionImpresion TrabajoNoEncontrado() =>
         new("TRABAJO_IMPRESION_NO_ENCONTRADO", "El trabajo de impresión no existe.", StatusCodes.Status404NotFound);
     private static ResumenTrabajoImpresionRespuesta Mapear(TrabajoImpresion trabajo) => new(
-        trabajo.Id, trabajo.IdSolicitud, trabajo.TipoDocumento, trabajo.Impresora.NombreVisible, trabajo.IdEstacion, trabajo.Estacion.Nombre,
+        trabajo.Id, trabajo.IdSolicitud, trabajo.TipoDocumento, trabajo.NombreVisibleImpresora, trabajo.IdEstacion, trabajo.Estacion.Nombre,
         trabajo.Estado, trabajo.CreadoEn, trabajo.VenceEn, trabajo.UltimoCodigoError);
     private DateTime AhoraUtc => proveedorTiempo.GetUtcNow().UtcDateTime;
 }

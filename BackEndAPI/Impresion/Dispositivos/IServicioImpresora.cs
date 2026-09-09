@@ -6,4 +6,5 @@ public interface IServicioImpresora
     Task<IReadOnlyList<ImpresoraRespuesta>> ObtenerParaEstacionAsync(Guid idEstacion, CancellationToken tokenCancelacion);
     Task<IReadOnlyList<ImpresoraRespuesta>> ObtenerParaSucursalAsync(CancellationToken tokenCancelacion);
     Task<ImpresoraRespuesta> ActualizarAsync(Guid idImpresora, ActualizarImpresoraSolicitud solicitud, CancellationToken tokenCancelacion);
+    Task EliminarAsync(Guid idImpresora, CancellationToken tokenCancelacion);
 }

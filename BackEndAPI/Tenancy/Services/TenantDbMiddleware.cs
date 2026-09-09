@@ -16,6 +16,19 @@ namespace BackEndAPI.Tenancy.Services
             {
                 var tenantClaim = context.User.FindFirst("TenantId")?.Value;
                 var tenantHeader = context.Request.Headers["X-Tenant-ID"].ToString();
+
+                // Los navegadores no permiten agregar encabezados personalizados al upgrade
+                // WebSocket. Para el hub de impresión, la estación ya está autenticada con un
+                // JWT propio, por lo que usamos su TenantId firmado como encabezado interno.
+                var esHubEstacionImpresion = context.Request.Path.StartsWithSegments("/hubs/impresion")
+                    && context.User.HasClaim("TipoAuth", "estacion_impresion");
+                if (esHubEstacionImpresion && string.IsNullOrWhiteSpace(tenantHeader)
+                    && !string.IsNullOrWhiteSpace(tenantClaim))
+                {
+                    tenantHeader = TenantIdentifier.Normalize(tenantClaim);
+                    context.Request.Headers["X-Tenant-ID"] = tenantHeader;
+                }
+
                 if (string.IsNullOrWhiteSpace(tenantClaim)
                     || string.IsNullOrWhiteSpace(tenantHeader)
                     || !string.Equals(

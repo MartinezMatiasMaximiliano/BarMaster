@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace BackEndAPI.Controllers;
 
 [ApiController]
-[Route("api/impresion/solicitudes")]
+[Route("impresion/solicitudes")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public sealed class SolicitudesImpresionController : ControllerBase
 {
     private readonly IServicioDocumentoImpresion servicioDocumento;

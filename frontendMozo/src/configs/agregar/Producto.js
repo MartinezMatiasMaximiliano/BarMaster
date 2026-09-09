@@ -10,13 +10,19 @@ const camposBase = [
   { name: "categorias", label: "Categorías", type: "select_multiple", required: true, validation: { rule: "select_multiple" }, options: [] },
   { name: "controlaStock", label: "Controlar stock de este producto", type: "checkbox" },
   {
+    name: "enviarAlerta",
+    label: "Mostrar alerta de stock bajo en el inicio",
+    type: "checkbox",
+    visibleWhen: (values) => Boolean(values.controlaStock),
+  },
+  {
     name: "cantidadMinima",
     label: "Cantidad mínima",
     type: "number",
     required: true,
     min: 0,
     validation: { rule: "integer", min: 0 },
-    helperText: "Cantidad mínima indica con qué cantidad se activará una alerta de baja cantidad del producto",
+    helperText: "Cantidad mínima indica el umbral de envío de alertas y facilita la ordenación en la tabla de stock",
     visibleWhen: (values) => Boolean(values.controlaStock),
   },
   {

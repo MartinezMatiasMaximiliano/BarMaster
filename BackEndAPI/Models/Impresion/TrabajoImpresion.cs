@@ -6,7 +6,6 @@ public sealed class TrabajoImpresion
     public Guid IdSolicitud { get; set; }
     public Guid IdSucursal { get; set; }
     public Guid IdEstacion { get; set; }
-    public Guid IdImpresora { get; set; }
     public Guid? IdRegla { get; set; }
     public Guid? IdPersonaSolicitante { get; set; }
     public Guid? IdTrabajoReimpreso { get; set; }
@@ -15,6 +14,7 @@ public sealed class TrabajoImpresion
     public short VersionPlantilla { get; set; } = 1;
     public string ContenidoJson { get; set; } = "{}";
     public string NombreSistemaImpresora { get; set; } = string.Empty;
+    public string NombreVisibleImpresora { get; set; } = string.Empty;
     public FormatoImpresion Formato { get; set; } = FormatoImpresion.Crudo;
     public short AnchoPapelMm { get; set; } = 58;
     public string Codificacion { get; set; } = "CP858";
@@ -35,7 +35,6 @@ public sealed class TrabajoImpresion
     public string? UltimoDetalleError { get; set; }
     public Sucursal Sucursal { get; set; } = null!;
     public EstacionImpresion Estacion { get; set; } = null!;
-    public Impresora Impresora { get; set; } = null!;
     public ReglaImpresion? Regla { get; set; }
     public TrabajoImpresion? TrabajoReimpreso { get; set; }
 }

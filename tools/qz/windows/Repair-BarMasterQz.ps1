@@ -16,16 +16,16 @@ if ($version -ne $manifest.version) { Write-Warning "Versión QZ detectada '$ver
 
 if (-not (Test-QzRootCertificate -Manifest $manifest)) {
     $destination = Join-Path (Get-QzInstallDirectory) 'override.crt'
-    if ($PSCmdlet.ShouldProcess($destination, 'Reponer override.crt')) {
-        Copy-Item -LiteralPath $rootSource -Destination $destination -Force
+    if ($PSCmdlet.ShouldProcess($destination, 'Reponer y configurar override.crt')) {
+        Set-QzRootCertificate -Source $rootSource -Manifest $manifest
     }
 }
 
 if ($BackendUrl) {
-    $healthUrl = "$($BackendUrl.TrimEnd('/'))/api/qz/health"
+    $healthUrl = "$($BackendUrl.TrimEnd('/'))/qz/estado"
     try {
         $health = Invoke-RestMethod -Uri $healthUrl -Method Get -TimeoutSec 15
-        Write-Host "Backend QZ: enabled=$($health.enabled), ready=$($health.ready)"
+        Write-Host "Backend QZ: habilitada=$($health.habilitada), lista=$($health.lista)"
     } catch {
         Write-Warning "No se pudo consultar '$healthUrl': $($_.Exception.Message)"
     }

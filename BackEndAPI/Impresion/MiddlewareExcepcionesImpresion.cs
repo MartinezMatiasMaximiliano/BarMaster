@@ -29,7 +29,7 @@ public sealed class MiddlewareExcepcionesImpresion
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             await context.Response.WriteAsJsonAsync(new { error = new { codigo = "FIRMA_QZ_DESHABILITADA", mensaje = "El firmador QZ está deshabilitado." } });
         }
-        catch (Exception exception) when (context.Request.Path.StartsWithSegments("/api/qz") || context.Request.Path.StartsWithSegments("/api/impresion"))
+        catch (Exception exception) when (context.Request.Path.StartsWithSegments("/qz") || context.Request.Path.StartsWithSegments("/impresion"))
         {
             registrador.LogError(exception, "Error no controlado en la integración de impresión.");
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;

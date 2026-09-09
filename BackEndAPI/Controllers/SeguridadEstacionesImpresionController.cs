@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace BackEndAPI.Controllers;
 
 [ApiController]
-[Route("api/impresion/estaciones")]
+[Route("impresion/estaciones")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public sealed class SeguridadEstacionesImpresionController : ControllerBase
 {
     private readonly IServicioCredencialEstacion servicioCredencial;

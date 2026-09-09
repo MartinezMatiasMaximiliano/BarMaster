@@ -6,6 +6,7 @@ using BackEndAPI.Impresion.Estaciones;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using System.Diagnostics;
 
 namespace BackEndAPI.Impresion.Documentos;
 
@@ -92,6 +93,9 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
         CancellationToken tokenCancelacion)
     {
         if (idComando == Guid.Empty || productosAgregados.Count == 0) return [];
+        var inicio = Stopwatch.GetTimestamp();
+        registrador.LogInformation("[IMPRESION_DIAGNOSTICO] {TimestampUtc:o} comanda.construccion_iniciada IdComando={IdComando} IdVisita={IdVisita} Productos={Productos}",
+            DateTime.UtcNow, idComando, visita.Id, productosAgregados.Count);
         var ahora = AhoraUtc;
         var nombreSucursal = await contextoDbActual.Db.Sucursales.AsNoTracking()
             .Where(x => x.Id == identidad.IdSucursal)
@@ -120,6 +124,8 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
                 visita.Id.ToString("N"),
                 identidad.IdPersona,
                 false), tokenCancelacion);
+            registrador.LogInformation("[IMPRESION_DIAGNOSTICO] {TimestampUtc:o} comanda.trabajos_creados IdComando={IdComando} IdSolicitud={IdSolicitud} Trabajos={Trabajos} DuracionMs={DuracionMs}",
+                DateTime.UtcNow, idComando, resultado.IdSolicitud, resultado.Trabajos.Count, Stopwatch.GetElapsedTime(inicio).TotalMilliseconds);
             return [resultado];
         }
         catch (ExcepcionEstacionImpresion exception)

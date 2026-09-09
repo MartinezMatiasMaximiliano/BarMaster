@@ -82,14 +82,15 @@ public sealed class ServicioReglaImpresion : IServicioReglaImpresion
         return Mapear(await ConsultaBase().AsNoTracking().SingleAsync(x => x.Id == regla.Id, tokenCancelacion));
     }
 
-    public async Task DeshabilitarAsync(Guid idRegla, CancellationToken tokenCancelacion)
+    public async Task EliminarAsync(Guid idRegla, CancellationToken tokenCancelacion)
     {
         var regla = await contextoDbActual.Db.ReglasImpresion.SingleOrDefaultAsync(
             x => x.Id == idRegla && x.IdSucursal == identidad.IdSucursal,
             tokenCancelacion)
             ?? throw new ExcepcionEstacionImpresion("REGLA_IMPRESION_NO_ENCONTRADA", "La regla de impresión no existe.", StatusCodes.Status404NotFound);
-        regla.Habilitada = false;
-        regla.ActualizadoEn = AhoraUtc;
+        await ProteccionConfiguracionImpresion.AsegurarSinCajaActivaAsync(
+            contextoDbActual.Db, identidad.IdSucursal, tokenCancelacion);
+        contextoDbActual.Db.ReglasImpresion.Remove(regla);
         await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
     }
 
@@ -116,8 +117,10 @@ public sealed class ServicioReglaImpresion : IServicioReglaImpresion
         var tipoSalida = tipoDocumento == TipoDocumentoImpresion.Comanda
             ? TipoSalidaImpresion.Comanda
             : TipoSalidaImpresion.Ticket;
-        return await ConsultaBase().Where(x => x.Habilitada && x.TipoSalida == tipoSalida && x.Momento == momento)
-            .OrderBy(x => x.CreadoEn).ToListAsync(tokenCancelacion);
+        return await ConsultaBase()
+            .Where(x => x.Habilitada && x.TipoSalida == tipoSalida && x.Momento == momento)
+            .OrderBy(x => x.CreadoEn)
+            .ToListAsync(tokenCancelacion);
     }
 
     private IQueryable<ReglaImpresion> ConsultaBase() => contextoDbActual.Db.ReglasImpresion

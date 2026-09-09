@@ -35,6 +35,23 @@ public sealed class ServicioTrabajoImpresionDistribuidaTests
     }
 
     [Fact]
+    public async Task PreticketRequiereReglaAlGenerarPreticket()
+    {
+        await using var db = CrearDb();
+        var fixture = await SeedAsync(db);
+        var regla = await db.ReglasImpresion.SingleAsync();
+        regla.Momento = MomentoImpresion.AlCobrarProductosFacturados;
+        await db.SaveChangesAsync();
+
+        var error = await Assert.ThrowsAsync<ExcepcionEstacionImpresion>(() =>
+            CrearServicio(db, fixture.BranchId, null, "sucursal").CrearEnrutadosAsync(new(
+            Guid.NewGuid(), TipoDocumentoImpresion.Preticket, MomentoImpresion.AlGenerarPreticket,
+            "{\"schemaVersion\":1}", 1, 1, "manual-preticket-without-route", "Visita", "1", null), default));
+
+        Assert.Equal("REGLA_IMPRESION_NO_CONFIGURADA", error.Codigo);
+    }
+
+    [Fact]
     public async Task MismaClaveIdempotenciaCreaUnSoloTrabajo()
     {
         await using var db = CrearDb();
@@ -49,6 +66,7 @@ public sealed class ServicioTrabajoImpresionDistribuidaTests
         Assert.Single(first.Trabajos);
         Assert.Equal(first.Trabajos[0].Id, second.Trabajos[0].Id);
         Assert.Equal(1, await db.TrabajosImpresion.CountAsync());
+        Assert.Equal("Principal", (await db.TrabajosImpresion.SingleAsync()).NombreVisibleImpresora);
     }
 
     [Fact]
