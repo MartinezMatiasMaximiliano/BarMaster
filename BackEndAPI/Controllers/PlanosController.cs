@@ -1,6 +1,7 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,185 +19,98 @@ namespace BackEndAPI.Controllers
         {
             _planosServices = planosServices;
         }
-
         [HttpPost("/Plano")]
         public async Task<IActionResult> CrearPlano([FromBody] CrearPlanoDTO request)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(request.Nombre))
-                {
-                    throw new Exception("El nombre del plano es obligatorio");
-                }
-                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-
-                if (IdSucursal == Guid.Empty)
-                {
-                    throw new Exception("Sucursal no identificada");
-                }
-
-                var PlanoCreado = await _planosServices.CrearPlano(request, IdSucursal);
-
-
-                return Ok(PlanoCreado);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Sucursal no identificada":
-                        return BadRequest("Sucursal no identificada");
-                    case "Plano ya existe":
-                        return BadRequest("Plano ya existe");
-                    case "El nombre del plano es obligatorio":
-                        return BadRequest("El nombre del plano es obligatorio");
-                    default:
-                        return StatusCode(500, "Error interno del servidor");
-                }
-            }
+            var idSucursal = ObtenerIdSucursal();
+            var planoCreado = await _planosServices.CrearPlano(request, idSucursal);
+            return Ok(planoCreado);
         }
 
         [HttpGet("/ListaPlanosSucursal")]
         public async Task<IActionResult> ObtenerPlanosPorSucursal()
         {
-            try
-            {
-                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-                var planos = await _planosServices.BuscarListaDePlanos(IdSucursal);
+            var idSucursal = ObtenerIdSucursal();
+            var planos = await _planosServices.BuscarListaDePlanos(idSucursal);
 
-                var response = planos.Select(plano => new PlanosDTO
-                {
-                    Id = plano.Id,
-                    Nombre = plano.Nombre,
-                    Detalles = plano.Detalles,
-                    IdSucursal = plano.IdSucursal,
-                    Mesas = plano.Mesas.Select(mesa => new MesaDTO
-                    {
-                        Id = mesa.Id,
-                        Nombre = mesa.Nombre,
-                        Capacidad = mesa.Capacidad,
-                        CodigoParaPedir = mesa.CodigoParaPedir,
-                        x = mesa.x,
-                        y = mesa.y,
-                        w = mesa.w,
-                        h = mesa.h
-                    }).ToList()
-                }).ToList();
-
-                return Ok(response);
-            }
-            catch (Exception ex)
+            var response = planos.Select(plano => new PlanosDTO
             {
-                switch (ex.Message)
+                Id = plano.Id,
+                Nombre = plano.Nombre,
+                Detalles = plano.Detalles,
+                IdSucursal = plano.IdSucursal,
+                Mesas = plano.Mesas.Select(mesa => new MesaDTO
                 {
-                    case "Sucursal no identificada":
-                        return BadRequest("Sucursal no identificada");
-                    default:
-                        return StatusCode(500, "Error interno del servidor");
-                }
-            }
+                    Id = mesa.Id,
+                    Nombre = mesa.Nombre,
+                    Capacidad = mesa.Capacidad,
+                    CodigoParaPedir = mesa.CodigoParaPedir,
+                    x = mesa.x,
+                    y = mesa.y,
+                    w = mesa.w,
+                    h = mesa.h
+                }).ToList()
+            }).ToList();
+
+            return Ok(response);
         }
 
         [HttpGet("/Plano")]
         public async Task<IActionResult> ObtenerPlanoPorId([FromQuery] Guid IdPlano)
         {
-            try
+            var plano = await _planosServices.ObtenerPlanoPorId(IdPlano);
+
+            var response = new PlanosDTO
             {
-                if (IdPlano == Guid.Empty)
+                Id = plano.Id,
+                Nombre = plano.Nombre,
+                Detalles = plano.Detalles,
+                IdSucursal = plano.IdSucursal,
+                Mesas = plano.Mesas.Select(mesa => new MesaDTO
                 {
-                    throw new Exception("IdPlano no puede estar vacío");
-                }
+                    Id = mesa.Id,
+                    Nombre = mesa.Nombre,
+                    Capacidad = mesa.Capacidad,
+                    x = mesa.x,
+                    y = mesa.y,
+                    w = mesa.w,
+                    h = mesa.h
+                }).ToList()
+            };
 
-                var plano = await _planosServices.ObtenerPlanoPorId(IdPlano);
-
-                var response = new PlanosDTO
-                {
-                    Id = plano.Id,
-                    Nombre = plano.Nombre,
-                    Detalles = plano.Detalles,
-                    IdSucursal = plano.IdSucursal,
-                    Mesas = plano.Mesas.Select(mesa => new MesaDTO
-                    {
-                        Id = mesa.Id,
-                        Nombre = mesa.Nombre,
-                        Capacidad = mesa.Capacidad,
-                        x = mesa.x,
-                        y = mesa.y,
-                        w = mesa.w,
-                        h = mesa.h
-                    }).ToList()
-                };
-
-                return Ok(plano);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Plano no encontrado":
-                        return NotFound("Plano no encontrado");
-                    case "IdPlano no puede estar vacío":
-                        return NotFound("IdPlano no puede estar vacío");
-                    default:
-                        return StatusCode(500, "Error interno del servidor");
-                }
-
-            }
+            return Ok(response);
         }
 
         [HttpPut("/Plano")]
         public async Task<IActionResult> ModificarPlano(ModificarPlanoDTO request)
         {
-            try
+            var planoModificado = await _planosServices.ActualizarPlano(request);
+
+            // Mapear a DTO para evitar ciclos de referencia en la serialización
+            var response = new PlanoDTO
             {
-                var planoModificado = await _planosServices.ActualizarPlano(request);
-                
-                // Mapear a DTO para evitar ciclos de referencia en la serialización
-                var response = new PlanoDTO
-                {
-                    Id = planoModificado.Id,
-                    Nombre = planoModificado.Nombre,
-                    Detalles = planoModificado.Detalles,
-                    IdSucursal = planoModificado.IdSucursal
-                };
-                
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Plano no encontrado":
-                        return NotFound("Plano no encontrado");
-                    case "Plano ya existe":
-                        return BadRequest("Plano ya existe");
-                    default:
-                        return StatusCode(500, "Error interno del servidor");
-                }
-            }
+                Id = planoModificado.Id,
+                Nombre = planoModificado.Nombre,
+                Detalles = planoModificado.Detalles,
+                IdSucursal = planoModificado.IdSucursal
+            };
+
+            return Ok(response);
         }
 
         [HttpDelete("/Plano")]
         public async Task<IActionResult> EliminarPlano([FromQuery] Guid IdPlano)
         {
-            try
-            {
-                var resultado = await _planosServices.EliminarPlano(IdPlano);
-                
-                return Ok(new EntregaDTO(200,"DELETED","Plano eliminado exitosamente"));
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Plano no encontrado":
-                        return NotFound("Plano no encontrado");
-                    default:
-                        return StatusCode(500, "Error interno del servidor");
-                }
-            }
+            await _planosServices.EliminarPlano(IdPlano);
+            return Ok(new EntregaDTO(200, "DELETED", "Plano eliminado exitosamente"));
         }
 
-
+        private Guid ObtenerIdSucursal()
+        {
+            var claim = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")?.Value;
+            if (!Guid.TryParse(claim, out var idSucursal) || idSucursal == Guid.Empty)
+                throw new BusinessRuleException("Sucursal no identificada");
+            return idSucursal;
+        }
     }
 }

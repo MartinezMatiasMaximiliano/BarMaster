@@ -1,6 +1,7 @@
 using Amazon.Runtime.Internal;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -37,17 +38,20 @@ namespace BackEndAPI.Services
         }
         public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeawaysPorCaja(Guid IdSucursal, Guid IdCaja)
         {
-            if (IdCaja == Guid.Empty) throw new Exception("Caja no identificada");
+            if (IdCaja == Guid.Empty) throw new BusinessRuleException("Caja no identificada");
             return await _deliveryTakeawayRepository.ObtenerPorIdCaja(IdSucursal, IdCaja);
         }
         public async Task<DeliveryAndTakeaway?> ObtenerDeliveryTakeawayPorId(Guid IdDeliveryTakeaway)
         {
-            return await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
+            return await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway)
+                ?? throw new NotFoundException("No se encontró el pedido");
         }
         public async Task<DeliveryAndTakeaway?> CambiarEntregado(Guid IdDeliveryTakeaway, bool entregado)
         {
+            if (IdDeliveryTakeaway == Guid.Empty) throw new BusinessRuleException("Id vacio");
+
             var busqueda = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
-            if (busqueda == null) throw new Exception("no encontrado");
+            if (busqueda == null) throw new NotFoundException("No se encontró el pedido");
             busqueda.Entregado = entregado;
             busqueda.Visita.Estado = entregado ? "Cerrada" : "Abierta";
             await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(busqueda);
@@ -66,9 +70,9 @@ namespace BackEndAPI.Services
         //CORES
         private async Task<DeliveryAndTakeaway?> CrearDeliveryTakeawayCoreAsync(Guid Idsucursal, CrearDeliveryTakeawayDTO request)
         {
-            if (request == null) throw new Exception("Datos del pedido no enviados");
+            if (request == null) throw new BusinessRuleException("Datos del pedido no enviados");
             var IdCaja = await _cajasServices.BuscarCajaAbiertaPorIdSucursal(Idsucursal);
-            if (IdCaja == null) throw new Exception("No hay una caja abierta");
+            if (IdCaja == null) throw new NotFoundException("No hay una caja abierta");
 
             var visitaCreada = new Visita
             {
@@ -94,7 +98,13 @@ namespace BackEndAPI.Services
                     DeliveryTakeaway.Direccion = request.Direccion;
                     DeliveryTakeaway.Telefono = request.Telefono ?? "";
                     DeliveryTakeaway.IdTipoEnvio = request.IdTipoEnvio;
-                    DeliveryTakeaway.Cadete = await _personasRepository.GetPersonaPorId(request.IdCadete.Value);
+                    if (request.IdCadete.HasValue)
+                    {
+                        var cadeteNuevo = await _personasRepository.GetPersonaPorId(request.IdCadete.Value)
+                            ?? throw new NotFoundException("Cadete no encontrado");
+                        if (cadeteNuevo.IdRol != 3) throw new BusinessRuleException("La persona seleccionada no es cadete");
+                        DeliveryTakeaway.Cadete = cadeteNuevo;
+                    }
                     DeliveryTakeaway.PrecioEnvio = await _deliveryTakeawayRepository.GetPrecioEnvioPorId(request.IdTipoEnvio);
                     break;
                 case "Takeaway":
@@ -105,7 +115,7 @@ namespace BackEndAPI.Services
                     DeliveryTakeaway.PrecioEnvio = 0;
                     break;
                 default:
-                    throw new Exception("Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.");
+                    throw new BusinessRuleException("Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.");
             }
 
             await AgregarProductosHelperAsync(request.ListaProductos, DeliveryTakeaway);
@@ -126,6 +136,8 @@ namespace BackEndAPI.Services
         }
         private async Task<DeliveryAndTakeaway?> ModificarDatosDeliveryTakeawayCoreAsync(ModificarDeliveryTakeawayDTO request)
         {
+            if (request.IdDeliveryTakeaway == Guid.Empty) throw new BusinessRuleException("Id del pedido nulo");
+
             var pedido = await ObtenerPedidoEditableAsync(request.IdDeliveryTakeaway);
 
             AplicarDatosCliente(pedido, request);
@@ -142,8 +154,8 @@ namespace BackEndAPI.Services
         private async Task<DeliveryAndTakeaway> ObtenerPedidoEditableAsync(Guid idDeliveryTakeaway)
         {
             var pedido = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(idDeliveryTakeaway)
-                ?? throw new Exception("No se encontró el pedido");
-            if (pedido.Entregado) throw new Exception("No se puede modificar un pedido entregado");
+                ?? throw new NotFoundException("No se encontró el pedido");
+            if (pedido.Entregado) throw new ConflictException("No se puede modificar un pedido entregado");
             return pedido;
         }
 
@@ -173,7 +185,8 @@ namespace BackEndAPI.Services
             if (!idCadete.HasValue) return;
 
             var cadete = await _personasRepository.GetPersonaPorId(idCadete.Value)
-                ?? throw new Exception("Cadete no encontrado");
+                ?? throw new NotFoundException("Cadete no encontrado");
+            if (cadete.IdRol != 3) throw new BusinessRuleException("La persona seleccionada no es cadete");
 
             pedido.IdCadete = idCadete;
             pedido.Cadete = cadete;
@@ -231,9 +244,11 @@ namespace BackEndAPI.Services
 
         private async Task<bool> EliminarDeliveryTakeawayCoreAsync(Guid IdDeliveryTakeaway)
         {
+            if (IdDeliveryTakeaway == Guid.Empty) throw new BusinessRuleException("Id del pedido nulo");
+
             var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
-            if (deliveryTakeawayExistente == null) throw new Exception("No se encontró el pedido");
-            if (deliveryTakeawayExistente.Entregado == true) throw new Exception("No se puede modificar un pedido entregado");
+            if (deliveryTakeawayExistente == null) throw new NotFoundException("No se encontró el pedido");
+            if (deliveryTakeawayExistente.Entregado == true) throw new ConflictException("No se puede modificar un pedido entregado");
 
             var cantidadesStock = deliveryTakeawayExistente.Visita.Productos
                 .Where(x => x.IdProducto.HasValue)
@@ -255,8 +270,8 @@ namespace BackEndAPI.Services
             foreach (var item in ListaProductos)
             {
                 Producto? producto = await _productosRepository.GetProductoPorId(item.IdProducto);
-                if (producto == null) throw new Exception($"Producto no encontrado");
-                if (item.Cantidad <= 0) throw new Exception($"Cantidad no válida");
+                if (producto == null) throw new NotFoundException($"Producto no encontrado");
+                if (item.Cantidad <= 0) throw new BusinessRuleException($"Cantidad no válida");
 
                 for (int i = 1; i <= item.Cantidad; i++)
                 {
@@ -285,17 +300,17 @@ namespace BackEndAPI.Services
             var ids = idsProductos.ToList();
             if (ids.Count != ids.Distinct().Count())
             {
-                throw new Exception("La lista de productos eliminados contiene IDs repetidos");
+                throw new BusinessRuleException("La lista de productos eliminados contiene IDs repetidos");
             }
 
             var productos = ids
                 .Select(id => deliveryTakeaway.Visita.Productos.FirstOrDefault(x => x.Id == id)
-                    ?? throw new Exception("item no encontrado"))
+                    ?? throw new NotFoundException("item no encontrado"))
                 .ToList();
 
             if (productos.Any(x => x.EstadoPagado))
             {
-                throw new Exception("item pagado");
+                throw new ConflictException("item pagado");
             }
 
             return productos;
@@ -321,34 +336,3 @@ namespace BackEndAPI.Services
         }
     }
 }
-
-#region deprecado
-
-
-//public Task<DeliveryAndTakeaway?> AgregarProductosADeliveryAndTakeaway(Guid Id, List<AgregarProductoAVisita> ListaProductos) =>
-//    _transactionManager.ExecuteAsync(() => AgregarProductosCoreAsync(Id, ListaProductos));
-//public Task<DeliveryAndTakeaway?> RemoverProductosADeliveryAndTakeaway(Guid Id, List<int> ListaProductos) =>
-//    _transactionManager.ExecuteAsync(() => RemoverProductosCoreAsync(Id, ListaProductos));
-
-
-//private async Task<DeliveryAndTakeaway?> AgregarProductosCoreAsync(Guid Id, List<AgregarProductoAVisita> ListaProductos)
-//{
-//    var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(Id);
-//    if (deliveryTakeawayExistente == null) throw new Exception("No se encontró el pedido");
-//    if (deliveryTakeawayExistente.Entregado == true) throw new Exception("No se puede modificar un pedido entregado");
-
-//    AgregarProductosHelper(ListaProductos, deliveryTakeawayExistente);
-
-//    return await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(deliveryTakeawayExistente);
-//}
-//private async Task<DeliveryAndTakeaway?> RemoverProductosCoreAsync(Guid Id, List<int> ListaProductos)
-//{
-//    var deliveryTakeawayExistente = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(Id);
-//    if (deliveryTakeawayExistente == null) throw new Exception("No se encontró el pedido");
-//    if (deliveryTakeawayExistente.Entregado == true) throw new Exception("No se puede modificar un pedido entregado");
-
-//    RemoverProductosHelper(ListaProductos, deliveryTakeawayExistente);
-
-//    return await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(deliveryTakeawayExistente);
-//}
-#endregion

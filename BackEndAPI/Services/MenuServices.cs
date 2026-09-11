@@ -2,6 +2,7 @@ using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using System;
 using System.Linq;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -21,13 +22,13 @@ namespace BackEndAPI.Services
         public async Task<ICollection<Menu>> ObtenerMenusPorSucursal(Guid idSucursal)
         {
             var menus = await _menuRepository.ObtenerMenusPorSucursal(idSucursal);
-            if(menus == null || menus.Count == 0) throw new Exception("No se encontraron menus para la sucursal indicada");
+            if(menus == null || menus.Count == 0) throw new NotFoundException("No se encontraron menus para la sucursal indicada");
             return menus;
         }
         public async Task<Menu?> ObtenerMenuPorId(Guid idMenu)
         {
             var menu = await _menuRepository.ObtenerMenuPorId(idMenu);
-            if(menu == null) throw new Exception("Menu no encontrado");
+            if(menu == null) throw new NotFoundException("Menu no encontrado");
             return menu;
         }
         public async Task<Menu> CrearMenu(CrearMenuDTO nuevoMenu)
@@ -35,12 +36,12 @@ namespace BackEndAPI.Services
             // Validaciones
             if (string.IsNullOrWhiteSpace(nuevoMenu.Nombre))
             {
-                throw new Exception("El nombre del menú no puede estar vacío");
+                throw new BusinessRuleException("El nombre del menú no puede estar vacío");
             }
 
             if (nuevoMenu.IdSucursal == Guid.Empty)
             {
-                throw new Exception("El IdSucursal no puede estar vacío");
+                throw new BusinessRuleException("El IdSucursal no puede estar vacío");
             }
 
             Menu menu = new Menu
@@ -54,7 +55,7 @@ namespace BackEndAPI.Services
         public async Task<Menu> ActivarDesactivarMenu(Guid idMenu, bool activar)
         {
             var menu = await _menuRepository.ObtenerMenuPorId(idMenu);
-            if (menu == null) throw new Exception("Menu no encontrado");
+            if (menu == null) throw new NotFoundException("Menu no encontrado");
             menu.Activo = activar;
             return await _menuRepository.ActualizarMenu(menu); 
         }
@@ -62,10 +63,10 @@ namespace BackEndAPI.Services
         {
             if (actualizarMenu.IdMenu == Guid.Empty)
             {
-                throw new Exception("El Id del menú no puede estar vacío");
+                throw new BusinessRuleException("El Id del menú no puede estar vacío");
             }
             var menu = await _menuRepository.ObtenerMenuPorId(actualizarMenu.IdMenu);
-            if (menu == null) throw new Exception("Menu no encontrado");
+            if (menu == null) throw new NotFoundException("Menu no encontrado");
             menu.Nombre = actualizarMenu.Nombre;
             return await _menuRepository.ActualizarMenu(menu);
         }
@@ -73,7 +74,7 @@ namespace BackEndAPI.Services
         public async Task<bool> EliminarMenu(Guid idMenu)
         {
             var menu = await _menuRepository.ObtenerMenuPorId(idMenu);
-            if (menu == null) throw new Exception("Menu no encontrado");
+            if (menu == null) throw new NotFoundException("Menu no encontrado");
             return await _menuRepository.EliminarMenu(menu);
         }
 
@@ -82,22 +83,22 @@ namespace BackEndAPI.Services
             // Validaciones del DTO
             if (dto.IdMenu == Guid.Empty)
             {
-                throw new Exception("El Id del menú no puede estar vacío");
+                throw new BusinessRuleException("El Id del menú no puede estar vacío");
             }
             if (dto.IdsProductos == null)
             {
-                throw new Exception("La lista de productos no puede ser nula");
+                throw new BusinessRuleException("La lista de productos no puede ser nula");
             }
             if (dto.IdsProductos.Any(id => id == Guid.Empty))
             {
-                throw new Exception("Uno o más Ids de productos están vacíos");
+                throw new BusinessRuleException("Uno o más Ids de productos están vacíos");
             }
 
             // Validar que el menú existe
             var menu = await _menuRepository.ObtenerMenuPorId(dto.IdMenu);
             if (menu == null)
             {
-                throw new Exception("Menú no encontrado");
+                throw new NotFoundException("Menú no encontrado");
             }
 
             // Validar que todos los productos del estado final existen
@@ -107,7 +108,7 @@ namespace BackEndAPI.Services
             
             if (productosNoEncontrados.Any())
             {
-                throw new Exception($"Los siguientes productos no fueron encontrados: {string.Join(", ", productosNoEncontrados)}");
+                throw new NotFoundException($"Los siguientes productos no fueron encontrados: {string.Join(", ", productosNoEncontrados)}");
             }
 
             // Calcular diferencia: qué productos agregar y qué productos quitar

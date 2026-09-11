@@ -1,9 +1,11 @@
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndAPI.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class TicketController : ControllerBase
@@ -14,51 +16,37 @@ namespace BackEndAPI.Controllers
         {
             _movimientosCajaServices = movimientosCajaServices;
         }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTicket(Guid id)
         {
-            try
-            {
-                var movimiento = await _movimientosCajaServices.BuscarTicketCompleto(id);
+            var movimiento = await _movimientosCajaServices.BuscarTicketCompleto(id);
 
-                var productosDelTicket = movimiento.Visita?.Productos?
-                    .Where(p => p.IdMovimientoCaja == movimiento.Id)
-                    .Select(p => new TicketVirtualProductoDTO
-                    {
-                        Nombre = p.NombreProducto,
-                        Precio = p.PrecioDelMomento
-                    })
-                    .ToList() ?? new List<TicketVirtualProductoDTO>();
-
-                var mozo = movimiento.Visita?.Mozo;
-
-                var ticket = new TicketVirtualDTO
+            var productosDelTicket = movimiento.Visita?.Productos?
+                .Where(p => p.IdMovimientoCaja == movimiento.Id)
+                .Select(p => new TicketVirtualProductoDTO
                 {
-                    Id = movimiento.Id,
-                    MontoAbonado = movimiento.MontoAbonado,
-                    Vuelto = movimiento.Vuelto,
-                    MontoTotal = movimiento.MontoTotal,
-                    FechaMovimiento = movimiento.FechaMovimiento,
-                    NombreMesa = movimiento.Visita?.Mesa?.Nombre,
-                    NombreSucursal = movimiento.Caja?.Sucursal?.Nombre,
-                    NombreMozo = mozo != null ? $"{mozo.Nombres} {mozo.Apellido}" : null,
-                    TipoPago = movimiento.TipoMovimientoCaja?.Nombre,
-                    Productos = productosDelTicket
-                };
+                    Nombre = p.NombreProducto,
+                    Precio = p.PrecioDelMomento
+                })
+                .ToList() ?? new List<TicketVirtualProductoDTO>();
 
-                return Ok(ticket);
-            }
-            catch (Exception ex)
+            var mozo = movimiento.Visita?.Mozo;
+
+            var ticket = new TicketVirtualDTO
             {
-                switch (ex.Message)
-                {
-                    case "El ticket no existe":
-                        return NotFound(ex.Message);
-                    default:
-                        return StatusCode(500, "Error interno de servidor");
-                }
-            }
+                Id = movimiento.Id,
+                MontoAbonado = movimiento.MontoAbonado,
+                Vuelto = movimiento.Vuelto,
+                MontoTotal = movimiento.MontoTotal,
+                FechaMovimiento = movimiento.FechaMovimiento,
+                NombreMesa = movimiento.Visita?.Mesa?.Nombre,
+                NombreSucursal = movimiento.Caja?.Sucursal?.Nombre,
+                NombreMozo = mozo != null ? $"{mozo.Nombres} {mozo.Apellido}" : null,
+                TipoPago = movimiento.TipoMovimientoCaja?.Nombre,
+                Productos = productosDelTicket
+            };
+
+            return Ok(ticket);
         }
     }
 }

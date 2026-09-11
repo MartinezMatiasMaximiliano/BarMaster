@@ -1,13 +1,12 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Build.Framework;
-using System.Configuration;
 
 namespace BackEndAPI.Controllers
 {
@@ -21,7 +20,6 @@ namespace BackEndAPI.Controllers
         {
             _deliveryTakeawayServices = deliveryTakeawayServices;
         }
-
         private static DeliveryTakeawayResponseDTO MappearDeliveryTakeawayDTO(DeliveryAndTakeaway deliveryTakeaway)
         {
             var ultimoPago = deliveryTakeaway.Visita?.Pagos
@@ -77,244 +75,68 @@ namespace BackEndAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetListaDeliveryTakeaways()
         {
-            try
-            {
-                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
-                var result = await _deliveryTakeawayServices.GetListaDeliveryTakeaways(IdSucursal);
-                if (result == null) throw new Exception("Error al obtener los pedidos");
-                var response = result.Select(MappearDeliveryTakeawayDTO).ToList();
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Error al obtener los pedidos":
-                        return BadRequest("Error al obtener los pedidos. Verifica los datos enviados y vuelve a intentarlo.");
-                    case "Sucursal no identificada":
-                        return BadRequest("Sucursal no identificada. Asegúrate de que el token contenga el claim 'IdSucursal'.");
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+            var idSucursal = ObtenerIdSucursal();
+            var result = await _deliveryTakeawayServices.GetListaDeliveryTakeaways(idSucursal);
+            var response = (result ?? Enumerable.Empty<DeliveryAndTakeaway>()).Select(MappearDeliveryTakeawayDTO).ToList();
+            return Ok(response);
         }
 
         [HttpGet("Caja/{idCaja}")]
         public async Task<IActionResult> GetListaDeliveryTakeawaysPorCaja(Guid idCaja)
         {
-            try
-            {
-                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
-                if (idCaja == Guid.Empty) throw new Exception("Caja no identificada");
-                var result = await _deliveryTakeawayServices.GetListaDeliveryTakeawaysPorCaja(IdSucursal, idCaja);
-                if (result == null) throw new Exception("Error al obtener los pedidos");
-                var response = result.Select(MappearDeliveryTakeawayDTO).ToList();
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Error al obtener los pedidos":
-                        return BadRequest("Error al obtener los pedidos. Verifica los datos enviados y vuelve a intentarlo.");
-                    case "Sucursal no identificada":
-                        return BadRequest("Sucursal no identificada. Asegúrate de que el token contenga el claim 'IdSucursal'.");
-                    case "Caja no identificada":
-                        return BadRequest("Caja no identificada. Asegúrate de enviar un Id de caja válido.");
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+            var idSucursal = ObtenerIdSucursal();
+            var result = await _deliveryTakeawayServices.GetListaDeliveryTakeawaysPorCaja(idSucursal, idCaja);
+            var response = (result ?? Enumerable.Empty<DeliveryAndTakeaway>()).Select(MappearDeliveryTakeawayDTO).ToList();
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDeliveryTakeawayPorId(Guid id)
         {
-            var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-            if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
             var result = await _deliveryTakeawayServices.ObtenerDeliveryTakeawayPorId(id);
-            if (result == null) throw new Exception("Error al obtener los pedidos");
-            var response = MappearDeliveryTakeawayDTO(result);
+            var response = MappearDeliveryTakeawayDTO(result!);
             return Ok(response);
         }
 
         [HttpPost("Crear")]
         public async Task<IActionResult> CreateDeliveryTakeaway(CrearDeliveryTakeawayDTO request)
         {
-            try
-            {
-                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
-                if (request.Origen != "Delivery" && request.Origen != "Takeaway") throw new Exception("Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.");
-
-
-                var result = await _deliveryTakeawayServices.CrearDeliveryTakeaway(IdSucursal, request);
-
-                if (result == null) throw new Exception("Error al crear el pedido");
-                var response = MappearDeliveryTakeawayDTO(result);
-                return Ok(response);
-
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Cantidad no válida":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Cantidad no válida. Asegúrate de enviar una cantidad mayor a cero para cada producto."));
-                    case "Producto no encontrado":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Uno o más productos no fueron encontrados. Verifica los IDs de los productos enviados y vuelve a intentarlo."));
-                    case "Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'."));
-                    case "Error al crear el pedido":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Error al crear el pedido. Verifica los datos enviados y vuelve a intentarlo."));
-
-                    case "Sucursal no identificada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Sucursal no identificada. Asegúrate de que el token contenga el claim 'IdSucursal'."));
-
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+            var idSucursal = ObtenerIdSucursal();
+            var result = await _deliveryTakeawayServices.CrearDeliveryTakeaway(idSucursal, request);
+            var response = MappearDeliveryTakeawayDTO(result!);
+            return Ok(response);
         }
 
         [HttpPatch("ModificarDatos")]
         public async Task<IActionResult> ModificarDeliveryTakeaway(ModificarDeliveryTakeawayDTO request)
         {
-            try
-            {
-                if (request.IdDeliveryTakeaway == Guid.Empty) throw new Exception("Id del pedido nulo");
-                var result = await _deliveryTakeawayServices.ModificarDeliveryTakeaway(request);
-                if (result == null) throw new Exception("Error al modificar el pedido");
-                var response = MappearDeliveryTakeawayDTO(result);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "item no encontrado":
-                        return NotFound("Uno de los productos a eliminar no pertenece a este Pedido.");
-                    case "item pagado":
-                        return BadRequest("No se puede modificar un producto pagado");
-                    case "Id del pedido nulo":
-                        return BadRequest("Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'.");
-                    case "Error al modificar el pedido":
-                        return BadRequest("Error al modificar el pedido. Verifica los datos enviados y vuelve a intentarlo.");
-                    case "Cadete no encontrado":
-                        return BadRequest("El cadete enviado no existe.");
-                    case "La persona seleccionada no es cadete":
-                        return BadRequest("La persona seleccionada no tiene rol de cadete.");
-                    case "No hay productos para remover":
-                        return BadRequest("No hay productos para remover. Asegúrate de que el pedido tenga productos antes de intentar removerlos.");
-                    case "No se pueden modificar pedidos entregados":
-                        return BadRequest("No se pueden modificar pedidos entregados. Verifica el estado del pedido antes de intentar modificarlo.");
-                    case "No se pueden modificar pedidos cerrados":
-                        return BadRequest("No se pueden modificar pedidos cerrados. Verifica el estado del pedido antes de intentar modificarlo.");
-                    case "No se pueden modificar pedidos cancelados":
-                        return BadRequest("No se pueden modificar pedidos cancelados. Verifica el estado del pedido antes de intentar modificarlo.");
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+            var result = await _deliveryTakeawayServices.ModificarDeliveryTakeaway(request);
+            var response = MappearDeliveryTakeawayDTO(result!);
+            return Ok(response);
         }
-
-        //[HttpPatch("AgregarProductos")]
-        //public async Task<IActionResult> AgregarProductos([FromQuery] Guid id,List<AgregarProductoAVisita> ListaProductos)
-        //{
-        //    try
-        //    {
-        //        if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
-        //        var result = await _deliveryTakeawayServices.AgregarProductosADeliveryAndTakeaway(id, ListaProductos);
-        //        var response = MappearDeliveryTakeawayDTO(result);
-        //        return Ok(response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        switch (ex.Message)
-        //        {
-        //            case "lista invalida":
-        //                return BadRequest("la lista enviada no es valida");
-        //            default:
-        //                return StatusCode(500, $"Internal server error: {ex.Message}");
-        //        }
-        //    }
-
-        //}
-
-        //[HttpPatch("RemoverProductos")]
-        //public async Task<IActionResult> RemoverProductos([FromQuery] Guid id, List<int> ListaProductos)
-        //{
-        //    try
-        //    {
-        //        if (ListaProductos == null || ListaProductos.Count <= 0) throw new Exception("lista invalida");
-        //        var result = await _deliveryTakeawayServices.RemoverProductosADeliveryAndTakeaway(id, ListaProductos);
-        //        var response = MappearDeliveryTakeawayDTO(result);
-        //        return Ok(response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        switch (ex.Message)
-        //        {
-        //            case "lista invalida":
-        //                return BadRequest("la lista enviada no es valida");
-        //            default:
-        //                return StatusCode(500, $"Internal server error: {ex.Message}");
-        //        }
-        //    }
-
-        //}
 
         [HttpPatch("Entregado")]
         public async Task<IActionResult> CambiarEntregado(
             [FromQuery] Guid id,
             [FromBody] CambiarEntregadoDTO request)
         {
-            try
-            {
-                if (id == Guid.Empty) throw new Exception("Id vacio");
-                var action = await _deliveryTakeawayServices.CambiarEntregado(id, request.Entregado);
-                if (action == null) throw new Exception("");
-                var result = MappearDeliveryTakeawayDTO(action);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "no encontrado":
-                        return BadRequest("No se encontró el Delivery o Takeaway");
-                    case "Id vacio":
-                        return BadRequest("Id vacio. Asegúrate de enviar un Id válido en el campo 'id.");
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+            var result = await _deliveryTakeawayServices.CambiarEntregado(id, request.Entregado);
+            return Ok(MappearDeliveryTakeawayDTO(result!));
         }
 
         [HttpDelete]
         public async Task<IActionResult> EliminarDeliveryTakeaway([FromQuery] Guid id)
         {
-            try
-            {
-                if (id == Guid.Empty) throw new Exception("Id del pedido nulo");
-                var result = await _deliveryTakeawayServices.EliminarDeliveryTakeaway(id);
-                if (!result) throw new Exception("Error al eliminar el pedido");
-                return Ok(new { message = "Pedido eliminado correctamente" });
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Id del pedido nulo":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Id del pedido nulo. Asegúrate de enviar un Id válido en el campo 'IdDeliveryTakeaway'."));
-                    case "Error al eliminar el pedido":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Error al eliminar el pedido. Verifica el Id enviado y vuelve a intentarlo."));
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+            await _deliveryTakeawayServices.EliminarDeliveryTakeaway(id);
+            return Ok(new EntregaDTO(200, "DELETED", "Pedido eliminado correctamente"));
+        }
+
+        private Guid ObtenerIdSucursal()
+        {
+            var claim = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")?.Value;
+            if (!Guid.TryParse(claim, out var idSucursal) || idSucursal == Guid.Empty)
+                throw new BusinessRuleException("Sucursal no identificada");
+            return idSucursal;
         }
     }
 }
