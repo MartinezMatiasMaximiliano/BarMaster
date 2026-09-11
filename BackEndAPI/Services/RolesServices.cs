@@ -1,3 +1,4 @@
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -22,7 +23,7 @@ namespace BackEndAPI.Services
             var rol = await _rolesRepository.GetRolPorId(id);
             if (rol == null)
             {
-                throw new Exception("El rol no existe");
+                throw new NotFoundException("El rol no existe");
             }
             return rol;
         }

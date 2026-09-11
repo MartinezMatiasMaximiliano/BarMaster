@@ -1,6 +1,7 @@
 using BackEndAPI.Data;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
@@ -34,7 +35,7 @@ public class AuthServices : IAuthServices
 
     public async Task<JWTToken> Authenticate(LoginDTO loginDTO)
     {
-        if (string.IsNullOrEmpty(loginDTO.Username) || string.IsNullOrEmpty(loginDTO.Password)) throw new Exception("Usuario o contraseña vacios");
+        if (string.IsNullOrEmpty(loginDTO.Username) || string.IsNullOrEmpty(loginDTO.Password)) throw new BusinessRuleException("Usuario o contraseña vacios");
         string EmpresaUsername;
         string? SucursalUsername = null;
 
@@ -49,19 +50,18 @@ public class AuthServices : IAuthServices
         {
             EmpresaUsername = loginDTO.Username;
         }
-
         var tenant = await _tenantServices.BuscarTenantPorNombreEmpresa(EmpresaUsername);
         if (tenant == null)
-            throw new Exception("usuario no encontrado");
+            throw new NotFoundException("usuario no encontrado");
 
         var empresa = await _empresasRepository.GetEmpresaByUsername(EmpresaUsername);
         if (empresa == null)
-            throw new Exception("usuario no encontrado");
+            throw new NotFoundException("usuario no encontrado");
 
         // LOGIN EMPRESA
         if (string.IsNullOrEmpty(SucursalUsername))
         {
-            if (!_passwordService.VerificarPasswordHash(loginDTO.Password, empresa.PasswordHash, empresa.PasswordSalt)) throw new Exception("usuario no encontrado");
+            if (!_passwordService.VerificarPasswordHash(loginDTO.Password, empresa.PasswordHash, empresa.PasswordSalt)) throw new NotFoundException("usuario no encontrado");
 
             return _jwtServices.CrearJWTEmpresa(empresa);
         }
@@ -69,22 +69,22 @@ public class AuthServices : IAuthServices
         // LOGIN SUCURSAL
         var sucursal = empresa.Sucursales.FirstOrDefault(s => s.Username == SucursalUsername);
 
-        if (sucursal == null) throw new Exception("usuario no encontrado");
+        if (sucursal == null) throw new NotFoundException("usuario no encontrado");
 
-        if (!_passwordService.VerificarPasswordHash(loginDTO.Password, sucursal.PasswordHash, sucursal.PasswordSalt)) throw new Exception("usuario no encontrado");
+        if (!_passwordService.VerificarPasswordHash(loginDTO.Password, sucursal.PasswordHash, sucursal.PasswordSalt)) throw new NotFoundException("usuario no encontrado");
 
         return _jwtServices.CrearJWTSucursal(sucursal);
     }
 
     public async Task<JWTToken> AuthenticatePersona(LoginDTO request)
     {
-        if(request.Username is null || request.Password is null) throw new Exception("Usuario o contraseña vacios");
+        if(request.Username is null || request.Password is null) throw new BusinessRuleException("Usuario o contraseña vacios");
         var persona = await _personasRepository.GetPersonaPorDni(request.Username);
-        if (persona == null) throw new Exception("Persona no encontrada");
+        if (persona == null) throw new NotFoundException("Persona no encontrada");
 
         var PasswordValido = _passwordService.VerificarPasswordHash(request.Password, persona.PasswordHash, persona.PasswordSalt);
 
-        if (!PasswordValido) throw new Exception("Contraseña incorrecta");
+        if (!PasswordValido) throw new UnauthorizedException("Contraseña incorrecta");
         var token = _jwtServices.CrearJWTPersona(persona);
         return token;
 
@@ -92,8 +92,11 @@ public class AuthServices : IAuthServices
 
     public async Task CambiarContraseña(CambiarContraseñaDTO request, ClaimsPrincipal user)
     {
+        if (string.IsNullOrEmpty(request.ContraseñaActual) || string.IsNullOrEmpty(request.ContraseñaNueva) || string.IsNullOrEmpty(request.ConfirmacionContraseña))
+            throw new BusinessRuleException("Todos los campos son requeridos");
+
         if (request.ContraseñaNueva != request.ConfirmacionContraseña)
-            throw new Exception("La nueva contraseña y la confirmación no coinciden");
+            throw new BusinessRuleException("La nueva contraseña y la confirmación no coinciden");
 
         var tipoAuth = user.Claims.FirstOrDefault(c => c.Type == "TipoAuth")?.Value;
 
@@ -102,9 +105,9 @@ public class AuthServices : IAuthServices
             case "empresa":
                 var idEmpresa = Guid.Parse(user.Claims.First(c => c.Type == "IdEmpresa").Value);
                 var empresa = await _empresasRepository.GetEmpresaById(idEmpresa);
-                if (empresa == null) throw new Exception("usuario no encontrado");
+                if (empresa == null) throw new NotFoundException("usuario no encontrado");
                 if (!_passwordService.VerificarPasswordHash(request.ContraseñaActual, empresa.PasswordHash, empresa.PasswordSalt))
-                    throw new Exception("Contraseña actual incorrecta");
+                    throw new UnauthorizedException("Contraseña actual incorrecta");
                 _passwordService.CrearPasswordHash(request.ContraseñaNueva, out byte[] hashE, out byte[] saltE);
                 empresa.EstablecerContrasena(hashE, saltE);
                 await _empresasRepository.UpdateEmpresa(empresa);
@@ -113,9 +116,9 @@ public class AuthServices : IAuthServices
             case "sucursal":
                 var idSucursal = Guid.Parse(user.Claims.First(c => c.Type == "IdSucursal").Value);
                 var sucursal = await _sucursalRepository.GetSucursalById(idSucursal);
-                if (sucursal == null) throw new Exception("usuario no encontrado");
+                if (sucursal == null) throw new NotFoundException("usuario no encontrado");
                 if (!_passwordService.VerificarPasswordHash(request.ContraseñaActual, sucursal.PasswordHash, sucursal.PasswordSalt))
-                    throw new Exception("Contraseña actual incorrecta");
+                    throw new UnauthorizedException("Contraseña actual incorrecta");
                 _passwordService.CrearPasswordHash(request.ContraseñaNueva, out byte[] hashS, out byte[] saltS);
                 sucursal.EstablecerContrasena(hashS, saltS);
                 await _sucursalRepository.ActualizarSucursal(sucursal);
@@ -124,9 +127,9 @@ public class AuthServices : IAuthServices
             default:
                 var idPersona = Guid.Parse(user.Claims.First(c => c.Type == "IdPersona").Value);
                 var persona = await _personasRepository.GetPersonaPorId(idPersona);
-                if (persona == null) throw new Exception("usuario no encontrado");
+                if (persona == null) throw new NotFoundException("usuario no encontrado");
                 if (!_passwordService.VerificarPasswordHash(request.ContraseñaActual, persona.PasswordHash, persona.PasswordSalt))
-                    throw new Exception("Contraseña actual incorrecta");
+                    throw new UnauthorizedException("Contraseña actual incorrecta");
                 _passwordService.CrearPasswordHash(request.ContraseñaNueva, out byte[] hashP, out byte[] saltP);
                 persona.EstablecerContrasena(hashP, saltP);
                 await _personasRepository.ActualizarPersona(persona);
@@ -135,5 +138,3 @@ public class AuthServices : IAuthServices
     }
 
 }
-
-

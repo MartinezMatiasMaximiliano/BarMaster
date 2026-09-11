@@ -1,6 +1,7 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Empresas;
@@ -51,9 +52,12 @@ namespace BackEndAPI.Services
 
         public async Task<Empresa> AddEmpresa(CrearEmpresaDTO request)
         {
+            if (string.IsNullOrEmpty(request.Nombre) || string.IsNullOrEmpty(request.Password))
+                throw new BusinessRuleException("El nombre y la contraseña son obligatorios.");
+
             var result = await _tenantServices.BuscarTenantPorNombreEmpresa(request.Nombre.ToLower().Replace(" ", string.Empty));
 
-            if (result != null) throw new Exception("Ya existe una empresa con el nombre solicitado.");
+            if (result != null) throw new ConflictException("Ya existe una empresa con el nombre solicitado.");
 
             Empresa empresa = new()
             {
@@ -72,9 +76,10 @@ namespace BackEndAPI.Services
             return empresa;
         }
 
+        // TODO
         public Task<bool> ModificarEmpresa(ModificarEmpresaDTO request)
         {
-            throw new KeyNotFoundException($"La empresa no fue encontrada.");
+            throw new NotImplementedException("ModificarEmpresa no está implementado todavía.");
         }
 
         public async Task DeleteEmpresa(Guid id)

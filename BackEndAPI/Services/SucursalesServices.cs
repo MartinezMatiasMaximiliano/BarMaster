@@ -1,5 +1,6 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
@@ -23,8 +24,8 @@ namespace BackEndAPI.Services
         {
             var busqueda = await _sucursalesRepository.GetSucursalByUsername(nuevaSucursal.Nombre);
 
-            if (busqueda != null) throw new Exception("Sucursal ya existe");
-           
+            if (busqueda != null) throw new ConflictException("Sucursal ya existe");
+
             _passwordService.CrearPasswordHash(nuevaSucursal.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             Sucursal sucursal = new Sucursal
@@ -47,7 +48,7 @@ namespace BackEndAPI.Services
 
             if (sucursal == null)
             {
-                throw new Exception("Sucursal no encontrada");
+                throw new NotFoundException("Sucursal no encontrada");
             }
             return sucursal;
         }
@@ -55,19 +56,27 @@ namespace BackEndAPI.Services
         public async Task<Sucursal?> ActualizarSucursal(Guid IdSucursal, ModificarSucursalDTO actualizarSucursal)
         {
             var sucursal = await _sucursalesRepository.GetSucursalById(IdSucursal);
-            if (sucursal == null) throw new Exception("Sucursal no encontrada");
+            if (sucursal == null) throw new NotFoundException("Sucursal no encontrada");
+            if (actualizarSucursal.Username != null && actualizarSucursal.Username != sucursal.Username)
+            {
+                var existente = await _sucursalesRepository.GetSucursalByUsername(actualizarSucursal.Username);
+                if (existente != null && existente.Id != sucursal.Id)
+                {
+                    throw new ConflictException("Sucursal ya existe");
+                }
+            }
 
             sucursal.Nombre = actualizarSucursal.Nombre == null ? sucursal.Nombre : actualizarSucursal.Nombre;
             sucursal.Direccion = actualizarSucursal.Direccion == null ? sucursal.Direccion : actualizarSucursal.Direccion;
             sucursal.Telefono = actualizarSucursal.Telefono == null ? sucursal.Telefono : actualizarSucursal.Telefono;
             sucursal.Username = actualizarSucursal.Username == null ? sucursal.Username : actualizarSucursal.Username;
-            
+
             if(actualizarSucursal.Password != null)
             {
                 _passwordService.CrearPasswordHash(actualizarSucursal.Password ?? "" , out byte[] passwordHash, out byte[] passwordSalt);
                 sucursal.EstablecerContrasena(passwordHash, passwordSalt);
             }
-            
+
             var sucursalActualizada = await _sucursalesRepository.ActualizarSucursal(sucursal);
             return sucursalActualizada;
         }
