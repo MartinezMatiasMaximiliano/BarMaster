@@ -1,5 +1,6 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
@@ -27,13 +28,16 @@ namespace BackEndAPI.Services
 
         public async Task<Mesa?> CrearMesa(CrearMesaDTO request)
         {
+            if (string.IsNullOrEmpty(request.Nombre)) throw new BusinessRuleException("El nombre de la mesa no puede estar vacio");
+            if (request.Capacidad <= 0) throw new BusinessRuleException("La capacidad no puede ser negativa");
+
             var PlanoExiste = await _planosRepository.ObtenerPlanoPorId(request.IdPlano);
-            if (PlanoExiste == null) throw new Exception("El plano seleccionado no existe");
+            if (PlanoExiste == null) throw new NotFoundException("El plano seleccionado no existe");
 
 
             var MesaExiste = await _mesasRepository.ExisteMesaEnPlano(request.IdPlano, request.Nombre);
 
-            if (MesaExiste != null) throw new Exception($"Ya existe la mesa en el plano seleccionado");
+            if (MesaExiste != null) throw new ConflictException($"Ya existe la mesa en el plano seleccionado");
 
 
             var nuevaMesa = new Mesa
@@ -55,10 +59,10 @@ namespace BackEndAPI.Services
         {
             var buscarMesa = await _mesasRepository.ObtenerMesaPorId(request.Id);
 
-            if (buscarMesa == null) throw new Exception("La mesa que intenta modificar no existe");
+            if (buscarMesa == null) throw new NotFoundException("La mesa que intenta modificar no existe");
 
             var planoDeMesa = await _planosRepository.ObtenerPlanoPorId((Guid)buscarMesa.IdPlano!);
-            if (planoDeMesa.Mesas.Any(mesa => mesa.Nombre == request.Nombre)) throw new Exception("El nombre de mesa ya existe en este plano");
+            if (planoDeMesa.Mesas.Any(mesa => mesa.Nombre == request.Nombre)) throw new ConflictException("El nombre de mesa ya existe en este plano");
 
             if (!string.IsNullOrEmpty(request.Nombre)) buscarMesa.Nombre = request.Nombre;
             if (request.Capacidad.HasValue) buscarMesa.Capacidad = request.Capacidad.Value;
@@ -74,17 +78,17 @@ namespace BackEndAPI.Services
         {
 
             var buscarMesa = await _mesasRepository.ObtenerMesaPorId(request.IdMesa);
-            if (buscarMesa == null) throw new Exception("La mesa que intenta modificar no existe");
+            if (buscarMesa == null) throw new NotFoundException("La mesa que intenta modificar no existe");
 
             if (request.Abrir) // Lógica para abrir la mesa
             {
-                if (buscarMesa.CodigoParaPedir != null) throw new Exception("La mesa ya esta abierta");
+                if (buscarMesa.CodigoParaPedir != null) throw new ConflictException("La mesa ya esta abierta");
                 buscarMesa.CodigoParaPedir = Helpers.CrearCodigoMesa();
                 var mozoBuscado = await _personasRepository.GetPersonaPorCodigoDeServicio(request.CodigoServicioMozo);
-                if (mozoBuscado == null) throw new Exception("No se encontró un mozo con ese codigo de servicio");
+                if (mozoBuscado == null) throw new NotFoundException("No se encontró un mozo con ese codigo de servicio");
 
                 var CajaAbierta = await _CajasRepository.BuscarCajaAbierta();
-                if (CajaAbierta == null) throw new Exception("No hay una caja abierta para asignar la visita");
+                if (CajaAbierta == null) throw new NotFoundException("No hay una caja abierta para asignar la visita");
 
                 var Visita = new Visita()
                 {
@@ -104,11 +108,11 @@ namespace BackEndAPI.Services
             }
             else
             {
-                if (buscarMesa.CodigoParaPedir == null) throw new Exception("La mesa ya esta cerrada");
+                if (buscarMesa.CodigoParaPedir == null) throw new ConflictException("La mesa ya esta cerrada");
                 buscarMesa.CodigoParaPedir = null;
                 var visita = await _visitasRepository.BuscarVisitaActivaPorIdMesa(request.IdMesa);
 
-                if (visita == null) throw new Exception("No hay una visita abierta para esta mesa");
+                if (visita == null) throw new NotFoundException("No hay una visita abierta para esta mesa");
 
                 if (visita.Productos.Count() <= 0) // borrar visitas vacías
                 {
@@ -118,7 +122,7 @@ namespace BackEndAPI.Services
                 else // desactivar visitas no vacías
                 {
 
-                    if (visita.Productos.Any(ppv => ppv.EstadoPagado == false)) throw new Exception("No se puede cerrar la visita, hay productos no pagados");
+                    if (visita.Productos.Any(ppv => ppv.EstadoPagado == false)) throw new ConflictException("No se puede cerrar la visita, hay productos no pagados");
 
                     await _mesasRepository.ModificarMesa(buscarMesa);
                     visita.Estado = "Cerrada";
@@ -149,13 +153,13 @@ namespace BackEndAPI.Services
 
             if (mesaAEliminar == null)
             {
-                throw new Exception("Mesa no encontrada");
+                throw new NotFoundException("Mesa no encontrada");
             }
 
             // Verificar si la mesa está actualmente abierta (tiene código para pedir)
             if (!string.IsNullOrEmpty(mesaAEliminar.CodigoParaPedir))
             {
-                throw new Exception("No se puede eliminar una mesa con visitas activas");
+                throw new ConflictException("No se puede eliminar una mesa con visitas activas");
             }
 
             var mesaEliminada = await _mesasRepository.EliminarMesa(mesaAEliminar);
