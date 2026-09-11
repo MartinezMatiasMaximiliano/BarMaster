@@ -1,15 +1,14 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
 
 namespace BackEndAPI.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class TipoMovimientosCajaController : ControllerBase
@@ -20,88 +19,40 @@ namespace BackEndAPI.Controllers
         {
             _tipoMovimientosCajaServices = tipoMovimientosCajaServices;
         }
-
         [HttpGet("/TipoMovimientosCaja")]
         public async Task<IActionResult> GetTiposMovimientosCaja([FromQuery] string Entorno)
         {
-            try
+            var tipos = await _tipoMovimientosCajaServices.BuscarTiposMovimientoCaja();
+            var listaTipos = (Entorno == "all" ? tipos : tipos.Where(t => t.Entorno == Entorno))
+                .Select(tipo => new TipoMovimientoCajaDTO
+                {
+                    Id = tipo.Id,
+                    Nombre = tipo.Nombre,
+                    EsIngreso = tipo.EsIngreso,
+                    EsEfectivo = tipo.EsEfectivo,
+                    Entorno = tipo.Entorno,
+                }).ToList();
+
+            if (listaTipos.Count == 0)
             {
-                var tipos = await _tipoMovimientosCajaServices.BuscarTiposMovimientoCaja();
-                List<TipoMovimientoCajaDTO> listaTipos = new List<TipoMovimientoCajaDTO>();
-                if (Entorno == "all")
-                {
-                    listaTipos = tipos.Select(tipo => new TipoMovimientoCajaDTO
-                    {
-                        Id = tipo.Id,
-                        Nombre = tipo.Nombre,
-                        EsIngreso = tipo.EsIngreso,
-                        EsEfectivo = tipo.EsEfectivo,
-                        Entorno = tipo.Entorno,
-
-                    }).ToList();
-                }
-                else
-                {
-                    listaTipos = tipos.Where(t => t.Entorno == Entorno).Select(tipo => new TipoMovimientoCajaDTO
-                    {
-                        Id = tipo.Id,
-                        Nombre = tipo.Nombre,
-                        EsIngreso = tipo.EsIngreso,
-                        EsEfectivo = tipo.EsEfectivo,
-                        Entorno = tipo.Entorno,
-
-                    }).ToList();
-                }
-
-                if (listaTipos.Count == 0)
-                {
-                    throw new Exception("lista vacia");
-                }
-
-                return Ok(listaTipos);
+                throw new NotFoundException("No se encontraron tipos de movimientos de caja para el entorno especificado");
             }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "lista vacia":
-                        return NotFound("No se encontraron tipos de movimientos de caja para el entorno especificado");
 
-                    default:
-                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
-                }
-            }
+            return Ok(listaTipos);
         }
 
         [HttpGet("/TipoMovimientosCaja/{Id}")]
         public async Task<IActionResult> GetTipoMovimientoCajaPorId(int Id)
         {
-            try
+             var tipo = await _tipoMovimientosCajaServices.BuscarTipoMovimientoCajaPorId(Id);
+            var tipoDTO = new TipoMovimientoCajaDTO
             {
-                var tipo = await _tipoMovimientosCajaServices.BuscarTipoMovimientoCajaPorId(Id);
-                if (tipo == null)
-                {
-                    return NotFound(new { message = "Tipo de movimiento de caja no encontrado" });
-                }
-                var tipoDTO = new TipoMovimientoCajaDTO
-                {
-                    Id = tipo.Id,
-                    Nombre = tipo.Nombre,
-                    EsIngreso = tipo.EsIngreso,
-                    EsEfectivo = tipo.EsEfectivo
-                };
-                return Ok(tipoDTO);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Tipo de movimiento de caja no encontrado":
-                        return NotFound(new { message = ex.Message });
-                    default:
-                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
-                }
-            }
+                Id = tipo!.Id,
+                Nombre = tipo.Nombre,
+                EsIngreso = tipo.EsIngreso,
+                EsEfectivo = tipo.EsEfectivo
+            };
+            return Ok(tipoDTO);
         }
 
         //[HttpPost("/TipoMovimientosCaja")]
@@ -152,4 +103,3 @@ namespace BackEndAPI.Controllers
         //}
     }
 }
-

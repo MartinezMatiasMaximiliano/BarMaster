@@ -1,5 +1,6 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -17,7 +18,12 @@ namespace BackEndAPI.Services
 
         public async Task<IEnumerable<TipoEnvio>> BuscarListaTiposEnvio()
         {
-            return await _tipoEnviosRepository.GetAllTiposEnvio();
+            var tipos = await _tipoEnviosRepository.GetAllTiposEnvio();
+            if (tipos == null || !tipos.Any())
+            {
+                throw new NotFoundException("No se encontraron tipos de envio");
+            }
+            return tipos;
         }
 
         public async Task<TipoEnvio> BuscarTipoEnvioPorId(int id)
@@ -25,7 +31,7 @@ namespace BackEndAPI.Services
             var tipoEnvio = await _tipoEnviosRepository.GetTipoEnvioPorId(id);
             if (tipoEnvio == null)
             {
-                throw new Exception("El tipo de envio no existe");
+                throw new NotFoundException("El tipo de envio no existe");
             }
 
             return tipoEnvio;
@@ -33,10 +39,12 @@ namespace BackEndAPI.Services
 
         public async Task<TipoEnvio> CrearTipoEnvio(CrearTipoEnvioDTO request)
         {
-            
+            if (string.IsNullOrWhiteSpace(request.Nombre)) throw new BusinessRuleException("El nombre es obligatorio");
+            if (!request.Precio.HasValue) throw new BusinessRuleException("El precio es obligatorio");
+            if (request.Precio < 0) throw new BusinessRuleException("El precio no puede ser negativo");
 
             var tipoEnvioExistente = await _tipoEnviosRepository.GetTipoEnvioPorNombre(request.Nombre!.Trim());
-            if (tipoEnvioExistente != null) throw new Exception("El tipo de envio ya existe");
+            if (tipoEnvioExistente != null) throw new ConflictException("El tipo de envio ya existe");
 
             var nuevoTipoEnvio = new TipoEnvio
             {
@@ -52,25 +60,25 @@ namespace BackEndAPI.Services
             var tipoEnvio = await _tipoEnviosRepository.GetTipoEnvioPorId(id);
             if (tipoEnvio == null)
             {
-                throw new Exception("El tipo de envio no existe");
+                throw new NotFoundException("El tipo de envio no existe");
             }
 
             if (request.Nombre == null && request.Precio == null )
             {
-                throw new Exception("Debe enviar al menos un campo para modificar");
+                throw new BusinessRuleException("Debe enviar al menos un campo para modificar");
             }
 
             if (request.Nombre != null)
             {
                 if (string.IsNullOrWhiteSpace(request.Nombre))
                 {
-                    throw new Exception("El nombre es obligatorio");
+                    throw new BusinessRuleException("El nombre es obligatorio");
                 }
 
                 var tipoEnvioConMismoNombre = await _tipoEnviosRepository.GetTipoEnvioPorNombre(request.Nombre.Trim());
                 if (tipoEnvioConMismoNombre != null && tipoEnvioConMismoNombre.Id != id)
                 {
-                    throw new Exception("Ya existe un tipo de envio con ese nombre");
+                    throw new ConflictException("Ya existe un tipo de envio con ese nombre");
                 }
 
                 tipoEnvio.Nombre = request.Nombre.Trim();
@@ -80,13 +88,13 @@ namespace BackEndAPI.Services
             {
                 if (request.Precio.Value < 0)
                 {
-                    throw new Exception("El precio no puede ser negativo");
+                    throw new BusinessRuleException("El precio no puede ser negativo");
                 }
 
                 tipoEnvio.Precio = request.Precio.Value;
             }
 
-          
+
 
             await _tipoEnviosRepository.ActualizarTipoEnvio(tipoEnvio);
             return tipoEnvio;
@@ -97,7 +105,7 @@ namespace BackEndAPI.Services
             var tipoEnvio = await _tipoEnviosRepository.GetTipoEnvioPorId(id);
             if (tipoEnvio == null)
             {
-                throw new Exception("El tipo de envio no existe");
+                throw new NotFoundException("El tipo de envio no existe");
             }
 
             await _tipoEnviosRepository.EliminarTipoEnvio(tipoEnvio);

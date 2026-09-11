@@ -1,4 +1,5 @@
 using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -24,7 +25,7 @@ namespace BackEndAPI.Services
             var tipo = await _tipoMovimientosCajaRepository.GetTipoMovimientoCajaPorId(id);
             if (tipo == null)
             {
-                throw new Exception("Tipo de movimiento de caja no encontrado");
+                throw new NotFoundException("Tipo de movimiento de caja no encontrado");
             }
             return tipo;
         }
@@ -33,7 +34,7 @@ namespace BackEndAPI.Services
         {
             if (string.IsNullOrEmpty(request.Nombre))
             {
-                throw new Exception("El nombre es obligatorio");
+                throw new BusinessRuleException("El nombre es obligatorio");
             }
 
             var tipoMovimientoCaja = new TipoMovimientoCaja
@@ -51,7 +52,7 @@ namespace BackEndAPI.Services
             var tipoMovimientoCaja = await _tipoMovimientosCajaRepository.GetTipoMovimientoCajaPorId(id);
             if (tipoMovimientoCaja == null)
             {
-                throw new Exception("Tipo de movimiento de caja no encontrado");
+                throw new NotFoundException("Tipo de movimiento de caja no encontrado");
             }
 
             return await _tipoMovimientosCajaRepository.EliminarTipoMovimientoCaja(tipoMovimientoCaja);
