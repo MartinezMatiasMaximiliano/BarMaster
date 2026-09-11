@@ -1,4 +1,5 @@
 using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -21,13 +22,14 @@ namespace BackEndAPI.Services
             _cajasServices = cajasServices;
         }
 
-        public async Task<MovimientoCaja> CrearMovimientoCaja(Guid IdSucursal,CrearMovimientoCajaDTO request)
+        public async Task<MovimientoCaja> CrearMovimientoCaja(Guid IdSucursal, CrearMovimientoCajaDTO request)
         {
-
+            if (request == null || request.IdTipoMovimientoCaja == 0) throw new BusinessRuleException("Datos de movimiento de caja no proporcionados");
+            if (request.MontoAbonado <= 0) throw new BusinessRuleException("El monto abonado debe ser mayor a cero");
             var caja = await _cajasServices.BuscarCajaAbiertaPorIdSucursal(IdSucursal);
-            if (caja == null) throw new Exception("La caja no existe");
+            if (caja == null) throw new NotFoundException("No hay una caja abierta para esta sucursal");
             var TipoMovimiento = await _tipoMovimientosCajaRepository.GetTipoMovimientoCajaPorId(request.IdTipoMovimientoCaja);
-            if (TipoMovimiento == null) throw new Exception("No existe este tipo de movimiento");
+            if (TipoMovimiento == null) throw new NotFoundException("No existe este tipo de movimiento");
 
             MovimientoCaja nuevoMovimiento = new MovimientoCaja
             {
@@ -73,7 +75,7 @@ namespace BackEndAPI.Services
             var movimientoCaja = await _movimientosCajaRepository.GetMovimientoCajaPorId(id);
             if (movimientoCaja == null)
             {
-                throw new Exception("El movimiento de caja no existe");
+                throw new NotFoundException("El movimiento de caja no existe");
             }
             return movimientoCaja;
         }
@@ -84,7 +86,7 @@ namespace BackEndAPI.Services
             var caja = await _cajasRepository.GetCajaPorId(idCaja);
             if (caja == null)
             {
-                throw new Exception("La caja no existe");
+                throw new NotFoundException("La caja no existe");
             }
 
             return await _movimientosCajaRepository.GetMovimientosCajaPorCaja(idCaja);
@@ -95,7 +97,7 @@ namespace BackEndAPI.Services
             var movimientoCaja = await _movimientosCajaRepository.GetTicketCompleto(id);
             if (movimientoCaja == null)
             {
-                throw new Exception("El ticket no existe");
+                throw new NotFoundException("El ticket no existe");
             }
             return movimientoCaja;
         }
@@ -105,7 +107,7 @@ namespace BackEndAPI.Services
             var movimientoCajaAEliminar = await _movimientosCajaRepository.GetMovimientoCajaPorId(id);
             if (movimientoCajaAEliminar == null)
             {
-                throw new Exception("El movimiento de caja no existe");
+                throw new NotFoundException("El movimiento de caja no existe");
             }
 
             await _movimientosCajaRepository.EliminarMovimientoCaja(movimientoCajaAEliminar);
@@ -113,4 +115,3 @@ namespace BackEndAPI.Services
         }
     }
 }
-
