@@ -1,0 +1,501 @@
+@baseUrl = http://localhost:5145
+@tenant = matias
+@dniMozo = 12345678
+
+### ============================================================
+### PASO 0 — Los 4 endpoints que antes eran públicos: SIN token.
+### Los cuatro tienen que devolver 401. Si alguno te da 200, algo
+### quedó mal — es el chequeo más importante de toda la sesión.
+### ============================================================
+
+### 0.1 Mesas sin token -> 401 esperado
+GET {{baseUrl}}/Mesa
+X-Tenant-ID: {{tenant}}
+
+### 0.2 Visitas sin token -> 401 esperado
+GET {{baseUrl}}/VisitasActivas
+X-Tenant-ID: {{tenant}}
+
+### 0.3 Pagos sin token -> 401 esperado
+POST {{baseUrl}}/Pagar
+X-Tenant-ID: {{tenant}}
+Content-Type: application/json
+
+{
+  "idVisita": "00000000-0000-0000-0000-000000000000",
+  "idTipoMovimiento": 1,
+  "montoAbonado": 100
+}
+
+### 0.4 TipoMovimientosCaja sin token -> depende de qué hayas decidido
+### con el [Authorize] que estaba comentado. Confirmá el resultado.
+GET {{baseUrl}}/TipoMovimientosCaja?Entorno=all
+X-Tenant-ID: {{tenant}}
+
+
+### ============================================================
+### PASO 1 — Alta de empresa + login. Sin [Authorize] a propósito
+### (es el registro del tenant, todavía no hay con qué loguearse).
+### Si la empresa ya existe, saltá directo al login de abajo.
+### ============================================================
+
+### 1.1 Crear empresa (probá reenviar el mismo Nombre después -> 409 esperado)
+POST {{baseUrl}}/Empresas
+X-Tenant-ID: {{tenant}}
+Content-Type: application/json
+
+{
+  "nombre": "testhttp",
+  "telefonos": ["1122334455"],
+  "emails": ["contacto@empresa.com"],
+  "password": "Empresa123!"
+}
+
+### 1.2 Login de empresa -> guarda el token para los pasos de empresa
+# @name loginEmpresa
+POST {{baseUrl}}/Login
+X-Tenant-ID: {{tenant}}
+Content-Type: application/json
+
+{
+  "username": "nombredeempresa",
+  "password": "Empresa123!"
+}
+
+###
+@tokenEmpresa = {{loginEmpresa.response.body.$.Access_token}}
+
+### 1.3 Login con contraseña incorrecta -> 404 esperado (usuario o contraseña
+### no distinguibles a propósito, ver charla sobre AuthServices)
+POST {{baseUrl}}/Login
+X-Tenant-ID: {{tenant}}
+Content-Type: application/json
+
+{
+  "username": "nombredeempresa",
+  "password": "contraseñaMala"
+}
+
+### 1.4 Cambiar contraseña con la actual mal puesta -> 401 esperado (antes era 400)
+PUT {{baseUrl}}/CambiarContraseña
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenEmpresa}}
+Content-Type: application/json
+
+{
+  "contraseñaActual": "estaEstaMal",
+  "contraseñaNueva": "Empresa456!",
+  "confirmacionContraseña": "Empresa456!"
+}
+
+
+### ============================================================
+### PASO 2 — Sucursal: crearla, loguearse como sucursal, y el bug
+### de "Username duplicado" que restauramos.
+### ============================================================
+
+### 2.1 Crear sucursal (con el token de empresa)
+# @name crearSucursal
+POST {{baseUrl}}/Sucursal
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenEmpresa}}
+Content-Type: application/json
+
+{
+  "nombre": "Sucursal Centro",
+  "direccion": "Av. Siempre Viva 123",
+  "telefono": "1122334455",
+  "username": "centro",
+  "password": "Sucursal123!"
+}
+
+### 2.2 Crear una SEGUNDA sucursal, para el test de duplicado
+POST {{baseUrl}}/Sucursal
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenEmpresa}}
+Content-Type: application/json
+
+{
+  "nombre": "Sucursal Norte",
+  "direccion": "Otra Calle 456",
+  "telefono": "1122334456",
+  "username": "norte",
+  "password": "Sucursal123!"
+}
+
+### 2.3 BUG RESTAURADO: intentar renombrar el Username de "norte" a "centro"
+### (el que ya usa la otra sucursal) -> 409 esperado
+PATCH {{baseUrl}}/Sucursal
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenEmpresa}}
+Content-Type: application/json
+
+{
+  "username": "centro"
+}
+# OJO: este endpoint identifica la sucursal por el claim IdSucursal del token,
+# así que para probarlo bien tenés que loguearte como "norte" primero (ver 2.4)
+# y recién ahí mandar este PATCH con ese token.
+
+### 2.4 Login de sucursal (usuario@sucursal) -> guarda el token de sucursal
+# @name loginSucursal
+POST {{baseUrl}}/Login
+X-Tenant-ID: {{tenant}}
+Content-Type: application/json
+
+{
+  "username": "nombredeempresa@centro",
+  "password": "Sucursal123!"
+}
+
+###
+@tokenSucursal = {{loginSucursal.response.body.$.Access_token}}
+
+
+### ============================================================
+### PASO 3 — Mozo (Persona) para poder abrir una mesa.
+### IdRol depende de tus roles seedeados -> ajustalo si hace falta.
+### ============================================================
+
+### 3.1 Crear un mozo (con token de empresa, IdRol de "Mozo" en tu seed)
+POST {{baseUrl}}/Registrar
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenEmpresa}}
+Content-Type: application/json
+
+{
+  "nombres": "Juan",
+  "apellido": "Mozo",
+  "dni": "{{dniMozo}}",
+  "password": "Mozo123!",
+  "idRol": 1,
+  "activo": true
+}
+# Anotá el "CodigoDeServicio" que te devuelve GET /ListaEmpleados para usarlo
+# en el AbrirMesaDTO del paso 5 (CodigoServicioMozo).
+
+### 3.2 Ver la lista de empleados y copiar el CodigoDeServicio del mozo
+GET {{baseUrl}}/ListaEmpleados
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenEmpresa}}
+
+###
+@codigoMozo = PEGAR_CODIGO_DE_SERVICIO_ACA
+
+
+### ============================================================
+### PASO 4 — Categorías: el bug de "no se puede resguardar sin
+### cambiar el nombre" que arreglamos.
+### ============================================================
+
+### 4.1 Crear categoría
+# @name crearCategoria
+POST {{baseUrl}}/Categorias
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "nombre": "Bebidas"
+}
+
+###
+@idCategoria = {{crearCategoria.response.body.$.id}}
+
+### 4.2 BUG RESTAURADO: modificarla reenviando el MISMO nombre -> antes daba
+### 409 falso ("ya existe"), ahora tiene que dar 200
+PUT {{baseUrl}}/Categorias/{{idCategoria}}
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "nombre": "Bebidas"
+}
+
+
+### ============================================================
+### PASO 5 — Flujo completo: caja -> plano -> mesa -> abrir ->
+### agregar productos -> pagar (con el bug de doble cobro) -> cerrar.
+### ============================================================
+
+### 5.1 Abrir caja
+# @name abrirCaja
+POST {{baseUrl}}/Cajas/Abrir
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "montoApertura": 5000
+}
+
+###
+@idCaja = {{abrirCaja.response.body.$.id}}
+
+### 5.2 BUG: intentar abrir OTRA caja para la misma sucursal sin cerrar
+### la anterior -> 409 esperado (antes 400)
+POST {{baseUrl}}/Cajas/Abrir
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "montoApertura": 1000
+}
+
+### 5.3 Crear plano
+# @name crearPlano
+POST {{baseUrl}}/Plano
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "nombre": "Salón Principal",
+  "detalles": "Planta baja"
+}
+
+###
+@idPlano = {{crearPlano.response.body.$.id}}
+
+### 5.3.1 BUG RESTAURADO: crear un SEGUNDO plano y luego renombrarlo al
+### nombre del primero -> 409 esperado (ver más abajo, 5.3.3)
+# @name crearSegundoPlano
+POST {{baseUrl}}/Plano
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "nombre": "Salón Auxiliar",
+  "detalles": "Primer piso"
+}
+
+###
+@idSegundoPlano = {{crearSegundoPlano.response.body.$.id}}
+
+### 5.3.3 Renombrar el segundo plano al nombre del primero -> 409 esperado
+PUT {{baseUrl}}/Plano
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "idPlano": "{{idSegundoPlano}}",
+  "nombre": "Salón Principal"
+}
+
+### 5.4 Crear mesa en el primer plano
+# @name crearMesa
+POST {{baseUrl}}/Mesa
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "nombre": "Mesa 1",
+  "idPlano": "{{idPlano}}",
+  "capacidad": 4,
+  "x": 0,
+  "y": 0,
+  "w": 100,
+  "h": 100
+}
+
+###
+@idMesa = {{crearMesa.response.body.$.id}}
+# Nota: /Mesa devuelve un EntregaDTO con el mensaje "...Id:<guid>" en vez de
+# un campo "id" propio — copiá el Id del mensaje si la captura automática
+# de arriba no lo resuelve bien.
+
+### 5.5 Abrir la mesa (con el código del mozo del paso 3)
+# @name abrirMesa
+PATCH {{baseUrl}}/Mesa/AbrirCerrar
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "idMesa": "{{idMesa}}",
+  "codigoServicioMozo": "{{codigoMozo}}",
+  "abrir": true
+}
+
+###
+@idVisita = {{abrirMesa.response.body.$.id}}
+
+### 5.6 Crear un producto para poder agregarlo a la visita
+### OJO: este endpoint usa [FromForm] (multipart), no JSON.
+# @name crearProducto
+POST {{baseUrl}}/Productos
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: multipart/form-data; boundary=----ProductoBoundary
+
+------ProductoBoundary
+Content-Disposition: form-data; name="Nombre"
+
+Gaseosa 500ml
+------ProductoBoundary
+Content-Disposition: form-data; name="PrecioNeto"
+
+1500
+------ProductoBoundary
+Content-Disposition: form-data; name="PorcentajeIVA"
+
+21
+------ProductoBoundary
+Content-Disposition: form-data; name="Activo"
+
+true
+------ProductoBoundary
+Content-Disposition: form-data; name="ControlaStock"
+
+false
+------ProductoBoundary
+Content-Disposition: form-data; name="EnviarAlerta"
+
+false
+------ProductoBoundary--
+
+###
+@idProducto = {{crearProducto.response.body.$.id}}
+
+### 5.7 Agregar el producto a la visita
+POST {{baseUrl}}/AgregarProductoAVisita?IdVisita={{idVisita}}
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+[
+  {
+    "idProducto": "{{idProducto}}",
+    "detalles": "",
+    "cantidad": 2
+  }
+]
+
+### 5.8 Ver la visita y copiar los "Id" de los ProductosConsumidos para pagar
+GET {{baseUrl}}/Visita?IdVisita={{idVisita}}
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+
+###
+@idProductoEnVisita1 = 1
+@idProductoEnVisita2 = 2
+
+### 5.9 Pagar (usar un IdTipoMovimiento que exista en tu seed, típicamente 1=Efectivo)
+POST {{baseUrl}}/Pagar
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "idVisita": "{{idVisita}}",
+  "idTipoMovimiento": 1,
+  "montoAbonado": 3000,
+  "generarFactura": false,
+  "listaIdsProductos": [{{idProductoEnVisita1}}, {{idProductoEnVisita2}}]
+}
+
+### 5.10 BUG ARREGLADO: reenviar el MISMO pago con los MISMOS productos
+### -> 409 "Producto ya pagado" esperado (antes se cobraba dos veces sin avisar)
+POST {{baseUrl}}/Pagar
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "idVisita": "{{idVisita}}",
+  "idTipoMovimiento": 1,
+  "montoAbonado": 3000,
+  "generarFactura": false,
+  "listaIdsProductos": [{{idProductoEnVisita1}}, {{idProductoEnVisita2}}]
+}
+
+### 5.11 Cerrar la mesa
+PATCH {{baseUrl}}/Mesa/AbrirCerrar
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "idMesa": "{{idMesa}}",
+  "abrir": false
+}
+
+### 5.12 Cerrar la caja
+PATCH {{baseUrl}}/Cajas/Cerrar
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "idCaja": "{{idCaja}}",
+  "montoCierre": 8000
+}
+
+
+### ============================================================
+### PASO 6 — DeliveryTakeaway: el crash arreglado (Delivery sin
+### cadete) y la validación de rol restaurada.
+### ============================================================
+
+### 6.1 Abrir una caja de nuevo (se cerró en 5.12)
+# @name abrirCaja2
+POST {{baseUrl}}/Cajas/Abrir
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "montoApertura": 5000
+}
+
+### 6.2 BUG ARREGLADO: crear un Delivery SIN IdCadete -> antes tiraba un 500
+### crudo (InvalidOperationException), ahora se tiene que crear bien
+# @name crearDelivery
+POST {{baseUrl}}/DeliveryTakeaway/Crear
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "nombreCliente": "Cliente Delivery",
+  "direccion": "Calle Falsa 123",
+  "telefono": "1155667788",
+  "origen": "Delivery",
+  "idTipoEnvio": 1,
+  "listaProductos": [
+    { "idProducto": "{{idProducto}}", "detalles": "", "cantidad": 1 }
+  ]
+}
+
+###
+@idDelivery = {{crearDelivery.response.body.$.id}}
+
+### 6.3 VALIDACIÓN RESTAURADA: intentar asignarle como cadete al MOZO
+### (rol equivocado, no rol=3/cadete) -> 400 "La persona seleccionada no es cadete"
+PATCH {{baseUrl}}/DeliveryTakeaway/ModificarDatos
+X-Tenant-ID: {{tenant}}
+Authorization: Bearer {{tokenSucursal}}
+Content-Type: application/json
+
+{
+  "idDeliveryTakeaway": "{{idDelivery}}",
+  "idCadete": "PEGAR_ID_DEL_MOZO_ACA"
+}
+
+
+### ============================================================
+### Notas
+### - Los valores "PEGAR_..." son a propósito: dependen de datos que
+###   solo existen después de correr el paso anterior y mirar la
+###   respuesta (REST Client no siempre puede indexar arrays/objetos
+###   anidados automáticamente).
+### - Cada bloque separado por "###" se corre individual en VS Code
+###   con la extensión "REST Client" (Ctrl+Alt+R / "Send Request").
+### - Los IdRol, IdTipoMovimiento e IdTipoEnvio usados acá (1, 1, 1)
+###   son ejemplos — ajustalos a los que tengas seedeados.
+### ============================================================
