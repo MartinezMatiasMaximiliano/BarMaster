@@ -1,5 +1,6 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
@@ -24,7 +25,7 @@ namespace BackEndAPI.Services
         {
             var existente = await _personasRepository.GetPersonaPorDni(nuevaPersona.Dni);
             if (existente != null) {
-                throw new Exception("Ya existe una persona con el mismo DNI.");
+                throw new ConflictException("Ya existe una persona con el mismo DNI.");
             }
 
             var usuario = new Persona
@@ -44,7 +45,7 @@ namespace BackEndAPI.Services
             _passwordService.CrearPasswordHash(nuevaPersona.Password, out byte[] hashContrasena, out byte[] saltContrasena); // Genera hash y salt
             usuario.EstablecerContrasena(hashContrasena, saltContrasena);
 
-            string PINUnico; 
+            string PINUnico;
 
             do
             {
@@ -56,30 +57,34 @@ namespace BackEndAPI.Services
             await _personasRepository.CrearPersona(usuario);
             return usuario;
         }
-        public Task<Persona?> BuscarPersonaPorId(Guid IdPersona)
+        public async Task<Persona?> BuscarPersonaPorId(Guid IdPersona)
         {
-            var busqueda = _personasRepository.GetPersonaPorId(IdPersona);
-            if (busqueda == null)
+            // OJO: antes esto comparaba la Task devuelta por el repositorio contra null (siempre
+            // false, nunca es null) en vez de esperar el resultado — el throw de "no encontrada"
+            // nunca se disparaba y un null se colaba hasta el controller. Con el await se compara
+            // el resultado real.
+            var persona = await _personasRepository.GetPersonaPorId(IdPersona);
+            if (persona == null)
             {
-                throw new Exception("No se encontró una persona con el IdPersona proporcionado.");
+                throw new NotFoundException("No se encontró una persona con el IdPersona proporcionado.");
             }
-            return busqueda;
+            return persona;
         }
-        public Task<Persona?> BuscarPersonaPorDni(string Dni)
+        public async Task<Persona?> BuscarPersonaPorDni(string Dni)
         {
-            var busqueda = _personasRepository.GetPersonaPorDni(Dni);
-            if (busqueda == null)
+            var persona = await _personasRepository.GetPersonaPorDni(Dni);
+            if (persona == null)
             {
-                throw new Exception("No se encontró una persona con el DNI proporcionado.");
+                throw new NotFoundException("No se encontró una persona con el DNI proporcionado.");
             }
-            return busqueda;
+            return persona;
         }
         public async Task<ICollection<Persona>> BuscarTodasLasPersonas()
         {
             var busqueda = await _personasRepository.GetAllPersonas();
             if (busqueda == null || busqueda.Count == 0)
             {
-                throw new Exception("No se encontraron personas para la empresa proporcionada.");
+                throw new NotFoundException("No se encontraron personas para la empresa proporcionada.");
             }
             return busqueda;
         }
@@ -88,7 +93,7 @@ namespace BackEndAPI.Services
             var persona =  await _personasRepository.GetPersonaPorId(personaActualizada.Id);
             if (persona == null)
             {
-                throw new Exception("Persona no identificada");
+                throw new NotFoundException("Persona no identificada");
             }
 
             persona.Nombres = !string.IsNullOrEmpty(personaActualizada.Nombres) ? personaActualizada.Nombres : persona.Nombres;
@@ -105,12 +110,12 @@ namespace BackEndAPI.Services
                 var personaConCodigo = await _personasRepository.GetPersonaPorCodigoDeServicio(personaActualizada.CodigoDeServicio);
                 if (personaConCodigo != null && personaConCodigo.Id != personaActualizada.Id)
                 {
-                    throw new Exception("Ya existe una persona con el mismo código de servicio.");
+                    throw new ConflictException("Ya existe una persona con el mismo código de servicio.");
                 }
 
                 persona.CodigoDeServicio = personaActualizada.CodigoDeServicio;
             }
-            
+
             await _personasRepository.ActualizarPersona(persona);
             return persona;
         }
@@ -118,13 +123,13 @@ namespace BackEndAPI.Services
         {
             if (personajeId < 0 || personajeId > 9)
             {
-                throw new ArgumentOutOfRangeException(nameof(personajeId), "El personaje seleccionado no es válido.");
+                throw new BusinessRuleException("El personaje seleccionado no es válido.");
             }
 
             var persona = await _personasRepository.GetPersonaPorId(idPersona);
             if (persona == null)
             {
-                throw new Exception("Persona no identificada");
+                throw new NotFoundException("Persona no identificada");
             }
 
             persona.PersonajeId = personajeId;
@@ -136,7 +141,7 @@ namespace BackEndAPI.Services
             var persona =  await _personasRepository.GetPersonaPorId(IdPersona);
             if (persona == null)
             {
-                throw new Exception("Persona no identificada");
+                throw new NotFoundException("Persona no identificada");
             }
             persona.Activo = !persona.Activo;
             await _personasRepository.ActualizarPersona(persona);
@@ -147,7 +152,7 @@ namespace BackEndAPI.Services
             var persona =  await _personasRepository.GetPersonaPorId(IdPersona);
             if (persona == null)
             {
-                throw new Exception("Persona no identificada");
+                throw new NotFoundException("Persona no identificada");
             }
             return await _personasRepository.EliminarPersona(persona);
         }
@@ -156,7 +161,7 @@ namespace BackEndAPI.Services
             var mozos = await _personasRepository.GetPersonasPorNombreRol("Mozo");
             if (mozos == null || mozos.Count == 0)
             {
-                throw new Exception("No se encontraron mozos.");
+                throw new NotFoundException("No se encontraron mozos.");
             }
             return mozos;
         }

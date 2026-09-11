@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using BackEndAPI.DTOs.Request.Crear;
@@ -22,261 +23,134 @@ namespace BackEndAPI.Controllers
         [HttpGet("/ListaEmpleados")]
         public async Task<IActionResult> GetListaPersonasDeEmpresa()
         {
-            try
+            var listaPersonas = await _personasServices.BuscarTodasLasPersonas();
+
+            var response = listaPersonas.Select(persona => new PersonaDTO
             {
-                var listaPersonas = await _personasServices.BuscarTodasLasPersonas();
-
-                var response = listaPersonas.Select(persona => new PersonaDTO
+                Id = persona.Id,
+                CodigoDeServicio = persona.CodigoDeServicio,
+                Rol = persona.Rol,
+                IdEmpresa = persona.IdEmpresa,
+                PersonajeId = persona.PersonajeId,
+                DatosPersonales = new DatosPersonales
                 {
-                    Id = persona.Id,
-                    CodigoDeServicio = persona.CodigoDeServicio,
-                    Rol = persona.Rol,
-                    IdEmpresa = persona.IdEmpresa,
-                    PersonajeId = persona.PersonajeId,
-                    DatosPersonales = new DatosPersonales
-                    {
-                        Nombres = persona.Nombres,
-                        Apellido = persona.Apellido,
-                        Dni = persona.Dni,
-                        Direccion = persona.Direccion,
-                        Telefono = persona.Telefono,
-                        Email = persona.Email,
-                        Activo = persona.Activo,
-                    }
-                }).ToList();
-
-                return Ok(response);
-
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Empresa no identificada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "No se encontraron personas para la empresa proporcionada.":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                    Nombres = persona.Nombres,
+                    Apellido = persona.Apellido,
+                    Dni = persona.Dni,
+                    Direccion = persona.Direccion,
+                    Telefono = persona.Telefono,
+                    Email = persona.Email,
+                    Activo = persona.Activo,
                 }
-            }
+            }).ToList();
+
+            return Ok(response);
         }
 
         [HttpGet("/Persona")]
         public async Task<IActionResult> GetPersonaPorId([FromQuery] Guid Id)
         {
-            try
-            {
-                var persona = await _personasServices.BuscarPersonaPorId(Id);
-                if (persona == null)
-                {
-                    throw new Exception("Persona no identificada");
-                }
+            var persona = await _personasServices.BuscarPersonaPorId(Id);
 
-                PersonaDTO response = new PersonaDTO
-                {
-                    Id = persona.Id,
-                    CodigoDeServicio = persona.CodigoDeServicio,
-                    Rol = persona.Rol,
-                    IdEmpresa = persona.IdEmpresa,
-                    PersonajeId = persona.PersonajeId,
-                    DatosPersonales = new DatosPersonales
-                    {
-                        Nombres = persona.Nombres,
-                        Apellido = persona.Apellido,
-                        Dni = persona.Dni,
-                        Direccion = persona.Direccion,
-                        Telefono = persona.Telefono,
-                        Email = persona.Email,
-                        Activo = persona.Activo,
-                    }
-                };
-                return Ok(response);
-            }
-            catch (Exception ex)
+            var response = new PersonaDTO
             {
-                switch (ex.Message)
+                Id = persona!.Id,
+                CodigoDeServicio = persona.CodigoDeServicio,
+                Rol = persona.Rol,
+                IdEmpresa = persona.IdEmpresa,
+                PersonajeId = persona.PersonajeId,
+                DatosPersonales = new DatosPersonales
                 {
-                    case "Persona no identificada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "No se encontró una persona con el DNI proporcionado.":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                    Nombres = persona.Nombres,
+                    Apellido = persona.Apellido,
+                    Dni = persona.Dni,
+                    Direccion = persona.Direccion,
+                    Telefono = persona.Telefono,
+                    Email = persona.Email,
+                    Activo = persona.Activo,
                 }
-
-            }
+            };
+            return Ok(response);
         }
 
         [HttpPost("/Registrar")]
         public async Task<IActionResult> RegistrarPersona(CrearPersonaDTO request)
         {
-            try
-            {
-                if (request == null 
-                    || request.IdRol == 0 
-                    || string.IsNullOrEmpty(request.Nombres) 
-                    || string.IsNullOrEmpty(request.Apellido)) throw new Exception("Dato de persona no proporcionados");
+            if (request == null
+                || request.IdRol == 0
+                || string.IsNullOrEmpty(request.Nombres)
+                || string.IsNullOrEmpty(request.Apellido))
+                throw new BusinessRuleException("Dato de persona no proporcionados");
 
-                var IdEmpresa = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa")!.Value) : Guid.Empty;
-                if (IdEmpresa == Guid.Empty) throw new Exception("Empresa no identificada");
+            var claimIdEmpresa = User.Claims.FirstOrDefault(c => c.Type == "IdEmpresa")?.Value;
+            if (!Guid.TryParse(claimIdEmpresa, out var idEmpresa) || idEmpresa == Guid.Empty)
+                throw new BusinessRuleException("Empresa no identificada");
 
-                var usuario = await _personasServices.CrearPersona(request, IdEmpresa);
-                return Created("created", new EntregaDTO(201, "CREATED", $"Creado exitosamente, Id:{usuario.Id}"));
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Dato de persona no proporcionados":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "Empresa no identificada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "Ya existe una persona con el mismo DNI.":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "No se pudo crear la persona":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "No se pudo Encontrar un Rol de Mozos":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "No se pudo Encontrar un Rol con Id":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
-                }
-            }
+            var usuario = await _personasServices.CrearPersona(request, idEmpresa);
+            return Created("created", new EntregaDTO(201, "CREATED", $"Creado exitosamente, Id:{usuario!.Id}"));
         }
 
         [HttpPut("/Modificar")]
         public async Task<IActionResult> ModificarPersona(ModificarPersonaDTO DTO)
         {
-            try
-            {
-                var actualizado = await _personasServices.ActualizarPersona(DTO);
-                return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{DTO.Id}"));
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Persona no identificada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "Ya existe una persona con el mismo código de servicio.":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
-
-                }
-            }
+            await _personasServices.ActualizarPersona(DTO);
+            return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{DTO.Id}"));
         }
 
         [HttpPut("/activarDesactivar/{Id}")]
         public async Task<IActionResult> ActivarDesactivarPersona(Guid Id)
         {
-            try
-            {
-                var actualizado = await _personasServices.CambiarEstado(Id);
-                return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{Id}"));
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Persona no identificada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
-                }
-            }
+            await _personasServices.CambiarEstado(Id);
+            return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{Id}"));
         }
 
         [HttpPut("/Persona/Personaje")]
         public async Task<IActionResult> ModificarPersonaje([FromBody] ModificarPersonajeDTO request)
         {
             if (request.IdPersona == Guid.Empty)
-            {
-                return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El idPersona es obligatorio"));
-            }
+                throw new BusinessRuleException("El idPersona es obligatorio");
 
             if (!ModelState.IsValid)
             {
                 return ValidationProblem(ModelState);
             }
 
-            try
-            {
-                var persona = await _personasServices.ActualizarPersonaje(request.IdPersona, request.PersonajeId);
-                return Ok(new { idPersona = persona!.Id, personajeId = persona.PersonajeId });
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-            }
-            catch (Exception ex) when (ex.Message == "Persona no identificada")
-            {
-                return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
-            }
+            var persona = await _personasServices.ActualizarPersonaje(request.IdPersona, request.PersonajeId);
+            return Ok(new { idPersona = persona!.Id, personajeId = persona.PersonajeId });
         }
 
         [HttpDelete("/Eliminar/{Id}")]
         public async Task<IActionResult> EliminarPersona(Guid Id)
         {
-            try
-            {
-                var eliminado = await _personasServices.EliminarPersona(Id);
-                return Ok(new EntregaDTO(200, "OK", $"Eliminado exitosamente, Id:{Id}"));
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Persona no identificada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
-                }
-            }
+            await _personasServices.EliminarPersona(Id);
+            return Ok(new EntregaDTO(200, "OK", $"Eliminado exitosamente, Id:{Id}"));
         }
 
         [HttpGet("/Mozos")]
         public async Task<IActionResult> GetMozos()
         {
-            try
-            {
-                var mozos = await _personasServices.BuscarMozos();
+            var mozos = await _personasServices.BuscarMozos();
 
-                var response = mozos.Select(persona => new PersonaDTO
-                {
-                    Id = persona.Id,
-                    CodigoDeServicio = persona.CodigoDeServicio,
-                    Rol = persona.Rol,
-                    IdEmpresa = persona.IdEmpresa,
-                    PersonajeId = persona.PersonajeId,
-                    DatosPersonales = new DatosPersonales
-                    {
-                        Nombres = persona.Nombres,
-                        Apellido = persona.Apellido,
-                        Dni = persona.Dni,
-                        Direccion = persona.Direccion,
-                        Telefono = persona.Telefono,
-                        Email = persona.Email,
-                        Activo = persona.Activo,
-                    }
-                }).ToList();
-
-                return Ok(response);
-            }
-            catch (Exception ex)
+            var response = mozos.Select(persona => new PersonaDTO
             {
-                switch (ex.Message)
+                Id = persona.Id,
+                CodigoDeServicio = persona.CodigoDeServicio,
+                Rol = persona.Rol,
+                IdEmpresa = persona.IdEmpresa,
+                PersonajeId = persona.PersonajeId,
+                DatosPersonales = new DatosPersonales
                 {
-                    case "No se encontraron mozos.":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    default:
-                        return StatusCode(500, new ErrorDTO(500, "INTERNAL SERVER ERROR", "Ocurrió un error inesperado"));
+                    Nombres = persona.Nombres,
+                    Apellido = persona.Apellido,
+                    Dni = persona.Dni,
+                    Direccion = persona.Direccion,
+                    Telefono = persona.Telefono,
+                    Email = persona.Email,
+                    Activo = persona.Activo,
                 }
-            }
+            }).ToList();
+
+            return Ok(response);
         }
     }
 }
-
-
