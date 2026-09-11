@@ -1,5 +1,6 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
@@ -33,15 +34,15 @@ namespace BackEndAPI.Services
         public async Task<Producto?> CrearProducto(CrearProductoDTO request, Guid idSucursal)
         {
             var existente = await _productosRepository.GetProductoPorNombre(request.Nombre);
-            if (existente != null) throw new Exception("El producto ya existe");
+            if (existente != null) throw new ConflictException("El producto ya existe");
             if (request.ControlaStock && !request.CantidadMinima.HasValue)
-                throw new Exception("La cantidad mínima es obligatoria");
+                throw new BusinessRuleException("La cantidad mínima es obligatoria");
             if (request.ControlaStock && !request.CantidadInicial.HasValue)
-                throw new Exception("La cantidad inicial es obligatoria");
+                throw new BusinessRuleException("La cantidad inicial es obligatoria");
             if (request.ControlaStock && request.CantidadMinima!.Value < 0)
-                throw new Exception("La cantidad mínima no puede ser negativa");
+                throw new BusinessRuleException("La cantidad mínima no puede ser negativa");
             if (request.ControlaStock && request.CantidadInicial!.Value < 0)
-                throw new Exception("La cantidad inicial no puede ser negativa");
+                throw new BusinessRuleException("La cantidad inicial no puede ser negativa");
 
             // Procesar imagen y generar path
             var pathImagen = await FileHelper.GuardarImagenProducto(request.Imagen, request.Nombre);
@@ -106,14 +107,14 @@ namespace BackEndAPI.Services
         public async Task<Producto?> EliminarProducto(Guid id)
         {
             var busqueda = await _productosRepository.GetProductoPorId(id);
-            if (busqueda == null) throw new Exception("El producto no fue encontrado");
+            if (busqueda == null) throw new NotFoundException("El producto no fue encontrado");
             return await _productosRepository.DeleteProducto(busqueda);
         }
 
         public async Task<Producto> BuscarProductoPorId(Guid id)
         {
             var busqueda = await _productosRepository.GetProductoPorId(id);
-            if (busqueda == null) throw new Exception("El producto no fue encontrado");
+            if (busqueda == null) throw new NotFoundException("El producto no fue encontrado");
             return busqueda;
 
         }
@@ -123,7 +124,7 @@ namespace BackEndAPI.Services
             var busqueda = await _productosRepository.GetProductoPorNombre(nombre);
             if (busqueda == null)
             {
-                throw new Exception("El producto no existe");
+                throw new NotFoundException("El producto no existe");
             }
             return busqueda;
         }
@@ -142,7 +143,7 @@ namespace BackEndAPI.Services
         public async Task<Producto?> ActualizarProducto(ModificarProductoDTO request)
         {
             var busqueda = await _productosRepository.GetProductoPorId(request.IdProducto);
-            if (busqueda == null) throw new Exception("El producto no fue encontrado");
+            if (busqueda == null) throw new NotFoundException("El producto no fue encontrado");
 
             if (request.Codigo != null) busqueda.Codigo = request.Codigo;
             if (!string.IsNullOrEmpty(request.Nombre)) busqueda.Nombre = request.Nombre;
