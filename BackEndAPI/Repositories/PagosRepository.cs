@@ -1,6 +1,7 @@
 using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.Data;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
@@ -32,7 +33,7 @@ namespace BackEndAPI.Repositories
         {
             var transaccion = Db.Database.BeginTransaction();
             var tipoMovimientoCaja = await Db.TipoMovimientosCajas.FirstOrDefaultAsync(tp => tp.Id == movimientoCaja.IdTipoMovimientoCaja);
-            if (tipoMovimientoCaja == null) throw new Exception("Tipo de movimiento de caja no encontrado");
+            if (tipoMovimientoCaja == null) throw new NotFoundException("Tipo de movimiento de caja no encontrado");
 
             try
             {
@@ -66,10 +67,14 @@ namespace BackEndAPI.Repositories
                 return (movimientoCaja, null);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaccion.RollbackAsync();
-                throw new Exception("Error al crear el pago");
+                // Se re-lanza la excepción original (tipo y stack trace intactos) en vez de
+                // envolverla en un Exception genérico — mismo criterio que en
+                // DatabaseTransactionManager: si el error era una excepción de negocio tipada,
+                // tiene que seguir siéndolo (ej. un fallo real de ARCA al facturar).
+                throw;
             }
         }
     }

@@ -1,6 +1,7 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
@@ -40,11 +41,11 @@ namespace BackEndAPI.Services
             Guid idSucursal,
             ConfigurarStockDTO request)
         {
-            if (request.CantidadMinima < 0) throw new Exception("La cantidad mínima no puede ser negativa");
-            if (request.CantidadInicial < 0) throw new Exception("La cantidad inicial no puede ser negativa");
+            if (request.CantidadMinima < 0) throw new BusinessRuleException("La cantidad mínima no puede ser negativa");
+            if (request.CantidadInicial < 0) throw new BusinessRuleException("La cantidad inicial no puede ser negativa");
 
             var producto = await _productosRepository.GetProductoPorId(idProducto)
-                ?? throw new Exception("Producto no encontrado");
+                ?? throw new NotFoundException("Producto no encontrado");
             var stock = await _stockRepository.ConfigurarAsync(
                 idProducto,
                 idSucursal,
@@ -62,7 +63,7 @@ namespace BackEndAPI.Services
             Guid idSucursal,
             RegistrarMovimientoStockDTO request)
         {
-            if (request.Cantidad == 0) throw new Exception("La cantidad no puede ser cero");
+            if (request.Cantidad == 0) throw new BusinessRuleException("La cantidad no puede ser cero");
             var stock = await _stockRepository.RegistrarMovimientoAsync(
                 idProducto,
                 idSucursal,

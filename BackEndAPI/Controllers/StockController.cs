@@ -1,5 +1,6 @@
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -56,7 +57,8 @@ namespace BackEndAPI.Controllers
         private Guid ObtenerIdSucursal()
         {
             var claim = User.Claims.FirstOrDefault(x => x.Type == "IdSucursal")?.Value;
-            if (!Guid.TryParse(claim, out var idSucursal)) throw new Exception("Sucursal no identificada");
+            if (!Guid.TryParse(claim, out var idSucursal) || idSucursal == Guid.Empty)
+                throw new BusinessRuleException("Sucursal no identificada");
             return idSucursal;
         }
     }

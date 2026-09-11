@@ -1,4 +1,5 @@
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
@@ -123,8 +124,8 @@ namespace BackEndAPI.Repositories
             return await _transactionManager.ExecuteAsync(async () =>
             {
                 var stock = await ObtenerConBloqueoAsync(idProducto, idSucursal)
-                    ?? throw new Exception("El producto no tiene stock configurado");
-                if (!stock.ControlaStock) throw new Exception("El control de stock está deshabilitado");
+                    ?? throw new NotFoundException("El producto no tiene stock configurado");
+                if (!stock.ControlaStock) throw new ConflictException("El control de stock está deshabilitado");
 
                 var cantidadPosterior = CalcularCantidadPosterior(stock, cantidad);
                 await Db.MovimientosStock.AddAsync(CrearMovimiento(
@@ -206,7 +207,7 @@ namespace BackEndAPI.Repositories
             var cantidadPosterior = checked(stock.CantidadActual + cantidad);
             if (cantidadPosterior < 0)
             {
-                throw new Exception($"Stock insuficiente para {stock.Producto.Nombre}");
+                throw new ConflictException($"Stock insuficiente para {stock.Producto.Nombre}");
             }
             return cantidadPosterior;
         }
@@ -250,7 +251,7 @@ namespace BackEndAPI.Repositories
                     .Include(x => x.Mesa)
                     .Include(x => x.Mozo)
                     .SingleOrDefaultAsync(x => x.Id == idVisita && x.Caja.IdSucursal == idSucursal)
-                    ?? throw new Exception("No se encontró la visita local asociada al movimiento de stock");
+                    ?? throw new NotFoundException("No se encontró la visita local asociada al movimiento de stock");
 
                 return new ContextoMovimientoVenta(
                     visita.IdMesa,

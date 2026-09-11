@@ -1,5 +1,6 @@
 ﻿using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Data;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +44,7 @@ namespace BackEndAPI.ARCA.Servicios
                 //2. Autenticar y obtener el token                
                 Empresa empresa = await db.Empresas.FirstOrDefaultAsync();
                 FEAuthResponse buscarTokenValido = await _wasaaAuthService.AutenticarFacturacionElectronica(empresa.ubicacionCert);
-                if (empresa.ubicacionCert == null) throw new Exception("No se encontró la ubicación del certificado de la empresa");
+                if (empresa.ubicacionCert == null) throw new BusinessRuleException("No se encontró la ubicación del certificado de la empresa");
 
                 FEAuthRequest auth = new FEAuthRequest
                 {
