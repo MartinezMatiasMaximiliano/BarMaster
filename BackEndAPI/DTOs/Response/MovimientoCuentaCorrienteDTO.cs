@@ -4,6 +4,8 @@
     {
         public Guid IdMovimientoCaja { get; set; }
         public string Descripcion { get; set; }
+        public decimal MontoAbonado { get; set; }
+        public decimal Vuelto { get; set; }
         public decimal MontoTotal { get; set; }
         public DateTime FechaMovimiento { get; set; }
         public bool EsIngreso { get; set; }

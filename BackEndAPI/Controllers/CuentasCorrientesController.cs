@@ -1,6 +1,8 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Exceptions;
+using BackEndAPI.Models;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,226 +20,94 @@ namespace BackEndAPI.Controllers
             _cuentasCorrientesServices = cuentasCorrientesServices;
         }
 
+        // Ya no hay try/catch acá: si algo falla, la excepción (tipada o no) burbujea hasta
+        // ExceptionHandlingMiddleware, que decide el status code y loguea con el contexto completo.
+
         [HttpGet]
         public async Task<IActionResult> GetListaCuentasCorrientes()
         {
-            try
-            {
-                var result = await _cuentasCorrientesServices.GetListaCuentasCorrientes();
-                var response = result.Select(cc => new
-                {
-                    Id = cc.Id,
-                    Nombre = cc.Nombre,
-                    Telefono = cc.Telefono,
-                    Domicilio = cc.Domicilo,
-                    Balance = cc.Balance,
-                    Descuento = cc.Descuento,
-                    Movimientos = cc.Movimientos.Select(m => new
-                    {
-                        IdMovimimientoCaja = m.MovimientoCaja.Id,
-                        Descripcion = m.MovimientoCaja.Descripcion,
-                        MontoAbonado = m.MovimientoCaja.MontoAbonado,
-                        Vuelto = m.MovimientoCaja.Vuelto,
-                        MontoTotal = m.MovimientoCaja.MontoTotal,
-                        FechaMovimiento = m.MovimientoCaja.FechaMovimiento
-                    }).ToList()
-                });
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-
-                    default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al obtener las cuentas corrientes." });
-                }
-
-            }
+            var result = await _cuentasCorrientesServices.GetListaCuentasCorrientes();
+            return Ok(result.Select(MapearCuentaCorriente).ToList());
         }
 
         [HttpGet("{IdCuenta}")]
         public async Task<IActionResult> GetCuentaCorrientePorId(Guid IdCuenta)
         {
-            try
-            {
-                var result = await _cuentasCorrientesServices.GetCuentaCorrientePorId(IdCuenta);
-                var response = new
-                {
-                    Id = result.Id,
-                    Nombre = result.Nombre,
-                    Telefono = result.Telefono,
-                    Domicilio = result.Domicilo,
-                    Balance = result.Balance,
-                    Descuento = result.Descuento,
-                    Movimientos = result.Movimientos.Select(m => new
-                    {
-                        IdMovimimientoCaja = m.MovimientoCaja.Id,
-                        Descripcion = m.MovimientoCaja.Descripcion,
-                        MontoAbonado = m.MovimientoCaja.MontoAbonado,
-                        Vuelto = m.MovimientoCaja.Vuelto,
-                        MontoTotal = m.MovimientoCaja.MontoTotal,
-                        FechaMovimiento = m.MovimientoCaja.FechaMovimiento,
-                        EsIngreso = m.MovimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
-                        EsEfectivo = m.MovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
-                    })
-                };
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "No se encontro la cuenta":
-                        return NotFound(new { message = "No se encontró la cuenta corriente." });
-                    default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al obtener las cuentas corrientes." });
-                }
-
-            }
+            var result = await _cuentasCorrientesServices.GetCuentaCorrientePorId(IdCuenta);
+            return Ok(MapearCuentaCorriente(result!));
         }
 
         [HttpPost("Crear")]
         public async Task<IActionResult> CrearCuentaCorriente([FromBody] CrearCuentaCorrienteDTO request)
         {
-            try
-            {
-                if (request.Nombre == null || request.Telefono == null || request.Domicilio == null) return BadRequest(new { message = "Todos los campos son obligatorios." });
-
-                var result = await _cuentasCorrientesServices.CrearCuentaCorriente(request);
-                if (result == null) return BadRequest(new { message = "No se pudo crear la cuenta corriente." });
-                //TODO: mapear a DTO?
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Sucursal no encontrada":
-                        return BadRequest(new { message = "No se pudo identificar la sucursal del usuario." });
-                    default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al crear la cuenta corriente." });
-                }
-            }
+            var result = await _cuentasCorrientesServices.CrearCuentaCorriente(request);
+            //TODO: mapear a DTO?
+            return Ok(result);
         }
 
         [HttpPost("Modificar")]
         public async Task<IActionResult> ActualizarDatosCuentaCorriente([FromBody] ModificarCuentaCorrienteDTO request)
         {
-            try
-            {
-                if (request.IdCuenta == Guid.Empty) throw new Exception("Cuenta corriente no encontrada");
-                var result = await _cuentasCorrientesServices.ActualizarDatosCuentaCorriente(request);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Cuenta corriente no encontrada":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Cuenta corriente no encontrada"));
-                    default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al actualizar la cuenta corriente.");
-                }
-            }
-
+            var result = await _cuentasCorrientesServices.ActualizarDatosCuentaCorriente(request);
+            return Ok(result);
         }
 
         [HttpPost("CrearMovimiento")]
         public async Task<IActionResult> CrearMovimientoCuentaCorriente([FromQuery] Guid IdCuenta, [FromBody] CrearMovimientoCajaDTO request)
         {
-            try
-            {
-                var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
-                if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no encontrada");
-                if (request.IdTipoMovimientoCaja == 0) throw new Exception("Todos los campos son obligatorios");
-                if (request.MontoAbonado <= 0) throw new Exception("el monto Abonado debe ser mayor a cero.");
-                if (IdCuenta == Guid.Empty) throw new Exception("id vacio");
-
-                var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(IdSucursal, IdCuenta, request);
-                CuentaCorrienteDTO response = new CuentaCorrienteDTO
-                {
-                    Id = result.Id,
-                    Nombre = result.Nombre,
-                    Telefono = result.Telefono,
-                    Domicilo = result.Domicilo,
-                    Balance = result.Balance,
-                    Descuento = result.Descuento,
-                    Movimientos = result.Movimientos.Select(m => new MovimientoCuentaCorrienteDTO
-                    {
-                        IdMovimientoCaja = m.MovimientoCaja.Id,
-                        Descripcion = m.MovimientoCaja.Descripcion,
-                        MontoTotal = m.MovimientoCaja.MontoTotal,
-                        FechaMovimiento = m.MovimientoCaja.FechaMovimiento,
-                        EsIngreso = m.MovimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
-                        EsEfectivo = m.MovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
-                    }).ToList()
-                };
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Todos los campos son obligatorios":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Todos los campos son obligatorios y el monto debe ser mayor a cero."));
-                    case "el monto debe ser mayor a cero.":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El monto del movimiento debe ser mayor a cero."));
-                    case "id vacio":
-                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", "El Id de la cuenta corriente es obligatorio."));
-                    case "No se encontro la cuenta":
-                        return NotFound(new ErrorDTO(404, "NOT FOUND", "No se pudo encontrar la cuenta corriente."));
-                    default:
-                        return StatusCode(500, "Ocurrió un error al crear el movimiento de la cuenta corriente.");
-                }
-
-            }
+            var idSucursal = ObtenerIdSucursal();
+            var result = await _cuentasCorrientesServices.CrearMovimientoCuentaCorriente(idSucursal, IdCuenta, request);
+            return Ok(MapearCuentaCorriente(result!));
         }
 
         [HttpPatch("Desactivar")]
         public async Task<IActionResult> DesactivarCuentaCorriente([FromQuery] Guid IdCuenta)
         {
-            try
-            {
-                var result = await _cuentasCorrientesServices.DesactivarCuentaCorriente(IdCuenta);
-                return Ok("Cuenta corriente desactivada");
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Cuenta corriente no encontrada":
-                        return BadRequest(new { message = "No se encontró la cuenta corriente a desactivar." });
-                    case "balance no nulo":
-                        return BadRequest(new { message = "No se puede desactivar la cuenta corriente porque tiene balance impago" });
-                    default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al desactivar la cuenta corriente." });
-                }
-            }
+            await _cuentasCorrientesServices.DesactivarCuentaCorriente(IdCuenta);
+            return Ok(new EntregaDTO(200, "OK", "Cuenta corriente desactivada"));
         }
 
         [HttpDelete("Eliminar")]
         public async Task<IActionResult> EliminarCuentaCorriente([FromQuery] Guid IdCuenta)
         {
-            try
-            {
-                var result = await _cuentasCorrientesServices.EliminarCuentaCorriente(IdCuenta);
-                return Ok("Cuenta corriente eliminada");
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Cuenta corriente no encontrada":
-                        return BadRequest(new { message = "No se encontró la cuenta corriente a eliminar." });
-                    case "balance no nulo":
-                        return BadRequest(new { message = "No se puede eliminar la cuenta corriente porque tiene balance impago" });
-                    default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error al eliminar la cuenta corriente." });
-                }
-
-            }
+            await _cuentasCorrientesServices.EliminarCuentaCorriente(IdCuenta);
+            return Ok(new EntregaDTO(200, "DELETED", "Cuenta corriente eliminada"));
         }
+
+        private Guid ObtenerIdSucursal()
+        {
+            var claim = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")?.Value;
+            if (!Guid.TryParse(claim, out var idSucursal) || idSucursal == Guid.Empty)
+                throw new BusinessRuleException("Sucursal no identificada");
+            return idSucursal;
+        }
+
+        // Antes había 3 mapeos distintos para lo mismo: dos objetos anónimos (con formas
+        // distintas entre sí -uno sin EsIngreso/EsEfectivo-, y el nombre de campo mal escrito
+        // "IdMovimimientoCaja") y un tercero con el DTO tipado (al que le faltaban
+        // MontoAbonado/Vuelto). Quedan unificados acá.
+        private static CuentaCorrienteDTO MapearCuentaCorriente(CuentaCorriente cuenta) => new CuentaCorrienteDTO
+        {
+            Id = cuenta.Id,
+            Nombre = cuenta.Nombre,
+            Telefono = cuenta.Telefono,
+            Domicilio = cuenta.Domicilo,
+            Balance = cuenta.Balance,
+            Descuento = cuenta.Descuento,
+            Movimientos = cuenta.Movimientos.Select(MapearMovimiento).ToList()
+        };
+
+        private static MovimientoCuentaCorrienteDTO MapearMovimiento(MovimientosCuentaCorriente movimiento) => new MovimientoCuentaCorrienteDTO
+        {
+            IdMovimientoCaja = movimiento.MovimientoCaja.Id,
+            Descripcion = movimiento.MovimientoCaja.Descripcion,
+            MontoAbonado = movimiento.MovimientoCaja.MontoAbonado,
+            Vuelto = movimiento.MovimientoCaja.Vuelto,
+            MontoTotal = movimiento.MovimientoCaja.MontoTotal,
+            FechaMovimiento = movimiento.MovimientoCaja.FechaMovimiento,
+            EsIngreso = movimiento.MovimientoCaja.TipoMovimientoCaja?.EsIngreso ?? false,
+            EsEfectivo = movimiento.MovimientoCaja.TipoMovimientoCaja?.EsEfectivo ?? false
+        };
     }
 
 }
