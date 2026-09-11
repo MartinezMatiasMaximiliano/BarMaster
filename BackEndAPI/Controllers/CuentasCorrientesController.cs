@@ -18,10 +18,7 @@ namespace BackEndAPI.Controllers
         public CuentasCorrientesController(ICuentasCorrientesServices cuentasCorrientesServices)
         {
             _cuentasCorrientesServices = cuentasCorrientesServices;
-        }
-
-        // Ya no hay try/catch acá: si algo falla, la excepción (tipada o no) burbujea hasta
-        // ExceptionHandlingMiddleware, que decide el status code y loguea con el contexto completo.
+        } 
 
         [HttpGet]
         public async Task<IActionResult> GetListaCuentasCorrientes()
@@ -82,10 +79,6 @@ namespace BackEndAPI.Controllers
             return idSucursal;
         }
 
-        // Antes había 3 mapeos distintos para lo mismo: dos objetos anónimos (con formas
-        // distintas entre sí -uno sin EsIngreso/EsEfectivo-, y el nombre de campo mal escrito
-        // "IdMovimimientoCaja") y un tercero con el DTO tipado (al que le faltaban
-        // MontoAbonado/Vuelto). Quedan unificados acá.
         private static CuentaCorrienteDTO MapearCuentaCorriente(CuentaCorriente cuenta) => new CuentaCorrienteDTO
         {
             Id = cuenta.Id,
