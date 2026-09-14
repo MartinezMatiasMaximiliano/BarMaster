@@ -3,6 +3,7 @@ using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BackEndAPI.Controllers
 {
@@ -16,6 +17,8 @@ namespace BackEndAPI.Controllers
         {
             _authServices = authServices;
         }
+
+       [EnableRateLimiting("auth")]
         [HttpPost("/Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO request)
         {
@@ -23,6 +26,7 @@ namespace BackEndAPI.Controllers
             return Ok(result);
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("/LoginPersona")]
         public async Task<IActionResult> LoginPersona([FromBody] LoginDTO request)
         {

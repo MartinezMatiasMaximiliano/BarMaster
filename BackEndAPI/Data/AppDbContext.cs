@@ -314,6 +314,12 @@ namespace BackEndAPI.Data
                 .HasIndex(c => new { c.IdSucursal, c.FechaCierre });
 
             modelBuilder.Entity<Caja>()
+                .HasIndex(c => c.IdSucursal)
+                .IsUnique()
+                .HasFilter("\"FechaCierre\" IS NULL")
+                .HasDatabaseName("IX_Cajas_UnaAbiertaPorSucursal");
+
+            modelBuilder.Entity<Caja>()
                 .HasMany(c => c.MovimientosCaja)
                 .WithOne(mc => mc.Caja)
                 .HasForeignKey(mc => mc.IdCaja);

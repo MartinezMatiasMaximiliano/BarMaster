@@ -11,6 +11,7 @@ using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -19,6 +20,7 @@ using QuestPDF.Infrastructure;
 using Serilog;
 using Serilog.Exceptions;
 using System.Text;
+using System.Threading.RateLimiting;
 
 #region LOGGING (bootstrap)
 // Logger mínimo para poder loguear errores que ocurran durante el arranque
@@ -109,12 +111,40 @@ builder.Services.AddSwaggerGen(options =>
 #endregion
 
 #region CORS
+var corsAllowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin()
+    options.AddPolicy("Frontend", policy =>
+        policy.WithOrigins(corsAllowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader());
+});
+#endregion
+
+#region RATE LIMITING
+// - "auth": límite estricto para /Login y /LoginPersona (5 intentos por minuto por IP).
+// - Límite global: backstop general para el resto de la API (100 requests por minuto por IP).
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("auth", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
+    });
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "sin-ip",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 #endregion
 
@@ -233,7 +263,8 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseRouting();
-app.UseCors("AllowAll");
+app.UseCors("Frontend");
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {

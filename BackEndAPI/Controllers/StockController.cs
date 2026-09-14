@@ -47,6 +47,7 @@ namespace BackEndAPI.Controllers
             return Ok(await _stockServices.ConfigurarAsync(idProducto, idSucursal, request));
         }
 
+
         [HttpPut("movimientos/{idProducto:guid}")]
         public async Task<IActionResult> RegistrarMovimiento(Guid idProducto, RegistrarMovimientoStockDTO request)
         {

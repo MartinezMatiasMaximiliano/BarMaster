@@ -105,7 +105,7 @@ Ejemplo concreto: `CrearDeliveryTakeawayDTO.Origen` es un `string` libre sin res
 
 **Recomendación:** agregar Data Annotations (o FluentValidation, más expresivo para reglas cruzadas) a todos los DTOs de entrada, y devolver 400 con detalle de campo vía `ValidationProblem` de forma consistente.
 
-### 7. CORS abierto a cualquier origen/método/header — ⬜ Pendiente
+### 7. CORS abierto a cualquier origen/método/header — ✅ Resuelto
 **Dónde:** [Program.cs:81-88](Program.cs#L81-L88)
 
 ```csharp
@@ -116,6 +116,10 @@ options.AddPolicy("AllowAll", policy =>
 Aceptable para desarrollo, pero en producción cualquier sitio puede hacer requests a la API. Con Bearer tokens (no cookies) el riesgo de CSRF es bajo, pero sigue exponiendo la API a scraping/abuso desde cualquier origen y dificulta detectar tráfico ilegítimo.
 
 **Recomendación:** restringir `AllowedOrigins` a los dominios reales del frontend por ambiente (usando `builder.Configuration` para no hardcodear), y considerar rate limiting (`Microsoft.AspNetCore.RateLimiting`, disponible nativo desde .NET 7) — no hay ninguno configurado hoy, lo que deja la API sin protección ante abuso/fuerza bruta en `/login`.
+
+**Qué se hizo:**
+- CORS: la política `AllowAll` se reemplazó por `Frontend`, que solo permite los orígenes listados en `Cors:AllowedOrigins` de `appsettings.json`. **Hoy esa lista tiene puestos `localhost:3000`/`localhost:5173` como placeholder de desarrollo** — hace falta que alguien del equipo confirme el/los dominio(s) real(es) del frontend en producción y los agregue ahí (o en un `appsettings.Production.json` aparte) antes de desplegar. Probado con `curl`: un origen no listado no recibe el header `Access-Control-Allow-Origin` (el navegador lo bloquea), uno listado sí.
+- Rate limiting: `Microsoft.AspNetCore.RateLimiting` (nativo, sin paquete nuevo). Dos niveles — un límite estricto de 5 intentos/minuto por IP en `/Login` y `/LoginPersona` (`[EnableRateLimiting("auth")]`), y un backstop general de 100 requests/minuto por IP para el resto de la API. Probado: al 6to intento de login seguido, la API responde `429 Too Many Requests`.
 
 ---
 
@@ -133,14 +137,16 @@ Aceptable para desarrollo, pero en producción cualquier sitio puede hacer reque
 
 **Recomendación restante:** convertir `Origen` a `enum`, y bloquear/advertir el borrado de pedidos ya pagados (o generar automáticamente el movimiento de reverso en caja).
 
-### 9. Apertura de caja: condición de carrera entre el chequeo y la creación — 🟡 Parcial
+### 9. Apertura de caja: condición de carrera entre el chequeo y la creación — ✅ Resuelto
 **Dónde:** [Controllers/CajasController.cs](Controllers/CajasController.cs), [Services/CajasServices.cs](Services/CajasServices.cs)
 
 El controller consulta `BuscarCajaAbiertaPorIdSucursal` y, si no hay ninguna, recién ahí llama a `CrearCaja` — es un patrón "check-then-act" sin transacción ni constraint a nivel de base de datos. Dos requests concurrentes de apertura (doble clic, dos dispositivos) pueden ambos pasar el chequeo antes de que el primero termine de insertar, resultando en dos cajas abiertas simultáneamente para la misma sucursal, lo que rompe la contabilidad de esa sucursal (movimientos de caja ambiguos, `MontoActual` dividido entre dos registros).
 
 **Qué se hizo:** el chequeo se movió del controller al servicio (`CajasServices.CrearCaja`), tirando `ConflictException` (409) en vez del 400 genérico de antes — mejora la capa donde vive la regla, pero **no cierra la condición de carrera**: sigue siendo check-then-act sin lock. Falta lo de abajo.
 
-**Recomendación restante:** agregar un índice único parcial en Postgres (`CREATE UNIQUE INDEX ... ON "Cajas" ("IdSucursal") WHERE "FechaCierre" IS NULL`) que garantice a nivel de base que solo puede haber una caja abierta por sucursal, y capturar la violación de constraint como el error de negocio "ya hay una caja abierta".
+**Recomendación restante:** ~~agregar un índice único parcial en Postgres...~~
+
+**Qué se hizo (parte 2, la que cierra la carrera de verdad):** índice único parcial en `AppDbContext` — `CREATE UNIQUE INDEX "IX_Cajas_UnaAbiertaPorSucursal" ON "Cajas" ("IdSucursal") WHERE "FechaCierre" IS NULL` (migración `AgregarIndiceUnicoCajaAbiertaPorSucursal`). `CajasRepository.CrearCaja` atrapa la violación de esa constraint específica (`PostgresException` con `SqlState` de unique violation + el nombre del índice) y la traduce al mismo `ConflictException` de siempre — así que aunque dos requests concurrentes pasen el chequeo de aplicación al mismo tiempo, la base solo deja que una de las dos inserciones tenga éxito; la otra recibe el 409 de negocio, no un 500 crudo de EF.
 
 ### 10. Contraseñas: HMACSHA512 con salt por-clave-aleatoria, sin trabajo computacional (no es un KDF) — ⬜ Pendiente
 **Dónde:** [Services/Global/PasswordService.cs](Services/Global/PasswordService.cs)
@@ -149,7 +155,7 @@ El hash de contraseña se genera con `HMACSHA512` usando como "salt" la clave al
 
 **Recomendación:** migrar a `Rfc2898DeriveBytes`/PBKDF2 (nativo en .NET, fácil de introducir), BCrypt.Net o Argon2, con un plan de migración incremental (rehashear en el próximo login exitoso).
 
-### 11. Expiración de JWT fija en 1 hora, sin refresh token — ⬜ Pendiente
+### 11. Expiración de JWT fija en 1 hora, sin refresh token — ⬜ Pendiente (**próximo en la cola**)
 **Dónde:** [Services/Global/JWTServices.cs](Services/Global/JWTServices.cs) (`hours_expire = 1` en los 3 métodos)
 
 No hay mecanismo de refresh token ni de revocación (logout no invalida el token — es stateless puro). Para un sistema operativo (un mozo tomando pedidos durante un turno de 6+ horas), esto obliga a relogin cada hora o a que el frontend guarde credenciales para renovar silenciosamente (mala práctica). Tampoco hay forma de revocar un token comprometido antes de que expire (ej. empleado despedido en medio de su turno sigue con acceso válido hasta el vencimiento).
@@ -257,9 +263,9 @@ Ninguno de los cambios de arriba tocó la forma de los DTOs de **request** (lo q
 
 1. ~~Bloqueante inmediato: atar la resolución de tenant al JWT (#1)~~ — **hecho**, ver arriba y [cambios de frontend necesarios](#cambios-de-frontend-necesarios). Sigue bloqueante: rotar secretos, incluido el certificado AFIP (#3) — ningún dato real de cliente debería tocar esta API hasta que esto esté resuelto.
 2. **Bloqueante inmediato:** autorización por rol + validación de pertenencia de recursos (#2) — el agujero más grave (controllers enteros sin `[Authorize]`) ya se tapó, pero la falta de granularidad por rol sigue intacta.
-3. ~~Antes de ir a producción: middleware de excepciones + logging estructurado (#4, #5)~~ — **hecho**. Sigue pendiente: validación de DTOs con Data Annotations (#6, mejoró parcialmente), CORS restringido + rate limiting (#7).
-4. Antes del primer cierre de caja en producción real: constraint de caja única abierta en la base (#9 — el chequeo de aplicación ya está, falta el índice único), reconciliación de borrado de pedidos pagados (#8), hashing de contraseñas con KDF (#10).
-5. Deuda técnica a planificar: refresh tokens (#11), tests automatizados, paginación, limpieza de archivos sueltos, decidir qué hacer con los stubs de Empresas y el controller de Menús comentado.
+3. ~~Antes de ir a producción: middleware de excepciones + logging estructurado (#4, #5)~~ — **hecho**. ~~CORS restringido + rate limiting (#7)~~ — **hecho** (falta que confirmen el dominio real del frontend en la config). Sigue pendiente: validación de DTOs con Data Annotations (#6, mejoró parcialmente).
+4. ~~Antes del primer cierre de caja en producción real: constraint de caja única abierta en la base (#9)~~ — **hecho**. Sigue pendiente: reconciliación de borrado de pedidos pagados (#8), hashing de contraseñas con KDF (#10).
+5. Deuda técnica a planificar: **refresh tokens (#11) — siguiente en la cola**, tests automatizados, paginación, limpieza de archivos sueltos, decidir qué hacer con los stubs de Empresas y el controller de Menús comentado.
 
 ---
 

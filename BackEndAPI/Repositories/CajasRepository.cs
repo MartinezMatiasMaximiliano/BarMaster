@@ -1,8 +1,10 @@
 ﻿using BackEndAPI.Data;
+using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace BackEndAPI.Repositories
 {
@@ -15,12 +17,19 @@ namespace BackEndAPI.Repositories
         {
             _currentDbContext = currentDbContext;
             Db = currentDbContext.Db;
-        }   
+        }
 
         public async Task<Caja> CrearCaja(Caja caja)
         {
             Db.Cajas.Add(caja);
-            await Db.SaveChangesAsync();    
+            try
+            {
+                await Db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "IX_Cajas_UnaAbiertaPorSucursal" })
+            {
+                throw new ConflictException("Ya hay una caja abierta para esta sucursal");
+            }
             return caja;
         }
 
