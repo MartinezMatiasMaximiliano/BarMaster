@@ -18,12 +18,13 @@ namespace BackEndAPI.Services.Global
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SigningKey"]));
         }
 
-        public JWTToken CrearJWTSucursal(Sucursal request)
+        public JWTToken CrearJWTSucursal(Sucursal request, Guid tenantId)
         {
             int hours_expire = 1;
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
+                new Claim("TenantId", tenantId.ToString()),
                 new Claim("IdEmpresa", request.IdEmpresa.ToString()),
                 new Claim("IdSucursal", request.Id.ToString()),
                 new Claim("TipoAuth","sucursal")
@@ -51,12 +52,13 @@ namespace BackEndAPI.Services.Global
             };
         }
 
-        public JWTToken CrearJWTEmpresa(Empresa request)
+        public JWTToken CrearJWTEmpresa(Empresa request, Guid tenantId)
         {
             int hours_expire = 1;
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
+                new Claim("TenantId", tenantId.ToString()),
                 new Claim("IdEmpresa", request.Id.ToString()),
                 new Claim("TipoAuth","empresa")
             };
@@ -83,12 +85,13 @@ namespace BackEndAPI.Services.Global
             };
         }
 
-        public JWTToken CrearJWTPersona(Persona persona)
+        public JWTToken CrearJWTPersona(Persona persona, Guid tenantId)
         {
             int hours_expire = 1;
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
+                new Claim("TenantId", tenantId.ToString()),
                 new Claim("IdPersona", persona.Id.ToString()),
                 new Claim("RequestedBy",$"{persona.Apellido},{persona.Nombres}"),
                 new Claim("RequestedRole",$"{persona.Rol}"),

@@ -23,7 +23,7 @@ Los 3 problemas que hay que resolver **antes que cualquier otra cosa**:
 
 ## 🔴 Críticos — bloqueantes para producción
 
-### 1. El aislamiento multi-tenant no está atado a la identidad autenticada — ⬜ Pendiente
+### 1. El aislamiento multi-tenant no está atado a la identidad autenticada — ✅ Resuelto
 **Dónde:** [Tenancy/Services/TenantServices.cs:29-41](Tenancy/Services/TenantServices.cs#L29-L41), [Tenancy/Services/TenantDbMiddleware.cs](Tenancy/Services/TenantDbMiddleware.cs), [Data/AppDbContextFactory.cs](Data/AppDbContextFactory.cs), [Services/Global/JWTServices.cs](Services/Global/JWTServices.cs), [Program.cs:203-207](Program.cs#L203-L207)
 
 `TenantDbMiddleware` resuelve qué base de datos usar leyendo el header `X-Tenant-ID` (el "slug" de la empresa) y la resuelve **antes** de `UseAuthentication`/`UseAuthorization`. El JWT emitido (`CrearJWTEmpresa`, `CrearJWTSucursal`, `CrearJWTPersona`) **no incluye ningún claim de tenant** (ni `NombreEmpresa` ni el `Id` del tenant) — solo `IdEmpresa`/`IdSucursal`/`IdPersona`, que son IDs *dentro* de la base del tenant.
@@ -35,6 +35,8 @@ Además, `NombreEmpresa` (el identificador de tenant) es simplemente el nombre c
 **Impacto de negocio:** un local gastronómico podría ver o modificar pedidos, empleados, cajas y movimientos de otro local. Esto rompe la premisa básica de un SaaS multi-tenant y es motivo de baja inmediata de cualquier cliente que lo detecte.
 
 **Recomendación:** el tenant debe derivarse **del JWT**, no de un header libre. Al emitir el token, incluir un claim `TenantId` (el `Guid` del `Tenant`, no el slug). En el middleware/factory, resolver el `DbContext` a partir de ese claim después de `UseAuthentication`, y si se sigue necesitando el header (p. ej. para el login, donde todavía no hay JWT), validar en cada request autenticado que el tenant resuelto por header coincide con el tenant del token — o eliminar el header por completo para rutas autenticadas.
+
+**Qué se hizo:** exactamente eso. `JWTServices` ahora graba un claim `TenantId` en los tres tipos de token (empresa, sucursal, persona). `UseAuthentication`/`UseAuthorization` se movieron a correr *antes* que la resolución de tenant (autenticar un JWT es pura criptografía contra la signing key global, no necesita ninguna base de datos). `AppDbContextFactory` ahora resuelve así: si el request está autenticado, el tenant sale **exclusivamente** del claim `TenantId` — el header `X-Tenant-ID` se ignora por completo, no hay forma de que un JWT válido de un tenant opere contra la base de otro cambiando un header. El header se sigue usando *solo* para `/Login` y `/LoginPersona`, que todavía no tienen un JWT del cual sacar el tenant. Si un JWT autenticado no trae `TenantId` (por ejemplo, cualquier token emitido antes de este cambio) o el claim no resuelve a un tenant real, corta con 401 explícito en vez de explotar más abajo. Efecto colateral esperado y necesario: **todas las sesiones activas quedan invalidadas** en el primer deploy de esto — no es un bug, es el punto. Ver [cambios de frontend necesarios](#cambios-de-frontend-necesarios) más abajo.
 
 ### 2. No hay autorización por rol en ningún endpoint (IDOR / escalación de privilegios) — 🟡 Parcial
 **Estado:** la falla de fondo (sin `Roles=`, sin matriz de permisos) sigue igual — eso no se tocó. Pero en el camino de migrar excepciones se encontró y corrigió algo **peor** que esto: tres controllers (`MesasController`, `VisitasController`, `PagosController`) no tenían **ningún** `[Authorize]` — ni siquiera "cualquier JWT válido" los protegía, estaban completamente públicos (listar/crear/modificar/abrir/cerrar mesas, ver todas las visitas activas, y **registrar pagos**, sin login). Se agregó `[Authorize]` a los tres. Ver el detalle en [Trabajo realizado](#trabajo-realizado-desde-la-auditoría-original).
@@ -218,9 +220,42 @@ Se armó [`pruebas.http`](pruebas.http) (formato REST Client de VS Code) con un 
 
 ---
 
+## Cambios de frontend necesarios
+
+### 🔴 Urgente, ligado al deploy del hallazgo #1 (tenant atado al JWT)
+
+1. **Todas las sesiones activas se invalidan en el momento del deploy.** Ningún token emitido antes de este cambio tiene el claim `TenantId` nuevo, así que la primera llamada autenticada que haga cualquier usuario después del deploy va a devolver **401** ("La sesión no es válida. Volvé a iniciar sesión."), sin importar que el token todavía no haya vencido. El frontend tiene que estar preparado para esto: cualquier 401 en una llamada autenticada (no solo en `/Login`) tiene que limpiar el token guardado y mandar al usuario a la pantalla de login — si hoy solo lo hacen para el propio `/Login`, hay que extenderlo a un interceptor global de respuestas.
+2. **El header `X-Tenant-ID` ya no hace falta para ninguna llamada autenticada.** Después del login, el tenant sale exclusivamente del JWT — el header se ignora por completo si se manda. **Sigue siendo obligatorio** para `POST /Login` y `POST /LoginPersona` (ahí todavía no hay token). No hay apuro en sacarlo del resto de las llamadas — no rompe nada si lo siguen mandando, simplemente ya no hace nada — pero se puede simplificar esa parte del cliente HTTP cuando quieran.
+3. Comunicar a los usuarios (o programar el deploy en un horario de bajo uso) que **todos van a tener que volver a loguearse** apenas se despliegue esto.
+
+### 🟡 Cambios de status code por la migración a excepciones tipadas
+
+Antes, casi todos los errores de negocio devolvían **400** (o directamente **500**, en los casos donde el mensaje del servicio no coincidía con el `switch` del controller — ver "Bugs de mensaje no coincide" arriba). Ahora los status code son consistentes y con significado real. Si el frontend decide qué mostrar en base al **código HTTP** (no solo al texto del mensaje), hay que revisar estos casos — quedaron con un status distinto al que tenían antes:
+
+| Antes | Ahora | Casos típicos |
+|---|---|---|
+| 400 | **409 Conflict** | "Ya existe" (categoría, sucursal, plano, producto, empresa, tipo de envío), "ya hay una caja abierta", "la caja/visita ya está cerrada", "producto ya pagado", "pedido ya entregado" |
+| 400 | **404 Not Found** | Cualquier "no encontrado/a" que antes devolvía 400 (personas, cajas, sucursales, etc.) |
+| 400 | **401 Unauthorized** | Contraseña incorrecta (login de personas) y contraseña actual incorrecta (cambiar contraseña) |
+| **500** (bug) | El status que correspondía | Todos los casos listados en "Bugs de mensaje no coincide" — antes caían siempre en 500 sin importar cuál era el error real |
+
+El **cuerpo** de la respuesta de error también quedó consistente en todos los endpoints: siempre `{ "error": { "codigo": ..., "tipo": "...", "mensaje": "..." } }` (antes mezclaba texto plano, objetos anónimos `{ message: "..." }`, y el `ErrorDTO` actual, según el controller).
+
+### 🟡 Cambios de forma en respuestas puntuales
+
+- **`Planos` → `GET /Plano`**: antes devolvía la entidad completa de EF (con navegaciones anidadas); ahora devuelve el DTO limpio (`PlanosDTO`) que ya se arma en el propio endpoint. Si el frontend leía algún campo que solo estaba en la entidad cruda, hay que revisarlo.
+- **`CuentasCorrientes`**: los campos `IdMovimimientoCaja` (con el typo) y `Domicilo` (con el typo) en las respuestas de `GET /CuentasCorrientes` y `GET /CuentasCorrientes/{id}` pasaron a llamarse `IdMovimientoCaja` y `Domicilio` (sin el typo) — se unificaron con el DTO que ya usaba `POST /CuentasCorrientes/CrearMovimiento`. Además, esos dos endpoints (`GET`) ahora también incluyen `EsIngreso`/`EsEfectivo` por movimiento, y el endpoint de `CrearMovimiento` ahora también incluye `MontoAbonado`/`Vuelto` (antes solo lo tenían los `GET`).
+- **`Visitas`**: los endpoints `GET /Visita`, `POST /AgregarProductoAVisita`, `GET /VisitasActivas` y `GET /TodasLasVisitas` ahora devuelven todos la misma forma completa (`Mozo`, `IdMesa`, `NumeroMesa` incluidos siempre) — antes `GetVisitaPorId` no traía `Mozo`, y `AgregarProductoAVisita` no traía `Mozo`/`IdMesa`/`NumeroMesa`.
+- **`Reservas` → `POST /Reservas`**: la respuesta de crear una reserva ahora incluye `TelefonoContacto` (antes se lo olvidaba, a diferencia de los `GET`).
+
+### ⚪ Sin cambios, pero repasando por si acaso
+Ninguno de los cambios de arriba tocó la forma de los DTOs de **request** (lo que el frontend manda) — todos los cambios fueron del lado de qué status code y qué forma de respuesta devuelve la API.
+
+---
+
 ## Priorización sugerida (orden de trabajo)
 
-1. **Bloqueante inmediato:** atar la resolución de tenant al JWT (#1) + rotar secretos, incluido el certificado AFIP (#3) — ningún dato real de cliente debería tocar esta API hasta que esto esté resuelto. **Sigue exactamente igual que en la auditoría original.**
+1. ~~Bloqueante inmediato: atar la resolución de tenant al JWT (#1)~~ — **hecho**, ver arriba y [cambios de frontend necesarios](#cambios-de-frontend-necesarios). Sigue bloqueante: rotar secretos, incluido el certificado AFIP (#3) — ningún dato real de cliente debería tocar esta API hasta que esto esté resuelto.
 2. **Bloqueante inmediato:** autorización por rol + validación de pertenencia de recursos (#2) — el agujero más grave (controllers enteros sin `[Authorize]`) ya se tapó, pero la falta de granularidad por rol sigue intacta.
 3. ~~Antes de ir a producción: middleware de excepciones + logging estructurado (#4, #5)~~ — **hecho**. Sigue pendiente: validación de DTOs con Data Annotations (#6, mejoró parcialmente), CORS restringido + rate limiting (#7).
 4. Antes del primer cierre de caja en producción real: constraint de caja única abierta en la base (#9 — el chequeo de aplicación ya está, falta el índice único), reconciliación de borrado de pedidos pagados (#8), hashing de contraseñas con KDF (#10).

@@ -10,6 +10,7 @@ namespace BackEndAPI.Tenancy.Services
     {
         Task<Tenant?> BuscarTenantPorHttpContext(HttpContext httpContext);
         Task<Tenant?> BuscarTenantPorNombreEmpresa(string nombreEmpresa);
+        Task<Tenant?> BuscarTenantPorId(Guid id);
         Task<Tenant> CrearTenant(Empresa request);
     }
     public class TenantServices : ITenantServices
@@ -24,6 +25,11 @@ namespace BackEndAPI.Tenancy.Services
         public async Task<Tenant?> BuscarTenantPorNombreEmpresa(string nombreEmpresa)
         {
             return await _masterDbContext.Tenants.FirstOrDefaultAsync(tenant => tenant.NombreEmpresa == nombreEmpresa.ToLower().Replace(" ",string.Empty));
+        }
+        
+        public async Task<Tenant?> BuscarTenantPorId(Guid id)
+        {
+            return await _masterDbContext.Tenants.FirstOrDefaultAsync(tenant => tenant.Id == id);
         }
 
         public async Task<Tenant?> BuscarTenantPorHttpContext(HttpContext context)

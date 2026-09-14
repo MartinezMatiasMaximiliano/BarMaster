@@ -21,7 +21,8 @@ public class AuthServices : IAuthServices
     private readonly IPersonasRepository _personasRepository;
     private readonly PasswordService _passwordService;
     private readonly JWTServices _jwtServices;
-    public AuthServices(ITenantServices tenantProvider, IEmpresasRepository empresasRepository, ISucursalRepository sucursalRepository, IPersonasRepository personasRepository, PasswordService passwordService, JWTServices jwtServices)
+    private readonly ICurrentTenant _currentTenant;
+    public AuthServices(ITenantServices tenantProvider, IEmpresasRepository empresasRepository, ISucursalRepository sucursalRepository, IPersonasRepository personasRepository, PasswordService passwordService, JWTServices jwtServices, ICurrentTenant currentTenant)
     {
         _tenantServices = tenantProvider;
         _empresasRepository = empresasRepository;
@@ -29,7 +30,10 @@ public class AuthServices : IAuthServices
         _personasRepository = personasRepository;
         _passwordService = passwordService;
         _jwtServices = jwtServices;
+        _currentTenant = currentTenant;
     }
+    private Guid TenantIdActual =>
+        _currentTenant.Tenant?.Id ?? throw new BusinessRuleException("No se pudo identificar la empresa (tenant) de este login");
 
 
 
@@ -63,7 +67,7 @@ public class AuthServices : IAuthServices
         {
             if (!_passwordService.VerificarPasswordHash(loginDTO.Password, empresa.PasswordHash, empresa.PasswordSalt)) throw new NotFoundException("usuario no encontrado");
 
-            return _jwtServices.CrearJWTEmpresa(empresa);
+            return _jwtServices.CrearJWTEmpresa(empresa, TenantIdActual);
         }
 
         // LOGIN SUCURSAL
@@ -73,7 +77,7 @@ public class AuthServices : IAuthServices
 
         if (!_passwordService.VerificarPasswordHash(loginDTO.Password, sucursal.PasswordHash, sucursal.PasswordSalt)) throw new NotFoundException("usuario no encontrado");
 
-        return _jwtServices.CrearJWTSucursal(sucursal);
+        return _jwtServices.CrearJWTSucursal(sucursal, TenantIdActual);
     }
 
     public async Task<JWTToken> AuthenticatePersona(LoginDTO request)
@@ -85,7 +89,7 @@ public class AuthServices : IAuthServices
         var PasswordValido = _passwordService.VerificarPasswordHash(request.Password, persona.PasswordHash, persona.PasswordSalt);
 
         if (!PasswordValido) throw new UnauthorizedException("Contraseña incorrecta");
-        var token = _jwtServices.CrearJWTPersona(persona);
+        var token = _jwtServices.CrearJWTPersona(persona, TenantIdActual);
         return token;
 
     }

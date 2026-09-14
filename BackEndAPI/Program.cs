@@ -1,4 +1,3 @@
-using Amazon.S3;
 using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.Data;
@@ -130,6 +129,7 @@ builder.Services.AddScoped<AppDbContextFactory>();
 builder.Services.AddScoped<JWTServices>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<ITenantServices, TenantServices>();
+builder.Services.AddScoped<ICurrentTenant, CurrentTenant>();
 builder.Services.AddScoped<IVisitasRepository, VisitasRepository>();
 builder.Services.AddScoped<IMenuRepository, MenuRepository>();
 builder.Services.AddScoped<IPagosRepository, PagosRepository>();
@@ -241,11 +241,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMiddleware<TenantDbMiddleware>();
-
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<TenantDbMiddleware>();
 app.UseMiddleware<RequestUserContextMiddleware>();
 #endregion
 
