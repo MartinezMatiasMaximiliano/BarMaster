@@ -75,6 +75,7 @@ namespace BackEndAPI.Services
                         NombreProducto = producto.Nombre,
                         Detalles = item.Detalles,
                         PrecioDelMomento = producto.PrecioNeto,
+                        IVADelMomento = producto.PorcentajeIVA,
                         EstadoPagado = false,
                         EstadoPedido = "Pendiente",
                     };

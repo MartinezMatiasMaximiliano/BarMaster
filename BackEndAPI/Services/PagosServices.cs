@@ -47,9 +47,9 @@ namespace BackEndAPI.Services
                  $"Pago de {visita.Origen}"
             };
 
-            decimal TotalAPagar =
+            var (TotalAPagar, ProductosPagados) =
                 visita.Origen == "Delivery" || visita.Origen == "Takeaway" ?
-                await CalcularTotalDeliveryTakeaway(visita,movimientoCaja.Id)
+                await CalcularTotalDeliveryTakeaway(visita, movimientoCaja.Id)
                 :
                 await CalcularTotalProductos(infoPago.ListaIdsProductos, visita, movimientoCaja.Id);
             visita.Total = TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal; //TODO: REVISAR
@@ -58,13 +58,15 @@ namespace BackEndAPI.Services
             movimientoCaja.MontoAbonado = infoPago.MontoAbonado;
             movimientoCaja.Vuelto = CalcularVuelto(TotalAPagar, movimientoCaja);
             movimientoCaja.MontoTotal = visita.Total;
+            var montosFactura = infoPago.GenerarFactura ? CalcularMontosComprobante(ProductosPagados) : null;
 
-            var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(visita, movimientoCaja, infoPago.DatosFacturaARCA, TotalAPagar, infoPago.GenerarFactura, infoPago.MontoAbonado);
+            var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(
+                visita, movimientoCaja, infoPago.DatosFacturaARCA, montosFactura, TotalAPagar, infoPago.GenerarFactura, infoPago.MontoAbonado);
             return (ResultadoPagoCreado, FacturaElectronica);
         }
 
 
-        private async Task<decimal> CalcularTotalDeliveryTakeaway(Visita visita, Guid IdMovimientoCaja)
+        private async Task<(decimal Total, List<ProductosPorVisita> Items)> CalcularTotalDeliveryTakeaway(Visita visita, Guid IdMovimientoCaja)
         {
             //RECORDATORIO: en caso de DyTKW,la funcion de crearPago solo se llama con todos los productos de la visita, por lo que el envio
             //solo se cobra una vez, no pueden existir multiples pagos del mismo  DyTKW
@@ -76,24 +78,85 @@ namespace BackEndAPI.Services
                 item.EstadoPagado = true;
                 item.IdMovimientoCaja = IdMovimientoCaja;
             }
-            return deliveryTakeaway.PrecioTotal;
+            // OJO: PrecioEnvio queda afuera del desglose de IVA de la factura (no hay un
+            // producto/alícuota asociado) — por ahora se suma al ImpNeto general al facturar,
+            // ver CalcularMontosComprobante.
+            return (deliveryTakeaway.PrecioTotal, deliveryTakeaway.Visita.Productos.ToList());
         }
 
-        private async Task<decimal> CalcularTotalProductos(ICollection<int> IdProductos, Visita visita, Guid IdMovimientoCaja)
+        private async Task<(decimal Total, List<ProductosPorVisita> Items)> CalcularTotalProductos(ICollection<int> IdProductos, Visita visita, Guid IdMovimientoCaja)
         {
             decimal TotalAPagar = 0;
+            var items = new List<ProductosPorVisita>();
             foreach (int id in IdProductos)
             {
                 var productoPorVisita = visita.Productos.FirstOrDefault(p => p.Id == id);
                 if (productoPorVisita != null)
                 {
                     if (productoPorVisita.EstadoPagado) throw new ConflictException("Producto ya pagado");
-                    TotalAPagar = TotalAPagar + productoPorVisita.PrecioDelMomento; // TODO: Verificar si se debe sumar el IVA o no
+                    TotalAPagar = TotalAPagar + productoPorVisita.PrecioDelMomento;
                     productoPorVisita.IdMovimientoCaja = IdMovimientoCaja;
                     productoPorVisita.EstadoPagado = true;
+                    items.Add(productoPorVisita);
                 }
             }
-            return TotalAPagar;
+            return (TotalAPagar, items);
+        }
+
+        /// <summary>
+        /// Calcula Neto/IVA/Total para la factura electrónica a partir de los productos que se
+        /// están pagando.
+        ///
+        /// ⚠️ PENDIENTE DE CONFIRMAR (queda como tarea aparte, no resuelto en esta pasada):
+        /// se asume que <see cref="ProductosPorVisita.PrecioDelMomento"/> es el precio final
+        /// que paga el cliente CON IVA incluido — es la única lectura consistente con que hoy,
+        /// en todo el sistema de pagos (Visitas, DeliveryTakeaway, Pagos), nunca se suma IVA
+        /// arriba de ese precio antes de cobrarlo. El nombre del campo origen
+        /// (<see cref="Producto.PrecioNeto"/>) sugiere lo contrario (precio ANTES de IVA), así
+        /// que si en algún momento se confirma que el precio debería cobrarse SIN IVA incluido
+        /// (agregándolo al momento de pagar), esto hay que revisarlo junto con el cálculo de
+        /// <c>TotalAPagar</c>/<c>Visita.Total</c> en este mismo archivo — no es solo un cambio
+        /// acá, cambiaría cuánto se le cobra al cliente en toda la app.
+        ///
+        /// Con la asunción actual, el neto se calcula "para atrás": Neto = Precio / (1 + %/100).
+        /// Esto asume Concepto=1 (venta de productos, no servicios) y no prorratea
+        /// descuentoDecimal/recargoDecimal de <see cref="DTOs.Request.Crear.CrearPagoDTO"/> —
+        /// quedan fuera del comprobante fiscal hasta que se defina cómo deben reflejarse ahí.
+        /// </summary>
+        private static MontosComprobante CalcularMontosComprobante(IEnumerable<ProductosPorVisita> items)
+        {
+            var montos = new MontosComprobante();
+
+            foreach (var grupo in items.GroupBy(i => i.IVADelMomento))
+            {
+                var precioConIva = grupo.Sum(i => i.PrecioDelMomento);
+                var neto = grupo.Key == 0
+                    ? precioConIva
+                    : Math.Round(precioConIva / (1 + grupo.Key / 100m), 2);
+                var iva = precioConIva - neto;
+
+                montos.ImpNeto += neto;
+                montos.ImpIVA += iva;
+
+                if (grupo.Key > 0)
+                {
+                    montos.DetalleIva.Add(new DetalleIva
+                    {
+                        AlicuotaId = AlicuotasIva.ObtenerId(grupo.Key),
+                        BaseImponible = neto,
+                        Importe = iva
+                    });
+                }
+                else
+                {
+                    // 0% igual necesita su renglón en <Iva> si hay OTRAS alícuotas en el mismo
+                    // comprobante (mixto) — si es el único grupo (todo al 0%), FECAERequest.Iva
+                    // queda vacío más abajo y ImpIVA=0 alcanza (ej. Factura C).
+                }
+            }
+
+            montos.ImpTotal = montos.ImpNeto + montos.ImpIVA + montos.ImpTotConc + montos.ImpOpEx + montos.ImpTrib;
+            return montos;
         }
 
         private decimal CalcularVuelto(decimal totalAPagar, MovimientoCaja movimientoCaja)

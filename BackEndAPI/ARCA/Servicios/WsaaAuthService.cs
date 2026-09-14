@@ -1,8 +1,9 @@
-﻿using BackEndAPI.ARCA.Clases;
+using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Data;
+using BackEndAPI.Exceptions;
+using BackEndAPI.Models;
+using BackEndAPI.Services.Amazon;
 using BackEndAPI.Tenancy.Services;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
@@ -19,15 +20,26 @@ public class WsaaAuthService
     private readonly HttpClient _httpClient;
     private readonly ArcaOptions _arcaOptions;
     private readonly ICurrentDbContext _currentDbContext;
+    private readonly S3Service _s3Service;
+    private readonly ILogger<WsaaAuthService> _logger;
     private readonly AppDbContext db;
 
-    public WsaaAuthService(TraGenerator traGenerator, CmsSignerService cmsSigner, HttpClient httpClient, IOptions<ArcaOptions> arcaOptions,ICurrentDbContext currentDbContext)
+    public WsaaAuthService(
+        TraGenerator traGenerator,
+        CmsSignerService cmsSigner,
+        HttpClient httpClient,
+        IOptions<ArcaOptions> arcaOptions,
+        ICurrentDbContext currentDbContext,
+        S3Service s3Service,
+        ILogger<WsaaAuthService> logger)
     {
         _traGenerator = traGenerator;
         _cmsSigner = cmsSigner;
         _httpClient = httpClient;
         _arcaOptions = arcaOptions.Value;
         _currentDbContext = currentDbContext;
+        _s3Service = s3Service;
+        _logger = logger;
         db = _currentDbContext.Db;
     }
 
@@ -49,76 +61,75 @@ public class WsaaAuthService
         </soap:Envelope>
         """;
     }
-
-    public async Task<FEAuthResponse> AutenticarFacturacionElectronica(string uriCert)
+    public async Task<FEAuthResponse> AutenticarFacturacionElectronica(Empresa empresa)
     {
-        try
-        { 
-            var TokenExistente = await db.FETokenAuths.Where(t => t.ExpirationTime > DateTime.UtcNow).FirstOrDefaultAsync();
-            if (TokenExistente != null) { 
-                return new FEAuthResponse
-                {
-                    Token = TokenExistente.Token,
-                    Sign = TokenExistente.Sign,
-                    ExpirationTime = TokenExistente.ExpirationTime
-                };
-            }
-            return await AuthenticateAsync(uriCert);
-        }
-        catch (Exception ex)
+        var tokenExistente = await db.FETokenAuths.Where(t => t.ExpirationTime > DateTime.UtcNow).FirstOrDefaultAsync();
+        if (tokenExistente != null)
         {
-            throw ex;
-        }
-    }
-
-    public async Task<FEAuthResponse> AuthenticateAsync(string uriCert)
-    {
-        try
-        {
-            var cert = await BuscarCertificado(uriCert);
-            var traXml = _traGenerator.Generate();
-            var cmsBase64 = _cmsSigner.Sign(traXml, cert);
-            var soapEnvelope = BuildSoapEnvelope(cmsBase64);
-            var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
-            content.Headers.Add("SOAPAction", "\"\"");
-            var response = await _httpClient.PostAsync(_arcaOptions.WsaaUrl, content);
-            var responseXml = await response.Content.ReadAsStringAsync();
-
-            var soapDoc = XDocument.Parse(responseXml);
-
-            XNamespace ns = "http://wsaa.view.sua.dvadac.desein.afip.gov";
-
-            var loginCmsReturn = soapDoc.Descendants(ns + "loginCmsReturn").First().Value;
-            var loginTicketXml = XDocument.Parse(loginCmsReturn);
-            var token = loginTicketXml.Descendants("token").First().Value;
-            var sign = loginTicketXml.Descendants("sign").First().Value;
-            var expiration = loginTicketXml.Descendants("expirationTime").First().Value;
-
-            var newTokenAuth = new FETokenAuth
-            {
-                Token = token,
-                Sign = sign,
-                ExpirationTime = DateTime.Parse(expiration).ToUniversalTime()
-            };
-
-            await db.FETokenAuths.AddAsync(newTokenAuth);
-            await db.SaveChangesAsync();
-
             return new FEAuthResponse
             {
-                Token = token,
-                Sign = sign,
-                ExpirationTime = DateTime.Parse(expiration)
+                Token = tokenExistente.Token,
+                Sign = tokenExistente.Sign,
+                ExpirationTime = tokenExistente.ExpirationTime
             };
         }
-        catch (Exception ex)
-        {
-            throw ex;
-        }
+        return await AuthenticateAsync(empresa);
     }
 
-    private async Task<X509Certificate2> BuscarCertificado(string Uri) {
-        throw new NotImplementedException();
+    public async Task<FEAuthResponse> AuthenticateAsync(Empresa empresa)
+    {
+        if (string.IsNullOrEmpty(empresa.ubicacionCert))
+            throw new BusinessRuleException("No se encontró la ubicación del certificado de la empresa");
+        if (string.IsNullOrEmpty(empresa.CertPassword))
+            throw new BusinessRuleException("No se encontró la contraseña del certificado de la empresa");
+
+        var cert = await BuscarCertificado(empresa.ubicacionCert, empresa.CertPassword);
+        var traXml = _traGenerator.Generate();
+        var cmsBase64 = _cmsSigner.Sign(traXml, cert);
+        var soapEnvelope = BuildSoapEnvelope(cmsBase64);
+        var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
+        content.Headers.Add("SOAPAction", "\"\"");
+        var response = await _httpClient.PostAsync(_arcaOptions.WsaaUrl, content);
+        var responseXml = await response.Content.ReadAsStringAsync();
+
+        var soapDoc = XDocument.Parse(responseXml);
+
+        XNamespace ns = "http://wsaa.view.sua.dvadac.desein.afip.gov";
+
+        var loginCmsReturnEl = soapDoc.Descendants(ns + "loginCmsReturn").FirstOrDefault();
+        if (loginCmsReturnEl == null)
+        {
+            _logger.LogError("WSAA no devolvió loginCmsReturn. Respuesta cruda: {RespuestaWsaa}", responseXml);
+            throw new BusinessRuleException("No se pudo autenticar contra AFIP/ARCA (WSAA). Revisá el certificado y sus permisos para el servicio de Facturación Electrónica.");
+        }
+
+        var loginTicketXml = XDocument.Parse(loginCmsReturnEl.Value);
+        var token = loginTicketXml.Descendants("token").First().Value;
+        var sign = loginTicketXml.Descendants("sign").First().Value;
+        var expiration = loginTicketXml.Descendants("expirationTime").First().Value;
+
+        var newTokenAuth = new FETokenAuth
+        {
+            Token = token,
+            Sign = sign,
+            ExpirationTime = DateTime.Parse(expiration).ToUniversalTime()
+        };
+
+        await db.FETokenAuths.AddAsync(newTokenAuth);
+        await db.SaveChangesAsync();
+
+        return new FEAuthResponse
+        {
+            Token = token,
+            Sign = sign,
+            ExpirationTime = DateTime.Parse(expiration)
+        };
+    }
+
+    private async Task<X509Certificate2> BuscarCertificado(string key, string password)
+    {
+        var bytes = await _s3Service.ObtenerArchivo(key);
+        return CertificateLoader.Load(bytes, password);
     }
 
 }

@@ -1,3 +1,5 @@
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.S3;
 using BackEndAPI.ARCA.Clases;
 using BackEndAPI.ARCA.Servicios;
 using BackEndAPI.Data;
@@ -204,7 +206,8 @@ builder.Services.AddScoped<IRolesServices, RolesServices>();
 builder.Services.AddScoped<ICuentasCorrientesRepository, CuentasCorrientesRepository>();
 builder.Services.AddScoped<ICuentasCorrientesServices, CuentasCorrientesServices>();
 builder.Services.AddScoped<S3Service>();
-//builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+builder.Services.AddAWSService<IAmazonS3>();
 
 builder.Services.AddDbContext<MasterDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Master")));

@@ -1,12 +1,10 @@
-﻿using BackEndAPI.ARCA.Clases;
+using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Data;
 using BackEndAPI.Exceptions;
 using BackEndAPI.Models;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
 
@@ -21,81 +19,58 @@ namespace BackEndAPI.ARCA.Servicios
         private readonly ArcaOptions _arcaOptions;
         private readonly WsaaAuthService _wasaaAuthService;
         private readonly ICurrentDbContext _currentDbContext;
+        private readonly ILogger<WsfeService> _logger;
         private readonly AppDbContext db;
-        public WsfeService(HttpClient httpClient, IOptions<ArcaOptions> arcaOptions, ICurrentDbContext currentDbContext, WsaaAuthService wasaaAuthService)
+        public WsfeService(HttpClient httpClient, IOptions<ArcaOptions> arcaOptions, ICurrentDbContext currentDbContext, WsaaAuthService wasaaAuthService, ILogger<WsfeService> logger)
         {
             _httpClient = httpClient;
             _arcaOptions = arcaOptions.Value;
             _currentDbContext = currentDbContext;
             _wasaaAuthService = wasaaAuthService;
+            _logger = logger;
             db = _currentDbContext.Db;
         }
-
-
-        public async Task<FacturaElectronica> CrearFacturaElectronica(DatosParaFactura DatosFactura) //ESTA FUNCION ES EL PUNTO DE INICIO DE LAS FACTURAS ELECTRONICAS, SE DEBE LLAMAR DESDE EL CONTROLADOR
+        public async Task<FacturaElectronica> CrearFacturaElectronica(DatosParaFactura datosCliente, MontosComprobante montos)
         {
-            try
+            if (datosCliente.PuntoDeVenta <= 0) throw new BusinessRuleException("El punto de venta es obligatorio");
+            if (datosCliente.TipoDeComprobante <= 0) throw new BusinessRuleException("El tipo de comprobante es obligatorio");
+            if (datosCliente.TipoDocumentoCliente <= 0) throw new BusinessRuleException("El tipo de documento del cliente es obligatorio");
+            if (datosCliente.CondicionIVAReceptor <= 0) throw new BusinessRuleException("La condición de IVA del receptor es obligatoria");
+            if (datosCliente.concepto is < 1 or > 3) throw new BusinessRuleException("El concepto debe ser 1 (productos), 2 (servicios) o 3 (productos y servicios)");
+
+            var empresa = await db.Empresas.FirstOrDefaultAsync()
+                ?? throw new NotFoundException("No se encontró la empresa para facturar");
+
+            var tokenValido = await _wasaaAuthService.AutenticarFacturacionElectronica(empresa);
+
+            var auth = new FEAuthRequest
             {
+                Token = tokenValido.Token,
+                Sign = tokenValido.Sign,
+                Cuit = empresa.Cuit,
+            };
 
-                //1. Cargar el certificado
-                //TODO: cambiar la ruta de los certificados y la contraseñas por busquedas en S3
-                X509Certificate2 certLoad = CertificateLoader.Load(System.IO.File.ReadAllBytes("C:/Users/Matias/Desktop/certificado.pfx"), "123456"); //TODO: cambiar la ruta de los certificados y la contraseñas por busquedas en S3
+            var last = await GetLastVoucherAsync(auth, datosCliente.PuntoDeVenta, datosCliente.TipoDeComprobante);
 
-                //2. Autenticar y obtener el token                
-                Empresa empresa = await db.Empresas.FirstOrDefaultAsync();
-                FEAuthResponse buscarTokenValido = await _wasaaAuthService.AutenticarFacturacionElectronica(empresa.ubicacionCert);
-                if (empresa.ubicacionCert == null) throw new BusinessRuleException("No se encontró la ubicación del certificado de la empresa");
-
-                FEAuthRequest auth = new FEAuthRequest
-                {
-                    Token = buscarTokenValido.Token,
-                    Sign = buscarTokenValido.Sign,
-                    Cuit = empresa.Cuit,
-                };
-
-
-                //3. Obtener el último comprobante para el punto de venta y tipo de comprobante
-                //TODO: buscar que es el punto de venta y una lista de tipos de comprobantes
-                int last = await GetLastVoucherAsync(auth, DatosFactura.PuntoDeVenta, DatosFactura.TipoDeComprobante);
-
-                ////TODO: buscar los valores posibles para cada campo
-                FECAERequest comprobante = new FECAERequest
-                {
-                    Concepto = DatosFactura.concepto,
-                    DocTipo = DatosFactura.TipoDocumentoCliente,
-                    DocNro = DatosFactura.NumeroDocumentoCliente,
-                    CondicionIVAReceptorId = DatosFactura.CondicionIVAReceptor,
-                    CbteDesde = last + 1,
-                    CbteHasta = last + 1,
-                    CbteFch = DateTime.Today,
-                    ImpTotal = 100, //importe total = ImpTotal = ImpNeto + ImpIVA + ImpTrib + ImpOpEx + ImpTotConc
-                    ImpTotConc = 0, //Importe no gravado. conceptos que no integran la base imponible del IVA. Generalmente 0
-                    ImpNeto = 100, //Importe neto gravado. Es el subtotal sujeto a IVA. el total antes de impuestos
-                    ImpOpEx = 0, //Importe exento. Es el subtotal de operaciones exentas de IVA. Generalmente 0
-                    ImpIVA = 0, //Importe del IVA. Es el subtotal de operaciones sujetas a IVA. !!ES UN PORCENTAJE!!
-                    ImpTrib = 0 //Otros tributos.
-                };
-
-
-                //5. Solicitar el CAE para el nuevo comprobante
-                FacturaElectronica caeResponse = await RequestCAEAsync(auth, DatosFactura.PuntoDeVenta, DatosFactura.TipoDeComprobante, comprobante);
-
-                //6. Verificar la respuesta
-                FECompConsultarResponse confirm = await FECompConsultarAsync(auth, new FECompConsultarRequest
-                {
-                    PuntoVenta = DatosFactura.PuntoDeVenta,
-                    TipoComprobante = DatosFactura.TipoDeComprobante,
-                    NumeroComprobante = comprobante.CbteDesde
-                });
-
-
-                return caeResponse;
-            }
-            catch (Exception ex)
+            var comprobante = new FECAERequest
             {
-                Console.WriteLine($"Error occurred: {ex.Message}");
-                throw ex;
-            }
+                Concepto = datosCliente.concepto,
+                DocTipo = datosCliente.TipoDocumentoCliente,
+                DocNro = datosCliente.NumeroDocumentoCliente,
+                CondicionIVAReceptorId = datosCliente.CondicionIVAReceptor,
+                CbteDesde = last + 1,
+                CbteHasta = last + 1,
+                CbteFch = DateTime.Today,
+                ImpTotal = montos.ImpTotal,
+                ImpTotConc = montos.ImpTotConc,
+                ImpNeto = montos.ImpNeto,
+                ImpOpEx = montos.ImpOpEx,
+                ImpIVA = montos.ImpIVA,
+                ImpTrib = montos.ImpTrib,
+                Iva = montos.DetalleIva
+            };
+
+            return await RequestCAEAsync(auth, datosCliente.PuntoDeVenta, datosCliente.TipoDeComprobante, comprobante);
         }
 
 
@@ -113,15 +88,28 @@ namespace BackEndAPI.ARCA.Servicios
             var response = await _httpClient.PostAsync(_arcaOptions.WsfeUrl, content);
 
             var responseXml = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseXml);
 
             var doc = XDocument.Parse(responseXml);
             XNamespace ns = "http://ar.gov.afip.dif.FEV1/";
 
-            var result = doc.Descendants(ns + "Resultado").First().Value;
+            var result = doc.Descendants(ns + "Resultado").FirstOrDefault()?.Value;
+
+            if (result != "A")
+            {
+                // "R" (rechazado) o "P" (parcial) — no hay CAE válido. AFIP manda el motivo en
+                // <Errors>/<Err> (rechazo de la solicitud entera) u <Observaciones>/<Obs>
+                // (rechazo puntual del comprobante). Sin esto, antes se guardaba una "factura"
+                // sin CAE real y nadie se enteraba.
+                var motivos = doc.Descendants(ns + "Err").Concat(doc.Descendants(ns + "Obs"))
+                    .Select(e => $"{e.Element(ns + "Code")?.Value}: {e.Element(ns + "Msg")?.Value}")
+                    .ToList();
+                var detalle = motivos.Count > 0 ? string.Join(" | ", motivos) : "AFIP no informó el motivo.";
+                _logger.LogError("AFIP rechazó la solicitud de CAE (Resultado={Resultado}). {Detalle}. Respuesta cruda: {RespuestaAfip}", result, detalle, responseXml);
+                throw new BusinessRuleException($"AFIP rechazó la factura: {detalle}");
+            }
+
             var cae = doc.Descendants(ns + "CAE").First().Value;
             var caeVto = doc.Descendants(ns + "CAEFchVto").First().Value;
-
 
             var CAEResponse = new FECAEResponse
             {
@@ -130,8 +118,7 @@ namespace BackEndAPI.ARCA.Servicios
                 CAEExpiration = caeVto
             };
 
-            var facturaElectronica = await GuardarFactura(invoice, CAEResponse, ptoVta, cbteTipo, soapXml, responseXml);
-            return facturaElectronica;
+            return await GuardarFactura(invoice, CAEResponse, ptoVta, cbteTipo, soapXml, responseXml);
         }
         public async Task<int> GetLastVoucherAsync(FEAuthRequest auth, int ptoVta, int cbteTipo)
         {
@@ -205,27 +192,21 @@ namespace BackEndAPI.ARCA.Servicios
 
         private async Task<FacturaElectronica> GuardarFactura(FECAERequest invoice, FECAEResponse response, int PuntoVenta, int TipoComprobante, string requestXml, string responseXml)
         {
-            try
+            var factura = new FacturaElectronica
             {
-                var factura = new FacturaElectronica
-                {
-                    PuntoVenta = PuntoVenta,
-                    TipoComprobante = TipoComprobante,
-                    NumeroComprobante = invoice.CbteDesde,
-                    CAE = response.CAE,
-                    CAEFechaEmision = DateTime.UtcNow,
-                    CAEFechaVencimiento = DateTime.ParseExact(response.CAEExpiration, "yyyyMMdd", null),
-                    Total = invoice.ImpTotal,
-                    JsonSolicitud = System.Text.Json.JsonSerializer.Serialize(invoice),
-                    XmlRespuesta = responseXml
-                };
-                await db.FacturasElectronicas.AddAsync(factura);
-                return factura;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"error generando factura {ex.Message}");
-            }
+                PuntoVenta = PuntoVenta,
+                TipoComprobante = TipoComprobante,
+                NumeroComprobante = invoice.CbteDesde,
+                CAE = response.CAE,
+                CAEFechaEmision = DateTime.UtcNow,
+                CAEFechaVencimiento = DateTime.ParseExact(response.CAEExpiration, "yyyyMMdd", null),
+                Total = invoice.ImpTotal,
+                JsonSolicitud = System.Text.Json.JsonSerializer.Serialize(invoice),
+                XmlRespuesta = responseXml
+            };
+            await db.FacturasElectronicas.AddAsync(factura);
+            await db.SaveChangesAsync();
+            return factura;
         }
         private string BuildLastVoucherSoap(FEAuthRequest auth, int ptoVta, int cbteTipo)
         {
@@ -282,14 +263,15 @@ namespace BackEndAPI.ARCA.Servicios
                                 <CbteDesde>{invoice.CbteDesde}</CbteDesde>
                                 <CbteHasta>{invoice.CbteHasta}</CbteHasta>
                                 <CbteFch>{invoice.CbteFch:yyyyMMdd}</CbteFch>
-                                <ImpTotal>{invoice.ImpTotal}</ImpTotal>
-                                <ImpTotConc>{invoice.ImpTotConc}</ImpTotConc>
-                                <ImpNeto>{invoice.ImpNeto}</ImpNeto>
-                                <ImpOpEx>{invoice.ImpOpEx}</ImpOpEx>
-                                <ImpIVA>{invoice.ImpIVA}</ImpIVA>
-                                <ImpTrib>{invoice.ImpTrib}</ImpTrib>
+                                <ImpTotal>{invoice.ImpTotal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}</ImpTotal>
+                                <ImpTotConc>{invoice.ImpTotConc.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}</ImpTotConc>
+                                <ImpNeto>{invoice.ImpNeto.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}</ImpNeto>
+                                <ImpOpEx>{invoice.ImpOpEx.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}</ImpOpEx>
+                                <ImpTrib>{invoice.ImpTrib.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}</ImpTrib>
+                                <ImpIVA>{invoice.ImpIVA.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}</ImpIVA>
                                 <MonId>{invoice.MonId}</MonId>
                                 <MonCotiz>{invoice.MonCotiz}</MonCotiz>
+                                {BuildIvaXml(invoice.Iva)}
                             </FECAEDetRequest>
                             </FeDetReq>
                         </FeCAEReq>
@@ -297,6 +279,22 @@ namespace BackEndAPI.ARCA.Servicios
                     </soap:Body>
                 </soap:Envelope>
                 """;
+        }
+
+        private static string BuildIvaXml(List<DetalleIva> detalle)
+        {
+            if (detalle == null || detalle.Count == 0) return string.Empty;
+
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            var alicuotas = string.Concat(detalle.Select(d => $"""
+                <AlicIva>
+                    <Id>{d.AlicuotaId}</Id>
+                    <BaseImp>{d.BaseImponible.ToString("F2", culture)}</BaseImp>
+                    <Importe>{d.Importe.ToString("F2", culture)}</Importe>
+                </AlicIva>
+                """));
+
+            return $"<Iva>{alicuotas}</Iva>";
         }
         private string BuildCondicionIvaRequest(FEAuthRequest auth)
         {
