@@ -18,5 +18,6 @@
         public decimal ImpTrib { get; set; }
         public string MonId { get; set; } = "PES";
         public decimal MonCotiz { get; set; } = 1;
+        public List<DetalleIva> Iva { get; set; } = new();
     }
 }

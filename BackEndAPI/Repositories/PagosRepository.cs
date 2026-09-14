@@ -29,7 +29,7 @@ namespace BackEndAPI.Repositories
             _cajasRepository = cajasRepository;
         }
 
-        public async Task<(MovimientoCaja, FacturaElectronica)> CrearPago(Visita visita, MovimientoCaja movimientoCaja, DatosParaFactura DatosFactura, decimal totalProductosPagados, bool generarFactura, decimal montoAbonado)
+        public async Task<(MovimientoCaja, FacturaElectronica)> CrearPago(Visita visita, MovimientoCaja movimientoCaja, DatosParaFactura DatosFactura, MontosComprobante? montosFactura, decimal totalProductosPagados, bool generarFactura, decimal montoAbonado)
         {
             var transaccion = Db.Database.BeginTransaction();
             var tipoMovimientoCaja = await Db.TipoMovimientosCajas.FirstOrDefaultAsync(tp => tp.Id == movimientoCaja.IdTipoMovimientoCaja);
@@ -47,7 +47,8 @@ namespace BackEndAPI.Repositories
 
                 if (generarFactura)
                 {
-                    var facturaElectronica = await _wsfeService.CrearFacturaElectronica(DatosFactura);
+                    if (montosFactura == null) throw new BusinessRuleException("No se pudieron calcular los montos del comprobante");
+                    var facturaElectronica = await _wsfeService.CrearFacturaElectronica(DatosFactura, montosFactura);
                     movimientoCaja.Facturado = true;
                     movimientoCaja.IdFactura = facturaElectronica.Id;
 
@@ -70,10 +71,6 @@ namespace BackEndAPI.Repositories
             catch (Exception)
             {
                 await transaccion.RollbackAsync();
-                // Se re-lanza la excepción original (tipo y stack trace intactos) en vez de
-                // envolverla en un Exception genérico — mismo criterio que en
-                // DatabaseTransactionManager: si el error era una excepción de negocio tipada,
-                // tiene que seguir siéndolo (ej. un fallo real de ARCA al facturar).
                 throw;
             }
         }
