@@ -97,10 +97,15 @@ function TicketVirtual() {
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
                         Ticket de Pago
                     </Typography>
+                    {ticket.nombreEmpresa && (
+                        <Typography variant="h6" sx={{ mt: 1, fontWeight: 600 }}>
+                            {ticket.nombreEmpresa}
+                        </Typography>
+                    )}
                     {ticket.nombreSucursal && (
                         <Stack direction="row" spacing={0.5} justifyContent="center" alignItems="center" sx={{ mt: 1 }}>
                             <StorefrontIcon sx={{ fontSize: '1rem' }} />
-                            <Typography variant="body2">{ticket.nombreSucursal}</Typography>
+                            <Typography variant="body2">Sucursal: {ticket.nombreSucursal}</Typography>
                         </Stack>
                     )}
                 </Box>
@@ -178,7 +183,7 @@ function TicketVirtual() {
                             Total
                         </Typography>
                         <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.dark' }}>
-                            {currencyFormatter.format(ticket.monto)}
+                            {currencyFormatter.format(ticket.montoTotal)}
                         </Typography>
                     </Stack>
                 </Box>

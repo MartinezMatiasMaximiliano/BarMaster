@@ -138,8 +138,8 @@ export default function StockDialog({ abierto, producto, tipo, onCerrar, onGuard
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCerrar} disabled={guardando}>Cancelar</Button>
-                <Button onClick={guardar} variant="contained" disabled={guardando}>
+                <Button data-escape-action="true" onClick={onCerrar} disabled={guardando}>Cancelar</Button>
+                <Button data-enter-action="true" onClick={guardar} variant="contained" disabled={guardando}>
                     {guardando ? 'Guardando...' : 'Guardar'}
                 </Button>
             </DialogActions>

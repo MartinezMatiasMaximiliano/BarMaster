@@ -9,13 +9,15 @@ public sealed record ImpresoraDetectadaSolicitud(
 public sealed record SincronizarInventarioImpresorasSolicitud(
     [param: Required, StringLength(32, MinimumLength = 1)] string VersionAgente,
     [param: Required, StringLength(32, MinimumLength = 1)] string VersionQz,
-    IReadOnlyList<ImpresoraDetectadaSolicitud> Impresoras);
+    IReadOnlyList<ImpresoraDetectadaSolicitud> Impresoras,
+    bool BusquedaManual = false);
 
 public sealed record ActualizarImpresoraSolicitud(
     [param: Required, StringLength(120, MinimumLength = 2)] string NombreVisible,
     [param: Range(58, 80)] short AnchoPapelMm,
     [param: Required, StringLength(32, MinimumLength = 1)] string Codificacion,
-    bool Habilitada);
+    bool Habilitada,
+    bool Restaurar = false);
 
 public sealed record ImpresoraRespuesta(
     Guid Id,
@@ -30,4 +32,5 @@ public sealed record ImpresoraRespuesta(
     DateTime VistaPorUltimaVezEn,
     string? UltimoEstado,
     bool EstacionEnLinea,
-    int CantidadReglas);
+    int CantidadReglas,
+    DateTime? EliminadaEn);

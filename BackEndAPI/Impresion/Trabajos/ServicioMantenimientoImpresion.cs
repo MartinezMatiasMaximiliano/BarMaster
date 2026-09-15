@@ -7,7 +7,7 @@ namespace BackEndAPI.Impresion.Trabajos;
 
 public sealed class ServicioMantenimientoImpresion : BackgroundService
 {
-    private const string MigracionImpresionDistribuida = "20260904222221_EspanolizarModuloImpresion";
+    private const string MigracionImpresionDistribuida = "20260907175031_EspanolizarModuloImpresion";
     private readonly IServiceScopeFactory fabricaAmbitos;
     private readonly OpcionesImpresionDistribuida opciones;
     private readonly TimeProvider proveedorTiempo;
@@ -39,19 +39,22 @@ public sealed class ServicioMantenimientoImpresion : BackgroundService
             try
             {
                 await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(inquilino.ConnectionString).Options);
-                var migraciones = await db.Database.GetAppliedMigrationsAsync(tokenCancelacion);
-                if (!migraciones.Contains(MigracionImpresionDistribuida, StringComparer.Ordinal))
-                {
+                if (!await MantenerSiCompatibleAsync(db, tokenCancelacion))
                     registrador.LogDebug("Se omite el mantenimiento del inquilino {IdInquilino}: aún no tiene la migración de impresión distribuida.", inquilino.Id);
-                    continue;
-                }
-                await MantenerInquilinoAsync(db, tokenCancelacion);
             }
             catch (Exception exception)
             {
                 registrador.LogError(exception, "Falló el mantenimiento de impresión para el inquilino {IdInquilino}.", inquilino.Id);
             }
         }
+    }
+
+    internal async Task<bool> MantenerSiCompatibleAsync(AppDbContext db, CancellationToken tokenCancelacion)
+    {
+        var migraciones = await db.Database.GetAppliedMigrationsAsync(tokenCancelacion);
+        if (!migraciones.Contains(MigracionImpresionDistribuida, StringComparer.Ordinal)) return false;
+        await MantenerInquilinoAsync(db, tokenCancelacion);
+        return true;
     }
 
     private async Task MantenerInquilinoAsync(AppDbContext db, CancellationToken tokenCancelacion)
@@ -73,8 +76,9 @@ public sealed class ServicioMantenimientoImpresion : BackgroundService
                 : trabajo.VenceEn <= ahora ? EstadoTrabajoImpresion.Vencido : EstadoTrabajoImpresion.ReintentoProgramado;
             trabajo.DisponibleEn = ahora; trabajo.ReservaVenceEn = null;
             trabajo.UltimoCodigoError = estabaEnviando ? "RESERVA_VENCIDA_DESPUES_ENVIO" : "RESERVA_VENCIDA_ANTES_ENVIO";
+            try { await db.SaveChangesAsync(tokenCancelacion); }
+            catch (DbUpdateConcurrencyException) { db.Entry(trabajo).State = EntityState.Detached; }
         }
-        if (abandonados.Count > 0) await db.SaveChangesAsync(tokenCancelacion);
 
         var limiteRetencion = ahora.AddDays(-opciones.DiasRetencionContenido);
         await db.TrabajosImpresion.Where(x => x.CreadoEn < limiteRetencion && x.ContenidoJson != "{}")

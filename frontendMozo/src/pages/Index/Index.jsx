@@ -18,8 +18,10 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { useIndexTheme } from './hooks/useIndexTheme';
 import { createIndexTheme } from './indexTheme';
 import './IndexTheme.css';
+import { useCodigoMozoTeclado } from '../../hooks/useCodigoMozoTeclado';
 
 function Index(props) {
+    const codigoMozoInputRef = useCodigoMozoTeclado();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const loginContext = useContext(LoginContext);
@@ -103,6 +105,7 @@ function Index(props) {
                 
                 <BottomBar
                     codigoMozo={codigoMozo}
+                    codigoMozoInputRef={codigoMozoInputRef}
                     handleChange={handleChange}
                     mozo={mozo}
                     themeMode={themeMode}

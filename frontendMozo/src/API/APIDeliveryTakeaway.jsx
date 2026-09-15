@@ -21,7 +21,7 @@ export function normalizarDeliveryTakeaway(item) {
         id: item.id ?? item.Id,
         idVisita: item.idVisita ?? item.IdVisita ?? null,
         fechaHora: item.fechaHora ?? item.FechaHora ?? '',
-        cliente: item.nombreCliente ?? item.NombreCliente ?? '-',
+        cliente: item.cliente ?? item.nombreCliente ?? item.NombreCliente ?? '-',
         direccion: item.direccion ?? item.Direccion ?? null,
         telefono: item.telefono ?? item.Telefono ?? null,
         indicaciones: item.indicaciones ?? item.Indicaciones ?? null,
@@ -50,6 +50,8 @@ export function normalizarDeliveryTakeaway(item) {
             montoRecibido: Number(
                 pagoRaw.montoRecibido
                 ?? pagoRaw.MontoRecibido
+                ?? pagoRaw.montoAbonado
+                ?? pagoRaw.MontoAbonado
                 ?? pagoRaw.monto
                 ?? pagoRaw.Monto
                 ?? 0
@@ -179,7 +181,7 @@ export async function GetDeliveryTakeaway() {
 function mapFormToCrearDTO(values, origen = 'Delivery') {
     const productos = values.Productos;
     const listaIds = Array.isArray(productos) ? productos : (productos ? [productos] : []);
-    const ListaIDProductos = listaIds.map((idProducto) => ({
+    const ListaProductos = listaIds.map((idProducto) => ({
         IdProducto: idProducto,
         Detalles: '',
         Cantidad: 1,
@@ -199,7 +201,7 @@ function mapFormToCrearDTO(values, origen = 'Delivery') {
             : (values.TipoEnvio != null && values.TipoEnvio !== '' ? parseInt(values.TipoEnvio, 10) : null),
         IdPersonaRegistro: null,
         IdCadete: esPedidoTakeaway ? null : (values.Cadete != null && values.Cadete !== '' ? values.Cadete : null),
-        ListaIDProductos,
+        ListaProductos,
     };
 }
 
@@ -208,7 +210,7 @@ function mapComandaToCrearDTO(formValues, comanda, origen = 'Delivery') {
 
     return {
         ...body,
-        ListaIDProductos: comanda.map((item) => ({
+        ListaProductos: comanda.map((item) => ({
             IdProducto: item.producto.id,
             Detalles: item.indicaciones || '',
             Cantidad: item.cantidad,
@@ -362,9 +364,8 @@ export async function ModificarDeliveryTakeaway(values) {
 
 export async function CambiarEstadoEntregaDeliveryTakeaway(id, entregado) {
     try {
-        const response = await api.patch('DeliveryTakeaway/ModificarDatos', {
-            IdDeliveryTakeaway: id,
-            Entregado: entregado,
+        const response = await api.patch('DeliveryTakeaway/Entregado', null, {
+            params: { id, entregado },
         });
         await sendHubMessage('RecargarDeliveryTakeaway');
         return response.data ?? null;

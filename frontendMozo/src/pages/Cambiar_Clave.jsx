@@ -80,13 +80,15 @@ const PasswordChangeForm = () => {
                         {success}
                     </Alert>
                 )}
-                    <Box component="form" sx={formCentered}>
+                    <Box id="form-cambiar-clave" component="form" onSubmit={handleSubmit} sx={formCentered}>
                         <TextField label="Contraseña Actual" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
                         <TextField label="Nueva Contraseña" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
                         <TextField label="Confirmar Nueva Contraseña" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                     </Box>
                     <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3}>
                         <LoadingButton
+                            form="form-cambiar-clave"
+                            data-enter-action="true"
                             onClick={handleSubmit}
                             variant="contained"
                             startIcon={<LockResetIcon />}

@@ -1,3 +1,4 @@
+import { crearEsperaTrabajador } from './esperaTrabajador';
 import * as signalR from '@microsoft/signalr';
 import { impresionDistribuidaHabilitada, trabajadorImpresionHabilitado } from './funcionalidadesImpresion';
 import { obtenerIdEstacionRegistrada, obtenerCredencialEstacion } from './almacenamientoEstacion';
@@ -16,16 +17,11 @@ const MILISEGUNDOS_LATIDO = 30000;
 const NOMBRE_BLOQUEO = 'barmaster-printing-worker';
 let detencionActiva = null;
 
-const esperar = (ms, signal) => new Promise((resolve) => {
-    const id = setTimeout(resolve, ms);
-    signal?.addEventListener('abort', () => { clearTimeout(id); resolve(); }, { once: true });
-});
-
 function urlHub() {
     return new URL('hubs/impresion', import.meta.env.VITE_BASE_URL).toString();
 }
 
-async function procesarTrabajo(trabajo) {
+export async function procesarTrabajo(trabajo) {
     let envioIniciado = false;
     let renovacion;
     const inicio = performance.now();
@@ -61,6 +57,7 @@ async function procesarTrabajo(trabajo) {
         const errorNoCompatible = [
             'PLANTILLA_IMPRESION_NO_COMPATIBLE',
             'DOCUMENTO_IMPRESION_NO_COMPATIBLE',
+            'DOCUMENTO_IMPRESION_INVALIDO',
         ].includes(codigoError);
         registrarDiagnosticoImpresion('trabajo.error', {
             idTrabajo: trabajo.id,
@@ -134,22 +131,14 @@ async function ejecutarTrabajador(signal) {
                 await sincronizar().catch(() => {});
                 proximoLatido = Date.now() + MILISEGUNDOS_LATIDO;
             }
-            await new Promise((resolve) => {
-                const esperaMs = trabajos.length
-                    ? 300
-                    : hub.state === signalR.HubConnectionState.Disconnected ? 5000 : MILISEGUNDOS_CONSULTA;
-                let id;
-                const finalizarEspera = () => {
-                    clearTimeout(id);
-                    resolve();
-                };
-                despertar = finalizarEspera;
-                id = setTimeout(finalizarEspera, esperaMs);
-                if (numeroNotificacion !== notificacionAlIniciar) {
-                    finalizarEspera();
-                }
-                signal.addEventListener('abort', finalizarEspera, { once: true });
-            });
+            const esperaMs = trabajos.length
+                ? 300
+                : hub.state === signalR.HubConnectionState.Disconnected ? 5000 : MILISEGUNDOS_CONSULTA;
+            const espera = crearEsperaTrabajador(esperaMs, signal);
+            despertar = espera.finalizar;
+            if (numeroNotificacion !== notificacionAlIniciar) despertar();
+            await espera.promesa;
+            despertar = () => {};
         }
     } finally {
         await hub.stop().catch(() => {});
@@ -171,7 +160,7 @@ export function iniciarTrabajadorImpresion() {
             controller.abort(); detencionActiva = null; return undefined;
         }
         if (!controller.signal.aborted) {
-            await esperar(5000, controller.signal);
+            await crearEsperaTrabajador(5000, controller.signal).promesa;
             if (!controller.signal.aborted) return ejecutar();
         }
         return undefined;

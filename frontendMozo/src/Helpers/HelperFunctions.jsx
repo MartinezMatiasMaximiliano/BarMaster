@@ -192,7 +192,7 @@ export function MappearMenu(menu) {
             codigo: item.codigo,
             nombre: item.nombre,
             precio: item.precio,
-            costoProduccion: item.costo,
+            costoProduccion: item.costoProduccion ?? item.CostoProduccion ?? item.costo,
             descripcion: item.descripcion,
             categorias: item.categorias,
             activo: item.activo,

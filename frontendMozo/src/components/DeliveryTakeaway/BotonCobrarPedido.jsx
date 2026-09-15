@@ -52,14 +52,14 @@ export default function BotonCobrarPedido({
         : Math.max(0, montoRecibido - totalPedido);
     const puedeCobrar = !disabled && Boolean(idVisita) && productIds.length > 0;
 
-    const handleConfirmar = useCallback(async (idsProductos, idTipoPago, monto) => {
+    const handleConfirmar = useCallback(async (idsProductos, idTipoPago, monto, descuento = 0) => {
         if (!idVisita) {
             showSnackbar('No se pudo identificar la visita del pedido', 'error');
             return;
         }
 
         try {
-            const pagoCreado = await Pagar(idVisita, idsProductos, idTipoPago, monto);
+            const pagoCreado = await Pagar(idVisita, idsProductos, idTipoPago, monto, descuento);
             const idMovimientoCaja = pagoCreado?.id || pagoCreado?.Id;
             dispatch(cambiarEstadoPagadoProductos({ idsProductos, pagado: true, idMovimientoCaja }));
             await sendHubMessage('RecargarDeliveryTakeaway');

@@ -8,6 +8,8 @@ using BackEndAPI.Impresion.Reglas;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using BackEndAPI.Impresion.Estaciones;
 
 namespace BackEndAPI.Tests.Impresion;
 
@@ -16,8 +18,75 @@ public sealed class IntegracionReservaImpresionPostgresTests
     [Fact]
     public async Task SkipLockedPermiteQueSoloUnConsumidorReserveUnTrabajo()
     {
+        await ConBaseAisladaAsync(async options =>
+        {
+            Guid branchId; Guid stationId;
+            await using (var setup = new AppDbContext(options))
+            {
+                var data = await SeedAsync(setup); branchId = data.BranchId; stationId = data.IdEstacion;
+                await CrearServicio(setup, branchId, null, "sucursal").CrearEnrutadosAsync(new(
+                    Guid.NewGuid(), TipoDocumentoImpresion.Preticket, MomentoImpresion.AlGenerarPreticket, "{}", 1, 1, "pg-concurrency", "Visita", "1", null), default);
+            }
+            await using var firstDb = new AppDbContext(options);
+            await using var secondDb = new AppDbContext(options);
+            var claims = await Task.WhenAll(
+                CrearServicio(firstDb, branchId, stationId, "estacion_impresion").ReservarAsync(1, default),
+                CrearServicio(secondDb, branchId, stationId, "estacion_impresion").ReservarAsync(1, default));
+            Assert.Equal(1, claims.Sum(x => x.Count));
+        });
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CancelarYEnviarConcurrentesConservanAlGanador(bool ganaCancelar)
+    {
+        await ConBaseAisladaAsync(async options =>
+        {
+            await using var setup = new AppDbContext(options);
+            var data = await SeedAsync(setup);
+            await CrearServicio(setup, data.BranchId, null, "sucursal").CrearEnrutadosAsync(new(
+                Guid.NewGuid(), TipoDocumentoImpresion.Preticket, MomentoImpresion.AlGenerarPreticket, "{}", 1, 1, "race", "Visita", "1", null), default);
+            var reservado = Assert.Single(await CrearServicio(setup, data.BranchId, data.IdEstacion, "estacion_impresion").ReservarAsync(1, default));
+            var pausa = new PausarGuardado();
+            await using var perdedorDb = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>(options).AddInterceptors(pausa).Options);
+            await using var ganadorDb = new AppDbContext(options);
+            var perdedor = CrearServicio(perdedorDb, data.BranchId, data.IdEstacion, "estacion_impresion");
+            var ganador = CrearServicio(ganadorDb, data.BranchId, data.IdEstacion, "estacion_impresion");
+            var pendiente = ganaCancelar ? perdedor.MarcarEnviandoAsync(reservado.Id, reservado.IdReserva, default)
+                : perdedor.CancelarAsync(reservado.Id, "cancelar", default);
+            await pausa.Leido.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            try
+            {
+                if (ganaCancelar) await ganador.CancelarAsync(reservado.Id, "cancelar", default);
+                else await ganador.MarcarEnviandoAsync(reservado.Id, reservado.IdReserva, default);
+            }
+            finally { pausa.Continuar.TrySetResult(); }
+            var error = await Assert.ThrowsAsync<ExcepcionEstacionImpresion>(() => pendiente);
+            Assert.Equal(ganaCancelar ? "RESERVA_TRABAJO_IMPRESION_INVALIDA" : "TRABAJO_NO_CANCELABLE", error.Codigo);
+            setup.ChangeTracker.Clear();
+            Assert.Equal(ganaCancelar ? EstadoTrabajoImpresion.Cancelado : EstadoTrabajoImpresion.Enviando,
+                (await setup.TrabajosImpresion.SingleAsync()).Estado);
+        });
+    }
+
+    private sealed class PausarGuardado : SaveChangesInterceptor
+    {
+        public TaskCompletionSource Leido { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Continuar { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
+            InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            Leido.TrySetResult();
+            await Continuar.Task.WaitAsync(TimeSpan.FromSeconds(15), cancellationToken);
+            return result;
+        }
+    }
+
+    internal static async Task ConBaseAisladaAsync(Func<DbContextOptions<AppDbContext>, Task> comprobar)
+    {
         var adminConnection = Environment.GetEnvironmentVariable("BARMASTER_TEST_POSTGRES_ADMIN");
-        if (string.IsNullOrWhiteSpace(adminConnection)) return;
+        Assert.False(string.IsNullOrWhiteSpace(adminConnection), "Configure BARMASTER_TEST_POSTGRES_ADMIN con un PostgreSQL aislado; esta prueba no puede omitirse.");
         var databaseName = $"barmaster_print_test_{Guid.NewGuid():N}";
         Assert.StartsWith("barmaster_print_test_", databaseName);
         var adminBuilder = new NpgsqlConnectionStringBuilder(adminConnection);
@@ -31,20 +100,8 @@ public sealed class IntegracionReservaImpresionPostgresTests
         {
             var testBuilder = new NpgsqlConnectionStringBuilder(adminBuilder.ConnectionString) { Database = databaseName };
             var options = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(testBuilder.ConnectionString).Options;
-            Guid branchId; Guid stationId;
-            await using (var setup = new AppDbContext(options))
-            {
-                await setup.Database.MigrateAsync();
-                var data = await SeedAsync(setup); branchId = data.BranchId; stationId = data.IdEstacion;
-                await CrearServicio(setup, branchId, null, "sucursal").CrearEnrutadosAsync(new(
-                    Guid.NewGuid(), TipoDocumentoImpresion.Preticket, MomentoImpresion.AlGenerarPreticket, "{}", 1, 1, "pg-concurrency", "Visita", "1", null), default);
-            }
-            await using var firstDb = new AppDbContext(options);
-            await using var secondDb = new AppDbContext(options);
-            var claims = await Task.WhenAll(
-                CrearServicio(firstDb, branchId, stationId, "estacion_impresion").ReservarAsync(1, default),
-                CrearServicio(secondDb, branchId, stationId, "estacion_impresion").ReservarAsync(1, default));
-            Assert.Equal(1, claims.Sum(x => x.Count));
+            await using (var setup = new AppDbContext(options)) await setup.Database.MigrateAsync();
+            await comprobar(options);
         }
         finally
         {
@@ -56,14 +113,14 @@ public sealed class IntegracionReservaImpresionPostgresTests
         }
     }
 
-    private static ServicioTrabajoImpresion CrearServicio(AppDbContext db, Guid branchId, Guid? stationId, string authType)
+    internal static ServicioTrabajoImpresion CrearServicio(AppDbContext db, Guid branchId, Guid? stationId, string authType)
     {
         var identity = new IdentidadImpresionFalsa { IdSucursal = branchId, IdEstacion = stationId, TipoAutenticacion = authType };
         var options = Options.Create(new OpcionesImpresionDistribuida()); var current = new ContextoDbActualFalso(db);
         return new(current, identity, new ServicioReglaImpresion(current, identity, options, TimeProvider.System), new NotificadorFalso(), options, TimeProvider.System);
     }
 
-    private static async Task<(Guid BranchId, Guid IdEstacion)> SeedAsync(AppDbContext db)
+    internal static async Task<(Guid BranchId, Guid IdEstacion)> SeedAsync(AppDbContext db)
     {
         var company = new Empresa { Nombre = "Empresa", Username = Guid.NewGuid().ToString("N"), Activo = true }; company.EstablecerContrasena([1], [2]);
         var branch = new Sucursal { Id = Guid.NewGuid(), IdEmpresa = company.Id, Empresa = company, Nombre = "Sucursal", Username = Guid.NewGuid().ToString("N") }; branch.EstablecerContrasena([1], [2]);

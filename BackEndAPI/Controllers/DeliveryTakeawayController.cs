@@ -267,12 +267,12 @@ namespace BackEndAPI.Controllers
         //}
 
         [HttpPatch("Entregado")]
-        public async Task<IActionResult> MarcarEntregado([FromQuery] Guid id)
+        public async Task<IActionResult> MarcarEntregado([FromQuery] Guid id, [FromQuery] bool entregado = true)
         {
             try
             {
                 if (id == Guid.Empty) throw new Exception("Id vacio");
-                var action = await _deliveryTakeawayServices.MarcarComoEntregado(id);
+                var action = await _deliveryTakeawayServices.MarcarComoEntregado(id, entregado);
                 if (action == null) throw new Exception("");
                 var result = MapearpearDeliveryTakeawayDTO(action);
                 return Ok(result);

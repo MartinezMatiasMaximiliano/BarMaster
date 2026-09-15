@@ -11,4 +11,11 @@ public interface IServicioDocumentoImpresion
         IReadOnlyList<ProductosPorVisita> productosAgregados,
         Guid idComando,
         CancellationToken tokenCancelacion);
+    Task<IReadOnlyList<CrearSolicitudImpresionRespuesta>> EncolarComprobantePagoAsync(
+        Visita visita,
+        IReadOnlyList<ProductosPorVisita> productosCobrados,
+        MovimientoCaja pago,
+        CancellationToken tokenCancelacion,
+        decimal descuento = 0,
+        decimal recargo = 0);
 }

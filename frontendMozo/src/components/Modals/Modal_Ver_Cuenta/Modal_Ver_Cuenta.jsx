@@ -211,7 +211,7 @@ function Modal_Ver_Cuenta(props) {
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Modal_Generico
                             textoBoton="Facturar todo"
-                            titulo="Facturar todo"
+                            titulo="Cobrar todo"
                             cuerpo="¿Confirmar el pago de todos los productos pendientes?"
                             confirmar={true}
                             func={handlePagarMesa}
@@ -237,7 +237,7 @@ function Modal_Ver_Cuenta(props) {
                         </Button>
                     </Stack>
                     <Button 
-                        onClick={handleCloseWithCleanup} 
+                        data-enter-action="true" data-escape-action="true" onClick={handleCloseWithCleanup}
                         variant="outlined"
                         size="small"
                         sx={{

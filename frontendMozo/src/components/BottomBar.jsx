@@ -36,6 +36,7 @@ const animacionTextoTema = keyframes`
 
 export const BottomBar = ({
     codigoMozo,
+    codigoMozoInputRef,
     handleChange,
     mozo,
     fechaHora: fechaHoraProp,
@@ -50,6 +51,7 @@ export const BottomBar = ({
             <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                 <Form.Label>Código</Form.Label>
                 <Form.Control
+                    ref={codigoMozoInputRef}
                     onChange={handleChange}
                     type="password"
                     value={codigoMozo}

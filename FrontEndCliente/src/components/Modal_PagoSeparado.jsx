@@ -85,11 +85,11 @@ function Modal_PagoSeparado(props) {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleClose} disabled={enviando}>
+                    <Button data-escape-action="true" onClick={handleClose} disabled={enviando}>
                         Cancelar
                     </Button>
                     <Button
-                        onClick={handleConfirmarPago}
+                        data-enter-action="true" onClick={handleConfirmarPago}
                         disabled={enviando || productosSeleccionados.length === 0}
                     >
                         {enviando ? "Procesando..." : "Pagar"}

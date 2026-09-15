@@ -1,3 +1,5 @@
+import { generarUUID } from '../../Helpers/generarUUID';
+
 const CLAVE_ID_INSTALACION = 'barmaster.impresion.idInstalacionCliente';
 
 function claveConAmbito(sufijo) {
@@ -9,7 +11,7 @@ function claveConAmbito(sufijo) {
 export function obtenerIdInstalacionCliente() {
     let idInstalacion = localStorage.getItem(CLAVE_ID_INSTALACION);
     if (!idInstalacion) {
-        idInstalacion = crypto.randomUUID();
+        idInstalacion = generarUUID();
         localStorage.setItem(CLAVE_ID_INSTALACION, idInstalacion);
     }
     return idInstalacion;

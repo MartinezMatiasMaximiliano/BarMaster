@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance';
+import { generarUUID } from '../Helpers/generarUUID';
 import { sendHubMessage } from '../connections/HubConnMozo';
 import { construirError } from './APIError';
 
@@ -33,7 +34,7 @@ export async function BuscarVisitasActivas() {
     }
 }
 
-export async function AgregarProductosAVisita(idVisita, productos, idComando = crypto.randomUUID()) {
+export async function AgregarProductosAVisita(idVisita, productos, idComando = generarUUID()) {
     try {
         const response = await api.post(
             `AgregarProductoAVisita?IdVisita=${idVisita}&idComando=${idComando}`,
@@ -196,12 +197,5 @@ export async function BuscarPagosPorVisita(idVisita) {
     return [];
 }
 
-export async function BuscarVisitaPorId(idVisita) {
-    try {
-        const response = await api.get(`Visitas/${idVisita}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error al obtener visita por ID:', construirError(error, 'Error al obtener visita por ID'));
-        return null;
-    }
-}
+// Alias conservado para consumidores externos; comparte el contrato actual.
+export const BuscarVisitaPorId = ObtenerVisitaPorId;

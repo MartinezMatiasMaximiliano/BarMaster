@@ -123,8 +123,8 @@ export const MesaModalUnificado = ({
         );
     }, []);
 
-    const handleConfirmarFacturacion = useCallback((arregloIds, idTipoPago, monto) => {
-        PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto } : undefined);
+    const handleConfirmarFacturacion = useCallback((arregloIds, idTipoPago, monto, descuento = 0) => {
+        PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto, descuento } : undefined);
         setProductosSeleccionados([]);
         setShowModalFacturar(null);
     }, [PagarMesa, showSnackbarFacturacion]);
@@ -354,7 +354,7 @@ export const MesaModalUnificado = ({
                 <Modal_Facturar
                     open={true}
                     onClose={() => setShowModalFacturar(null)}
-                    titulo="Facturar todo"
+                    titulo="Cobrar todo"
                     total={totalPedidos}
                     productIds={productosAPagar}
                     currencyFormatter={currencyFormatter}
@@ -365,7 +365,7 @@ export const MesaModalUnificado = ({
                 <Modal_Facturar
                     open={true}
                     onClose={() => setShowModalFacturar(null)}
-                    titulo="Facturar por partes"
+                    titulo="Cobrar por partes"
                     total={totalPartes}
                     productIds={productosSeleccionados}
                     currencyFormatter={currencyFormatter}

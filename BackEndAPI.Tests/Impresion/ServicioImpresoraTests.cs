@@ -13,6 +13,49 @@ namespace BackEndAPI.Tests.Impresion;
 public sealed class ServicioImpresoraTests
 {
     [Fact]
+    public async Task EliminacionPersisteDuranteSincronizacionesYBuscarSoloPermiteRestaurarAlGuardar()
+    {
+        await IntegracionReservaImpresionPostgresTests.ConBaseAisladaAsync(async options =>
+        {
+            await using var db = new AppDbContext(options);
+            Assert.False(db.Database.HasPendingModelChanges());
+            var fixture = await IntegracionReservaImpresionPostgresTests.SeedAsync(db);
+            var identidad = new IdentidadImpresionFalsa { IdSucursal = fixture.BranchId, IdEstacion = fixture.IdEstacion, TipoAutenticacion = "estacion_impresion" };
+            var contexto = new ContextoDbActualFalso(db);
+            var opciones = Options.Create(new OpcionesImpresionDistribuida());
+            var servicio = new ServicioImpresora(contexto, identidad, opciones, TimeProvider.System);
+            db.ReglasImpresion.RemoveRange(db.ReglasImpresion);
+            await db.SaveChangesAsync();
+            var id = (await db.Impresoras.SingleAsync()).Id;
+            await servicio.EliminarAsync(id, default);
+            var marca = (await db.Impresoras.AsNoTracking().SingleAsync()).EliminadaEn;
+            for (var i = 0; i < 5; i++)
+            {
+                db.ChangeTracker.Clear();
+                Assert.Empty(await servicio.SincronizarAsync(fixture.IdEstacion,
+                    new("web-test", "2.2.6", [new("Printer", null)]), default));
+                Assert.Empty(await servicio.ObtenerParaSucursalAsync(default));
+                Assert.Empty(await servicio.ObtenerParaEstacionAsync(fixture.IdEstacion, default));
+            }
+            var encontrada = Assert.Single(await servicio.SincronizarAsync(fixture.IdEstacion,
+                new("web-test", "2.2.6", [new("Printer", null)], BusquedaManual: true), default));
+            Assert.Equal(id, encontrada.Id);
+            Assert.Equal(marca, encontrada.EliminadaEn);
+            Assert.False(encontrada.Habilitada);
+            Assert.Empty(await servicio.ObtenerParaSucursalAsync(default));
+            await Assert.ThrowsAsync<ExcepcionEstacionImpresion>(() => servicio.ActualizarAsync(id, new("Barra", 58, "CP858", true), default));
+            var reglas = new ServicioReglaImpresion(contexto, identidad, opciones, TimeProvider.System);
+            await Assert.ThrowsAsync<ExcepcionEstacionImpresion>(() => reglas.GuardarAsync(new(null, id, TipoSalidaImpresion.Ticket, MomentoImpresion.AlGenerarPreticket), default));
+            var restaurada = await servicio.ActualizarAsync(id, new("Barra", 58, "CP858", true, Restaurar: true), default);
+            Assert.Null(restaurada.EliminadaEn);
+            Assert.True(restaurada.Habilitada);
+            Assert.Single(await servicio.ObtenerParaSucursalAsync(default));
+            Assert.Single(await servicio.SincronizarAsync(fixture.IdEstacion, new("web-test", "2.2.6", [new("Printer", null)]), default));
+            Assert.Equal(1, await db.Impresoras.CountAsync());
+        });
+    }
+
+    [Fact]
     public async Task Sincronizar_SiempreRestauraPerfilTermicoCrudoDeImpresoraDetectada()
     {
         var branchId = Guid.NewGuid();
@@ -93,7 +136,8 @@ public sealed class ServicioImpresoraTests
             .EliminarAsync(regla.Id, default);
         await servicioImpresora.EliminarAsync(impresora.Id, default);
 
-        Assert.Empty(db.Impresoras);
+        Assert.NotNull((await db.Impresoras.SingleAsync()).EliminadaEn);
+        Assert.Empty(await servicioImpresora.ObtenerParaSucursalAsync(default));
         Assert.Empty(db.ReglasImpresion);
     }
 

@@ -11,6 +11,7 @@ public sealed class Impresora
     public short AnchoPapelMm { get; set; } = 58;
     public string Codificacion { get; set; } = "CP858";
     public bool Habilitada { get; set; } = true;
+    public DateTime? EliminadaEn { get; set; }
     public bool Presente { get; set; } = true;
     public DateTime VistaPorUltimaVezEn { get; set; } = DateTime.UtcNow;
     public string? UltimoEstado { get; set; }

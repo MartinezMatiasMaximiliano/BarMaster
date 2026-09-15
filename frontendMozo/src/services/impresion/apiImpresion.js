@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { generarUUID } from '../../Helpers/generarUUID';
 import api from '../axiosInstance';
 import {
     obtenerIdInstalacionCliente, obtenerTokenAccesoEstacion, obtenerCredencialEstacion,
@@ -12,7 +13,7 @@ let promesaRegistro = null;
 apiAdministrativa.interceptors.request.use((config) => {
     const token = localStorage.getItem('token') || localStorage.getItem('USER_token');
     const tenantId = localStorage.getItem('tenantId');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (token && !config.__printingBranchRetry) config.headers.Authorization = `Bearer ${token}`;
     if (tenantId) config.headers['X-Tenant-ID'] = tenantId;
     return config;
 });
@@ -125,10 +126,10 @@ export async function asegurarSesionEstacion() {
     return (await crearSesionEstacion()).tokenAcceso;
 }
 
-export async function sincronizarInventarioImpresoras(impresoras, versionQz, idEstacion = requerirIdEstacionRegistrada()) {
+export async function sincronizarInventarioImpresoras(impresoras, versionQz, idEstacion = requerirIdEstacionRegistrada(), busquedaManual = false) {
     await asegurarSesionEstacion();
     const { data } = await apiEstacion.put(`impresion/estaciones/${idEstacion}/impresoras/sincronizar`, {
-        versionAgente: 'web-1.0.0', versionQz, impresoras: impresoras.map((nombre) => ({ nombreSistema: nombre, estado: null })),
+        versionAgente: 'web-1.0.0', versionQz, busquedaManual, impresoras: impresoras.map((nombre) => ({ nombreSistema: nombre, estado: null })),
     });
     return data;
 }
@@ -152,7 +153,7 @@ export async function marcarTrabajoAceptado(id, idReserva) { await asegurarSesio
 export async function fallarTrabajoImpresion(id, cuerpo) { await asegurarSesionEstacion(); await apiEstacion.post(`impresion/estacion/trabajos/${id}/fallido`, cuerpo); }
 export async function renovarReservaTrabajo(id, idReserva) { await asegurarSesionEstacion(); await apiEstacion.post(`impresion/estacion/trabajos/${id}/renovar-reserva`, { idReserva }); }
 
-export async function solicitarPreticket(idVisita, idsProductos = [], idComando = crypto.randomUUID()) {
+export async function solicitarPreticket(idVisita, idsProductos = [], idComando = generarUUID()) {
     return (await api.post('impresion/solicitudes/preticket', { idComando, idVisita, idsProductos })).data;
 }
 export async function obtenerSolicitudImpresion(idSolicitud) { return (await api.get(`impresion/solicitudes/${idSolicitud}`)).data; }

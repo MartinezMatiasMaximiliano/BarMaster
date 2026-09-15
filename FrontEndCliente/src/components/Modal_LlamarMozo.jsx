@@ -54,7 +54,7 @@ function Modal_LlamarMozo() {
             </Button>
 
 
-            <Modal
+            <Modal data-keyboard-modal="true"
                 open={open}
                 onClose={handleClose}
 
@@ -82,10 +82,10 @@ function Modal_LlamarMozo() {
                                     justifyContent: 'space-between',
                                 }}
                             >
-                                <Button onClick={handleClose} variant="contained" sx={{ color: 'white',m:1 }}>
+                                <Button data-escape-action="true" onClick={handleClose} variant="contained" sx={{ color: 'white',m:1 }}>
                                     Cancelar
                                 </Button>
-                                <Button onClick={handleLlamarMozo} variant="contained" sx={{ color: 'white',m:1 }}>
+                                <Button data-enter-action="true" onClick={handleLlamarMozo} variant="contained" sx={{ color: 'white',m:1 }}>
                                    Llamar Mozo
                                 </Button>
                             </ButtonGroup>

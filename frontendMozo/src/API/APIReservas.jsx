@@ -11,16 +11,6 @@ export async function BuscarTodasLasReservas() {
     }
 }
 
-export async function BuscarUnaReserva(Id) {
-    try {
-        const response = await api.get(`Reservas/${Id}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error al buscar reserva:', construirError(error, 'Error al buscar la reserva'));
-        return error.response;
-    }
-}
-
 export async function CrearReserva(datos) {
     try {
         const response = await api.post('Reservas', datos);

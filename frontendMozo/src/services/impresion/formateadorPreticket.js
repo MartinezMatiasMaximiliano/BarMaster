@@ -1,3 +1,5 @@
+import { limpiarTextoEscPos } from './textoEscPos';
+
 const ESC = '\x1B';
 const GS = '\x1D';
 
@@ -7,9 +9,9 @@ function dinero(valor) {
 
 function normalizarProducto(producto) {
     return {
-        nombre: producto.nombre ?? producto.Nombre ?? producto.producto?.nombre ?? 'Producto',
+        nombre: limpiarTextoEscPos(producto.nombre ?? producto.Nombre ?? producto.producto?.nombre ?? 'Producto'),
         precio: Number(producto.precioDelMomento ?? producto.PrecioDelMomento ?? producto.precio ?? 0),
-        indicaciones: (producto.indicaciones ?? producto.Indicaciones ?? '').trim(),
+        indicaciones: limpiarTextoEscPos(producto.indicaciones ?? producto.Indicaciones ?? '').trim(),
         pagado: Boolean(producto.pagado ?? producto.Pagado ?? producto.estaPagado ?? false),
     };
 }
@@ -26,8 +28,8 @@ export function construirPreticketCrudo({ nombreSucursal, nombreMesa, productos,
     if (agrupados.size === 0) throw new Error('SIN_PRODUCTOS_IMPRIMIBLES');
 
     const lineas = [
-        `${ESC}@`, `${ESC}a\x01`, nombreSucursal || 'BarMaster',
-        `Mesa: ${nombreMesa || '-'}`,
+        `${ESC}@`, `${ESC}a\x01`, limpiarTextoEscPos(nombreSucursal || 'BarMaster'),
+        `Mesa: ${limpiarTextoEscPos(nombreMesa || '-')}`,
         impresoEn.toLocaleString('es-AR'),
         'DOCUMENTO NO VALIDO COMO FACTURA',
         '-'.repeat(ancho), `${ESC}a\x00`,
@@ -36,8 +38,8 @@ export function construirPreticketCrudo({ nombreSucursal, nombreMesa, productos,
     agrupados.forEach((elemento) => {
         const subtotal = elemento.cantidad * elemento.precio;
         total += subtotal;
-        lineas.push(`${elemento.cantidad} x ${elemento.nombre}`);
-        lineas.push(`  $${dinero(elemento.precio)}  Subtotal $${dinero(subtotal)}`);
+        lineas.push(`${elemento.cantidad}x ${elemento.nombre}`);
+        lineas.push(`  $${dinero(elemento.precio)}  Subt. $${dinero(subtotal)}`);
         if (elemento.indicaciones) lineas.push(`  Nota: ${elemento.indicaciones}`);
     });
     lineas.push('-'.repeat(ancho), `${ESC}a\x02`, `TOTAL $${dinero(total)}`, `${ESC}a\x00`, '\n\n\n', `${GS}V\x00`);

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { generarUUID } from '../../../../Helpers/generarUUID';
 import { useDispatch } from 'react-redux';
 import { BuscarTodosLosProductos } from '../../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
@@ -136,7 +137,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
                 });
             });
             
-            commandIdRef.current ||= crypto.randomUUID();
+            commandIdRef.current ||= generarUUID();
             registrarDiagnosticoImpresion('pedido.envio_iniciado', {
                 idComando: commandIdRef.current,
                 idVisita,

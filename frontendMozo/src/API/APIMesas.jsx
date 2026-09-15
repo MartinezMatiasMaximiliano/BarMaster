@@ -64,45 +64,6 @@ export async function ModificarMesa(datos) {
     }
 }
 
-//export async function CambiarMozoAsignado(MesaId,IdMozo) {
-//    try {
-//        const response = await axios.put(BASE_URL + MesaId, { MozoId: IdMozo });
-//        return response.data;
-//    } catch (error) {
-//        return error.response
-//    }
-//}
-
-export async function PonerMozoEnNull(MesaId) {
-    try {
-        const response = await api.put('Mesa/' + MesaId, { MozoId: -1 });
-        return response.data;
-    } catch (error) {
-        console.error('Error al poner mozo en null:', construirError(error, 'Error al actualizar la mesa'));
-        return error.response
-    }
-}
-
-export async function DesactivarMesa(Id) {
-    try {
-        const response = await api.put('Mesa/' + Id, { activo: false });
-        return response.data;
-    } catch (error) {
-        console.error('Error al desactivar mesa:', construirError(error, 'Error al desactivar la mesa'));
-        return error.response
-    }
-}
-
-export async function ActivarMesa(Id) {
-    try {
-        const response = await api.put('Mesa/' + Id, { activo: true });
-        return response.data;
-    } catch (error) {
-        console.error('Error al activar mesa:', construirError(error, 'Error al activar la mesa'));
-        return error.response
-    }
-}
-
 export async function BorrarMesa(idMesa) {
     try {
         const response = await api.delete(

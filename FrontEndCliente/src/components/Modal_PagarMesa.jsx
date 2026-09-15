@@ -73,7 +73,7 @@ function Modal_PagarMesa(props) {
           </Button>
 
 
-          <Modal
+          <Modal data-keyboard-modal="true"
               open={open}
               onClose={handleClose}
 
@@ -101,10 +101,10 @@ function Modal_PagarMesa(props) {
                                   justifyContent: 'space-between',
                               }}
                           >
-                              <Button onClick={handleClose} variant="contained" sx={{ color: 'white', m: 1 }}>
+                              <Button data-escape-action="true" onClick={handleClose} variant="contained" sx={{ color: 'white', m: 1 }}>
                                   Cancelar
                               </Button>
-                              <Button onClick={handlePagarTotal} variant="contained" sx={{ color: 'white', m: 1 }}>
+                              <Button data-enter-action="true" onClick={handlePagarTotal} variant="contained" sx={{ color: 'white', m: 1 }}>
                                   Pagar Total
                               </Button>
                           </ButtonGroup>

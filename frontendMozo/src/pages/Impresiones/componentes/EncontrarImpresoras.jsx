@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Box, Button, Card, CardContent, Chip, CircularProgress, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { usarImpresion } from '../../../contexts/ContextoImpresion';
-import { darAltaEstacionActual, obtenerEstacionActual, obtenerImpresorasLocales, sincronizarInventarioImpresoras, actualizarImpresora, eliminarImpresora } from '../../../services/impresion/apiImpresion';
+import { darAltaEstacionActual, obtenerEstacionActual, obtenerImpresorasLocales, obtenerImpresoras, sincronizarInventarioImpresoras, actualizarImpresora, eliminarImpresora, solicitarPruebaRemotaImpresora } from '../../../services/impresion/apiImpresion';
 import { obtenerVersionQz } from '../../../services/impresion/conexionQz';
 import { imprimirCrudo } from '../../../services/impresion/impresionQz';
 import { normalizarErrorQz } from '../../../services/impresion/erroresQz';
@@ -16,7 +16,7 @@ const normalizarNombreSistema = (nombre) => nombre.trim().toLocaleLowerCase();
 function TarjetaEquipo({ nombre, nombreGuardado, editando, ocupado, alCambiar, alEditar, alCancelar, alGuardar }) {
     return <Card variant="outlined" sx={{ width: '100%', maxWidth: 520 }}>
         <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between">
+            <Stack data-enter-scope="true" direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between">
                 <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
                     <PrintOutlinedIcon color="primary" />
                     {editando
@@ -29,7 +29,7 @@ function TarjetaEquipo({ nombre, nombreGuardado, editando, ocupado, alCambiar, a
                 {editando
                     ? <Stack direction="row" spacing={1} justifyContent="flex-end">
                         <Button size="small" disabled={ocupado} onClick={alCancelar}>Cancelar</Button>
-                        <Button size="small" variant="contained" disabled={ocupado || nombre.trim().length < 2} onClick={alGuardar}>Guardar</Button>
+                        <Button data-enter-action="true" size="small" variant="contained" disabled={ocupado || nombre.trim().length < 2} onClick={alGuardar}>Guardar</Button>
                     </Stack>
                     : <Button size="small" startIcon={<EditOutlinedIcon />} disabled={ocupado} onClick={alEditar}>Editar nombre</Button>}
             </Stack>
@@ -41,7 +41,7 @@ function TarjetaImpresora({ impresora, yaGuardada, bloqueadaPorCaja, ocupado, al
     const motivoBloqueo = yaGuardada
         ? 'Impresora ya guardada'
         : bloqueadaPorCaja ? 'No se puede guardar mientras haya una caja activa' : '';
-    return <Card variant="outlined" sx={{ width: '100%', maxWidth: 360 }}><CardContent><Stack spacing={2}>
+    return <Card data-enter-scope="true" variant="outlined" sx={{ width: '100%', maxWidth: 360 }}><CardContent><Stack spacing={2}>
         <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1}>
             <Typography fontWeight={700}>{impresora.nombreVisible}</Typography>
             <Chip size="small" color={impresora.presente ? 'success' : 'warning'} label={impresora.presente ? 'Disponible' : 'No detectada'} />
@@ -52,7 +52,7 @@ function TarjetaImpresora({ impresora, yaGuardada, bloqueadaPorCaja, ocupado, al
             <Button disabled={ocupado || !impresora.presente} onClick={alProbar}>Probar</Button>
             <Tooltip title={motivoBloqueo}>
                 <span>
-                    <Button variant="contained" disabled={ocupado || yaGuardada || bloqueadaPorCaja || impresora.nombreVisible.trim().length < 2} onClick={alGuardar}>Guardar</Button>
+                    <Button data-enter-action="true" variant="contained" disabled={ocupado || yaGuardada || bloqueadaPorCaja || impresora.nombreVisible.trim().length < 2} onClick={alGuardar}>Guardar</Button>
                 </span>
             </Tooltip>
         </Stack>
@@ -98,12 +98,12 @@ function TablaImpresoras({ impresoras, bloqueadaPorCaja, ocupado, alEditar, alEl
                     <TableCell>Modelo</TableCell>
                     <TableCell>Conectada en</TableCell>
                     <TableCell>Estado</TableCell>
-                    <TableCell align="center">Reglas</TableCell>
+                    <TableCell align="center">Destinos asignados</TableCell>
                     <TableCell align="right">Acciones</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
-                {impresoras.map((impresora) => <TableRow key={impresora.id} hover>
+                {impresoras.map((impresora) => <TableRow data-enter-scope="true" key={impresora.id} hover>
                     <TableCell sx={{ width: '32%', minWidth: 220 }}>
                         {idEnEdicion === impresora.id
                             ? <TextField fullWidth autoFocus size="small" label="Nombre" value={nombreEditado} onChange={(e) => establecerNombreEditado(e.target.value)} />
@@ -119,7 +119,7 @@ function TablaImpresoras({ impresoras, bloqueadaPorCaja, ocupado, alEditar, alEl
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
                             {idEnEdicion === impresora.id ? <>
                                 <Button size="small" disabled={ocupado} onClick={cancelarEdicion}>Cancelar</Button>
-                                <Button size="small" variant="contained" disabled={ocupado || bloqueadaPorCaja || nombreEditado.trim().length < 2} onClick={() => confirmarEdicion(impresora)}>Confirmar</Button>
+                                <Button data-enter-action="true" size="small" variant="contained" disabled={ocupado || bloqueadaPorCaja || nombreEditado.trim().length < 2} onClick={() => confirmarEdicion(impresora)}>Confirmar</Button>
                             </> : <>
                                 <Button size="small" disabled={ocupado || !impresora.presente} onClick={() => alProbar(impresora)}>Probar</Button>
                                 <Tooltip title={bloqueadaPorCaja ? 'No se puede editar mientras haya una caja activa' : ''}><span><Button size="small" disabled={ocupado || bloqueadaPorCaja} onClick={() => comenzarEdicion(impresora)}>Editar</Button></span></Tooltip>
@@ -133,17 +133,33 @@ function TablaImpresoras({ impresoras, bloqueadaPorCaja, ocupado, alEditar, alEl
     </TableContainer>;
 }
 
-export default function EncontrarImpresoras({ integrada = false, encabezado = null, encabezadoPagina = null, bloqueadaPorCaja = false }) {
+export default function EncontrarImpresoras({ integrada = false, encabezado = null, encabezadoPagina = null, bloqueadaPorCaja = false, onImpresorasActualizadas }) {
     const impresion = usarImpresion();
     const [nombreEstacion, establecerNombreEstacion] = useState('Caja principal');
     const [nombreEstacionGuardado, establecerNombreEstacionGuardado] = useState('Caja principal');
     const [editandoNombreEstacion, establecerEditandoNombreEstacion] = useState(false);
     const [impresoras, establecerImpresoras] = useState([]);
+    const [impresorasRegistradas, establecerImpresorasRegistradas] = useState([]);
+    const [cargandoRegistradas, establecerCargandoRegistradas] = useState(true);
+    const [errorRegistradas, establecerErrorRegistradas] = useState(null);
     const [nombresNuevos, establecerNombresNuevos] = useState(new Set());
     const [nombresGuardadosEncontrados, establecerNombresGuardadosEncontrados] = useState(new Set());
     const [ocupado, establecerOcupado] = useState(false);
     const [aviso, establecerAviso] = useState(null);
     const [avisoEstacion, establecerAvisoEstacion] = useState(null);
+    const cargarRegistradas = useCallback(async () => {
+        establecerCargandoRegistradas(true);
+        establecerErrorRegistradas(null);
+        try {
+            establecerImpresorasRegistradas(await obtenerImpresoras());
+            onImpresorasActualizadas?.();
+        } catch (error) {
+            establecerErrorRegistradas(normalizarErrorQz(error).mensaje);
+        } finally {
+            establecerCargandoRegistradas(false);
+        }
+    }, [onImpresorasActualizadas]);
+    useEffect(() => { cargarRegistradas(); }, [cargarRegistradas]);
     useEffect(() => {
         obtenerEstacionActual()
             .then((estacion) => {
@@ -183,8 +199,9 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
         establecerNombresGuardadosEncontrados(new Set(
             nombresDetectados.filter((nombre) => nombresRegistrados.has(nombre)),
         ));
-        const sincronizadas = await sincronizarInventarioImpresoras(nombres, await obtenerVersionQz());
+        const sincronizadas = await sincronizarInventarioImpresoras(nombres, await obtenerVersionQz(), undefined, true);
         establecerImpresoras(sincronizadas.filter((x) => esImpresoraPermitida(x.nombreSistema)));
+        await cargarRegistradas();
         reiniciarTrabajadorImpresion();
     });
     const guardarNombreEstacion = async () => {
@@ -195,6 +212,7 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
             establecerNombreEstacion(estacion.nombre);
             establecerNombreEstacionGuardado(estacion.nombre);
             establecerEditandoNombreEstacion(false);
+            await cargarRegistradas();
             establecerAvisoEstacion({ severity: 'success', message: 'Nombre del equipo actualizado.' });
             return estacion;
         } catch (error) {
@@ -212,15 +230,19 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
     const guardar = (impresora) => ejecutar(async () => {
         const actualizada = await actualizarImpresora(impresora.id, {
             nombreVisible: impresora.nombreVisible, anchoPapelMm: impresora.anchoPapelMm || 58,
-            codificacion: impresora.codificacion || 'CP858', habilitada: impresora.habilitada,
+            codificacion: impresora.codificacion || 'CP858', habilitada: impresora.eliminadaEn ? true : impresora.habilitada,
+            restaurar: Boolean(impresora.eliminadaEn),
         });
         cambiar(impresora.id, actualizada);
-        establecerNombresNuevos((nombres) => {
-            const siguientes = new Set(nombres);
-            siguientes.delete(normalizarNombreSistema(actualizada.nombreSistema));
-            return siguientes;
-        });
-        establecerNombresGuardadosEncontrados((nombres) => new Set(nombres).add(normalizarNombreSistema(actualizada.nombreSistema)));
+        if (impresoras.some((local) => local.id === impresora.id)) {
+            establecerNombresNuevos((nombres) => {
+                const siguientes = new Set(nombres);
+                siguientes.delete(normalizarNombreSistema(actualizada.nombreSistema));
+                return siguientes;
+            });
+            establecerNombresGuardadosEncontrados((nombres) => new Set(nombres).add(normalizarNombreSistema(actualizada.nombreSistema)));
+        }
+        await cargarRegistradas();
         return actualizada;
     }, 'Impresora guardada.');
     const editarNombre = (impresora, nombreVisible) => guardar({ ...impresora, nombreVisible });
@@ -228,17 +250,21 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
         if (!window.confirm(`¿Eliminar la impresora "${impresora.nombreVisible}"?`)) return null;
         return ejecutar(async () => {
             await eliminarImpresora(impresora.id);
+            establecerImpresorasRegistradas((elementos) => elementos.filter((x) => x.id !== impresora.id));
             establecerImpresoras((elementos) => elementos.filter((x) => x.id !== impresora.id));
-            establecerNombresNuevos((nombres) => {
-                const siguientes = new Set(nombres);
-                siguientes.delete(normalizarNombreSistema(impresora.nombreSistema));
-                return siguientes;
-            });
-            establecerNombresGuardadosEncontrados((nombres) => {
-                const siguientes = new Set(nombres);
-                siguientes.delete(normalizarNombreSistema(impresora.nombreSistema));
-                return siguientes;
-            });
+            if (impresoras.some((local) => local.id === impresora.id)) {
+                establecerNombresNuevos((nombres) => {
+                    const siguientes = new Set(nombres);
+                    siguientes.delete(normalizarNombreSistema(impresora.nombreSistema));
+                    return siguientes;
+                });
+                establecerNombresGuardadosEncontrados((nombres) => {
+                    const siguientes = new Set(nombres);
+                    siguientes.delete(normalizarNombreSistema(impresora.nombreSistema));
+                    return siguientes;
+                });
+            }
+            await cargarRegistradas();
             return true;
         }, 'Impresora eliminada.');
     };
@@ -246,12 +272,15 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
         const opciones = { nombreTrabajo: 'BarMaster - Prueba', codificacion: impresora.codificacion || 'CP858' };
         await imprimirCrudo(impresora.nombreSistema, '\x1B@\x1Ba\x01BarMaster\nPrueba correcta\n\n\n\x1DV\x00', opciones);
     }, 'Prueba enviada. Revisá que haya salido correctamente.');
+    const probarRegistrada = (impresora) => ejecutar(
+        () => solicitarPruebaRemotaImpresora(impresora.id),
+        `Prueba enviada al equipo ${impresora.nombreEstacion}.`,
+    );
     const fueEncontrada = (impresora) => {
         const nombre = normalizarNombreSistema(impresora.nombreSistema);
         return nombresNuevos.has(nombre) || nombresGuardadosEncontrados.has(nombre);
     };
     const impresorasEncontradas = impresoras.filter(fueEncontrada);
-    const impresorasRegistradas = impresoras.filter((x) => !nombresNuevos.has(normalizarNombreSistema(x.nombreSistema)));
     const botonBuscar = <Button
         variant="contained"
         startIcon={ocupado ? <CircularProgress size={18} color="inherit" /> : <RefreshIcon />}
@@ -289,9 +318,16 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
         {impresorasEncontradas.length > 0 && <Stack spacing={1.5}>
             <GrillaImpresoras impresoras={impresorasEncontradas} nombresGuardados={nombresGuardadosEncontrados} bloqueadaPorCaja={bloqueadaPorCaja} ocupado={ocupado} alCambiar={cambiar} alGuardar={guardar} alProbar={probar} />
         </Stack>}
-        {impresorasRegistradas.length > 0 && <Stack spacing={1.5}>
-            <Typography variant="h6">Impresoras guardadas</Typography>
-            <TablaImpresoras impresoras={impresorasRegistradas} bloqueadaPorCaja={bloqueadaPorCaja} ocupado={ocupado} alEditar={editarNombre} alEliminar={eliminar} alProbar={probar} />
-        </Stack>}
+        <Stack spacing={1.5}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Typography variant="h6">Impresoras guardadas</Typography>
+                <Button onClick={cargarRegistradas} disabled={ocupado || cargandoRegistradas} startIcon={<RefreshIcon />}>Actualizar</Button>
+            </Stack>
+            <Typography variant="body2" color="text.secondary">Todas las impresoras registradas en esta sucursal, de todos los equipos.</Typography>
+            {cargandoRegistradas && <Typography role="status">Cargando impresoras guardadas…</Typography>}
+            {errorRegistradas && <Alert severity="error">No se pudieron cargar las impresoras guardadas: {errorRegistradas}</Alert>}
+            {!cargandoRegistradas && !errorRegistradas && impresorasRegistradas.length === 0 && <Alert severity="info">No hay impresoras guardadas en esta sucursal.</Alert>}
+            {impresorasRegistradas.length > 0 && <TablaImpresoras impresoras={impresorasRegistradas} bloqueadaPorCaja={bloqueadaPorCaja} ocupado={ocupado || cargandoRegistradas} alEditar={editarNombre} alEliminar={eliminar} alProbar={probarRegistrada} />}
+        </Stack>
     </Stack>;
 }

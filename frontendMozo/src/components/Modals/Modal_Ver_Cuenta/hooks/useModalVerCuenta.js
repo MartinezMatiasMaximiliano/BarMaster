@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { Pagar } from '../../../../API/APIPagos';
 import { BuscarTipoMovimientosPorEntorno } from '../../../../API/APITipoMovimientosCaja';
-import { GenerarTicketPDF } from '../../../../API/APIPedidos';
 import { cambiarEstadoPagadoProductos } from '../../../../redux/slices/visitasActivasSlice';
 import { eliminar as eliminarTicket } from '../../../../redux/slices/ticketSlice';
 import { sendHubMessage } from '../../../../connections/HubConnMozo';
@@ -113,14 +112,13 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
                 idTipoPago = primer?.id ?? primer?.Id ?? 1;
             }
 
-            const pagoCreado = await Pagar(idVisita, arregloIds, idTipoPago, monto);
+            const pagoCreado = await Pagar(idVisita, arregloIds, idTipoPago, monto, opciones?.descuento ?? 0);
             const idMovimientoCaja = pagoCreado?.id || pagoCreado?.Id;
 
-            GenerarTicketPDF(datosMesa.nombre, arregloIds);
-            await sendHubMessage("RecargarTicket", datosMesa.nombre);
             dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true, idMovimientoCaja }));
             dispatch(eliminarTicket(arregloIds));
             setTabValue(tabIndexPagosRegistrados);
+            await sendHubMessage("RecargarTicket", datosMesa.nombre);
 
             if (showSnackbar) {
                 showSnackbar("Productos facturados correctamente", "success");

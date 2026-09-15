@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import App from './App.jsx'
+import AtajosTeclado from './components/AtajosTeclado'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/index.css'
 import './styles/App.css';
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Provider store={store}>
                 <ThemeProvider theme={theme}>
                     <CssBaseline />
+                    <AtajosTeclado />
                     <App />
                 </ThemeProvider>
             </Provider>

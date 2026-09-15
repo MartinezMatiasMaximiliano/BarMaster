@@ -48,7 +48,9 @@ Test-QzInstaller -InstallerPath $installerPath -Manifest $manifest -Architecture
 $rootSource = Assert-QzRootArtifact -Manifest $manifest
 
 if ($PSCmdlet.ShouldProcess($installerPath, 'Instalar QZ Tray silenciosamente')) {
-    $process = Start-Process -FilePath $installerPath -ArgumentList '/S' -Wait -PassThru
+    $process = Invoke-QzBackgroundProcess -FilePath $installerPath -Arguments '/S'
+    Write-Output $process.StandardOutput
+    Write-Output $process.StandardError
     if ($process.ExitCode -ne 0) {
         throw "La instalación de QZ Tray falló con código $($process.ExitCode)."
     }

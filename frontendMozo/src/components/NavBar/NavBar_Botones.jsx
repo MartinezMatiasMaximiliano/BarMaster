@@ -90,6 +90,7 @@ const menuConfig = {
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         ],
         "Ayuda": [
+            { path: "/primeros_pasos", label: "Primeros pasos", icon: ChecklistOutlinedIcon },
             { path: "/documentacion", label: "Documentación de uso", icon: ArticleOutlinedIcon },
             { path: "/comentarios", label: "Enviar Comentarios", icon: FeedbackOutlinedIcon },
         ],
@@ -132,6 +133,7 @@ const menuConfig = {
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         ],
         "Ayuda": [
+            { path: "/primeros_pasos", label: "Primeros pasos", icon: ChecklistOutlinedIcon },
             { path: "/documentacion", label: "Documentación de uso", icon: ArticleOutlinedIcon },
             { path: "/comentarios", label: "Enviar Comentarios", icon: FeedbackOutlinedIcon },
         ],
@@ -248,11 +250,11 @@ function NavBar_Botones(props) {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setShowLogout(false)}>Cancelar</Button>
+                    <Button data-escape-action="true" onClick={() => setShowLogout(false)}>Cancelar</Button>
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => {
+                        data-enter-action="true" onClick={() => {
                             setShowLogout(false);
                             props.cerrarSesion();
                         }}

@@ -135,6 +135,65 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
         }
     }
 
+    public async Task<IReadOnlyList<CrearSolicitudImpresionRespuesta>> EncolarComprobantePagoAsync(
+        Visita visita,
+        IReadOnlyList<ProductosPorVisita> productosCobrados,
+        MovimientoCaja pago,
+        CancellationToken tokenCancelacion,
+        decimal descuento = 0,
+        decimal recargo = 0)
+    {
+        if (productosCobrados.Count == 0) return [];
+        var sucursal = await contextoDbActual.Db.Sucursales.AsNoTracking()
+            .Include(x => x.Empresa)
+            .Where(x => x.Id == identidad.IdSucursal)
+            .SingleAsync(tokenCancelacion);
+        var medioPago = await contextoDbActual.Db.TipoMovimientosCajas.AsNoTracking()
+            .Where(x => x.Id == pago.IdTipoMovimientoCaja)
+            .Select(x => x.Nombre)
+            .SingleOrDefaultAsync(tokenCancelacion);
+        var lineas = productosCobrados
+            .GroupBy(x => new { x.NombreProducto, x.PrecioDelMomento, Notas = (x.Detalles ?? string.Empty).Trim() })
+            .Select(grupo => new LineaPreticketContenido(grupo.Count(), grupo.Key.NombreProducto,
+                grupo.Key.PrecioDelMomento, string.IsNullOrEmpty(grupo.Key.Notas) ? null : grupo.Key.Notas))
+            .OrderBy(x => x.Descripcion)
+            .ToList();
+        var subtotal = lineas.Sum(x => x.Cantidad * x.PrecioUnitario);
+        var contenido = new ComprobantePagoContenido(1, sucursal.Nombre,
+            visita.Mesa?.Nombre ?? visita.Origen, DateTime.SpecifyKind(pago.FechaMovimiento, DateTimeKind.Utc), lineas, pago.MontoTotal,
+            pago.MontoAbonado, pago.Vuelto, "DOCUMENTO NO VALIDO COMO FACTURA")
+        {
+            NombreEmpresa = sucursal.Empresa?.Nombre,
+            Cuit = sucursal.Empresa?.Cuit > 0 ? sucursal.Empresa.Cuit.ToString() : null,
+            Direccion = sucursal.Direccion,
+            Telefono = !string.IsNullOrWhiteSpace(sucursal.Telefono) ? sucursal.Telefono
+                : sucursal.Empresa?.Telefonos?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)),
+            Email = sucursal.Empresa?.Emails?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)),
+            MedioPago = medioPago,
+            ReferenciaPago = pago.Id.ToString("D"),
+            Origen = visita.Origen,
+            Subtotal = subtotal,
+            AjustePedido = pago.MontoTotal + descuento - recargo - subtotal,
+            Descuento = descuento,
+            Recargo = recargo
+        };
+        try
+        {
+            var resultado = await servicioTrabajoImpresion.CrearEnrutadosAsync(new(
+                Guid.NewGuid(), TipoDocumentoImpresion.ComprobantePago,
+                MomentoImpresion.AlCobrarProductosSinFacturar,
+                JsonSerializer.Serialize(contenido, JsonOptions), 1, 1,
+                $"payment:{pago.Id:N}", nameof(MovimientoCaja), pago.Id.ToString("N"),
+                identidad.IdPersona, true), tokenCancelacion);
+            return [resultado];
+        }
+        catch (ExcepcionEstacionImpresion exception)
+        {
+            registrador.LogWarning("No se creó el comprobante del pago {IdPago}: {CodigoError}.", pago.Id, exception.Codigo);
+            return [];
+        }
+    }
+
     private static ExcepcionEstacionImpresion DocumentoInvalido() =>
         new("DOCUMENTO_IMPRESION_INVALIDO", "La solicitud de impresión es inválida.", StatusCodes.Status400BadRequest);
     private DateTime AhoraUtc => proveedorTiempo.GetUtcNow().UtcDateTime;

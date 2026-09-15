@@ -1,4 +1,4 @@
-﻿using BackEndAPI.Data;
+using BackEndAPI.Data;
 using BackEndAPI.DTOs.Query;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
@@ -29,6 +29,7 @@ namespace BackEndAPI.Repositories
         {
             return await db.Empresas
                 .AsSplitQuery()
+                .Include(e => e.TipoSubscripcion)
                 .Include(e => e.Sucursales)
                 //.Include(e=>e.Propietario)
                 .FirstOrDefaultAsync(e => e.Id == id);

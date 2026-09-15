@@ -105,7 +105,7 @@ export default function Mesa_Deshabilitada(props) {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <BsButton variant="primary" onClick={handleClose}>
+                    <BsButton data-enter-action="true" variant="primary" data-escape-action="true" onClick={handleClose}>
                         Cerrar
                     </BsButton>
                 </Modal.Footer>

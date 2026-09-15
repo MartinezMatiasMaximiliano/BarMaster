@@ -54,6 +54,12 @@ public static class ConfiguracionImpresionDistribuida
 
         modelBuilder.Entity<TrabajoImpresion>(entity =>
         {
+            // Compare-and-swap: every tracked update must still own the state and lease it read.
+            entity.Property(x => x.Estado).IsConcurrencyToken();
+            entity.Property(x => x.IdEstacion).IsConcurrencyToken();
+            entity.Property(x => x.IdReserva).IsConcurrencyToken();
+            entity.Property(x => x.ReservaVenceEn).IsConcurrencyToken();
+            entity.Property(x => x.VenceEn).IsConcurrencyToken();
             entity.Property(x => x.TipoDocumento).HasConversion<string>().HasMaxLength(32);
             entity.Property(x => x.Formato).HasConversion<string>().HasMaxLength(16);
             entity.Property(x => x.Estado).HasConversion<string>().HasMaxLength(24);

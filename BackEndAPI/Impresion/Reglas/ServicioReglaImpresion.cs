@@ -43,8 +43,17 @@ public sealed class ServicioReglaImpresion : IServicioReglaImpresion
             throw ReglaInvalida();
 
         var db = contextoDbActual.Db;
+        if (!EsCompatible(solicitud.TipoSalida, solicitud.Momento))
+        {
+            var soloDeshabilitaAnterior = solicitud.Id.HasValue && !solicitud.Habilitada
+                && await db.ReglasImpresion.AnyAsync(x => x.Id == solicitud.Id && x.IdSucursal == identidad.IdSucursal
+                    && x.IdImpresora == solicitud.IdImpresora && x.TipoSalida == solicitud.TipoSalida
+                    && x.Momento == solicitud.Momento, tokenCancelacion);
+            if (!soloDeshabilitaAnterior)
+                throw new ExcepcionEstacionImpresion("REGLA_IMPRESION_NO_COMPATIBLE", "Solo se admite comanda al cargar productos y ticket al imprimir preticket o cobrar productos.", StatusCodes.Status400BadRequest);
+        }
         var existeImpresora = await db.Impresoras.AnyAsync(x =>
-            x.Id == solicitud.IdImpresora && x.Estacion.IdSucursal == identidad.IdSucursal,
+            x.Id == solicitud.IdImpresora && x.EliminadaEn == null && x.Estacion.IdSucursal == identidad.IdSucursal,
             tokenCancelacion);
         if (!existeImpresora)
             throw new ExcepcionEstacionImpresion("IMPRESORA_REGLA_INVALIDA", "La impresora no pertenece a esta sucursal.", StatusCodes.Status400BadRequest);
@@ -100,6 +109,8 @@ public sealed class ServicioReglaImpresion : IServicioReglaImpresion
         var reglas = await ConsultaBase().AsNoTracking().Where(x => x.Habilitada).ToListAsync(tokenCancelacion);
         foreach (var regla in reglas)
         {
+            if (!EsCompatible(regla.TipoSalida, regla.Momento))
+                problemas.Add(new("REGLA_IMPRESION_NO_COMPATIBLE", "Esta regla no es compatible. Deshabilitala o eliminala.", regla.Id));
             if (!regla.Impresora.Habilitada || !regla.Impresora.Presente)
                 problemas.Add(new("IMPRESORA_NO_DISPONIBLE", $"{regla.Impresora.NombreVisible} no está disponible.", regla.IdImpresora));
             if (!EstacionEnLinea(regla.Impresora.Estacion))
@@ -117,8 +128,10 @@ public sealed class ServicioReglaImpresion : IServicioReglaImpresion
         var tipoSalida = tipoDocumento == TipoDocumentoImpresion.Comanda
             ? TipoSalidaImpresion.Comanda
             : TipoSalidaImpresion.Ticket;
+        if (tipoDocumento is not (TipoDocumentoImpresion.Comanda or TipoDocumentoImpresion.Preticket or TipoDocumentoImpresion.ComprobantePago)
+            || !EsCompatible(tipoSalida, momento)) return [];
         return await ConsultaBase()
-            .Where(x => x.Habilitada && x.TipoSalida == tipoSalida && x.Momento == momento)
+            .Where(x => x.Habilitada && x.Impresora.EliminadaEn == null && x.TipoSalida == tipoSalida && x.Momento == momento)
             .OrderBy(x => x.CreadoEn)
             .ToListAsync(tokenCancelacion);
     }
@@ -132,7 +145,11 @@ public sealed class ServicioReglaImpresion : IServicioReglaImpresion
         regla.Impresora.IdEstacion, regla.Impresora.Estacion.Nombre,
         regla.TipoSalida, regla.Momento, regla.Habilitada,
         regla.Impresora.Habilitada && regla.Impresora.Presente && EstacionEnLinea(regla.Impresora.Estacion),
-        regla.ActualizadoEn);
+        regla.ActualizadoEn, EsCompatible(regla.TipoSalida, regla.Momento));
+
+    private static bool EsCompatible(TipoSalidaImpresion tipo, MomentoImpresion momento) =>
+        (tipo == TipoSalidaImpresion.Comanda && momento == MomentoImpresion.AlCargarProductosMesa)
+        || (tipo == TipoSalidaImpresion.Ticket && momento is MomentoImpresion.AlGenerarPreticket or MomentoImpresion.AlCobrarProductosSinFacturar);
 
     private bool EstacionEnLinea(EstacionImpresion estacion) => estacion.Habilitada && estacion.RevocadaEn is null
         && estacion.VistaPorUltimaVezEn >= AhoraUtc.AddSeconds(-opciones.SegundosHastaFueraDeLinea);

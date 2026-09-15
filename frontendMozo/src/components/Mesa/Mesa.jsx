@@ -4,6 +4,7 @@ import { MesaButton } from './MesaButton';
 import { MesaModalUnificado } from './MesaModalUnificado';
 import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
 import { useMesaState } from './useMesaState';
+import { useSnackbar } from '../../hooks/useSnackbar';
 import { useMesaLogic } from './useMesaLogic';
 
 export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true, esVistaPlano = false }) {
@@ -16,7 +17,8 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     } = useMesaState(datos_mesa.nombre);
 
 
-    const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic();
+    const { showSnackbar, SnackbarComponent } = useSnackbar();
+    const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic(showSnackbar);
 
     // Handlers con contexto
     const handleCancelarPedidos = (idsProductos) => {
@@ -131,5 +133,5 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         );
     };
 
-    return renderMesa();
+    return <>{renderMesa()}<SnackbarComponent /></>;
 }

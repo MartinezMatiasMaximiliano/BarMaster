@@ -1,130 +1,130 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Button, Card, CardContent, Chip, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Box, Button, Card, CardContent, Chip, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { eliminarReglaImpresion, obtenerImpresoras, obtenerReglasImpresion, guardarReglaImpresion } from '../../../services/impresion/apiImpresion';
 import { normalizarErrorQz } from '../../../services/impresion/erroresQz';
 
-const TIPOS_IMPRESION = [
-    { valor: 'Comanda', etiqueta: 'Comanda' },
-    { valor: 'Ticket', etiqueta: 'Ticket' },
+const ACCIONES = [
+    { titulo: 'Comandas', descripcion: 'Al enviar productos a una mesa.', tipoSalida: 'Comanda', momento: 'AlCargarProductosMesa' },
+    { titulo: 'Cuenta previa', descripcion: 'Al presionar “Imprimir cuenta”, antes de cobrar.', tipoSalida: 'Ticket', momento: 'AlGenerarPreticket' },
+    { titulo: 'Comprobante de pago', descripcion: 'Después de confirmar “Cobrar todo” o “Cobrar por partes”.', tipoSalida: 'Ticket', momento: 'AlCobrarProductosSinFacturar' },
 ];
+const corresponde = (regla, accion) => regla.tipoSalida === accion.tipoSalida && regla.momento === accion.momento && regla.compatible !== false;
+const nombreImpresora = (impresora) => `${impresora.nombreVisible} — ${impresora.nombreEstacion}${!impresora.estacionEnLinea ? ' (equipo desconectado)' : ''}`;
 
-const OPCIONES_MOMENTO = [
-    { valor: 'AlCargarProductosMesa', etiqueta: 'Al cargar productos a una mesa' },
-    { valor: 'AlCobrarProductosFacturados', etiqueta: 'Al cobrar productos facturados' },
-    { valor: 'AlGenerarPreticket', etiqueta: 'Al generar preticket' },
-    { valor: 'AlCobrarProductosSinFacturar', etiqueta: 'Al cobrar productos sin facturar' },
-];
-
-const etiquetaTipo = (valor) => TIPOS_IMPRESION.find((opcion) => opcion.valor === valor)?.etiqueta || valor;
-const etiquetaMomento = (valor) => OPCIONES_MOMENTO.find((opcion) => opcion.valor === valor)?.etiqueta || valor;
-const FORMULARIO_INICIAL = { idImpresora: '', tipoSalida: 'Comanda', momento: 'AlCargarProductosMesa' };
-
-export default function ReglasImpresion({ integrada = false, encabezado = null, bloqueadaPorCaja = false }) {
+export default function ReglasImpresion({ integrada = false, encabezado = null, bloqueadaPorCaja = false, versionImpresoras = 0 }) {
     const [impresoras, establecerImpresoras] = useState([]);
     const [reglas, establecerReglas] = useState([]);
     const [aviso, establecerAviso] = useState(null);
-    const [formulario, establecerFormulario] = useState(FORMULARIO_INICIAL);
-    const [mostrandoFormulario, establecerMostrandoFormulario] = useState(!integrada);
+    const [cargando, establecerCargando] = useState(true);
+    const [errorCarga, establecerErrorCarga] = useState(false);
+    const [guardando, establecerGuardando] = useState(false);
+    const [agregando, establecerAgregando] = useState({});
+    const enCurso = useRef(false);
 
-    const cargar = async () => {
-        const [listaImpresoras, listaReglas] = await Promise.all([obtenerImpresoras(), obtenerReglasImpresion()]);
-        establecerImpresoras(listaImpresoras);
-        establecerReglas(listaReglas);
-    };
-    const mostrarError = useCallback((error) => establecerAviso({ severity: 'error', text: normalizarErrorQz(error).mensaje }), []);
-    useEffect(() => { cargar().catch(mostrarError); }, [mostrarError]);
-    const impresorasHabilitadas = useMemo(() => impresoras.filter((impresora) => impresora.habilitada), [impresoras]);
+    const cargar = useCallback(async () => {
+        establecerCargando(true);
+        try {
+            const [listaImpresoras, listaReglas] = await Promise.all([obtenerImpresoras(), obtenerReglasImpresion()]);
+            establecerImpresoras(listaImpresoras);
+            establecerReglas(listaReglas);
+            establecerErrorCarga(false);
+        } catch (error) {
+            establecerErrorCarga(true);
+            establecerAviso({ severity: 'error', text: normalizarErrorQz(error).mensaje });
+        } finally { establecerCargando(false); }
+    }, []);
+    useEffect(() => { cargar(); }, [cargar, versionImpresoras]);
 
-    const guardarRegla = async () => {
-        if (!formulario.idImpresora) return establecerAviso({ severity: 'warning', text: 'Elegí una impresora.' });
-        await guardarReglaImpresion({ id: null, ...formulario, habilitada: true });
-        await cargar();
-        establecerFormulario(FORMULARIO_INICIAL);
-        establecerMostrandoFormulario(false);
-        establecerAviso({ severity: 'success', text: 'Regla de impresión guardada.' });
+    const guardar = async (accion, regla, cambios) => {
+        if (enCurso.current) return;
+        enCurso.current = true;
+        establecerGuardando(true);
+        try {
+            const guardada = await guardarReglaImpresion({
+                id: regla?.id ?? null, idImpresora: regla?.idImpresora,
+                tipoSalida: accion.tipoSalida, momento: accion.momento,
+                habilitada: regla?.habilitada ?? true, ...cambios,
+            });
+            establecerReglas((actuales) => actuales.some((item) => item.id === guardada.id)
+                ? actuales.map((item) => item.id === guardada.id ? guardada : item)
+                : [...actuales, guardada]);
+            establecerAgregando((actual) => ({ ...actual, [accion.momento]: false }));
+            establecerAviso({ severity: 'success', text: 'Destino de impresión guardado.' });
+        } catch (error) {
+            establecerAviso({ severity: 'error', text: normalizarErrorQz(error).mensaje });
+        } finally { enCurso.current = false; establecerGuardando(false); }
     };
 
-    const eliminarRegla = async (regla) => {
-        if (!window.confirm(`¿Eliminar la regla de ${regla.nombreVisibleImpresora}?`)) return;
-        await eliminarReglaImpresion(regla.id);
-        await cargar();
-        establecerAviso({ severity: 'success', text: 'Regla de impresión eliminada.' });
+    const quitar = async (regla) => {
+        if (enCurso.current || bloqueadaPorCaja || !window.confirm(`¿Quitar ${regla.nombreVisibleImpresora} de esta impresión?`)) return;
+        enCurso.current = true;
+        establecerGuardando(true);
+        try {
+            await eliminarReglaImpresion(regla.id);
+            establecerReglas((actuales) => actuales.filter((item) => item.id !== regla.id));
+            establecerAviso({ severity: 'success', text: 'Destino de impresión quitado.' });
+        } catch (error) {
+            establecerAviso({ severity: 'error', text: normalizarErrorQz(error).mensaje });
+        } finally { enCurso.current = false; establecerGuardando(false); }
     };
-    const botonAgregar = <Tooltip title="Agregar regla">
-        <span>
-            <IconButton
-                aria-label="Agregar regla"
-                disabled={mostrandoFormulario}
-                onClick={() => establecerMostrandoFormulario(true)}
-                sx={{
-                    bgcolor: 'primary.dark',
-                    color: 'common.white',
-                    flexShrink: 0,
-                    '&:hover': { bgcolor: 'primary.dark', boxShadow: '0 4px 14px rgba(59, 95, 217, 0.35)' },
-                    '&.Mui-disabled': { bgcolor: 'primary.dark', color: 'common.white', opacity: 0.55 },
-                }}
-            >
-                <AddIcon sx={{ color: 'inherit' }} />
-            </IconButton>
-        </span>
+    const botonQuitar = (regla) => <Tooltip title={bloqueadaPorCaja ? 'No se puede quitar mientras haya una caja activa' : ''}>
+        <span><Button size="small" color="error" disabled={guardando || bloqueadaPorCaja} onClick={() => quitar(regla)}>Quitar</Button></span>
     </Tooltip>;
+    const anteriores = reglas.filter((regla) => !ACCIONES.some((accion) => corresponde(regla, accion)));
 
     return <Stack spacing={3} sx={{ maxWidth: integrada ? 'none' : 1000, mx: integrada ? 0 : 'auto', pb: integrada ? 0 : 4 }}>
-        {!integrada && <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-            <Box><Typography variant="h4">Reglas de impresión</Typography><Typography color="text.secondary">Cada regla envía una impresión a una única impresora.</Typography></Box>
-            {botonAgregar}
-        </Stack>}
-        {encabezado && <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-            {encabezado}
-            {botonAgregar}
-        </Stack>}
+        {encabezado || (!integrada && <Box><Typography variant="h4">Impresión automática</Typography><Typography color="text.secondary">Elegí dónde se imprime cada documento.</Typography></Box>)}
         {aviso && <Alert severity={aviso.severity} onClose={() => establecerAviso(null)}>{aviso.text}</Alert>}
-
-        {mostrandoFormulario && <Card variant="outlined"><CardContent><Stack spacing={2}>
-            <Typography variant="h6">Nueva regla</Typography>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <FormControl fullWidth><InputLabel>Impresora</InputLabel><Select label="Impresora" value={formulario.idImpresora} onChange={(event) => establecerFormulario({ ...formulario, idImpresora: event.target.value })}>{impresorasHabilitadas.map((impresora) => <MenuItem key={impresora.id} value={impresora.id}>{impresora.nombreVisible} — {impresora.nombreEstacion}{!impresora.estacionEnLinea ? ' (equipo desconectado)' : ''}</MenuItem>)}</Select></FormControl>
-                <FormControl fullWidth><InputLabel>Qué se imprime</InputLabel><Select label="Qué se imprime" value={formulario.tipoSalida} onChange={(evento) => establecerFormulario({ ...formulario, tipoSalida: evento.target.value })}>{TIPOS_IMPRESION.map((tipo) => <MenuItem key={tipo.valor} value={tipo.valor}>{tipo.etiqueta}</MenuItem>)}</Select></FormControl>
-                <FormControl fullWidth><InputLabel>Cuándo</InputLabel><Select label="Cuándo" value={formulario.momento} onChange={(evento) => establecerFormulario({ ...formulario, momento: evento.target.value })}>{OPCIONES_MOMENTO.map((opcion) => <MenuItem key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</MenuItem>)}</Select></FormControl>
-            </Stack>
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
-                <Button onClick={() => {
-                    establecerFormulario(FORMULARIO_INICIAL);
-                    establecerMostrandoFormulario(false);
-                }}>Cancelar</Button>
-                <Button variant="contained" onClick={() => guardarRegla().catch(mostrarError)}>Guardar regla</Button>
-            </Stack>
-        </Stack></CardContent></Card>}
-
-        <Stack spacing={1.5}>
-            <Typography variant="h6">Reglas activas</Typography>
-            {reglas.length === 0
-                ? <Typography color="text.secondary">No hay reglas configuradas.</Typography>
-                : <TableContainer component={Card} variant="outlined">
-                    <Table size="small" sx={{ minWidth: 650 }}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Impresora</TableCell>
-                                <TableCell>Qué imprime</TableCell>
-                                <TableCell>Cuándo</TableCell>
-                                <TableCell align="right">Acciones</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {reglas.map((regla) => <TableRow key={regla.id} hover>
-                                <TableCell><Typography fontWeight={600}>{regla.nombreVisibleImpresora}</Typography></TableCell>
-                                <TableCell><Chip size="small" label={etiquetaTipo(regla.tipoSalida)} color={regla.tipoSalida === 'Comanda' ? 'primary' : 'secondary'} /></TableCell>
-                                <TableCell>{etiquetaMomento(regla.momento)}</TableCell>
-                                <TableCell align="right">
-                                    <Tooltip title={bloqueadaPorCaja ? 'No se puede eliminar mientras haya una caja activa' : ''}>
-                                        <span><Button size="small" color="error" disabled={bloqueadaPorCaja} onClick={() => eliminarRegla(regla).catch(mostrarError)}>Eliminar</Button></span>
-                                    </Tooltip>
-                                </TableCell>
-                            </TableRow>)}
-                        </TableBody>
-                    </Table>
-                </TableContainer>}
-        </Stack>
+        {cargando ? <Typography color="text.secondary">Cargando destinos de impresión…</Typography> : errorCarga ?
+            <Button onClick={cargar}>Volver a cargar</Button> : <>
+            {impresoras.filter((impresora) => impresora.habilitada).length === 0 && <Alert severity="info">Buscá y habilitá una impresora en el paso anterior para asignarle documentos.</Alert>}
+            <Typography variant="body2" color="text.secondary">Los cambios se guardan automáticamente. Podés enviar el mismo documento a varias impresoras.</Typography>
+            {ACCIONES.map((accion) => {
+                const destinos = reglas.filter((regla) => corresponde(regla, accion));
+                const disponibles = impresoras.filter((impresora) => impresora.habilitada && !destinos.some((regla) => regla.idImpresora === impresora.id));
+                const selector = (regla) => {
+                    const opciones = impresoras.filter((impresora) => impresora.id === regla?.idImpresora || (impresora.habilitada && !destinos.some((destino) => destino.idImpresora === impresora.id)));
+                    const labelId = `${accion.momento}-${regla?.id ?? 'nueva'}`;
+                    return <FormControl fullWidth size="small" sx={{ flex: 1 }} disabled={guardando || (!regla && disponibles.length === 0)}>
+                        <InputLabel id={labelId}>Impresora</InputLabel>
+                        <Select labelId={labelId} label="Impresora" value={regla?.idImpresora ?? ''} onChange={(event) => guardar(accion, regla, { idImpresora: event.target.value })}>
+                            {!regla && <MenuItem value="" disabled>Elegí una impresora</MenuItem>}
+                            {regla && !opciones.some((impresora) => impresora.id === regla.idImpresora) && <MenuItem value={regla.idImpresora}>{regla.nombreVisibleImpresora} — {regla.nombreEstacion} (no disponible)</MenuItem>}
+                            {opciones.map((impresora) => <MenuItem key={impresora.id} value={impresora.id}>{nombreImpresora(impresora)}</MenuItem>)}
+                        </Select>
+                    </FormControl>;
+                };
+                return <Card key={accion.momento} variant="outlined" component="section" aria-label={accion.titulo} sx={{ borderRadius: 2 }}><CardContent><Stack spacing={2}>
+                    <Box><Typography variant="h6">{accion.titulo}</Typography><Typography variant="body2" color="text.secondary">{accion.descripcion}</Typography></Box>
+                    {destinos.map((regla) => <Stack key={regla.id} spacing={1}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
+                            {selector(regla)}
+                            <Stack direction="row" alignItems="center" justifyContent="space-between">
+                                <FormControlLabel sx={{ mr: 1, minWidth: 140 }} label={regla.habilitada ? 'Activado' : 'Desactivado'} control={<Switch checked={regla.habilitada} disabled={guardando} slotProps={{ input: { 'aria-label': `Activar ${accion.titulo} en ${regla.nombreVisibleImpresora}` } }} onChange={(_, checked) => guardar(accion, regla, { habilitada: checked })} />} />
+                                {botonQuitar(regla)}
+                            </Stack>
+                        </Stack>
+                        {regla.habilitada && regla.disponible === false && <Typography variant="caption" color="warning.main">La impresora no está disponible en este momento.</Typography>}
+                    </Stack>)}
+                    {destinos.length === 0 && <Typography variant="body2" color="text.secondary">Sin impresora asignada.</Typography>}
+                    {(destinos.length === 0 || agregando[accion.momento]) && <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                        {selector(null)}
+                        {destinos.length > 0 && <Button disabled={guardando} onClick={() => establecerAgregando((actual) => ({ ...actual, [accion.momento]: false }))}>Cancelar</Button>}
+                    </Stack>}
+                    {destinos.length > 0 && !agregando[accion.momento] && <Button startIcon={<AddIcon />} sx={{ alignSelf: 'flex-start' }} disabled={guardando || disponibles.length === 0} onClick={() => establecerAgregando((actual) => ({ ...actual, [accion.momento]: true }))}>Agregar otra impresora</Button>}
+                </Stack></CardContent></Card>;
+            })}
+            {anteriores.length > 0 && <Card variant="outlined"><CardContent><Stack spacing={2}>
+                <Typography variant="h6">Configuraciones anteriores</Typography>
+                <Typography variant="body2" color="text.secondary">Estos destinos no son compatibles. Podés desactivarlos o quitarlos y asignar una impresora en las secciones de arriba.</Typography>
+                {anteriores.map((regla) => <Stack key={regla.id} direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                    <Typography sx={{ flex: 1 }}>{regla.nombreVisibleImpresora} — {regla.nombreEstacion}</Typography>
+                    <Chip size="small" label={regla.habilitada ? 'No compatible' : 'Desactivado'} />
+                    {regla.habilitada && <Button disabled={guardando} onClick={() => guardar(regla, regla, { habilitada: false })}>Desactivar</Button>}
+                    {botonQuitar(regla)}
+                </Stack>)}
+            </Stack></CardContent></Card>}
+        </>}
     </Stack>;
 }

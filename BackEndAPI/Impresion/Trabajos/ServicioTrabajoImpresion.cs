@@ -61,7 +61,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         foreach (var regla in reglas.Where(x => existentes.All(y => y.IdRegla != x.Id)))
         {
             var impresora = regla.Impresora;
-            if (!impresora.Habilitada || !impresora.Estacion.Habilitada || impresora.Estacion.RevocadaEn is not null)
+            if (impresora.EliminadaEn != null || !impresora.Habilitada || !impresora.Estacion.Habilitada || impresora.Estacion.RevocadaEn is not null)
                 throw new ExcepcionEstacionImpresion("DESTINO_IMPRESION_DESHABILITADO", "Una impresora de la regla está deshabilitada.", StatusCodes.Status409Conflict);
             db.TrabajosImpresion.Add(new TrabajoImpresion
             {
@@ -119,7 +119,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         var impresora = await contextoDbActual.Db.Impresoras.Include(x => x.Estacion).SingleOrDefaultAsync(
             x => x.Id == idImpresora && x.Estacion.IdSucursal == identidad.IdSucursal, tokenCancelacion)
             ?? throw new ExcepcionEstacionImpresion("IMPRESORA_NO_ENCONTRADA", "La impresora no existe en esta sucursal.", StatusCodes.Status404NotFound);
-        if (!impresora.Habilitada || !impresora.Estacion.Habilitada || impresora.Estacion.RevocadaEn is not null)
+        if (impresora.EliminadaEn != null || !impresora.Habilitada || !impresora.Estacion.Habilitada || impresora.Estacion.RevocadaEn is not null)
             throw new ExcepcionEstacionImpresion("DESTINO_IMPRESION_DESHABILITADO", "La impresora está deshabilitada.", StatusCodes.Status409Conflict);
         var ahora = AhoraUtc;
         var contenido = JsonSerializer.Serialize(new
@@ -168,7 +168,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         var trabajo = await ObtenerTrabajoReservadoAsync(idTrabajo, idReserva, EstadoTrabajoImpresion.Reservado, tokenCancelacion);
         trabajo.Estado = EstadoTrabajoImpresion.Enviando;
         trabajo.EnvioIniciadoEn = AhoraUtc;
-        await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
+        await GuardarReservaAsync(tokenCancelacion);
     }
 
     public async Task RenovarReservaAsync(Guid idTrabajo, Guid idReserva, CancellationToken tokenCancelacion)
@@ -176,10 +176,11 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         var idEstacion = await RequerirIdEstacionActivaAsync(tokenCancelacion);
         var trabajo = await contextoDbActual.Db.TrabajosImpresion.SingleOrDefaultAsync(x =>
             x.Id == idTrabajo && x.IdEstacion == idEstacion && x.IdReserva == idReserva
+            && x.ReservaVenceEn > AhoraUtc
             && (x.Estado == EstadoTrabajoImpresion.Reservado || x.Estado == EstadoTrabajoImpresion.Enviando), tokenCancelacion)
             ?? throw ReservaInvalida();
         trabajo.ReservaVenceEn = AhoraUtc.AddSeconds(opciones.SegundosReserva);
-        await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
+        await GuardarReservaAsync(tokenCancelacion);
     }
 
     public async Task MarcarAceptadoPorColaAsync(Guid idTrabajo, Guid idReserva, CancellationToken tokenCancelacion)
@@ -191,7 +192,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         trabajo.ReservaVenceEn = null;
         trabajo.UltimoCodigoError = null;
         trabajo.UltimoDetalleError = null;
-        await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
+        await GuardarReservaAsync(tokenCancelacion);
     }
 
     public async Task MarcarFallidoAsync(Guid idTrabajo, FallarTrabajoImpresionSolicitud solicitud, CancellationToken tokenCancelacion)
@@ -200,6 +201,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         var db = contextoDbActual.Db;
         var trabajo = await db.TrabajosImpresion.SingleOrDefaultAsync(x =>
             x.Id == idTrabajo && x.IdEstacion == idEstacion && x.IdReserva == solicitud.IdReserva
+            && x.ReservaVenceEn > AhoraUtc
             && (x.Estado == EstadoTrabajoImpresion.Reservado || x.Estado == EstadoTrabajoImpresion.Enviando), tokenCancelacion)
             ?? throw ReservaInvalida();
         var ahora = AhoraUtc;
@@ -217,7 +219,7 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         trabajo.ReservaVenceEn = null;
         trabajo.UltimoCodigoError = solicitud.CodigoError.Trim();
         trabajo.UltimoDetalleError = Truncar(solicitud.DetalleTecnico, 1000);
-        await db.SaveChangesAsync(tokenCancelacion);
+        await GuardarReservaAsync(tokenCancelacion);
     }
 
     public async Task<IReadOnlyList<ResumenTrabajoImpresionRespuesta>> ObtenerPorSolicitudAsync(Guid idSolicitud, CancellationToken tokenCancelacion)
@@ -248,6 +250,9 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
             ?? throw TrabajoNoEncontrado();
         if (original.Estado != EstadoTrabajoImpresion.RequiereAtencion)
             throw new ExcepcionEstacionImpresion("TRABAJO_NO_REIMPRIMIBLE", "Este trabajo no necesita reimpresión.", StatusCodes.Status409Conflict);
+        if (string.IsNullOrWhiteSpace(original.ContenidoJson)
+            || original.ContenidoJson.Trim() == "{}")
+            throw new ExcepcionEstacionImpresion("DOCUMENTO_IMPRESION_ELIMINADO", "El contenido de esta impresión fue eliminado por retención. Generá un documento nuevo.", StatusCodes.Status409Conflict);
         var ahora = AhoraUtc;
         var copy = new TrabajoImpresion
         {
@@ -298,7 +303,12 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         trabajo.ReservaVenceEn = null;
         trabajo.UltimoCodigoError = "CANCELADO_POR_USUARIO";
         trabajo.UltimoDetalleError = Truncar(motivo, 300);
-        await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
+        try { await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion); }
+        catch (DbUpdateConcurrencyException)
+        {
+            contextoDbActual.Db.Entry(trabajo).State = EntityState.Detached;
+            throw new ExcepcionEstacionImpresion("TRABAJO_NO_CANCELABLE", "El estado del trabajo cambió mientras se cancelaba.", StatusCodes.Status409Conflict);
+        }
     }
 
     public async Task<PanelImpresionRespuesta> ObtenerPanelAsync(CancellationToken tokenCancelacion)
@@ -387,8 +397,8 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
             trabajo.DisponibleEn = ahora;
             trabajo.UltimoCodigoError = estabaEnviando ? "RESERVA_VENCIDA_DESPUES_ENVIO" : "RESERVA_VENCIDA_ANTES_ENVIO";
             trabajo.ReservaVenceEn = null;
+            await GuardarRecuperacionAsync(trabajo, tokenCancelacion);
         }
-        if (trabajos.Count > 0) await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
     }
 
     private async Task VencerTrabajosEnColaAsync(Guid? idEstacion, CancellationToken tokenCancelacion)
@@ -399,8 +409,12 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
             && (x.Estado == EstadoTrabajoImpresion.Pendiente || x.Estado == EstadoTrabajoImpresion.ReintentoProgramado));
         if (idEstacion.HasValue) consultaDb = consultaDb.Where(x => x.IdEstacion == idEstacion);
         var vencidos = await consultaDb.ToListAsync(tokenCancelacion);
-        foreach (var trabajo in vencidos) { trabajo.Estado = EstadoTrabajoImpresion.Vencido; trabajo.UltimoCodigoError = "TRABAJO_IMPRESION_VENCIDO"; }
-        if (vencidos.Count > 0) await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion);
+        foreach (var trabajo in vencidos)
+        {
+            trabajo.Estado = EstadoTrabajoImpresion.Vencido;
+            trabajo.UltimoCodigoError = "TRABAJO_IMPRESION_VENCIDO";
+            await GuardarRecuperacionAsync(trabajo, tokenCancelacion);
+        }
     }
 
     private async Task AplicarRetencionAsync(CancellationToken tokenCancelacion)
@@ -420,6 +434,26 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
             x.Id == idTrabajo && x.IdEstacion == idEstacion && x.IdReserva == idReserva
             && x.ReservaVenceEn > AhoraUtc && x.Estado == estadoRequerido, tokenCancelacion)
             ?? throw ReservaInvalida();
+    }
+
+    private async Task GuardarReservaAsync(CancellationToken tokenCancelacion)
+    {
+        try { await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion); }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            foreach (var entry in exception.Entries) entry.State = EntityState.Detached;
+            throw ReservaInvalida();
+        }
+    }
+
+    private async Task GuardarRecuperacionAsync(TrabajoImpresion trabajo, CancellationToken tokenCancelacion)
+    {
+        try { await contextoDbActual.Db.SaveChangesAsync(tokenCancelacion); }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Another request renewed or transitioned this lease; its decision wins.
+            contextoDbActual.Db.Entry(trabajo).State = EntityState.Detached;
+        }
     }
 
     private IQueryable<TrabajoImpresion> TrabajosConDestino() => contextoDbActual.Db.TrabajosImpresion

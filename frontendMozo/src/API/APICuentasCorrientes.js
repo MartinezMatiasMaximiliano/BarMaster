@@ -23,7 +23,7 @@ function normalizarCuentaCorriente(cuenta) {
         id: cuenta.id ?? cuenta.Id,
         nombre: (cuenta.nombre ?? cuenta.Nombre ?? '').toString().trim(),
         telefono: (cuenta.telefono ?? cuenta.Telefono ?? '').toString().trim(),
-        domicilio: (cuenta.domicilio ?? cuenta.Domicilio ?? '').toString().trim(),
+        domicilio: (cuenta.domicilio ?? cuenta.Domicilio ?? cuenta.domicilo ?? cuenta.Domicilo ?? '').toString().trim(),
         balance: Number(cuenta.balance ?? cuenta.Balance ?? 0),
         descuento: Number(cuenta.descuento ?? cuenta.Descuento ?? 0),
         movimientos,
@@ -92,7 +92,7 @@ export async function ModificarCuentaCorriente(datos) {
 
 export async function EliminarCuentaCorriente(id) {
     try {
-        const response = await api.delete('CuentasCorrientes', {
+        const response = await api.delete('CuentasCorrientes/Eliminar', {
             params: { IdCuenta: id },
         });
         return response.data;
@@ -119,4 +119,3 @@ export async function CrearMovimientoCuentaCorriente(idCuenta, datos) {
         throw construirError(error, 'Error al crear el movimiento de la cuenta corriente');
     }
 }
-

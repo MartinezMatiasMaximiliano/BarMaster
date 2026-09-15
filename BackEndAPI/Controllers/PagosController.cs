@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services;
 using BackEndAPI.Services.Interfaces;
@@ -25,7 +25,7 @@ namespace BackEndAPI.Controllers
             {
                 if (request.ListaIdsProductos == null) throw new Exception("Lista de ids vacia");
                 if (request.IdVisita == Guid.Empty) throw new Exception("IdVisita vacio");
-                if (request.MontoAbonado <= 0) throw new Exception("Monto abonado inválido");
+                if (request.MontoAbonado < 0) throw new Exception("Monto abonado inválido");
                 if (request.GenerarFactura && request.DatosFacturaARCA == null) throw new Exception("Datos de factura vacios");
                 var (movimientoCaja, facturaElectronica) = await _PagosServices.PagarProductos(request);
 
@@ -58,8 +58,9 @@ namespace BackEndAPI.Controllers
                         return BadRequest("Los datos de la factura no pueden estar vacíos si se solicita generar una factura.");
                     case "Lista de ids vacia":
                         return BadRequest("La lista de ids de productos no puede estar vacía.");
-                    case "monto abonado inválido":
-                        return BadRequest("El monto abonado debe ser mayor a cero.");
+                    case "Monto abonado inválido":
+                    case "Descuento o recargo inválido":
+                        return BadRequest(ex.Message);
                     case "Monto insuficiente":
                         return BadRequest("El monto proporcionado es insuficiente para cubrir el costo de los productos.");
                     case "Producto ya pagado":

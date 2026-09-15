@@ -9,7 +9,7 @@ import { construirError } from './APIError';
  * @param {number} montoAbonado - Efectivo: monto con el que paga el cliente. Otros: total de los productos
  * @returns {Promise<object>} Pago creado
  */
-export async function Pagar(idVisita, listaIdsProductos, idTipoPago, montoAbonado) {
+export async function Pagar(idVisita, listaIdsProductos, idTipoPago, montoAbonado, descuento = 0) {
     try {
         const response = await api.post(
             'Pagar',
@@ -17,6 +17,7 @@ export async function Pagar(idVisita, listaIdsProductos, idTipoPago, montoAbonad
                 idTipoMovimiento: idTipoPago,
                 idVisita,
                 montoAbonado: Number(montoAbonado),
+                descuentoDecimal: Number(descuento),
                 listaIdsProductos: Array.isArray(listaIdsProductos) ? listaIdsProductos : []
             }
         );

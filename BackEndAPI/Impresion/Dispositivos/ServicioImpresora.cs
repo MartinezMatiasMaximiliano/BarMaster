@@ -87,7 +87,7 @@ public sealed class ServicioImpresora : IServicioImpresora
         estacion.UltimaVersionAgente = solicitud.VersionAgente.Trim();
         estacion.UltimaVersionQz = solicitud.VersionQz.Trim();
         await db.SaveChangesAsync(tokenCancelacion);
-        return existentes.OrderBy(x => x.NombreVisible).Select(x => Mapear(x, estacion, ahora)).ToList();
+        return existentes.Where(x => x.EliminadaEn == null || (solicitud.BusquedaManual && x.Presente)).OrderBy(x => x.NombreVisible).Select(x => Mapear(x, estacion, ahora)).ToList();
     }
 
     public async Task<IReadOnlyList<ImpresoraRespuesta>> ObtenerParaEstacionAsync(Guid idEstacion, CancellationToken tokenCancelacion)
@@ -96,7 +96,7 @@ public sealed class ServicioImpresora : IServicioImpresora
         var estacion = await ObtenerEstacionPropiaAsync(contextoDbActual.Db, idEstacion, tokenCancelacion);
         var impresoras = await contextoDbActual.Db.Impresoras.AsNoTracking()
             .Include(x => x.Reglas)
-            .Where(x => x.IdEstacion == idEstacion)
+            .Where(x => x.IdEstacion == idEstacion && x.EliminadaEn == null)
             .OrderBy(x => x.NombreVisible)
             .ToListAsync(tokenCancelacion);
         return impresoras.Select(x => Mapear(x, estacion, AhoraUtc)).ToList();
@@ -108,7 +108,7 @@ public sealed class ServicioImpresora : IServicioImpresora
         var impresoras = await contextoDbActual.Db.Impresoras.AsNoTracking()
             .Include(x => x.Estacion)
             .Include(x => x.Reglas)
-            .Where(x => x.Estacion.IdSucursal == identidad.IdSucursal)
+            .Where(x => x.Estacion.IdSucursal == identidad.IdSucursal && x.EliminadaEn == null)
             .OrderBy(x => x.Estacion.Nombre).ThenBy(x => x.NombreVisible)
             .ToListAsync(tokenCancelacion);
         return impresoras.Select(x => Mapear(x, x.Estacion, ahora)).ToList();
@@ -128,6 +128,9 @@ public sealed class ServicioImpresora : IServicioImpresora
             ?? throw new ExcepcionEstacionImpresion("IMPRESORA_NO_ENCONTRADA", "La impresora no existe en esta sucursal.", StatusCodes.Status404NotFound);
         await ProteccionConfiguracionImpresion.AsegurarSinCajaActivaAsync(
             contextoDbActual.Db, identidad.IdSucursal, tokenCancelacion);
+        if (impresora.EliminadaEn != null && !solicitud.Restaurar)
+            throw new ExcepcionEstacionImpresion("IMPRESORA_ELIMINADA", "Buscá y guardá la impresora para restaurarla.", StatusCodes.Status409Conflict);
+        if (solicitud.Restaurar) impresora.EliminadaEn = null;
         impresora.NombreVisible = solicitud.NombreVisible.Trim();
         impresora.Formato = FormatoImpresion.Crudo;
         impresora.AnchoPapelMm = solicitud.AnchoPapelMm;
@@ -153,7 +156,10 @@ public sealed class ServicioImpresora : IServicioImpresora
                 "La impresora tiene reglas asociadas. Eliminá primero esas reglas para poder quitarla.",
                 StatusCodes.Status409Conflict);
 
-        db.Impresoras.Remove(impresora);
+        impresora.EliminadaEn = AhoraUtc;
+        impresora.Habilitada = false;
+        impresora.Presente = false;
+        impresora.ActualizadoEn = AhoraUtc;
         await db.SaveChangesAsync(tokenCancelacion);
     }
 
@@ -180,7 +186,7 @@ public sealed class ServicioImpresora : IServicioImpresora
         impresora.AnchoPapelMm, impresora.Codificacion, impresora.Habilitada, impresora.Presente,
         impresora.VistaPorUltimaVezEn, impresora.UltimoEstado,
         estacion.Habilitada && estacion.RevocadaEn is null && estacion.VistaPorUltimaVezEn >= ahora.AddSeconds(-opciones.SegundosHastaFueraDeLinea),
-        impresora.Reglas.Count);
+        impresora.Reglas.Count, impresora.EliminadaEn);
 
     private static string NormalizarNombre(string nombre) => nombre.Trim().ToUpperInvariant();
     private static ExcepcionEstacionImpresion OpcionInvalida() =>

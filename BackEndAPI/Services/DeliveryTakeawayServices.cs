@@ -44,12 +44,11 @@ namespace BackEndAPI.Services
         {
             return await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
         }
-        public async Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway)
+        public async Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway, bool entregado = true)
         {
             var busqueda = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway);
             if (busqueda == null) throw new Exception("no encontrado");
-            busqueda.Entregado = true;
-            busqueda.Visita.Estado = "Cerrada";
+            busqueda.Entregado = entregado;
             await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(busqueda);
             return busqueda;
 
@@ -108,8 +107,9 @@ namespace BackEndAPI.Services
                     throw new Exception("Origen no válido. El campo 'Origen' debe ser 'Delivery' o 'Takeaway'.");
             }
 
-            AgregarProductosHelper(request.ListaProductos, DeliveryTakeaway);
+            await AgregarProductosHelper(request.ListaProductos, DeliveryTakeaway);
             visitaCreada.Total += DeliveryTakeaway.PrecioEnvio;
+            DeliveryTakeaway.PrecioTotal = visitaCreada.Total;
 
             DeliveryAndTakeaway? response = await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
 
@@ -159,7 +159,7 @@ namespace BackEndAPI.Services
             }
 
             //agregar productos si la lista es count > 0
-            if(request.ProductosAgregados.Count() > 0) AgregarProductosHelper(request.ProductosAgregados, deliveryTakeawayExistente);
+            if(request.ProductosAgregados.Count() > 0) await AgregarProductosHelper(request.ProductosAgregados, deliveryTakeawayExistente);
 
             //remover productos si la lista es count > 0
             if (request.ProductosEliminados.Count() > 0) RemoverProductosHelper(request.ProductosEliminados, deliveryTakeawayExistente);
@@ -187,7 +187,7 @@ namespace BackEndAPI.Services
 
 
         //HELPERS
-        private async void AgregarProductosHelper(IEnumerable<AgregarProductoAVisita> ListaProductos, DeliveryAndTakeaway DeliveryTakeaway)
+        private async Task AgregarProductosHelper(IEnumerable<AgregarProductoAVisita> ListaProductos, DeliveryAndTakeaway DeliveryTakeaway)
         {
             foreach (var item in ListaProductos)
             {

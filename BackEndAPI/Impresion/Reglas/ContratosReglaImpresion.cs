@@ -19,7 +19,8 @@ public sealed record ReglaImpresionRespuesta(
     MomentoImpresion Momento,
     bool Habilitada,
     bool Disponible,
-    DateTime ActualizadoEn);
+    DateTime ActualizadoEn,
+    bool Compatible);
 
 public sealed record ProblemaConfiguracionImpresion(string Codigo, string Mensaje, Guid? IdRelacionado);
 public sealed record ValidacionConfiguracionImpresionRespuesta(bool EsValida, IReadOnlyList<ProblemaConfiguracionImpresion> Problemas);

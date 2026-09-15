@@ -81,6 +81,36 @@ function Test-QzRootCertificate {
     return [bool](Select-String -LiteralPath $propertiesPath -Pattern '^authcert\.override=override\.crt$' -Quiet)
 }
 
+function Invoke-QzBackgroundProcess {
+    param(
+        [Parameter(Mandatory)][string]$FilePath,
+        [string]$Arguments = ''
+    )
+    # Hidden solo oculta la ventana inicial. CREATE_NO_WINDOW evita crear una
+    # consola para las utilidades de QZ y conserva su salida para el registro.
+    $start = [Diagnostics.ProcessStartInfo]::new()
+    $start.FileName = $FilePath
+    $start.Arguments = $Arguments
+    $start.WorkingDirectory = Split-Path -Parent $FilePath
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $start
+    try {
+        $null = $process.Start()
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        $process.WaitForExit()
+        return [pscustomobject]@{
+            ExitCode = $process.ExitCode
+            StandardOutput = $stdout.GetAwaiter().GetResult()
+            StandardError = $stderr.GetAwaiter().GetResult()
+        }
+    } finally { $process.Dispose() }
+}
+
 function Set-QzRootCertificate {
     param(
         [Parameter(Mandatory)][string]$Source,
@@ -138,4 +168,4 @@ function Assert-QzRootArtifact {
     return $source
 }
 
-Export-ModuleMember -Function Get-QzManifest, Get-QzArchitecture, Test-QzInstaller, Get-QzInstallDirectory, Get-QzConsolePath, Get-QzInstalledVersion, Test-QzRootCertificate, Set-QzRootCertificate, Test-QzRunning, Test-QzAutoStart, Assert-QzRootArtifact
+Export-ModuleMember -Function Get-QzManifest, Get-QzArchitecture, Test-QzInstaller, Get-QzInstallDirectory, Get-QzConsolePath, Get-QzInstalledVersion, Test-QzRootCertificate, Set-QzRootCertificate, Test-QzRunning, Test-QzAutoStart, Assert-QzRootArtifact, Invoke-QzBackgroundProcess

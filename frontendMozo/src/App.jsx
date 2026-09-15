@@ -27,6 +27,7 @@ import Historial from './pages/Historial/Historial'
 import MovimientoCaja from './pages/MovimientoCaja/MovimientoCaja'
 import KDS from './pages/KDS/KDS'
 import Documentacion_Uso from './pages/Documentacion_Uso'
+import PrimerosPasos from './pages/Ayuda/PrimerosPasos'
 import Enviar_Comentarios from './pages/Enviar_Comentarios'
 import Reportes from './pages/Reportes/Reportes'
 import ReporteVentas from './pages/Reportes/ReporteVentas'
@@ -39,25 +40,26 @@ import ReporteResumido from './pages/Reportes/ReporteResumido'
 import PanelSucursales from './pages/panel_sucursales/Panel_Sucursales'
 import LoginUsuarios from './pages/Login_Usuarios';
 import LoginEmpresaSucursal from './pages/Login_Empresa_Sucursal';
-import { PostItems } from './API/APIPedidos';
+import { registrarPedidoRecibido } from './services/pedidosRecibidos';
+import { useSnackbar } from './hooks/useSnackbar';
 import { BuscarTodosLosProductos } from './API/APIProductos';
 import { BuscarTodasLasCategorias } from './API/APICategorias';
 import { BuscarTodosLosMozos } from './API/APIPersonas'
 import { BuscarTodasLasPersonas } from './API/APIPersonas'
 import { BuscarTodosLosRoles } from './API/APIRoles'
-import { BuscarVisitaPorId, BuscarVisitasActivas } from './API/APIVisitas'
+import { BuscarVisitasActivas } from './API/APIVisitas'
 import { BuscarTodasLasReservas } from './API/APIReservas'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { BuscarTodosLosMenus } from './API/APIMenus'
 import { BuscarTodasLasCuentasCorrientes } from './API/APICuentasCorrientes'
 import { GetDeliveryTakeaway, normalizarDeliveryTakeaway, normalizarDeliveryTakeawayComoVisita } from './API/APIDeliveryTakeaway'
-import { CambiarEstadoItems } from './API/APIItems'
+
 import { authService } from './services/authService'
 import { useSelector, useDispatch } from 'react-redux'
-import { actualizarVisita, cambiarEstadoPagadoProductos, cargarVisitasActivas, sincronizarVisitasDeliveryTakeaway } from './redux/slices/visitasActivasSlice'
+import { actualizarVisita, cargarVisitasActivas, sincronizarVisitasDeliveryTakeaway } from './redux/slices/visitasActivasSlice'
 import { agregar as agregarNotificaciones } from './redux/slices/notificacionesSlice'
-import { agregar as agregarTicket } from './redux/slices/ticketSlice'
+
 import Control_Login from './components/Control_Login';
 import TicketVirtual from './pages/TicketVirtual/TicketVirtual';
 import Stock from './pages/Stock/Stock';
@@ -196,6 +198,12 @@ function App() {
         }
     }, [dispatch]);
 
+    const { showSnackbar, SnackbarComponent } = useSnackbar();
+    useEffect(() => {
+        const mostrarError = event => showSnackbar(event.detail, 'error');
+        window.addEventListener('error-signalr', mostrarError);
+        return () => window.removeEventListener('error-signalr', mostrarError);
+    }, [showSnackbar]);
     const { sendRecargarTicket } = useSignalR({
         onRegistrarProducto: (pedido, numeroMesa) => { AgregarItemsAPedido(pedido, numeroMesa) },
         onVisitaActualizada: (visitaActualizada) => {
@@ -212,8 +220,8 @@ function App() {
             }
         },
         onRegistrarNotificacion: (notificacion) => { dispatch(agregarNotificaciones(notificacion)) },
-        onPagarMesa: (IdPedido) => { pagarTotal(IdPedido) },
-        onPagarMesaSeparado: (ArrayIdsItems) => { pagarSeparado(ArrayIdsItems) },
+        onPagarMesa: () => showSnackbar('Se recibió una solicitud de cuenta. El pago aún no está registrado.', 'info'),
+        onPagarMesaSeparado: () => showSnackbar('Se recibió una solicitud de cuenta separada. El pago aún no está registrado.', 'info'),
         onRecargarDeliveryTakeaway: sincronizarDeliveryTakeaway
     })
 
@@ -281,46 +289,14 @@ function App() {
         setCuentasCorrientes(Array.isArray(data) ? data : []);
     }
 
-    async function pagarTotal(IdVisita) {
-        try {
-            const visita = await BuscarVisitaPorId(IdVisita);
-
-            if (visita) {
-                const ListaProductosPendientes = visita.productosConsumidos?.filter(p => !p.estadoPagado).map(p => p.id) || [];
-
-                if (ListaProductosPendientes.length > 0) {
-                    // Hacer la actualización en la base de datos primero
-                    await CambiarEstadoItems(ListaProductosPendientes, "Procesando");
-
-                    // Solo actualizar Redux si la API tuvo éxito
-                    dispatch(agregarTicket(ListaProductosPendientes));
-                    dispatch(cambiarEstadoPagadoProductos({ idsProductos: ListaProductosPendientes, pagado: true }));
-                }
-            }
-        } catch (error) {
-            console.error("Error al procesar pago total:", error);
-        }
-    }
-
-    async function pagarSeparado(ArrayIdsProductos) {
-        try {
-            // Hacer los cambios en la DB primero
-            await CambiarEstadoItems(ArrayIdsProductos, "Procesando");
-
-            // Solo actualizar Redux si la API tuvo éxito
-            dispatch(agregarTicket(ArrayIdsProductos));
-            dispatch(cambiarEstadoPagadoProductos({ idsProductos: ArrayIdsProductos, pagado: true }));
-        } catch (error) {
-            console.error("Error al procesar pago separado:", error);
-        }
-    }
-
     async function AgregarItemsAPedido(Pedido, numeroMesa) {
         try {
-            await PostItems(Pedido, numeroMesa);
-            sendRecargarTicket(numeroMesa);
+            const visita = await registrarPedidoRecibido(Pedido, numeroMesa, visitasActivas || [], menu || []);
+            dispatch(actualizarVisita({ ...visita, numeroMesa }));
+            await sendRecargarTicket(numeroMesa);
         } catch (error) {
             console.error("Error al agregar items al pedido:", error);
+            showSnackbar(error.message, "error");
         }
     }
 
@@ -449,6 +425,7 @@ function App() {
                             <Route path="/kds" element={<Control_Login><KDS /></Control_Login>} />
                             <Route path="/cambiar_clave" element={<Control_Login><Cambiar_Clave /></Control_Login>} />
                             <Route path="/documentacion" element={<Control_Login><Documentacion_Uso /></Control_Login>} />
+                            <Route path="/primeros_pasos" element={<Control_Login><PrimerosPasos /></Control_Login>} />
                             <Route path="/comentarios" element={<Control_Login><Enviar_Comentarios /></Control_Login>} />
                             <Route path="/impresiones" element={<Control_Login><Impresiones /></Control_Login>} />
                             <Route path="/configuracion_impresion" element={<Navigate to="/impresiones" replace />} />
@@ -477,6 +454,7 @@ function App() {
                         </Box>
                     )}
                 </Box>
+                <SnackbarComponent />
                 </ProveedorImpresion>
             </AuthTypeContext.Provider>
         </LoginContext.Provider>

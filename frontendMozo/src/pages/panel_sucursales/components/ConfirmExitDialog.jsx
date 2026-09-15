@@ -61,7 +61,7 @@ const ConfirmExitDialog = ({
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
                 <Button
-                    onClick={onClose}
+                    data-escape-action="true" onClick={onClose}
                     variant="outlined"
                     sx={{
                         textTransform: 'none',
@@ -74,7 +74,7 @@ const ConfirmExitDialog = ({
                     Cancelar
                 </Button>
                 <Button
-                    onClick={handleConfirm}
+                    data-enter-action="true" onClick={handleConfirm}
                     variant="contained"
                     color="error"
                     startIcon={<LogoutIcon />}

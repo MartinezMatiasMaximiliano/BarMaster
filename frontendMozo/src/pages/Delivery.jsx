@@ -340,10 +340,10 @@ function Delivery() {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setConfirmarNoEntregado(null)} variant="outlined">
+                    <Button data-escape-action="true" onClick={() => setConfirmarNoEntregado(null)} variant="outlined">
                         Cancelar
                     </Button>
-                    <Button onClick={confirmarCambioANoEntregado} variant="contained" color="primary">
+                    <Button data-enter-action="true" onClick={confirmarCambioANoEntregado} variant="contained" color="primary">
                         Confirmar
                     </Button>
                 </DialogActions>
