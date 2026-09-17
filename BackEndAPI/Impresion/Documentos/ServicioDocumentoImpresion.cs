@@ -57,21 +57,8 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
         if (noPagados.Count == 0)
             throw new ExcepcionEstacionImpresion("SIN_PRODUCTOS_IMPRIMIBLES", "No hay productos pendientes para imprimir.", StatusCodes.Status409Conflict);
 
-        var lineas = noPagados
-            .GroupBy(x => new { x.NombreProducto, x.PrecioDelMomento, Notas = (x.Detalles ?? string.Empty).Trim() })
-            .Select(grupo => new LineaPreticketContenido(
-                grupo.Count(), grupo.Key.NombreProducto, grupo.Key.PrecioDelMomento,
-                string.IsNullOrEmpty(grupo.Key.Notas) ? null : grupo.Key.Notas))
-            .OrderBy(x => x.Descripcion)
-            .ToList();
-        var contenido = new PreticketContenido(
-            1,
-            visita.Caja.Sucursal?.Nombre ?? "BarMaster",
-            visita.Mesa?.Numero.ToString() ?? visita.Origen,
-            AhoraUtc,
-            lineas,
-            lineas.Sum(x => x.Cantidad * x.PrecioUnitario),
-            "DOCUMENTO NO VALIDO COMO FACTURA");
+        var contenido = ConstructorPreticket.Crear(visita.Caja.Sucursal?.Nombre ?? "BarMaster",
+            visita.Mesa?.Numero.ToString() ?? visita.Origen, AhoraUtc, noPagados);
 
         return await servicioTrabajoImpresion.CrearEnrutadosAsync(new(
             solicitud.IdComando,
@@ -102,14 +89,7 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
             .Select(x => x.Nombre)
             .SingleAsync(tokenCancelacion);
         var nombreMesa = visita.Mesa?.Numero.ToString() ?? visita.Origen;
-        var lineas = productosAgregados
-            .GroupBy(x => new { x.NombreProducto, Notas = (x.Detalles ?? string.Empty).Trim() })
-            .Select(grupo => new LineaComandaContenido(
-                grupo.Count(), grupo.Key.NombreProducto,
-                string.IsNullOrEmpty(grupo.Key.Notas) ? null : grupo.Key.Notas))
-            .OrderBy(x => x.Descripcion)
-            .ToList();
-        var contenido = new ComandaContenido(1, nombreSucursal, nombreMesa, "Comanda", ahora, lineas);
+        var contenido = ConstructorComanda.Crear(nombreSucursal, nombreMesa, ahora, productosAgregados);
         try
         {
             var resultado = await servicioTrabajoImpresion.CrearEnrutadosAsync(new(
@@ -152,31 +132,11 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
             .Where(x => x.Id == pago.IdTipoMovimientoCaja)
             .Select(x => x.Nombre)
             .SingleOrDefaultAsync(tokenCancelacion);
-        var lineas = productosCobrados
-            .GroupBy(x => new { x.NombreProducto, x.PrecioDelMomento, Notas = (x.Detalles ?? string.Empty).Trim() })
-            .Select(grupo => new LineaPreticketContenido(grupo.Count(), grupo.Key.NombreProducto,
-                grupo.Key.PrecioDelMomento, string.IsNullOrEmpty(grupo.Key.Notas) ? null : grupo.Key.Notas))
-            .OrderBy(x => x.Descripcion)
-            .ToList();
-        var subtotal = lineas.Sum(x => x.Cantidad * x.PrecioUnitario);
-        var contenido = new ComprobantePagoContenido(1, sucursal.Nombre,
-            visita.Mesa?.Numero.ToString() ?? visita.Origen, DateTime.SpecifyKind(pago.FechaMovimiento, DateTimeKind.Utc), lineas, pago.MontoTotal,
-            pago.MontoAbonado, pago.Vuelto, "DOCUMENTO NO VALIDO COMO FACTURA")
-        {
-            NombreEmpresa = sucursal.Empresa?.Nombre,
-            Cuit = sucursal.Empresa?.Cuit > 0 ? sucursal.Empresa.Cuit.ToString() : null,
-            Direccion = sucursal.Direccion,
-            Telefono = !string.IsNullOrWhiteSpace(sucursal.Telefono) ? sucursal.Telefono
-                : sucursal.Empresa?.Telefonos?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)),
-            Email = sucursal.Empresa?.Emails?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)),
-            MedioPago = medioPago,
-            ReferenciaPago = pago.Id.ToString("D"),
-            Origen = visita.Origen,
-            Subtotal = subtotal,
-            AjustePedido = pago.MontoTotal + descuento - recargo - subtotal,
-            Descuento = descuento,
-            Recargo = recargo
-        };
+        var contenido = ConstructorComprobante.Crear(sucursal.Nombre, visita.Mesa?.Numero.ToString() ?? visita.Origen,
+            visita.Origen, pago, productosCobrados, new(sucursal.Empresa?.Nombre,
+                sucursal.Empresa?.Cuit > 0 ? sucursal.Empresa.Cuit.ToString() : null, sucursal.Direccion,
+                !string.IsNullOrWhiteSpace(sucursal.Telefono) ? sucursal.Telefono : sucursal.Empresa?.Telefonos?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)),
+                sucursal.Empresa?.Emails?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)), medioPago, descuento, recargo));
         try
         {
             var resultado = await servicioTrabajoImpresion.CrearEnrutadosAsync(new(

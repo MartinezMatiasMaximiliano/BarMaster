@@ -38,7 +38,7 @@ export function construirPreticketCrudo({ nombreSucursal, nombreMesa, productos,
     agrupados.forEach((elemento) => {
         const subtotal = elemento.cantidad * elemento.precio;
         total += subtotal;
-        lineas.push(`${elemento.cantidad}x ${elemento.nombre}`);
+        lineas.push(`${elemento.cantidad} x ${elemento.nombre}`);
         lineas.push(`  $${dinero(elemento.precio)}  Subt. $${dinero(subtotal)}`);
         if (elemento.indicaciones) lineas.push(`  Nota: ${elemento.indicaciones}`);
     });
