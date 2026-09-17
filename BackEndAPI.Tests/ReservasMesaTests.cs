@@ -57,7 +57,7 @@ public class ReservasMesaTests
         }, Guid.NewGuid());
         Assert.Equal(estado, reserva.IdEstadoReserva);
         var otroEstado = estado == 2 ? 3 : 2;
-        await servicio.ActualizarReserva(new ModificarReservaDTO { Id = reserva.Id, IdEstadoReserva = otroEstado });
+        await servicio.ActualizarReserva(new ModificarReservaDTO { Id = reserva.Id, IdEstadoReserva = otroEstado }, reserva.IdSucursal);
         Assert.Equal(otroEstado, (await db.Reservas.SingleAsync()).IdEstadoReserva);
     }
 
@@ -109,13 +109,13 @@ public class ReservasMesaTests
             IdMesa = mesa1.Id }, sucursal);
         var editar = new ModificarReservaDTO { Id = reserva.Id, IdEstadoReserva = 2,
             FechaHora = reserva.FechaHora, IdMesa = mesa2.Id };
-        await servicio.ActualizarReserva(editar);
+        await servicio.ActualizarReserva(editar, sucursal);
         Assert.Equal(mesa2.Id, (await db.Reservas.SingleAsync()).IdMesa);
         editar = new ModificarReservaDTO { Id = reserva.Id, IdEstadoReserva = 2, NombreReserva = "Nombre actualizado" };
-        await servicio.ActualizarReserva(editar);
+        await servicio.ActualizarReserva(editar, sucursal);
         Assert.Equal(mesa2.Id, (await db.Reservas.SingleAsync()).IdMesa);
         editar.IdMesa = null;
-        await servicio.ActualizarReserva(editar);
+        await servicio.ActualizarReserva(editar, sucursal);
         Assert.Null((await db.Reservas.SingleAsync()).IdMesa);
     }
 
@@ -134,5 +134,39 @@ public class ReservasMesaTests
             Assert.Equal("La mesa no pertenece a la sucursal", error.Message);
         }
         Assert.Empty(db.Reservas);
+    }
+
+    [Fact]
+    public async Task UnaSucursalNoPuedeListarModificarNiEliminarReservasDeOtra()
+    {
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+        await db.Database.EnsureCreatedAsync();
+        var propia = Guid.NewGuid();
+        var ajena = Guid.NewGuid();
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var reservaPropia = await servicio.CrearReserva(new CrearReservaDTO
+        {
+            NombreReserva = "Propia", Telefono = "1", FechaHora = DateTime.UtcNow.AddDays(1)
+        }, propia);
+        var reservaAjena = await servicio.CrearReserva(new CrearReservaDTO
+        {
+            NombreReserva = "Ajena", Telefono = "2", FechaHora = DateTime.UtcNow.AddDays(1)
+        }, ajena);
+        var controller = new ReservasController(servicio) { ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim("IdSucursal", propia.ToString())], "Test")) }
+        } };
+
+        var listado = Assert.IsAssignableFrom<IEnumerable<ReservaDTO>>(
+            Assert.IsType<OkObjectResult>(await controller.GetReservas()).Value);
+        Assert.Equal(reservaPropia.Id, Assert.Single(listado).Id);
+        Assert.IsType<NotFoundObjectResult>(await controller.ModificarReserva(new ModificarReservaDTO
+        {
+            Id = reservaAjena.Id, IdEstadoReserva = 2, NombreReserva = "Intrusión"
+        }));
+        Assert.IsType<NotFoundObjectResult>(await controller.EliminarReserva(reservaAjena.Id));
+        Assert.Equal("Ajena", (await db.Reservas.SingleAsync(x => x.Id == reservaAjena.Id)).NombreReserva);
     }
 }

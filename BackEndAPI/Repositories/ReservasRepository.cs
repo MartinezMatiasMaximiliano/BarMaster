@@ -15,9 +15,10 @@ namespace BackEndAPI.Repositories
             _currentDbContext= currentDbContext;
             db = _currentDbContext.Db;
         }
-        public async Task<IEnumerable<Reserva>> GetAllReservas()
+        public async Task<IEnumerable<Reserva>> GetAllReservas(Guid idSucursal)
         {
-            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa).ToListAsync();
+            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa)
+                .Where(r => r.IdSucursal == idSucursal).ToListAsync();
         }
 
         public async Task<IEnumerable<Reserva>> GetReservasPorRangoFechas(Guid idSucursal, DateTime desde, DateTime hastaExclusive)
@@ -33,9 +34,10 @@ namespace BackEndAPI.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Reserva?> GetReservaPorId(Guid id)
+        public async Task<Reserva?> GetReservaPorId(Guid id, Guid idSucursal)
         {
-            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa).FirstOrDefaultAsync(r => r.Id == id);
+            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa)
+                .FirstOrDefaultAsync(r => r.Id == id && r.IdSucursal == idSucursal);
         }
 
         public async Task<Reserva> CrearReserva(Reserva nuevaReserva)

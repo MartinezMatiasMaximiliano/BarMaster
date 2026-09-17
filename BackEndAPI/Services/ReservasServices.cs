@@ -16,8 +16,9 @@ namespace BackEndAPI.Services
         {
             _reservasRepository = reservasRepository;
         }
-        public async Task<IEnumerable<Reserva>> BuscarReservas() {
-            return await _reservasRepository.GetAllReservas();
+        public async Task<IEnumerable<Reserva>> BuscarReservas(Guid idSucursal) {
+            if (idSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
+            return await _reservasRepository.GetAllReservas(idSucursal);
         }
 
         private static void ValidarEstado(int estado)
@@ -73,12 +74,12 @@ namespace BackEndAPI.Services
             return await _reservasRepository.CrearReserva(nuevaReserva);
         }
 
-        public async Task<Reserva?> ActualizarReserva(ModificarReservaDTO ReservaActualizada) {
+        public async Task<Reserva?> ActualizarReserva(ModificarReservaDTO ReservaActualizada, Guid idSucursal) {
             ValidarEstado(ReservaActualizada.IdEstadoReserva);
-            var reserva = await _reservasRepository.GetReservaPorId(ReservaActualizada.Id) ?? throw new Exception("Reserva no encontrada");
+            var reserva = await _reservasRepository.GetReservaPorId(ReservaActualizada.Id, idSucursal) ?? throw new Exception("Reserva no encontrada");
             if (ReservaActualizada.MesaEspecificada)
             {
-                await ValidarMesa(ReservaActualizada.IdMesa, reserva.IdSucursal);
+                await ValidarMesa(ReservaActualizada.IdMesa, idSucursal);
                 reserva.IdMesa = ReservaActualizada.IdMesa;
             }
             reserva.IdEstadoReserva = ReservaActualizada.IdEstadoReserva;
@@ -89,8 +90,8 @@ namespace BackEndAPI.Services
             return await _reservasRepository.ActualizarReserva(reserva);
         }
 
-        public async Task<Reserva?> EliminarReserva(Guid Id) {
-            var reserva = await _reservasRepository.GetReservaPorId(Id) ?? throw new Exception("Reserva no encontrada");
+        public async Task<Reserva?> EliminarReserva(Guid Id, Guid idSucursal) {
+            var reserva = await _reservasRepository.GetReservaPorId(Id, idSucursal) ?? throw new Exception("Reserva no encontrada");
             return await _reservasRepository.EliminarReserva(reserva);
         }
 

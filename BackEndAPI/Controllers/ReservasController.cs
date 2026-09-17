@@ -43,7 +43,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var reservas = await _ReservasServices.BuscarReservas();
+                var reservas = await _ReservasServices.BuscarReservas(ObtenerIdSucursal());
                 var ListaReservas = reservas.Select(MapearpearReservaDTO).ToList();
 
                 return Ok(ListaReservas);
@@ -127,7 +127,7 @@ namespace BackEndAPI.Controllers
         public async Task<IActionResult> ModificarReserva(ModificarReservaDTO DTO) {
             try
             {
-                var reserva = await _ReservasServices.ActualizarReserva(DTO);
+                var reserva = await _ReservasServices.ActualizarReserva(DTO, ObtenerIdSucursal());
                 return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{DTO.Id}"));
             }
             catch (Exception ex)
@@ -150,7 +150,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                await _ReservasServices.EliminarReserva(Id);
+                await _ReservasServices.EliminarReserva(Id, ObtenerIdSucursal());
                 return Ok(new EntregaDTO(200, "OK", $"Eliminado exitosamente, Id:{Id}"));
             }
             catch (Exception ex)
@@ -163,6 +163,14 @@ namespace BackEndAPI.Controllers
                         return StatusCode(500, "Error Interno de servidor: " + ex.Message);
                 }
             }
+        }
+
+        private Guid ObtenerIdSucursal()
+        {
+            var valor = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")?.Value;
+            return Guid.TryParse(valor, out var idSucursal) && idSucursal != Guid.Empty
+                ? idSucursal
+                : throw new Exception("Sucursal no identificada");
         }
     }
 }
