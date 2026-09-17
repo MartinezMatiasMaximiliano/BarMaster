@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../../axiosInstance', () => ({ default: {} }));
 
-describe('reintento administrativo con Axios real', () => {
+describe('identidad administrativa con Axios real', () => {
     let axios;
     let adaptadorOriginal;
     let autorizaciones;
@@ -25,23 +25,23 @@ describe('reintento administrativo con Axios real', () => {
         };
     };
 
-    it('mantiene el token alternativo y vuelve a la selección habitual en solicitudes nuevas', async () => {
+    it('usa USER_token de forma estable en solicitudes administrativas', async () => {
         instalarAdaptador((token) => token === 'Bearer usuario');
         const { obtenerImpresoras } = await import('../apiImpresion');
         await expect(obtenerImpresoras()).resolves.toEqual([]);
         await expect(obtenerImpresoras()).resolves.toEqual([]);
-        expect(autorizaciones).toEqual(['Bearer sucursal', 'Bearer usuario', 'Bearer sucursal', 'Bearer usuario']);
+        expect(autorizaciones).toEqual(['Bearer usuario', 'Bearer usuario']);
     });
 
-    it('termina después del único reintento si ambos tokens son rechazados', async () => {
+    it('no cambia de identidad ni reintenta cuando recibe 403', async () => {
         instalarAdaptador(() => false);
         const { obtenerImpresoras } = await import('../apiImpresion');
         await expect(obtenerImpresoras()).rejects.toMatchObject({ response: { status: 403 } });
-        expect(autorizaciones).toEqual(['Bearer sucursal', 'Bearer usuario']);
+        expect(autorizaciones).toEqual(['Bearer usuario']);
     });
 
-    it('no reintenta si no existe un token distinto', async () => {
-        localStorage.setItem('USER_token', 'sucursal');
+    it('usa el token de sucursal sólo cuando no existe USER_token', async () => {
+        localStorage.removeItem('USER_token');
         instalarAdaptador(() => false);
         const { obtenerImpresoras } = await import('../apiImpresion');
         await expect(obtenerImpresoras()).rejects.toMatchObject({ response: { status: 403 } });
