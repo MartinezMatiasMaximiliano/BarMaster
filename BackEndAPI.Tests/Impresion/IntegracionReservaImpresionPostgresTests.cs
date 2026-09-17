@@ -16,6 +16,42 @@ namespace BackEndAPI.Tests.Impresion;
 public sealed class IntegracionReservaImpresionPostgresTests
 {
     [Fact]
+    public async Task ColisionIdempotenteConservaCambiosAjenosYDevuelveLosMismosTrabajos()
+    {
+        await ConBaseAisladaAsync(async options =>
+        {
+            Guid branchId;
+            await using (var setup = new AppDbContext(options))
+                branchId = (await SeedAsync(setup)).BranchId;
+
+            var pausa = new PausarPrimerGuardado();
+            await using var primerDb = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>(options)
+                .AddInterceptors(pausa).Options);
+            await using var segundoDb = new AppDbContext(options);
+            var sucursal = await primerDb.Sucursales.SingleAsync(x => x.Id == branchId);
+            sucursal.Telefono = "telefono-pendiente";
+            var comando = new CrearTrabajosImpresionEnrutadosComando(Guid.NewGuid(), TipoDocumentoImpresion.Preticket,
+                MomentoImpresion.AlGenerarPreticket, "{}", 1, 1, "carrera-idempotente", "Visita", "1", null);
+
+            var primerSolicitante = CrearServicio(primerDb, branchId, null, "sucursal")
+                .CrearEnrutadosAsync(comando, default);
+            await pausa.Guardando.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var segundoResultado = await CrearServicio(segundoDb, branchId, null, "sucursal")
+                .CrearEnrutadosAsync(comando, default);
+            pausa.Continuar.TrySetResult();
+            var primerResultado = await primerSolicitante;
+
+            Assert.Equal(segundoResultado.Trabajos.Select(x => x.Id), primerResultado.Trabajos.Select(x => x.Id));
+            Assert.Equal(EntityState.Modified, primerDb.Entry(sucursal).State);
+            Assert.DoesNotContain(primerDb.ChangeTracker.Entries<TrabajoImpresion>(), x => x.State == EntityState.Added);
+            await primerDb.SaveChangesAsync();
+            await using var verificacion = new AppDbContext(options);
+            Assert.Equal("telefono-pendiente", (await verificacion.Sucursales.SingleAsync(x => x.Id == branchId)).Telefono);
+            Assert.Single(await verificacion.TrabajosImpresion.ToListAsync());
+        });
+    }
+
+    [Fact]
     public async Task SkipLockedPermiteQueSoloUnConsumidorReserveUnTrabajo()
     {
         await ConBaseAisladaAsync(async options =>
@@ -78,6 +114,21 @@ public sealed class IntegracionReservaImpresionPostgresTests
             InterceptionResult<int> result, CancellationToken cancellationToken = default)
         {
             Leido.TrySetResult();
+            await Continuar.Task.WaitAsync(TimeSpan.FromSeconds(15), cancellationToken);
+            return result;
+        }
+    }
+
+    private sealed class PausarPrimerGuardado : SaveChangesInterceptor
+    {
+        private int pausas;
+        public TaskCompletionSource Guardando { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Continuar { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
+            InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref pausas) != 1) return result;
+            Guardando.TrySetResult();
             await Continuar.Task.WaitAsync(TimeSpan.FromSeconds(15), cancellationToken);
             return result;
         }

@@ -57,13 +57,14 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         var existentes = await TrabajosConDestino().Where(x =>
                 x.IdSucursal == identidad.IdSucursal && claves.Values.Contains(x.ClaveIdempotencia))
             .ToListAsync(tokenCancelacion);
+        var trabajosAgregados = new List<TrabajoImpresion>();
 
         foreach (var regla in reglas.Where(x => existentes.All(y => y.IdRegla != x.Id)))
         {
             var impresora = regla.Impresora;
             if (impresora.EliminadaEn != null || !impresora.Habilitada || !impresora.Estacion.Habilitada || impresora.Estacion.RevocadaEn is not null)
                 throw new ExcepcionEstacionImpresion("DESTINO_IMPRESION_DESHABILITADO", "Una impresora de la regla está deshabilitada.", StatusCodes.Status409Conflict);
-            db.TrabajosImpresion.Add(new TrabajoImpresion
+            var trabajo = new TrabajoImpresion
             {
                 IdSolicitud = comando.IdSolicitud,
                 IdSucursal = identidad.IdSucursal,
@@ -87,7 +88,9 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
                 CreadoEn = ahora,
                 DisponibleEn = ahora,
                 VenceEn = ahora.AddMinutes(30)
-            });
+            };
+            trabajosAgregados.Add(trabajo);
+            db.TrabajosImpresion.Add(trabajo);
         }
 
         try
@@ -96,7 +99,12 @@ public sealed class ServicioTrabajoImpresion : IServicioTrabajoImpresion
         }
         catch (DbUpdateException exception) when (EsViolacionUnicidad(exception))
         {
-            db.ChangeTracker.Clear();
+            foreach (var trabajo in trabajosAgregados)
+            {
+                var entrada = db.Entry(trabajo);
+                if (entrada.State == EntityState.Added)
+                    entrada.State = EntityState.Detached;
+            }
         }
 
         var trabajos = await TrabajosConDestino().AsNoTracking()
