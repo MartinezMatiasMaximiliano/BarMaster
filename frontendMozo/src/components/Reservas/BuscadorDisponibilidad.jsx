@@ -3,20 +3,20 @@ import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import CloseIcon from '@mui/icons-material/Close';
-import { BuscarMesasDisponibles, CrearReserva } from '../../API/APIReservas';
+import { CrearReserva } from '../../API/APIReservas';
 import { claveDia } from '../../Helpers/fechasReservas';
+import { agruparYOrdenarMesas, estadoMesa, estiloEstado } from './dominioDisponibilidad';
+import { useDisponibilidadMesas } from './useDisponibilidadMesas';
 
 export default function BuscadorDisponibilidad({ onReservaCreada }) {
     const [dia, setDia] = useState(() => claveDia(new Date()));
     const [hora, setHora] = useState('20:00');
-    const [resultado, setResultado] = useState(null);
-    const [buscando, setBuscando] = useState(false);
+    const { resultado, setResultado, cargando: buscando, error, setError, consultar, limpiar } = useDisponibilidadMesas();
     const [mesa, setMesa] = useState(null);
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [personas, setPersonas] = useState('');
     const [guardando, setGuardando] = useState(false);
-    const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState('');
     const [exito, setExito] = useState('');
     const [orden, setOrden] = useState('disponibilidad');
@@ -44,15 +44,10 @@ export default function BuscadorDisponibilidad({ onReservaCreada }) {
             setError('Seleccioná una fecha y hora válidas.');
             return;
         }
-        setBuscando(true);
         try {
             const fechaHora = fecha.toISOString();
-            setResultado({ fechaHora, mesas: await BuscarMesasDisponibles(fechaHora) });
-        } catch (e) {
-            setError(e.message || 'No se pudo consultar la disponibilidad.');
-        } finally {
-            setBuscando(false);
-        }
+            await consultar(fechaHora);
+        } catch { /* el hook conserva el error visible */ }
     };
     const elegirMesa = seleccionada => {
         setMesa(seleccionada);
@@ -62,7 +57,7 @@ export default function BuscadorDisponibilidad({ onReservaCreada }) {
         setErrorModal('');
     };
     const limpiarBusqueda = () => {
-        setResultado(null);
+        limpiar();
         setMesa(null);
         setError('');
         setErrorModal('');
@@ -81,7 +76,7 @@ export default function BuscadorDisponibilidad({ onReservaCreada }) {
         setErrorModal('');
         try {
             // Volver a consultar por si otro operario reservó mientras el modal estaba abierto.
-            const disponibles = await BuscarMesasDisponibles(resultado.fechaHora);
+            const disponibles = await consultar(resultado.fechaHora);
             const actual = disponibles.find(m => m.id === mesa.id);
             setResultado(prev => ({ ...prev, mesas: disponibles }));
             if (!actual) {
@@ -112,24 +107,7 @@ export default function BuscadorDisponibilidad({ onReservaCreada }) {
         }
     };
     const esConsultaPasada = resultado && new Date(resultado.fechaHora).getTime() < Date.now();
-    const mesasPorPlano = resultado?.mesas.reduce((grupos, mesaDisponible) => {
-        const idPlano = mesaDisponible.plano?.id || 'sin-plano';
-        if (!grupos[idPlano]) grupos[idPlano] = { nombre: mesaDisponible.plano?.nombre || 'Sin plano', mesas: [] };
-        grupos[idPlano].mesas.push(mesaDisponible);
-        return grupos;
-    }, {}) || {};
-    const prioridadDisponibilidad = { verde: 0, amarilla: 1, roja: 2 };
-    Object.values(mesasPorPlano).forEach(grupo => grupo.mesas.sort((a, b) => {
-        const valorA = orden === 'personas' ? a.capacidad : prioridadDisponibilidad[a.estadoDisponibilidad || 'verde'];
-        const valorB = orden === 'personas' ? b.capacidad : prioridadDisponibilidad[b.estadoDisponibilidad || 'verde'];
-        const comparacion = valorA - valorB;
-        return (direccion === 'asc' ? comparacion : -comparacion) || a.numero - b.numero;
-    }));
-    const estiloEstado = {
-        verde: { bgcolor: '#d7f4df', borderColor: '#16833b', color: '#0b4720' },
-        amarilla: { bgcolor: '#fff0a8', borderColor: '#d18b00', color: '#694500' },
-        roja: { bgcolor: '#ffd9dc', borderColor: '#c62828', color: '#701515' },
-    };
+    const mesasPorPlano = agruparYOrdenarMesas(resultado?.mesas, orden, direccion);
     return <Paper component="section" aria-label="Buscar disponibilidad" variant="outlined" sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1} sx={{ mb: 0.5 }}>
             <Typography variant="h5" component="h2">Buscar disponibilidad</Typography>
@@ -175,10 +153,10 @@ export default function BuscadorDisponibilidad({ onReservaCreada }) {
                     <Typography component="h3" variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>{grupo.nombre}</Typography>
                     <Stack gap={1}>
                         {grupo.mesas.map(m => <Button key={m.id} variant="outlined" size="small" onClick={() => elegirMesa(m)}
-                            disabled={esConsultaPasada} aria-label={`Mesa ${m.numero}, capacidad: ${m.capacidad} personas, disponibilidad ${m.estadoDisponibilidad || 'verde'}`}
+                            disabled={esConsultaPasada || estadoMesa(m) === 'desconocida'} aria-label={`Mesa ${m.numero}, capacidad: ${m.capacidad} personas, disponibilidad ${estadoMesa(m)}`}
                             sx={{ px: 1.25, py: 0.75, minWidth: 0, width: '100%', justifyContent: 'space-between', textTransform: 'none',
-                                borderRadius: 2, ...estiloEstado[m.estadoDisponibilidad || 'verde'],
-                                '&:hover': { filter: 'brightness(0.95)', ...estiloEstado[m.estadoDisponibilidad || 'verde'] } }}>
+                                borderRadius: 2, ...estiloEstado[estadoMesa(m)],
+                                '&:hover': { filter: 'brightness(0.95)', ...estiloEstado[estadoMesa(m)] } }}>
                             <Typography component="span" fontWeight={700}>Mesa {m.numero}</Typography>
                             <Typography component="span" variant="caption" sx={{ whiteSpace: 'nowrap' }}>{m.capacidad} pers.</Typography>
                         </Button>)}
