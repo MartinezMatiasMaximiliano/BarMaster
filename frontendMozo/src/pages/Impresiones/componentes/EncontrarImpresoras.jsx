@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Box, Button, Card, CardContent, Chip, CircularProgress, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { usarImpresion } from '../../../contexts/ContextoImpresion';
-import { darAltaEstacionActual, obtenerEstacionActual, obtenerImpresorasLocales, obtenerImpresoras, sincronizarInventarioImpresoras, actualizarImpresora, eliminarImpresora, solicitarPruebaRemotaImpresora } from '../../../services/impresion/apiImpresion';
+import { darAltaEstacionActual, obtenerImpresorasLocales, sincronizarInventarioImpresoras, actualizarImpresora, eliminarImpresora, solicitarPruebaRemotaImpresora } from '../../../services/impresion/apiImpresion';
 import { obtenerVersionQz } from '../../../services/impresion/conexionQz';
 import { imprimirCrudo } from '../../../services/impresion/impresionQz';
 import { normalizarErrorQz } from '../../../services/impresion/erroresQz';
 import { reiniciarTrabajadorImpresion } from '../../../services/impresion/trabajadorImpresion';
 import { esImpresoraPermitida } from '../../../services/impresion/impresorasQz';
+import { useGestionEstacion } from './useGestionEstacion';
+import { useInventarioImpresoras } from './useInventarioImpresoras';
 
 const normalizarNombreSistema = (nombre) => nombre.trim().toLocaleLowerCase();
 
@@ -135,42 +137,17 @@ function TablaImpresoras({ impresoras, bloqueadaPorCaja, ocupado, alEditar, alEl
 
 export default function EncontrarImpresoras({ integrada = false, encabezado = null, encabezadoPagina = null, bloqueadaPorCaja = false, onImpresorasActualizadas }) {
     const impresion = usarImpresion();
-    const [nombreEstacion, establecerNombreEstacion] = useState('Caja principal');
-    const [nombreEstacionGuardado, establecerNombreEstacionGuardado] = useState('Caja principal');
+    const { nombre: nombreEstacion, setNombre: establecerNombreEstacion, nombreGuardado: nombreEstacionGuardado,
+        errorCarga: errorEstacionCarga, cargar: cargarEstacion, guardar: persistirEstacion } = useGestionEstacion();
     const [editandoNombreEstacion, establecerEditandoNombreEstacion] = useState(false);
-    const [impresoras, establecerImpresoras] = useState([]);
-    const [impresorasRegistradas, establecerImpresorasRegistradas] = useState([]);
-    const [cargandoRegistradas, establecerCargandoRegistradas] = useState(true);
-    const [errorRegistradas, establecerErrorRegistradas] = useState(null);
+    const { locales: impresoras, setLocales: establecerImpresoras, registradas: impresorasRegistradas,
+        setRegistradas: establecerImpresorasRegistradas, cargando: cargandoRegistradas,
+        error: errorRegistradas, cargarRegistradas } = useInventarioImpresoras(onImpresorasActualizadas);
     const [nombresNuevos, establecerNombresNuevos] = useState(new Set());
     const [nombresGuardadosEncontrados, establecerNombresGuardadosEncontrados] = useState(new Set());
     const [ocupado, establecerOcupado] = useState(false);
     const [aviso, establecerAviso] = useState(null);
     const [avisoEstacion, establecerAvisoEstacion] = useState(null);
-    const cargarRegistradas = useCallback(async () => {
-        establecerCargandoRegistradas(true);
-        establecerErrorRegistradas(null);
-        try {
-            establecerImpresorasRegistradas(await obtenerImpresoras());
-            onImpresorasActualizadas?.();
-        } catch (error) {
-            establecerErrorRegistradas(normalizarErrorQz(error).mensaje);
-        } finally {
-            establecerCargandoRegistradas(false);
-        }
-    }, [onImpresorasActualizadas]);
-    useEffect(() => { cargarRegistradas(); }, [cargarRegistradas]);
-    useEffect(() => {
-        obtenerEstacionActual()
-            .then((estacion) => {
-                establecerNombreEstacion(estacion.nombre);
-                establecerNombreEstacionGuardado(estacion.nombre);
-            })
-            .catch(() => {});
-        obtenerImpresorasLocales()
-            .then((elementos) => establecerImpresoras(elementos.filter((x) => esImpresoraPermitida(x.nombreSistema))))
-            .catch(() => {});
-    }, []);
 
     const ejecutar = async (trabajo, mensaje) => {
         establecerOcupado(true); establecerAviso(null);
@@ -208,9 +185,8 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
         establecerOcupado(true);
         establecerAvisoEstacion(null);
         try {
-            const estacion = await darAltaEstacionActual(nombreEstacion.trim());
+            const estacion = await persistirEstacion();
             establecerNombreEstacion(estacion.nombre);
-            establecerNombreEstacionGuardado(estacion.nombre);
             establecerEditandoNombreEstacion(false);
             await cargarRegistradas();
             establecerAvisoEstacion({ severity: 'success', message: 'Nombre del equipo actualizado.' });
@@ -291,6 +267,9 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
 
     return <Stack spacing={3} sx={{ maxWidth: integrada ? 'none' : 900, mx: integrada ? 0 : 'auto', pb: integrada ? 0 : 4 }}>
         {avisoEstacion && <Alert severity={avisoEstacion.severity} onClose={() => establecerAvisoEstacion(null)} sx={{ maxWidth: 520 }}>{avisoEstacion.message}</Alert>}
+        {errorEstacionCarga && <Alert severity="error" action={<Button color="inherit" onClick={cargarEstacion}>Reintentar</Button>}>
+            No se pudo cargar la estación: {errorEstacionCarga}
+        </Alert>}
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'stretch', md: 'center' }} justifyContent="space-between">
             {encabezadoPagina || (!integrada && <Box><Typography variant="h4">Impresoras</Typography><Typography color="text.secondary">Buscá las impresoras instaladas, asignales un nombre claro y hacé una prueba.</Typography></Box>)}
             <TarjetaEquipo
