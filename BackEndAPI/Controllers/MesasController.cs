@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BackEndAPI.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class MesasController : ControllerBase
