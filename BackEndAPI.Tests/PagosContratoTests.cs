@@ -3,10 +3,18 @@ using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
+using BackEndAPI.Impresion.Documentos;
+using BackEndAPI.Impresion.Trabajos;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 namespace BackEndAPI.Tests.Contratos;
 public class PagosContratoTests
 {
-    private static (PagosServices, Visita) Preparar(string origen = "Local", string estado = "Abierta")
+    private static (PagosServices, Visita) Preparar(
+        string origen = "Local",
+        string estado = "Abierta",
+        IServicioDocumentoImpresion? documentos = null,
+        ILogger<PagosServices>? logger = null)
     {
         var visita = new Visita { Origen = origen, Estado = estado, Total = 200,
             Productos = [new ProductosPorVisita { Id = 1, PrecioDelMomento = 100 }, new ProductosPorVisita { Id = 2, PrecioDelMomento = 100 }] };
@@ -15,8 +23,11 @@ public class PagosContratoTests
             Assert.Equal(movimiento.MontoTotal, (decimal)a[3]!);
             return Task.FromResult<(MovimientoCaja, FacturaElectronica)>((movimiento, null!));
         });
+        documentos ??= DobleContrato.Crear<IServicioDocumentoImpresion>((m, a) =>
+            Task.FromResult<IReadOnlyList<CrearSolicitudImpresionRespuesta>>([]));
         return (new PagosServices(DobleContrato.Crear<IVisitasRepository>((m,a) => Task.FromResult(visita)), repo,
-            DobleContrato.Crear<IDeliveryTakeawayRepository>((m,a) => Task.FromResult<DeliveryAndTakeaway?>(new DeliveryAndTakeaway { Visita = visita, PrecioTotal = 200 }))), visita);
+            DobleContrato.Crear<IDeliveryTakeawayRepository>((m,a) => Task.FromResult<DeliveryAndTakeaway?>(new DeliveryAndTakeaway { Visita = visita, PrecioTotal = 200 })),
+            documentos, logger ?? NullLogger<PagosServices>.Instance), visita);
     }
     [Theory]
     [InlineData("Delivery")]
@@ -58,5 +69,29 @@ public class PagosContratoTests
         Assert.Equal(150, pago.MontoTotal);
         Assert.Equal(0, pago.Vuelto);
         Assert.Equal(150, visita.Total);
+    }
+
+    [Fact]
+    public async Task FalloDeImpresionPosteriorNoConviertePagoConfirmadoEnFallo()
+    {
+        var documentos = DobleContrato.Crear<IServicioDocumentoImpresion>((m, a) =>
+            Task.FromException<IReadOnlyList<CrearSolicitudImpresionRespuesta>>(new InvalidOperationException("QZ no disponible")));
+        var logger = new LoggerCapturador<PagosServices>();
+        var (servicio, _) = Preparar(documentos: documentos, logger: logger);
+
+        var (pago, _) = await servicio.PagarProductos(new CrearPagoDTO
+            { IdVisita = Guid.Empty, ListaIdsProductos = [1], MontoAbonado = 100 });
+
+        Assert.Equal(100, pago.MontoTotal);
+        Assert.Contains(logger.Entradas, entrada => entrada.Nivel == LogLevel.Warning && entrada.Excepcion is InvalidOperationException);
+    }
+
+    private sealed class LoggerCapturador<T> : ILogger<T>
+    {
+        public List<(LogLevel Nivel, Exception? Excepcion)> Entradas { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter) => Entradas.Add((logLevel, exception));
     }
 }

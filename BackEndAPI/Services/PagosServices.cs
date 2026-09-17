@@ -15,10 +15,10 @@ namespace BackEndAPI.Services
         private readonly IVisitasRepository _visitasRepository;
         private readonly IPagosRepository _pagosRepository;
         private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
-        private readonly IServicioDocumentoImpresion? _servicioDocumentoImpresion;
-        private readonly ILogger<PagosServices>? _logger;
+        private readonly IServicioDocumentoImpresion _servicioDocumentoImpresion;
+        private readonly ILogger<PagosServices> _logger;
 
-        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository, IServicioDocumentoImpresion? servicioDocumentoImpresion = null, ILogger<PagosServices>? logger = null)
+        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository, IServicioDocumentoImpresion servicioDocumentoImpresion, ILogger<PagosServices> logger)
         {
             _visitasRepository = visitasRepository;
             _pagosRepository = pagosRepository;
@@ -76,18 +76,15 @@ namespace BackEndAPI.Services
             movimientoCaja.MontoTotal = TotalAPagar;
 
             var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(visita, movimientoCaja, infoPago.DatosFacturaARCA, TotalAPagar, infoPago.GenerarFactura, infoPago.MontoAbonado);
-            if (_servicioDocumentoImpresion is not null)
+            try
             {
-                try
-                {
-                    await _servicioDocumentoImpresion.EncolarComprobantePagoAsync(visita, productos, ResultadoPagoCreado, CancellationToken.None,
-                        infoPago.descuentoDecimal, infoPago.recargoDecimal);
-                }
-                catch (Exception exception)
-                {
-                    // El pago ya fue confirmado: un problema de impresión no debe informarlo como fallido ni duplicarlo al reintentar.
-                    _logger?.LogWarning(exception, "No se pudo encolar el comprobante del pago {IdPago}.", ResultadoPagoCreado.Id);
-                }
+                await _servicioDocumentoImpresion.EncolarComprobantePagoAsync(visita, productos, ResultadoPagoCreado, CancellationToken.None,
+                    infoPago.descuentoDecimal, infoPago.recargoDecimal);
+            }
+            catch (Exception exception)
+            {
+                // El pago ya fue confirmado: un problema de impresión no debe informarlo como fallido ni duplicarlo al reintentar.
+                _logger.LogWarning(exception, "No se pudo encolar el comprobante del pago {IdPago}.", ResultadoPagoCreado.Id);
             }
             return (ResultadoPagoCreado, FacturaElectronica);
         }
