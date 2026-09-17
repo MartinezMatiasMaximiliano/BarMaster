@@ -11,12 +11,14 @@ using BackEndAPI.Tenancy.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BackEndAPI.Services.Horario;
 
 namespace BackEndAPI.Tests;
 
 public class ReservasMesaTests
 {
     private sealed class Contexto(AppDbContext db) : ICurrentDbContext { public AppDbContext Db => db; }
+    private static IServicioHorario Horario() => new ServicioHorarioBuenosAires(TimeProvider.System);
 
     [Theory]
     [InlineData(0)]
@@ -25,7 +27,7 @@ public class ReservasMesaTests
     [InlineData(99)]
     public async Task CrearYEditarRechazanEstadosNoPermitidosConBadRequest(int estado)
     {
-        var controller = new ReservasController(new ReservasServices(null!))
+        var controller = new ReservasController(new ReservasServices(null!, Horario()))
         {
             ControllerContext = new ControllerContext
             {
@@ -50,7 +52,7 @@ public class ReservasMesaTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
         await db.Database.EnsureCreatedAsync();
         Assert.Equal(new[] { 2, 3 }, await db.EstadoReservas.OrderBy(e => e.Id).Select(e => e.Id).ToArrayAsync());
-        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)), Horario());
         var reserva = await servicio.CrearReserva(new CrearReservaDTO
         {
             IdEstadoReserva = estado, NombreReserva = "Ana", Telefono = "1155551234", FechaHora = DateTime.UtcNow.AddDays(1)
@@ -71,7 +73,7 @@ public class ReservasMesaTests
         var mesa = new Mesa { Numero = 7, Plano = new Plano { Id = Guid.NewGuid(), IdSucursal = sucursal, Nombre = "Salón" } };
         db.Mesas.Add(mesa);
         await db.SaveChangesAsync();
-        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)), Horario());
         var controller = new ReservasController(servicio) { ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(
@@ -97,7 +99,7 @@ public class ReservasMesaTests
         await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
         await db.Database.EnsureCreatedAsync();
-        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)), Horario());
         var sucursal = Guid.NewGuid();
         var plano = new Plano { Id = Guid.NewGuid(), IdSucursal = sucursal, Nombre = "Salón" };
         var mesa1 = new Mesa { Numero = 1, Plano = plano };
@@ -127,10 +129,11 @@ public class ReservasMesaTests
         var mesa = new Mesa { Numero = 3, Plano = new Plano { Id = Guid.NewGuid(), IdSucursal = Guid.NewGuid(), Nombre = "Otro salón" } };
         db.Mesas.Add(mesa);
         await db.SaveChangesAsync();
-        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)), Horario());
         foreach (var id in new[] { mesa.Id, Guid.NewGuid(), Guid.Empty })
         {
-            var error = await Assert.ThrowsAsync<Exception>(() => servicio.CrearReserva(new CrearReservaDTO { IdMesa = id }, Guid.NewGuid()));
+            var error = await Assert.ThrowsAsync<Exception>(() => servicio.CrearReserva(new CrearReservaDTO
+                { IdMesa = id, FechaHora = DateTimeOffset.UtcNow.AddDays(1) }, Guid.NewGuid()));
             Assert.Equal("La mesa no pertenece a la sucursal", error.Message);
         }
         Assert.Empty(db.Reservas);
@@ -144,7 +147,7 @@ public class ReservasMesaTests
         await db.Database.EnsureCreatedAsync();
         var propia = Guid.NewGuid();
         var ajena = Guid.NewGuid();
-        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)), Horario());
         var reservaPropia = await servicio.CrearReserva(new CrearReservaDTO
         {
             NombreReserva = "Propia", Telefono = "1", FechaHora = DateTime.UtcNow.AddDays(1)
@@ -182,7 +185,7 @@ public class ReservasMesaTests
         var mesa2 = new Mesa { Numero = 2, Plano = plano };
         db.Mesas.AddRange(mesa1, mesa2);
         await db.SaveChangesAsync();
-        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)), Horario());
         var fecha = new DateTime(2030, 1, 2, 15, 4, 59, 987, DateTimeKind.Utc);
         var primera = await servicio.CrearReserva(new CrearReservaDTO
         {
@@ -227,7 +230,7 @@ public class ReservasMesaTests
             new Reserva { IdSucursal = sucursal, IdMesa = mesas[5].Id, FechaHora = baseUtc.AddMinutes(5), IdEstadoReserva = 3, NombreReserva = "Cancelada", Telefono = "1" },
             new Reserva { IdSucursal = otra, IdMesa = mesaOtra.Id, FechaHora = baseUtc, IdEstadoReserva = 2, NombreReserva = "Otra", Telefono = "1" });
         await db.SaveChangesAsync();
-        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)), Horario());
 
         var resultado = await servicio.BuscarDisponibilidad(sucursal, new DateTimeOffset(baseUtc));
 

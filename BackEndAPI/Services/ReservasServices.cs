@@ -8,16 +8,19 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using BackEndAPI.DTOs.Response;
+using BackEndAPI.Services.Horario;
 
 namespace BackEndAPI.Services
 {
     public class ReservasServices : IReservasServices
     {
         private readonly IReservasRepository _reservasRepository;
+        private readonly IServicioHorario _horario;
 
-        public ReservasServices(IReservasRepository reservasRepository)
+        public ReservasServices(IReservasRepository reservasRepository, IServicioHorario horario)
         {
             _reservasRepository = reservasRepository;
+            _horario = horario;
         }
         public async Task<IEnumerable<Reserva>> BuscarReservas(Guid idSucursal) {
             if (idSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
@@ -30,26 +33,9 @@ namespace BackEndAPI.Services
                 throw new Exception("El estado de la reserva debe ser Confirmada o Cancelada.");
         }
 
-        private static DateTime FechaLocalInicioDiaUtc(DateTime fecha)
+        private DateTime NormalizarAlMinuto(DateTimeOffset fechaHora)
         {
-            return DateTime.SpecifyKind(fecha.Date, DateTimeKind.Local).ToUniversalTime();
-        }
-
-        private static DateTime FechaLocalFinDiaExclusiveUtc(DateTime fecha)
-        {
-            return DateTime.SpecifyKind(fecha.Date.AddDays(1), DateTimeKind.Local).ToUniversalTime();
-        }
-
-        private static DateTime FechaHoraLocalUtc(DateTime fechaHora)
-        {
-            return fechaHora.Kind == DateTimeKind.Unspecified
-                ? DateTime.SpecifyKind(fechaHora, DateTimeKind.Local).ToUniversalTime()
-                : fechaHora.ToUniversalTime();
-        }
-
-        private static DateTime NormalizarAlMinuto(DateTime fechaHora)
-        {
-            var utc = FechaHoraLocalUtc(fechaHora);
+            var utc = _horario.AUtc(fechaHora);
             return new DateTime(utc.Year, utc.Month, utc.Day, utc.Hour, utc.Minute, 0, DateTimeKind.Utc);
         }
 
@@ -64,12 +50,11 @@ namespace BackEndAPI.Services
             ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation,
                 ConstraintName: "IX_Reservas_IdSucursal_IdMesa_FechaHora" };
 
-        public async Task<IEnumerable<Reserva>> BuscarReservasPorRangoFechas(Guid IdSucursal, DateTime Desde, DateTime? Hasta)
+        public async Task<IEnumerable<Reserva>> BuscarReservasPorRangoFechas(Guid IdSucursal, DateTimeOffset Desde, DateTimeOffset? Hasta)
         {
             if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
 
-            var desde = FechaLocalInicioDiaUtc(Desde);
-            var hastaExclusive = FechaLocalFinDiaExclusiveUtc(Hasta ?? Desde);
+            var (desde, hastaExclusive) = _horario.RangoDiaLocal(Desde, Hasta);
 
             if (hastaExclusive <= desde) throw new Exception("Rango de fechas inválido");
 
@@ -79,6 +64,8 @@ namespace BackEndAPI.Services
         public async Task<Reserva> CrearReserva(CrearReservaDTO request, Guid IdSucursal)
         {
             ValidarEstado(request.IdEstadoReserva);
+            if (request.FechaHora < _horario.Ahora)
+                throw new Exception("La fecha y hora de la reserva no puede ser en el pasado");
             await ValidarMesa(request.IdMesa, IdSucursal);
             var fechaHora = NormalizarAlMinuto(request.FechaHora);
             await ValidarDisponibilidad(IdSucursal, request.IdMesa, fechaHora, request.IdEstadoReserva);
@@ -125,7 +112,7 @@ namespace BackEndAPI.Services
         public async Task<IReadOnlyList<DisponibilidadMesaDTO>> BuscarDisponibilidad(Guid idSucursal, DateTimeOffset fechaHora)
         {
             if (idSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
-            var instante = fechaHora.ToUniversalTime();
+            var instante = _horario.AUtc(fechaHora);
             var minuto = new DateTime(instante.Year, instante.Month, instante.Day, instante.Hour, instante.Minute, 0, DateTimeKind.Utc);
             var mesas = await _reservasRepository.GetMesasConPlano(idSucursal);
             var reservas = await _reservasRepository.GetReservasConfirmadasCercanas(idSucursal, minuto.AddMinutes(-90), minuto.AddMinutes(90));

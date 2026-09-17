@@ -156,6 +156,8 @@ builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
 builder.Services.AddScoped<ISucursalesServices, SucursalesServices>();
 builder.Services.AddScoped<IReservasRepository, ReservasRepository>();
 builder.Services.AddScoped<IReservasServices, ReservasServices>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<BackEndAPI.Services.Horario.IServicioHorario, BackEndAPI.Services.Horario.ServicioHorarioBuenosAires>();
 builder.Services.AddScoped<IRolesRepository, RolesRepository>();
 builder.Services.AddScoped<IRolesServices, RolesServices>();
 builder.Services.AddScoped<ICuentasCorrientesRepository, CuentasCorrientesRepository>();

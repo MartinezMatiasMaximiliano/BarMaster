@@ -55,7 +55,7 @@ namespace BackEndAPI.Controllers
         }
         // Si "Hasta" es null, entonces se devuelven las reservas de la fecha "Desde" (así se obtienen las reservas de días exactos, y no en rangos de días)
         [HttpGet("/Reservas/Fechas")]
-        public async Task<IActionResult> GetReservasPorRangoFechas([FromQuery] DateTime Desde, [FromQuery] DateTime? Hasta)
+        public async Task<IActionResult> GetReservasPorRangoFechas([FromQuery] DateTimeOffset Desde, [FromQuery] DateTimeOffset? Hasta)
         {
             try
             {
@@ -92,10 +92,6 @@ namespace BackEndAPI.Controllers
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
-                var fechaUtc = request.FechaHora.Kind == DateTimeKind.Unspecified
-                    ? DateTime.SpecifyKind(request.FechaHora, DateTimeKind.Local).ToUniversalTime()
-                    : request.FechaHora.ToUniversalTime();
-                if (fechaUtc < DateTime.UtcNow) throw new Exception("La fecha y hora de la reserva no puede ser en el pasado");
                 if (string.IsNullOrWhiteSpace(request.NombreReserva)) throw new Exception("El nombre de la reserva es obligatorio");
                 if (string.IsNullOrWhiteSpace(request.Telefono)) throw new Exception("El teléfono de la reserva es obligatorio");
 

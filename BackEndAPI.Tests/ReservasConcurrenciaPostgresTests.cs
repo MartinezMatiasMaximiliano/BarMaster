@@ -6,6 +6,7 @@ using BackEndAPI.Services;
 using BackEndAPI.Tenancy.Services;
 using Microsoft.EntityFrameworkCore;
 using BackEndAPI.Tests.Impresion;
+using BackEndAPI.Services.Horario;
 
 namespace BackEndAPI.Tests;
 
@@ -34,7 +35,7 @@ public sealed class ReservasConcurrenciaPostgresTests
             await using var db2 = new AppDbContext(options);
             var fecha = new DateTime(2030, 1, 2, 15, 4, 45, DateTimeKind.Utc);
             Task<Reserva> Crear(AppDbContext db, string nombre) =>
-                new ReservasServices(new ReservasRepository(new Contexto(db))).CrearReserva(new CrearReservaDTO
+                new ReservasServices(new ReservasRepository(new Contexto(db)), new ServicioHorarioBuenosAires(TimeProvider.System)).CrearReserva(new CrearReservaDTO
                 { NombreReserva = nombre, Telefono = "1", FechaHora = fecha, IdMesa = mesa }, sucursal);
             var solicitudes = new[] { Crear(db1, "Una"), Crear(db2, "Dos") };
             try { await Task.WhenAll(solicitudes); } catch { }
