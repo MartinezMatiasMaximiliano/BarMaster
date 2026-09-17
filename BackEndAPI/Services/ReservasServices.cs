@@ -7,6 +7,7 @@ using BackEndAPI.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using BackEndAPI.DTOs.Response;
 
 namespace BackEndAPI.Services
 {
@@ -119,6 +120,28 @@ namespace BackEndAPI.Services
         public async Task<Reserva?> EliminarReserva(Guid Id, Guid idSucursal) {
             var reserva = await _reservasRepository.GetReservaPorId(Id, idSucursal) ?? throw new Exception("Reserva no encontrada");
             return await _reservasRepository.EliminarReserva(reserva);
+        }
+
+        public async Task<IReadOnlyList<DisponibilidadMesaDTO>> BuscarDisponibilidad(Guid idSucursal, DateTimeOffset fechaHora)
+        {
+            if (idSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
+            var instante = fechaHora.ToUniversalTime();
+            var minuto = new DateTime(instante.Year, instante.Month, instante.Day, instante.Hour, instante.Minute, 0, DateTimeKind.Utc);
+            var mesas = await _reservasRepository.GetMesasConPlano(idSucursal);
+            var reservas = await _reservasRepository.GetReservasConfirmadasCercanas(idSucursal, minuto.AddMinutes(-90), minuto.AddMinutes(90));
+            var porMesa = reservas.GroupBy(r => r.IdMesa!.Value).ToDictionary(g => g.Key,
+                g => g.Select(r => (int)Math.Abs((r.FechaHora - minuto).TotalMinutes)).ToArray());
+            return mesas.Where(m => !porMesa.TryGetValue(m.Id, out var distancias) || !distancias.Contains(0))
+                .Select(m =>
+                {
+                    var distancia = porMesa.TryGetValue(m.Id, out var valores) ? valores.Min() : (int?)null;
+                    var estado = distancia <= 30 ? "roja" : distancia < 90 ? "amarilla" : "verde";
+                    return new DisponibilidadMesaDTO(m.Id, m.Numero, m.Capacidad,
+                        new PlanoDTO { Id = m.Plano!.Id, Nombre = m.Plano.Nombre, Detalles = m.Plano.Detalles, IdSucursal = m.Plano.IdSucursal },
+                        estado, distancia);
+                })
+                .OrderBy(m => m.Plano.Nombre).ThenBy(m => m.EstadoDisponibilidad == "verde" ? 0 : m.EstadoDisponibilidad == "amarilla" ? 1 : 2)
+                .ThenBy(m => m.Numero).ToList();
         }
 
         private async Task ValidarMesa(Guid? idMesa, Guid idSucursal)

@@ -204,4 +204,39 @@ public class ReservasMesaTests
             Id = segunda.Id, IdEstadoReserva = 2, FechaHora = fecha, IdMesa = mesa1.Id
         }, sucursal));
     }
+
+    [Fact]
+    public async Task DisponibilidadAplicaLimitesIgnoraCanceladasYOtrasSucursales()
+    {
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+        await db.Database.EnsureCreatedAsync();
+        var sucursal = Guid.NewGuid();
+        var otra = Guid.NewGuid();
+        var plano = new Plano { IdSucursal = sucursal, Nombre = "Salón" };
+        var mesas = Enumerable.Range(0, 7).Select(i => new Mesa { Numero = i + 1, Plano = plano }).ToArray();
+        var mesaOtra = new Mesa { Numero = 99, Plano = new Plano { IdSucursal = otra, Nombre = "Otro" } };
+        db.Mesas.AddRange(mesas.Append(mesaOtra));
+        var baseUtc = new DateTime(2030, 1, 2, 20, 0, 0, DateTimeKind.Utc);
+        db.Reservas.AddRange(
+            new Reserva { IdSucursal = sucursal, IdMesa = mesas[0].Id, FechaHora = baseUtc, IdEstadoReserva = 2, NombreReserva = "0", Telefono = "1" },
+            new Reserva { IdSucursal = sucursal, IdMesa = mesas[1].Id, FechaHora = baseUtc.AddMinutes(-30), IdEstadoReserva = 2, NombreReserva = "30", Telefono = "1" },
+            new Reserva { IdSucursal = sucursal, IdMesa = mesas[2].Id, FechaHora = baseUtc.AddMinutes(31), IdEstadoReserva = 2, NombreReserva = "31", Telefono = "1" },
+            new Reserva { IdSucursal = sucursal, IdMesa = mesas[3].Id, FechaHora = baseUtc.AddMinutes(-89), IdEstadoReserva = 2, NombreReserva = "89", Telefono = "1" },
+            new Reserva { IdSucursal = sucursal, IdMesa = mesas[4].Id, FechaHora = baseUtc.AddMinutes(90), IdEstadoReserva = 2, NombreReserva = "90", Telefono = "1" },
+            new Reserva { IdSucursal = sucursal, IdMesa = mesas[5].Id, FechaHora = baseUtc.AddMinutes(5), IdEstadoReserva = 3, NombreReserva = "Cancelada", Telefono = "1" },
+            new Reserva { IdSucursal = otra, IdMesa = mesaOtra.Id, FechaHora = baseUtc, IdEstadoReserva = 2, NombreReserva = "Otra", Telefono = "1" });
+        await db.SaveChangesAsync();
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+
+        var resultado = await servicio.BuscarDisponibilidad(sucursal, new DateTimeOffset(baseUtc));
+
+        Assert.DoesNotContain(resultado, x => x.Id == mesas[0].Id);
+        Assert.Equal("roja", resultado.Single(x => x.Id == mesas[1].Id).EstadoDisponibilidad);
+        Assert.Equal("amarilla", resultado.Single(x => x.Id == mesas[2].Id).EstadoDisponibilidad);
+        Assert.Equal("amarilla", resultado.Single(x => x.Id == mesas[3].Id).EstadoDisponibilidad);
+        Assert.Equal("verde", resultado.Single(x => x.Id == mesas[4].Id).EstadoDisponibilidad);
+        Assert.Null(resultado.Single(x => x.Id == mesas[5].Id).DistanciaReservaMinutos);
+        Assert.DoesNotContain(resultado, x => x.Id == mesaOtra.Id);
+    }
 }

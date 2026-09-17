@@ -57,6 +57,18 @@ namespace BackEndAPI.Repositories
             db.Reservas.AnyAsync(r => r.IdSucursal == idSucursal && r.IdMesa == idMesa &&
                 r.FechaHora == fechaHora && r.IdEstadoReserva == 2 && (!excluirId.HasValue || r.Id != excluirId.Value));
 
+        public async Task<IReadOnlyList<Mesa>> GetMesasConPlano(Guid idSucursal) => await db.Mesas
+            .AsNoTracking().Include(m => m.Plano)
+            .Where(m => m.Plano != null && m.Plano.IdSucursal == idSucursal)
+            .ToListAsync();
+
+        public async Task<IReadOnlyList<Reserva>> GetReservasConfirmadasCercanas(Guid idSucursal, DateTime desde, DateTime hasta) =>
+            await db.Reservas.AsNoTracking()
+                .Where(r => r.IdSucursal == idSucursal && r.IdEstadoReserva == 2 && r.IdMesa != null &&
+                    r.FechaHora >= desde && r.FechaHora <= hasta)
+                .Select(r => new Reserva { IdMesa = r.IdMesa, FechaHora = r.FechaHora })
+                .ToListAsync();
+
         public Task<bool> MesaPerteneceASucursal(Guid idMesa, Guid idSucursal) =>
             db.Mesas.AnyAsync(m => m.Id == idMesa && m.Plano != null && m.Plano.IdSucursal == idSucursal);
 

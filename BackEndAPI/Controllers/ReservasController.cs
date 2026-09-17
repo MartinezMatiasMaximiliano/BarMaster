@@ -169,6 +169,14 @@ namespace BackEndAPI.Controllers
             }
         }
 
+        [HttpGet("/Reservas/Disponibilidad")]
+        public async Task<IActionResult> GetDisponibilidad([FromQuery] DateTimeOffset fechaHora)
+        {
+            if (fechaHora == default) return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Fecha y hora no enviada"));
+            try { return Ok(await _ReservasServices.BuscarDisponibilidad(ObtenerIdSucursal(), fechaHora)); }
+            catch (Exception ex) { return StatusCode(500, "Error Interno de servidor: " + ex.Message); }
+        }
+
         private Guid ObtenerIdSucursal()
         {
             var valor = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")?.Value;
