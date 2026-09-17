@@ -1,6 +1,6 @@
 # Impresión distribuida de comandas, cuentas previas y comprobantes de pago
 
-Actualizado el **15 de septiembre de 2026** a partir del código del workspace, incluidos los cambios locales. Describe la implementación del repositorio; no acredita que esta versión o sus migraciones estén desplegadas en producción.
+Actualizado el **17 de septiembre de 2026** a partir del código del workspace. Describe la implementación del repositorio; no acredita que esta versión o sus migraciones estén desplegadas en producción.
 
 ## 1. Objetivo y principio arquitectónico
 
@@ -22,12 +22,12 @@ SignalR no transporta el ticket completo ni sustituye la persistencia. Sólo avi
 El módulo está dividido en estas capas:
 
 1. Los productores de eventos comerciales, como `VisitasServices`, informan que ocurrió algo imprimible.
-2. `ServicioDocumentoImpresion` valida el hecho comercial y crea un contenido versionado.
+2. `ServicioDocumentoImpresion` orquesta constructores puros que validan el hecho comercial y crean un contenido versionado.
 3. `ServicioReglaImpresion` resuelve todas las reglas habilitadas que coinciden con el documento y el momento.
 4. `ServicioTrabajoImpresion` crea un trabajo durable por cada regla encontrada.
 5. `NotificadorHubImpresion` avisa por SignalR a las estaciones afectadas.
 6. El trabajador del front reserva sus trabajos, los imprime con QZ Tray y confirma el resultado.
-7. La API administrativa consulta, cancela o genera reimpresiones. El componente de seguimiento se conserva en el front, pero actualmente no está montado en la página de Impresiones.
+7. La API administrativa consulta, cancela o genera reimpresiones. No existe un componente de seguimiento en el front; `EstadoImpresiones` se eliminó por no tener consumidores.
 
 No se agregó una capa de repositorios específica para impresión. Los servicios usan `ICurrentDbContext` y `AppDbContext` directamente. Esta decisión evita repositorios que sólo repetirían las operaciones de Entity Framework y, sobre todo, permite que la reserva concurrente use SQL PostgreSQL con `FOR UPDATE SKIP LOCKED` dentro del servicio que conoce la transición de estados. Los repositorios existentes del resto del sistema no fueron reemplazados.
 
@@ -251,6 +251,8 @@ Delega la lógica en `IServicioEstacionImpresion`/`ServicioEstacionImpresion`. E
 
 ### 5.6 `SolicitudesImpresionController` y `ServicioDocumentoImpresion`
 
+`ServicioDocumentoImpresion` es un orquestador: obtiene los datos requeridos, delega la construcción a `ConstructorComanda`, `ConstructorPreticket` o `ConstructorComprobante` y entrega el resultado a la cola. `AgrupadorLineasImpresion` concentra la agrupación de líneas, cantidades, notas y comandos. Los constructores son puros y mantienen las versiones, serialización y claves de idempotencia públicas.
+
 `SolicitudesImpresionController.Preticket` recibe `IdComando`, `IdVisita` e IDs opcionales de productos. `ServicioDocumentoImpresion.SolicitarPreticketAsync`:
 
 1. Carga la visita dentro de la sucursal actual.
@@ -268,7 +270,7 @@ La comanda agrupa por nombre y notas, ordena por descripción y no incluye preci
 
 ### 5.7 Integración con `VisitasServices`
 
-`AgregarProductos` recibe `idComando`. Dentro de la transacción, `RegistrarComandoAsync` usa `INSERT ... ON CONFLICT DO NOTHING`; luego agrega productos marcándolos con `IdComandoAgregado` y llama a `EncolarComandasAsync`. La notificación SignalR se realiza después de terminar la transacción. Repetir el mismo comando devuelve la visita existente y no descuenta stock, agrega productos ni imprime otra vez.
+`VisitasServices.AgregarProductos` mantiene su contrato público y delega en `ManejadorAgregarProductos`. Este coordina `ServicioIdempotenciaComandos`, `ConsultaProductosLote` y `PublicadorNotificacionesPedido`. Dentro de la transacción, el registro idempotente usa `INSERT ... ON CONFLICT DO NOTHING`; los productos solicitados se consultan en lote, se agregan marcados con `IdComandoAgregado` y se encolan las comandas. Las notificaciones SignalR se publican después del commit. Repetir el mismo comando devuelve la visita existente y no descuenta stock, agrega productos ni imprime otra vez.
 
 `useAgregarPedidos` conserva el UUID del envío y lo pasa a `AgregarProductosAVisita` por HTTP. Si un cliente omite `idComando`, el controlador genera uno nuevo, por lo que ese cliente no obtiene idempotencia entre solicitudes independientes. Las notificaciones comerciales de `NotificacionesHub` son un circuito distinto del hub de impresión.
 
@@ -301,7 +303,7 @@ La consulta `ObtenerPorSolicitud` está disponible con `Impresion.Usar` (identid
 - `Cancelar`, rechaza `Enviando` y `AceptadoPorCola`; para `Cancelado/Vencido` no realiza otro cambio. Admite pendientes, reservas, reintentos y atención. Cancelar un trabajo ambiguo no retira lo que ya pudo enviarse a la cola local.
 - `ObtenerPanel`, que agrega pendientes, trabajos con atención, aceptados del día, estaciones fuera de línea e impresoras ausentes.
 
-`CrearEnrutadosAsync` resuelve reglas, toma una instantánea del destino y crea un trabajo por regla. La clave se compone a partir de la clave comercial y el ID de regla. Si dos solicitudes concurrentes intentan crear lo mismo, el índice único conserva una sola copia y el servicio recupera el conjunto ya existente.
+`CrearEnrutadosAsync` resuelve reglas, toma una instantánea del destino y crea un trabajo por regla. La clave se compone a partir de la clave comercial y el ID de regla. Si dos solicitudes concurrentes intentan crear lo mismo, el índice único conserva una sola copia y el servicio recupera el conjunto ganador. Ante esa colisión sólo desacopla los trabajos `Added` por esa llamada; no limpia el `ChangeTracker` ni descarta otros cambios pendientes del mismo contexto.
 
 `ReservarUnoAsync` usa `FOR UPDATE SKIP LOCKED`. Dos trabajadores concurrentes no reciben el mismo trabajo: uno bloquea y actualiza el renglón; el otro lo omite. Cada transición valida `IdEstacion`, `IdReserva`, estado y vencimiento.
 
@@ -341,7 +343,7 @@ Los nombres `Controller`, `InvokeAsync`, `ExecuteAsync`, `OnConnectedAsync`, `Va
 1. Encontrar impresoras y asignarles un nombre.
 2. Definir destinos de impresión automática para Comandas, Cuenta previa y Comprobante de pago.
 
-Los apartados son componentes internos de `pages/Impresiones/componentes`. `/configuracion_impresion`, `/destinos_impresion` y `/estado_impresion` redirigen a `/impresiones`. **`EstadoImpresiones.jsx` y sus clientes HTTP se conservan, pero el componente no está importado ni montado en la página actual:** no hay una tercera sección accesible de seguimiento, cancelación o reimpresión en esas rutas. Esas operaciones permanecen disponibles por API.
+Los apartados son componentes internos de `pages/Impresiones/componentes`. `/configuracion_impresion`, `/destinos_impresion` y `/estado_impresion` redirigen a `/impresiones`. `EstadoImpresiones.jsx` fue eliminado porque no tenía imports ni una ruta propia: no hay una tercera sección accesible de seguimiento, cancelación o reimpresión. Esas operaciones permanecen disponibles por API.
 
 La página consulta la caja activa al montarse y bloquea guardar/editar/eliminar impresoras y quitar reglas mientras carga, si hay caja activa o si la consulta falla. Los selectores e interruptores de reglas siguen disponibles. El estado de caja no se vuelve a consultar automáticamente desde esa página; las operaciones protegidas siguen verificándose en el backend.
 
@@ -372,7 +374,16 @@ La identidad pertenece al navegador/perfil y origen web, no a toda la PC. Otro n
 
 ### 6.3 API del front
 
-`apiImpresion.js` separa tres clientes:
+`apiImpresion.js` es un índice temporal de compatibilidad que reexporta módulos con responsabilidades separadas:
+
+- `clienteImpresion.js`: clientes HTTP e identidad;
+- `sesionEstacion.js`: alta, recuperación, credencial y sesión de estación;
+- `administracionImpresion.js`: inventario y administración de impresoras;
+- `reglasImpresionApi.js`: reglas;
+- `trabajosImpresionApi.js`: solicitudes, trabajos y panel;
+- `integracionQzApi.js`: certificado, firma y estado QZ.
+
+Existen tres clientes explícitos:
 
 - el cliente normal de la aplicación para acciones del usuario;
 - el cliente administrativo para configuración;
@@ -380,7 +391,7 @@ La identidad pertenece al navegador/perfil y origen web, no a toda la PC. Otro n
 
 Todas las funciones de dominio tienen nombres en español: `guardarReglaImpresion`, `reservarTrabajosImpresion`, `marcarTrabajoEnviando`, `marcarTrabajoAceptado`, `fallarTrabajoImpresion`, etc.
 
-Los clientes administrativo y de estación adjuntan `X-Tenant-ID` y sus tokens correspondientes. Ante un 403 administrativo se permite un solo intento adicional con el otro token disponible de sucursal/usuario. `Impresion.Configurar` admite identidad de sucursal o identidad `admin` con `RequestedRole = Admin`, ambas con inquilino y sucursal válidos; el JWT de estación no autoriza configuración.
+`apiSucursal` reutiliza la sesión normal de la aplicación y atiende registro/latido de estación, pretickets, consulta de solicitudes y estado/certificado QZ. `apiAdministrativa` elige una sola identidad al crear la petición (`USER_token` y, si no existe, `token`) para alta y revocación, configuración, inventario administrativo, reglas, panel y mantenimiento de trabajos. `apiEstacion` usa exclusivamente el JWT de estación para sincronizar inventario, reservar y transicionar trabajos; también puede firmar para QZ cuando esa sesión existe. Los clientes dedicados adjuntan `X-Tenant-ID`. No existe reintento automático con otra credencial ante `403`: cada endpoint declara qué cliente utiliza. `Impresion.Configurar` admite identidad de sucursal o identidad `admin` con `RequestedRole = Admin`, ambas con inquilino y sucursal válidos; el JWT de estación no autoriza configuración.
 
 ### 6.4 Trabajador de impresión
 
@@ -476,20 +487,22 @@ Los scripts de `tools/printing` son auxiliares para preparar/comprobar una estac
 - Un destino desconectado o una cola ausente pueden tener trabajos encolados; deben recuperarse antes del vencimiento.
 - El contenido borrado por retención no puede reimprimirse desde el trabajo histórico.
 - BarMaster debe permanecer abierto en el equipo de impresión, con QZ, drivers y colas disponibles. El trabajador opera desde cualquier pantalla, pero no es un servicio de Windows independiente del navegador.
-- El panel y las acciones de seguimiento existen en la API; su componente no está montado en la página actual.
+- El panel y las acciones de seguimiento existen en la API, pero actualmente no tienen un componente de presentación en el front.
 
 ## 10. Verificación de esta actualización
 
-Se contrastaron modelos y configuración EF, servicios comerciales, servicios/controladores de impresión, autenticación y hub, mantenimiento, migraciones, rutas/pantallas de `frontendMozo`, trabajador, formateadores y scripts del instalador. Se revisó también `FrontEndCliente` para delimitar su participación.
-
-Pruebas ejecutadas el 15 de septiembre de 2026:
+Pruebas ejecutadas el 17 de septiembre de 2026:
 
 | Verificación | Resultado |
 |---|---|
-| `dotnet test BackEndAPI.Tests/BackEndAPI.Tests.csproj --filter FullyQualifiedName~Impresion --no-restore --verbosity minimal` | Compilación Debug correcta; 26 pruebas aprobadas y 5 fallidas por falta de `BARMASTER_TEST_POSTGRES_ADMIN`. Las cinco requieren PostgreSQL aislado (reserva/concurrencia, mantenimiento y baja/restauración persistente); el código actual falla si falta esa configuración, no omite silenciosamente la integración. |
-| Desde `frontendMozo`: `npm run test:run -- src/services/impresion src/pages/Impresiones/componentes/__tests__ src/components/impresion/__tests__` | 44 pruebas aprobadas y 1 fallida, en 14 archivos. El test de agrupación de preticket espera `2 x Café`, mientras el formateador actual genera `2x Café`. |
+| `frontendMozo: npm run test:run` | 42 archivos y 215 pruebas aprobadas. |
+| `frontendMozo: npm run build` | Build productivo correcto; permanecen avisos de tamaño de chunk e imports estáticos/dinámicos de impresión. |
+| `FrontEndCliente: npm run build` | Build productivo correcto; permanecen el aviso previo de `position` duplicado en `Producto.jsx` y el tamaño de chunk. |
+| `FrontEndCliente: npm run lint` | No ejecutable por la configuración previa inválida: `react/prop-types` está declarado como propiedad de nivel superior en `.eslintrc.cjs`. |
+| Suite backend Release sin integración PostgreSQL | 85 pruebas aprobadas. |
+| Integración PostgreSQL | 7 casos no ejecutados porque `BARMASTER_TEST_POSTGRES_ADMIN` no está configurada: concurrencia de reservas, colisión idempotente y reserva de trabajos, transiciones concurrentes, mantenimiento y persistencia de baja/restauración de impresoras. |
 
-La diferencia de formato del test ya estaba presente en el código revisado. Esta tarea modifica la documentación; no corrige ese test ni cambia el sistema. No se aplicaron migraciones, no se ejecutó impresión física ni instalación completa y no se verificó el despliegue productivo. Los conteos y afirmaciones de compilación Release/build productivo de la documentación anterior no se reutilizan como evidencia actual.
+No se aplicaron migraciones, no se ejecutó impresión física ni una instalación completa y no se verificó el despliegue productivo.
 
 ## 11. Cambios reflejados respecto de la documentación anterior
 
