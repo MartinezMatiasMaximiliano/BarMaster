@@ -30,6 +30,12 @@ namespace BackEndAPI.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        public async Task<IReadOnlyDictionary<Guid, Producto>> GetProductosPorIds(IEnumerable<Guid> ids)
+        {
+            var distintos = ids.Distinct().ToArray();
+            return await db.Productos.Where(p => distintos.Contains(p.Id)).ToDictionaryAsync(p => p.Id);
+        }
+
         public async Task<Producto?> GetProductoPorNombre(string nombre)
         {
             return await db.Productos.FirstOrDefaultAsync(p => p.Nombre == nombre);

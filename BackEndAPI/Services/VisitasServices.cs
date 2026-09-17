@@ -10,6 +10,7 @@ using BackEndAPI.Impresion.Trabajos;
 using BackEndAPI.Models.Impresion;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using BackEndAPI.Services.Pedidos;
 
 namespace BackEndAPI.Services
 {
@@ -17,33 +18,21 @@ namespace BackEndAPI.Services
     {
         private readonly IVisitasRepository _visitasRepository;
         private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
-        private readonly IProductosRepository _productosRepository;
         private readonly IStockServices _stockServices;
         private readonly IDatabaseTransactionManager _transactionManager;
-        private readonly IServicioDocumentoImpresion _servicioDocumentoImpresion;
-        private readonly IServicioTrabajoImpresion _servicioTrabajoImpresion;
-        private readonly ICurrentDbContext _contextoDbActual;
-        private readonly ILogger<VisitasServices> _logger;
+        private readonly IManejadorAgregarProductos _manejadorAgregarProductos;
         public VisitasServices(
             IVisitasRepository repository,
-            IProductosRepository productosRepository,
             IDeliveryTakeawayRepository deliveryTakeawayRepository,
             IStockServices stockServices,
             IDatabaseTransactionManager transactionManager,
-            IServicioDocumentoImpresion servicioDocumentoImpresion,
-            IServicioTrabajoImpresion servicioTrabajoImpresion,
-            ICurrentDbContext contextoDbActual,
-            ILogger<VisitasServices> logger)
+            IManejadorAgregarProductos manejadorAgregarProductos)
         {
             _visitasRepository = repository;
-            _productosRepository = productosRepository;
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _stockServices = stockServices;
             _transactionManager = transactionManager;
-            _servicioDocumentoImpresion = servicioDocumentoImpresion;
-            _servicioTrabajoImpresion = servicioTrabajoImpresion;
-            _contextoDbActual = contextoDbActual;
-            _logger = logger;
+            _manejadorAgregarProductos = manejadorAgregarProductos;
         }
 
         public async Task<Visita> BuscarVisitaPorId(Guid IdVisita)
@@ -60,6 +49,8 @@ namespace BackEndAPI.Services
             Guid IdVisita,
             Guid idComando)
         {
+            return await _manejadorAgregarProductos.EjecutarAsync(productos, IdVisita, idComando);
+#if false
             var inicio = Stopwatch.GetTimestamp();
             _logger.LogInformation("[IMPRESION_DIAGNOSTICO] {TimestampUtc:o} pedido.backend_recibido IdComando={IdComando} IdVisita={IdVisita} Lineas={Lineas}",
                 DateTime.UtcNow, idComando, IdVisita, productos.Count);
@@ -88,8 +79,10 @@ namespace BackEndAPI.Services
                     DateTime.UtcNow, idComando, solicitudImpresion.IdSolicitud, solicitudImpresion.Trabajos.Count, Stopwatch.GetElapsedTime(inicio).TotalMilliseconds);
             }
             return visita;
+#endif
         }
 
+#if false
         private async Task<ResultadoProductosAgregados> AgregarProductosNucleoAsync(
             ICollection<AgregarProductoAVisita> productos,
             Guid IdVisita,
@@ -190,6 +183,7 @@ namespace BackEndAPI.Services
             Visita Visita,
             IReadOnlyList<ProductosPorVisita> ProductosAgregados,
             bool YaProcesado);
+#endif
         
         public async Task<IEnumerable<Visita>> ObtenerVisitasActivas()
         {

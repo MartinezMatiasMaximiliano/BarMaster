@@ -40,6 +40,8 @@ public class ProductosPatchTests
     {
         public Producto Producto = new() { Id = Guid.NewGuid(), Nombre = "Original", PrecioNeto = 120, PorcentajeIVA = 21, Activo = false };
         public Task<Producto?> GetProductoPorId(Guid id) => Task.FromResult<Producto?>(Producto);
+        public Task<IReadOnlyDictionary<Guid, Producto>> GetProductosPorIds(IEnumerable<Guid> ids) =>
+            Task.FromResult<IReadOnlyDictionary<Guid, Producto>>(new Dictionary<Guid, Producto> { [Producto.Id] = Producto });
         public Task<Producto?> UpdateProducto(Producto producto) => Task.FromResult<Producto?>(producto);
         public Task<IEnumerable<Producto>> GetAllProductos() => throw new NotImplementedException();
         public Task<Producto?> GetProductoPorNombre(string nombre) => throw new NotImplementedException();
