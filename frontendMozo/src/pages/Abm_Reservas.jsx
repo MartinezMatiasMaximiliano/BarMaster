@@ -53,7 +53,7 @@ export default function Abm_Reservas({ datos_reservas = [], mesas = [], recargar
             const fecha = new Date(fechaHora);
             setDia(claveDia(fecha));
             setMes(new Date(fecha.getFullYear(), fecha.getMonth(), 1));
-            await recargarComponentes();
+            return await recargarComponentes();
         }} />
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '340px minmax(0, 1fr)' }, gap: 3, alignItems: 'start' }}>
             <Paper component="section" aria-label="Calendario de reservas" variant="outlined" sx={{ p: 2 }}>

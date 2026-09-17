@@ -48,7 +48,7 @@ import { BuscarTodosLosMozos } from './API/APIPersonas'
 import { BuscarTodasLasPersonas } from './API/APIPersonas'
 import { BuscarTodosLosRoles } from './API/APIRoles'
 import { BuscarVisitasActivas } from './API/APIVisitas'
-import { BuscarTodasLasReservas } from './API/APIReservas'
+import { BuscarTodasLasReservas, RecargarReservasConservando } from './API/APIReservas'
 import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { BuscarTodosLosMenus } from './API/APIMenus'
@@ -145,7 +145,7 @@ function App() {
                     .catch(() => { if (!cancelled) SetCategorias([]); });
                 BuscarTodasLasReservas()
                     .then(data => { if (!cancelled) SetReservas(Array.isArray(data) ? data : []); })
-                    .catch(() => { if (!cancelled) SetReservas([]); });
+                    .catch(() => { /* conservar la agenda anterior ante un fallo transitorio */ });
                 BuscarTodosLosPlanos()
                     .then(data => { if (!cancelled) SetPlanos(Array.isArray(data) ? data : []); })
                     .catch(() => { if (!cancelled) SetPlanos([]); });
@@ -263,8 +263,7 @@ function App() {
     }
 
     async function recargarReservas() {
-        const data = await BuscarTodasLasReservas().catch(() => []);
-        SetReservas(Array.isArray(data) ? data : []);
+        return RecargarReservasConservando(SetReservas);
     }
 
     async function recargarPlanos() {

@@ -25,6 +25,17 @@ export async function BuscarTodasLasReservas() {
     }
 }
 
+export async function RecargarReservasConservando(asignar, buscar = BuscarTodasLasReservas) {
+    try {
+        const datos = await buscar();
+        if (!Array.isArray(datos)) throw new Error('La respuesta de reservas no es válida.');
+        asignar(datos);
+        return { ok: true, datos };
+    } catch (error) {
+        return { ok: false, error: construirError(error, 'No se pudo actualizar la agenda') };
+    }
+}
+
 export async function CrearReserva(datos) {
     try {
         const response = await api.post('Reservas', datos);

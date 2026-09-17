@@ -95,7 +95,8 @@ export default function BuscadorDisponibilidad({ onReservaCreada }) {
             setMesa(null);
             setExito('Reserva confirmada.');
             try {
-                await onReservaCreada?.(resultado.fechaHora);
+                const recarga = await onReservaCreada?.(resultado.fechaHora);
+                if (recarga && recarga.ok === false) throw recarga.error;
             } catch {
                 setError('La reserva fue creada, pero no se pudo actualizar la agenda. Usá Actualizar para recargarla.');
             }
