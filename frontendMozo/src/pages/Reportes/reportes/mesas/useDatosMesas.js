@@ -15,7 +15,8 @@ export const useDatosMesas = (visitasFiltradas) => {
             const idMesa = v.idMesa ?? v.IdMesa;
             if (idMesa == null) return;
 
-            const nombre = v.numeroMesa ?? v.NumeroMesa ?? v.mesa?.nombre ?? `Mesa ${idMesa}`;
+            const numero = v.numeroMesa ?? v.NumeroMesa ?? v.mesa?.numero;
+            const nombre = numero != null ? `Mesa ${numero}` : `Mesa ${idMesa}`;
             const totalVisita = v.total ?? 0;
 
             if (!mesasData[idMesa]) {

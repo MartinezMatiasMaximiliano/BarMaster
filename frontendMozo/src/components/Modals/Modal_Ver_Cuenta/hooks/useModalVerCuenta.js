@@ -28,8 +28,8 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
     // Obtener la visita de la mesa actual
     const visitaMesa = useMemo(() => {
         if (!visitasActivas || visitasActivas.length === 0) return null;
-        return visitasActivas.find(visita => visita.mesa?.numero === datosMesa.nombre || visita.numeroMesa === datosMesa.nombre) || null;
-    }, [visitasActivas, datosMesa.nombre]);
+        return visitasActivas.find(visita => (visita.idMesa ?? visita.mesa?.id) === datosMesa.id) || null;
+    }, [visitasActivas, datosMesa.id]);
 
     // Calcular productos disponibles para pagar (no pagados)
     const productosAPagar = useMemo(() => {
@@ -118,7 +118,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
             dispatch(cambiarEstadoPagadoProductos({ idsProductos: arregloIds, pagado: true, idMovimientoCaja }));
             dispatch(eliminarTicket(arregloIds));
             setTabValue(tabIndexPagosRegistrados);
-            await sendHubMessage("RecargarTicket", datosMesa.nombre);
+            await sendHubMessage("RecargarTicket", datosMesa.numero);
 
             if (showSnackbar) {
                 showSnackbar("Productos facturados correctamente", "success");
@@ -131,7 +131,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
             }
         }
     }, [
-        datosMesa.nombre,
+        datosMesa.numero,
         datosMesa.visita?.id,
         datosMesa.visita?.Id,
         dispatch,

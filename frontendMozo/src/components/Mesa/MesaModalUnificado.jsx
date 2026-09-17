@@ -79,7 +79,7 @@ export const MesaModalUnificado = ({
         handleEnviarPedidos,
         limpiarEstado,
         closeSnackbar
-    } = useAgregarPedidos(show, idVisita, datos_mesa.nombre, () => {});
+    } = useAgregarPedidos(show, idVisita, datos_mesa.numero, () => {});
 
     const hayPedidosPendientes = productosAPagar.length > 0;
     const hayPedidosProvisorios = comanda.length > 0;
@@ -205,7 +205,7 @@ export const MesaModalUnificado = ({
         >
             <MesaModalHeader
                 fecha={fechaFormateada}
-                numeroMesa={datos_mesa.nombre}
+                numeroMesa={datos_mesa.numero}
                 onClose={handleCloseWithCleanup}
             />
 

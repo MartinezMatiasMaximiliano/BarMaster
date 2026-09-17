@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { validarCampos, validarFormulario } from "../../../Helpers/HelperFunctions";
 
-export default function Handlers({ agregar, recargarComponentes, handleClose, campos }) {
+export default function Handlers({ agregar, recargarComponentes, handleClose, campos, initialValues = {} }) {
   const [errors, setErrors] = useState({});
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState(initialValues);
 
   const resetForm = () => {
-    setValues({});
+    setValues(initialValues);
     setErrors({});
   };
 

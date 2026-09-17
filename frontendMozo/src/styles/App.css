@@ -120,6 +120,24 @@ table.dataTable :is(th, td, th *, td *) {
     color: var(--bm-error, #fc6131) !important;
 }
 
+/* Los estados de reserva son etiquetas sólidas dentro de las tablas. */
+.MuiChip-root.reserva-estado-chip.reserva-estado-chip--confirmada {
+    color: var(--bm-grey-07, #f9f9f9) !important;
+    background-color: var(--bm-success-dark, #1a7700) !important;
+    border-color: var(--bm-success-dark, #1a7700) !important;
+}
+
+.MuiChip-root.reserva-estado-chip.reserva-estado-chip--cancelada {
+    color: var(--bm-grey-07, #f9f9f9) !important;
+    background-color: var(--bm-error-dark, #d6380d) !important;
+    border-color: var(--bm-error-dark, #d6380d) !important;
+}
+
+.MuiChip-root.reserva-estado-chip.Mui-disabled {
+    opacity: 0.75;
+    cursor: wait;
+}
+
 .MuiButton-contained,
 .MuiButton-contained .MuiSvgIcon-root,
 .MuiButton-contained .MuiButton-startIcon,

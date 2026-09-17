@@ -3,7 +3,7 @@
     public class ModificarMesaDTO
     {
         public Guid Id { get; set; }
-        public string? Nombre { get; set; }
+        public int? Numero { get; set; }
         public int? Capacidad { get; set; } 
         public int? x { get; set; }
         public int? y { get; set; }

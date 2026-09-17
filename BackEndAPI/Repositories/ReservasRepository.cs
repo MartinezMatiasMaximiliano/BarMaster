@@ -17,13 +17,14 @@ namespace BackEndAPI.Repositories
         }
         public async Task<IEnumerable<Reserva>> GetAllReservas()
         {
-            return await db.Reservas.Include(r => r.Estado).ToListAsync();
+            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa).ToListAsync();
         }
 
         public async Task<IEnumerable<Reserva>> GetReservasPorRangoFechas(Guid idSucursal, DateTime desde, DateTime hastaExclusive)
         {
             return await db.Reservas
                 .Include(r => r.Estado)
+                .Include(r => r.Mesa)
                 .Where(r =>
                     r.IdSucursal == idSucursal &&
                     r.FechaHora >= desde &&
@@ -34,14 +35,14 @@ namespace BackEndAPI.Repositories
 
         public async Task<Reserva?> GetReservaPorId(Guid id)
         {
-            return await db.Reservas.Include(r => r.Estado).FirstOrDefaultAsync(r => r.Id == id);
+            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa).FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<Reserva> CrearReserva(Reserva nuevaReserva)
         {
             await db.Reservas.AddAsync(nuevaReserva);
             await db.SaveChangesAsync();
-            return await db.Reservas.Include(r => r.Estado).FirstOrDefaultAsync(r => r.Id == nuevaReserva.Id) ?? nuevaReserva;
+            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa).FirstOrDefaultAsync(r => r.Id == nuevaReserva.Id) ?? nuevaReserva;
         }
 
         public async Task<Reserva?> ActualizarReserva(Reserva reservaActualizada) {
@@ -49,6 +50,9 @@ namespace BackEndAPI.Repositories
             await db.SaveChangesAsync();
             return reservaActualizada;
         }
+
+        public Task<bool> MesaPerteneceASucursal(Guid idMesa, Guid idSucursal) =>
+            db.Mesas.AnyAsync(m => m.Id == idMesa && m.Plano != null && m.Plano.IdSucursal == idSucursal);
 
         public async Task<Reserva?> EliminarReserva(Reserva reservaAEliminar) {
             db.Reservas.Remove(reservaAEliminar);

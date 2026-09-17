@@ -20,6 +20,12 @@ namespace BackEndAPI.Services
             return await _reservasRepository.GetAllReservas();
         }
 
+        private static void ValidarEstado(int estado)
+        {
+            if (estado is not (2 or 3))
+                throw new Exception("El estado de la reserva debe ser Confirmada o Cancelada.");
+        }
+
         private static DateTime FechaLocalInicioDiaUtc(DateTime fecha)
         {
             return DateTime.SpecifyKind(fecha.Date, DateTimeKind.Local).ToUniversalTime();
@@ -51,6 +57,8 @@ namespace BackEndAPI.Services
 
         public async Task<Reserva> CrearReserva(CrearReservaDTO request, Guid IdSucursal)
         {
+            ValidarEstado(request.IdEstadoReserva);
+            await ValidarMesa(request.IdMesa, IdSucursal);
             Reserva nuevaReserva = new Reserva
             {
                 IdSucursal = IdSucursal,
@@ -59,16 +67,22 @@ namespace BackEndAPI.Services
                 NombreReserva = request.NombreReserva,
                 Telefono = request.Telefono,
                 CantidadDePersonas = request.CantidadDePersonas,
-                MesaReserva = string.Empty
+                IdMesa = request.IdMesa
             };
 
             return await _reservasRepository.CrearReserva(nuevaReserva);
         }
 
         public async Task<Reserva?> ActualizarReserva(ModificarReservaDTO ReservaActualizada) {
+            ValidarEstado(ReservaActualizada.IdEstadoReserva);
             var reserva = await _reservasRepository.GetReservaPorId(ReservaActualizada.Id) ?? throw new Exception("Reserva no encontrada");
+            if (ReservaActualizada.MesaEspecificada)
+            {
+                await ValidarMesa(ReservaActualizada.IdMesa, reserva.IdSucursal);
+                reserva.IdMesa = ReservaActualizada.IdMesa;
+            }
             reserva.IdEstadoReserva = ReservaActualizada.IdEstadoReserva;
-            reserva.FechaHora = !ReservaActualizada.FechaHora.ToString().IsNullOrEmpty() ? ReservaActualizada.FechaHora : reserva.FechaHora;
+            reserva.FechaHora = ReservaActualizada.FechaHora != default ? FechaHoraLocalUtc(ReservaActualizada.FechaHora) : reserva.FechaHora;
             reserva.NombreReserva = !String.IsNullOrEmpty(ReservaActualizada.NombreReserva) ? ReservaActualizada.NombreReserva : reserva.NombreReserva;
             reserva.Telefono = !String.IsNullOrEmpty(ReservaActualizada.Telefono) ? ReservaActualizada.Telefono : reserva.Telefono;
             reserva.CantidadDePersonas = ReservaActualizada.CantidadDePersonas.HasValue ? ReservaActualizada.CantidadDePersonas : reserva.CantidadDePersonas;
@@ -78,6 +92,12 @@ namespace BackEndAPI.Services
         public async Task<Reserva?> EliminarReserva(Guid Id) {
             var reserva = await _reservasRepository.GetReservaPorId(Id) ?? throw new Exception("Reserva no encontrada");
             return await _reservasRepository.EliminarReserva(reserva);
+        }
+
+        private async Task ValidarMesa(Guid? idMesa, Guid idSucursal)
+        {
+            if (idMesa.HasValue && !await _reservasRepository.MesaPerteneceASucursal(idMesa.Value, idSucursal))
+                throw new Exception("La mesa no pertenece a la sucursal");
         }
     }
 }

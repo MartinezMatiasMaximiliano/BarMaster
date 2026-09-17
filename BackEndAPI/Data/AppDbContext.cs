@@ -52,6 +52,12 @@ namespace BackEndAPI.Data
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Mesa>().Property(m => m.Numero).HasColumnName("numero");
+            modelBuilder.Entity<Reserva>().ToTable("Reservas", tabla =>
+                tabla.HasCheckConstraint("CK_Reservas_EstadoPermitido", "\"IdEstadoReserva\" IN (2, 3)"));
+            modelBuilder.Entity<Reserva>().HasOne(r => r.Mesa).WithMany()
+                .HasForeignKey(r => r.IdMesa).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Reserva>().HasIndex(r => new { r.IdSucursal, r.FechaHora });
             modelBuilder.Entity<EstacionImpresion>(entity =>
             {
                 entity.ToTable("EstacionesImpresion");
@@ -72,10 +78,8 @@ namespace BackEndAPI.Data
             );
 
             modelBuilder.Entity<EstadoReserva>().HasData(
-               new EstadoReserva { Id = 1, Nombre = "Pendiente" },
                new EstadoReserva { Id = 2, Nombre = "Confirmada" },
-               new EstadoReserva { Id = 3, Nombre = "Cancelada" },
-               new EstadoReserva { Id = 4, Nombre = "Completada" }
+               new EstadoReserva { Id = 3, Nombre = "Cancelada" }
             );
 
             modelBuilder.Entity<TipoMovimientoCaja>().HasData(

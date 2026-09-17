@@ -128,6 +128,8 @@ export function MappearReservas(reservas) {
             nombreReserva: reserva.nombreReserva,
             telefono: (reserva.telefono ?? reserva.Telefono ?? reserva.telefonoContacto ?? reserva.TelefonoContacto ?? '').toString().trim(),
             cantidadDePersonas: reserva.cantidadDePersonas,
+            mesaReserva: (reserva.mesaReserva ?? reserva.MesaReserva) ? `Mesa ${reserva.mesaReserva ?? reserva.MesaReserva}` : '',
+            idMesa: reserva.idMesa ?? null,
             IdEstadoReserva: reserva.estado.id,
             estado: reserva.estado.nombre
         }))
@@ -204,7 +206,7 @@ export function MappearMesas(mesas) {
     return (
         mesas.map(mesa => ({
             id: mesa.id,
-            numero: mesa.nombre || mesa.numeroMesa || "", 
+            numero: mesa.numero ?? "", 
             codigoParaPedir: mesa.codigoParaPedir,
             capacidad: mesa.capacidad || 0,
             idPlano: mesa.plano?.id || mesa.idPlano || null,

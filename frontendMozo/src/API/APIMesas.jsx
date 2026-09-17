@@ -2,8 +2,8 @@ import api from '../services/axiosInstance'
 import { construirError } from './APIError';
 
 class CrearMesaDTO {
-    constructor(nombre, idPlano, capacidad = 0, x = 0, y = 0, w = 0, h = 0) {
-        this.Nombre = nombre;
+    constructor(numero, idPlano, capacidad = 0, x = 0, y = 0, w = 0, h = 0) {
+        this.Numero = Number(numero);
         this.IdPlano = idPlano || null;
         this.Capacidad = capacidad;
         this.x = x;
@@ -41,6 +41,9 @@ export async function ModificarMesa(datos) {
         const body = {
             Id: datos.id
         };
+        if (datos.numero !== undefined) {
+            body.Numero = Number(datos.numero);
+        }
         if (datos.capacidad !== undefined) {
             body.Capacidad = datos.capacidad;
         }

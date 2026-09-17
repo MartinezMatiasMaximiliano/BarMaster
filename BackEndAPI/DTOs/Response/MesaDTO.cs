@@ -3,7 +3,7 @@ namespace BackEndAPI.DTOs.Response
     public class MesaDTO
     {
         public Guid Id { get; set; }
-        public string Nombre { get; set; } = string.Empty;
+        public int Numero { get; set; }
         public int Capacidad { get; set; }
         public string? CodigoParaPedir { get; set; }
         public float x { get; set; }

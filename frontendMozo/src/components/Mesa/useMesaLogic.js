@@ -18,7 +18,7 @@ export const useMesaLogic = (showSnackbar) => {
         try {
             await EliminarProductosVisita(idVisita, idsProductos);
             dispatch(eliminarProductos({ 
-                numeroMesa, 
+                idVisita, 
                 idsProductos 
             }));
 

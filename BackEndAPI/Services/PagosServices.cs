@@ -41,7 +41,7 @@ namespace BackEndAPI.Services
                 IdVisita = infoPago.IdVisita,
                 Facturado = infoPago.GenerarFactura,
                 Descripcion = visita.Origen == "Local" ?
-                 $"Pago de mesa {(visita.Mesa != null ? visita.Mesa.Nombre : "")}"
+                 $"Pago de mesa {(visita.Mesa != null ? visita.Mesa.Numero.ToString() : "")}"
                   :
                  $"Pago de {visita.Origen}"
             };

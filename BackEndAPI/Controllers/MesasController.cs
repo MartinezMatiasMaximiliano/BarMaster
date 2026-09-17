@@ -35,7 +35,7 @@ namespace BackEndAPI.Controllers
                 var response = mesasConVisita.Select(t => new MesaDTO
                 {
                     Id = t.mesa.Id,
-                    Nombre = t.mesa.Nombre,
+                    Numero = t.mesa.Numero,
                     Capacidad = t.mesa.Capacidad,
                     CodigoParaPedir = t.mesa.CodigoParaPedir,
                     x = t.mesa.x,
@@ -79,7 +79,7 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                if (DTO.Nombre == string.Empty) throw new Exception("El nombre de la mesa no puede estar vacio");
+                if (DTO.Numero <= 0) throw new Exception("El número de la mesa debe ser mayor que cero");
 
 
                 if (DTO.Capacidad <= 0) throw new Exception("La capacidad no puede ser negativa");
@@ -96,7 +96,7 @@ namespace BackEndAPI.Controllers
                         return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));
                     case "La capacidad no puede ser negativa":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
-                    case "El nombre de la mesa no puede estar vacio":
+                    case "El número de la mesa debe ser mayor que cero":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Ya existe la mesa en el plano seleccionado":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
@@ -120,7 +120,8 @@ namespace BackEndAPI.Controllers
             {
                 switch (ex.Message)
                 {
-                    case "El nombre de mesa ya existe en este plano":
+                    case "El número de mesa ya existe en este plano":
+                    case "El número de la mesa debe ser mayor que cero":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "No se encontró la mesa con el Id especificado":
                         return NotFound(new ErrorDTO(404, "NOT FOUND", ex.Message));

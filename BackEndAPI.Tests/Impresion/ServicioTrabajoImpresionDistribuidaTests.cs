@@ -42,7 +42,7 @@ public sealed class ServicioTrabajoImpresionDistribuidaTests
             Microsoft.Extensions.Logging.Abstractions.NullLogger<BackEndAPI.Impresion.Documentos.ServicioDocumentoImpresion>.Instance);
         var pago = new MovimientoCaja { IdTipoMovimientoCaja = 7, MontoTotal = 95, MontoAbonado = 100, Vuelto = 5,
             FechaMovimiento = new DateTime(2026, 9, 14, 15, 0, 0, DateTimeKind.Utc) };
-        await documentos.EncolarComprobantePagoAsync(new Visita { Origen = "Local", Mesa = new Mesa { Nombre = "4" } },
+        await documentos.EncolarComprobantePagoAsync(new Visita { Origen = "Local", Mesa = new Mesa { Numero = 4 } },
             [new ProductosPorVisita { NombreProducto = "Café", PrecioDelMomento = 100 }],
             pago, default, descuento: 10, recargo: 5);
         var trabajo = await db.TrabajosImpresion.SingleAsync();

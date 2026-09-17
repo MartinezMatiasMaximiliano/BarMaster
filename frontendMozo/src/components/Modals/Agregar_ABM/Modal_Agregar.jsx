@@ -35,6 +35,7 @@ function Modal_Agregar(props) {
         recargarComponentes: props.recargarComponentes,
         handleClose: () => setShow(false),
         campos: props.campos,
+        initialValues: props.initialValues,
     });
 
     const handleClose = () => {

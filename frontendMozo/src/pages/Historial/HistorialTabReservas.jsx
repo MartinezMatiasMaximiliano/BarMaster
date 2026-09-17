@@ -1,17 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { Box, CircularProgress, Alert, Chip, Typography } from '@mui/material';
-import { BuscarTodasLasReservas } from '../../API/APIReservas';
+import { Box, CircularProgress, Alert, Typography } from '@mui/material';
+import { BuscarTodasLasReservas, ModificarReserva } from '../../API/APIReservas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
 import BuscadorTabla from '../../components/Tabla/BuscadorTabla';
 import Ordenar from '../../components/Ordenar/Ordenar';
 import { estaFechaEnRango, filtrarPorBusqueda, tieneFiltroHistorialActivo } from './utils';
-const COLORES_ESTADO_RESERVA = { 1: 'warning', 2: 'info', 3: 'error', 4: 'success' };
+import EstadoReservaChip from '../../components/Reservas/EstadoReservaChip';
 
 export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistorico }) {
     const [reservas, setReservas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [errorEstado, setErrorEstado] = useState('');
     const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [datosCargados, setDatosCargados] = useState(false);
     const [textoBusqueda, setTextoBusqueda] = useState('');
@@ -77,6 +78,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
                 fechaHora: fechaHoraRaw,
                 nombreReserva: (r.nombreReserva ?? r.NombreReserva ?? '-').toString().trim(),
                 cantidadDePersonas: r.cantidadDePersonas ?? r.CantidadDePersonas ?? '-',
+                mesaReserva: (r.mesaReserva ?? r.MesaReserva) ? `Mesa ${r.mesaReserva ?? r.MesaReserva}` : '',
                 estado: nombreEstado,
                 IdEstadoReserva: idEstado,
                 tipoPago: tipoPagoStr || '-',
@@ -86,7 +88,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
         return filtrarPorBusqueda(
             filasMapeadas,
             textoBusqueda,
-            ['id', 'fechaHora', 'nombreReserva', 'cantidadDePersonas', 'estado', 'tipoPago']
+            ['id', 'fechaHora', 'nombreReserva', 'mesaReserva', 'cantidadDePersonas', 'estado', 'tipoPago']
         );
     }, [reservas, fechaInicio, fechaFin, modoHistorico, textoBusqueda]);
 
@@ -97,6 +99,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
     const columnas = useMemo(() => [
         { key: 'fechaHora', label: 'Fecha y hora', align: 'left', render: (f) => (f.fechaHora ? formatearFechaCompleta(f.fechaHora) : '-') },
         { key: 'nombreReserva', label: 'Nombre de reserva', align: 'left' },
+        { key: 'mesaReserva', label: 'Mesa reservada', render: (fila) => fila.mesaReserva || '' },
         { key: 'cantidadDePersonas', label: 'Personas', align: 'right' },
         { key: 'tipoPago', label: 'Tipo de pago', align: 'left' },
         {
@@ -104,11 +107,19 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
             label: 'Estado',
             align: 'center',
             render: (fila) => (
-                <Chip
-                    label={fila.estado}
-                    color={COLORES_ESTADO_RESERVA[fila.IdEstadoReserva] || 'default'}
-                    size="small"
-                />
+                <EstadoReservaChip estado={fila.estado} idEstado={fila.IdEstadoReserva} onError={setErrorEstado}
+                    onCambiar={async idEstado => {
+                        setErrorEstado('');
+                        await ModificarReserva({ id: fila.id, IdEstadoReserva: idEstado });
+                        setReservas(actuales => actuales.map(reserva => {
+                            const id = reserva.id ?? reserva.Id;
+                            if (id !== fila.id) return reserva;
+                            return { ...reserva, estado: {
+                                id: idEstado,
+                                nombre: idEstado === 3 ? 'Cancelada' : 'Confirmada',
+                            } };
+                        }));
+                    }} />
             ),
         },
     ], []);
@@ -116,6 +127,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
     const opcionesOrden = useMemo(() => [
         { label: 'Fecha y hora', campo: 'fechaHora', tipoOrden: 'fecha' },
         { label: 'Nombre de reserva', campo: 'nombreReserva', tipoOrden: 'texto' },
+        { label: 'Mesa reservada', campo: 'mesaReserva', tipoOrden: 'texto' },
         { label: 'Personas', campo: 'cantidadDePersonas', tipoOrden: 'numero' },
         { label: 'Tipo de pago', campo: 'tipoPago', tipoOrden: 'texto' },
         { label: 'Estado', campo: 'estado', tipoOrden: 'texto' },
@@ -129,6 +141,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
                 </Box>
             )}
             {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+            {errorEstado && <Alert severity="error" onClose={() => setErrorEstado('')} sx={{ mt: 2 }}>{errorEstado}</Alert>}
             {!loading && !error && !filtroActivo && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 280, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
@@ -149,7 +162,7 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
                             <BuscadorTabla
                                 value={textoBusqueda}
                                 onChange={setTextoBusqueda}
-                                placeholder="Nombre, estado, pago..."
+                                placeholder="Nombre, mesa, estado, pago..."
                             />
                         )}
                         renderOrdenar={() => (

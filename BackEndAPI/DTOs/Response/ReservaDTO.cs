@@ -9,6 +9,8 @@ namespace BackEndAPI.DTOs.Response
         public string NombreReserva { get; set; } = string.Empty;
         public string TelefonoContacto { get; set; } = string.Empty;
         public int? CantidadDePersonas { get; set; }
+        public string MesaReserva { get; set; } = string.Empty;
+        public Guid? IdMesa { get; set; }
 
         public EstadoReservaDTO Estado { get; set; } = null!;
     }

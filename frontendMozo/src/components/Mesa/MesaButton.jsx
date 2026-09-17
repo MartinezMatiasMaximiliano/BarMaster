@@ -67,7 +67,6 @@ export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = fa
             onClick={onClick}
             disabled={disabled}
             sx={{
-                ...estilo,
                 mx: 1,
                 py: 2,
                 px: 3,
@@ -83,6 +82,7 @@ export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = fa
                 },
                 ...(variant === 'success' ? { bgcolor: 'primary.main' } : {}),
                 transition: 'all 0.2s ease-in-out',
+                ...estilo,
             }}
         >
             <img

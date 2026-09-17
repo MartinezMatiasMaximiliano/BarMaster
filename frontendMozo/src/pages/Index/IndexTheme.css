@@ -1,11 +1,51 @@
 .bm-index-theme {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 32px);
+    height: calc(100dvh - 32px);
+    overflow: hidden;
     background-color: var(--bm-grey-07, #F9F9F9);
     color: var(--bm-grey-01, #191919);
     transition: background-color 0.5s ease, color 0.5s ease;
 }
 
+.bm-index-mesas-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+}
+
+.bm-index-mesas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(96px, 100%), 1fr));
+    gap: 8px;
+    padding-block: 16px;
+}
+
+.bm-index-mesa {
+    display: flex;
+    align-items: flex-start;
+    min-width: 0;
+}
+
 .bm-index-host {
     transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+main.bm-index-host {
+    padding-left: 12px;
+    /* Panel de notificaciones: 220px, más 16px al borde y 16px de separación. */
+    padding-right: 252px;
+    min-width: 0;
+}
+
+@media (min-width: 900px) {
+    main.bm-index-host {
+        /* Coincide con el ancho de 260px del panel en el breakpoint md de MUI. */
+        padding-right: 292px;
+    }
 }
 
 .bm-index-host--light {

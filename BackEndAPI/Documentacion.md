@@ -163,12 +163,12 @@ Base: `/Mesa`. **Sin `[Authorize]`** (acceso público).
 | Verbo | Ruta | Params | Body | Devuelve | Descripción |
 |---|---|---|---|---|---|
 | GET | `/Mesa` | — | — | `List<MesaDTO>` | Todas las mesas con su visita/plano actual |
-| POST | `/Mesa` | — | `CrearMesaDTO {Nombre, IdPlano, Capacidad, x, y, w, h}` | `MesaDTO` | Crea mesa |
-| PATCH | `/Mesa` | — | `ModificarMesaDTO {Id, Nombre?, Capacidad?, x?, y?, w?, h?}` | `MesaDTO` | Modifica mesa |
+| POST | `/Mesa` | — | `CrearMesaDTO {Numero, IdPlano, Capacidad, x, y, w, h}` | `MesaDTO` | Crea mesa |
+| PATCH | `/Mesa` | — | `ModificarMesaDTO {Id, Numero?, Capacidad?, x?, y?, w?, h?}` | `MesaDTO` | Modifica mesa |
 | PATCH | `/Mesa/AbrirCerrar` | — | `AbrirMesaDTO {IdMesa, CodigoServicioMozo?, Abrir: bool, IdVisita?}` | `VisitaDTO` | Abre/cierra una mesa (crea/cierra una Visita) |
 | DELETE | `/Mesa` | query `IdMesa: Guid` | — | 200 | Elimina mesa |
 
-**MesaDTO**: `Id, Nombre, Capacidad, CodigoParaPedir?, x, y, w, h, Plano?: PlanoDTO, Visita?: VisitaEnMesaDTO`
+**MesaDTO**: `Id, Numero, Capacidad, CodigoParaPedir?, x, y, w, h, Plano?: PlanoDTO, Visita?: VisitaEnMesaDTO`
 
 ---
 

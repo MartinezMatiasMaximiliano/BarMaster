@@ -2,18 +2,18 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-export const useMesaState = (nombreMesa) => {
+export const useMesaState = (idMesa) => {
     const [checkBoxSeleccionados, setCheckBoxSeleccionados] = useState([]);
     const [show, setShow] = useState(false);
     const visitasActivas = useSelector((state) => state.visitasActivas.value);
     const [visitaMesa, setVisitaMesa] = useState(
-        visitasActivas.find(visita => visita.numeroMesa === nombreMesa)
+        visitasActivas.find(visita => (visita.idMesa ?? visita.mesa?.id) === idMesa)
     );
 
     // Sincronizar visitaMesa cuando cambia visitasActivas
     useEffect(() => {
-        setVisitaMesa(visitasActivas.find(visita => visita.numeroMesa === nombreMesa));
-    }, [visitasActivas, nombreMesa]);
+        setVisitaMesa(visitasActivas.find(visita => (visita.idMesa ?? visita.mesa?.id) === idMesa));
+    }, [visitasActivas, idMesa]);
 
     const handleShow = () => setShow(true);
     

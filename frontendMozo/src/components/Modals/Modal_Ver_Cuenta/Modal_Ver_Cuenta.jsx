@@ -131,7 +131,7 @@ function Modal_Ver_Cuenta(props) {
                         <Stack direction="row" spacing={1} alignItems="center">
                             <ReceiptLongIcon color="primary" />
                             <Typography variant="h6">
-                                {props.titulo} · Mesa {props.datos_mesa.nombre}
+                                {props.titulo} · Mesa {props.datos_mesa.numero}
                             </Typography>
                         </Stack>
                         <IconButton onClick={handleCloseWithCleanup} size="small">

@@ -67,7 +67,7 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
         var contenido = new PreticketContenido(
             1,
             visita.Caja.Sucursal?.Nombre ?? "BarMaster",
-            visita.Mesa?.Nombre ?? visita.Origen,
+            visita.Mesa?.Numero.ToString() ?? visita.Origen,
             AhoraUtc,
             lineas,
             lineas.Sum(x => x.Cantidad * x.PrecioUnitario),
@@ -101,7 +101,7 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
             .Where(x => x.Id == identidad.IdSucursal)
             .Select(x => x.Nombre)
             .SingleAsync(tokenCancelacion);
-        var nombreMesa = visita.Mesa?.Nombre ?? visita.Origen;
+        var nombreMesa = visita.Mesa?.Numero.ToString() ?? visita.Origen;
         var lineas = productosAgregados
             .GroupBy(x => new { x.NombreProducto, Notas = (x.Detalles ?? string.Empty).Trim() })
             .Select(grupo => new LineaComandaContenido(
@@ -160,7 +160,7 @@ public sealed class ServicioDocumentoImpresion : IServicioDocumentoImpresion
             .ToList();
         var subtotal = lineas.Sum(x => x.Cantidad * x.PrecioUnitario);
         var contenido = new ComprobantePagoContenido(1, sucursal.Nombre,
-            visita.Mesa?.Nombre ?? visita.Origen, DateTime.SpecifyKind(pago.FechaMovimiento, DateTimeKind.Utc), lineas, pago.MontoTotal,
+            visita.Mesa?.Numero.ToString() ?? visita.Origen, DateTime.SpecifyKind(pago.FechaMovimiento, DateTimeKind.Utc), lineas, pago.MontoTotal,
             pago.MontoAbonado, pago.Vuelto, "DOCUMENTO NO VALIDO COMO FACTURA")
         {
             NombreEmpresa = sucursal.Empresa?.Nombre,

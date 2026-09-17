@@ -143,7 +143,7 @@ function Distribucion_mesas() {
     // Obtener el nombre de la mesa por su ID
     const obtenerNombreMesa = (mesaId) => {
         const mesa = mesas.find(m => (m.id === mesaId || m.Id === mesaId));
-        return mesa ? (mesa.nombre || mesa.Nombre || mesa.numeroMesa || `Mesa ${mesaId}`) : `Mesa ${mesaId}`;
+        return mesa ? `Mesa ${mesa.numero ?? mesa.Numero}` : `Mesa ${mesaId}`;
     };
 
     return (

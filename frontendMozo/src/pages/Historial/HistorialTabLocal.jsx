@@ -95,7 +95,7 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
             });
 
             const tickets = Array.from(ticketsMap.values());
-            const numeroMesa = v.numeroMesa ?? v.NumeroMesa ?? v.mesa?.numero ?? v.mesa?.Nombre ?? '-';
+            const numeroMesa = v.numeroMesa ?? v.NumeroMesa ?? v.mesa?.numero ?? v.mesa?.Numero ?? '-';
             const mozo = v.mozo ?? v.Mozo;
             const nombreMozo = mozo ? (mozo.nombres ?? mozo.Nombres ?? '') + ' ' + (mozo.apellido ?? mozo.Apellido ?? '') : '-';
             const fechaRaw = v.fechaHora ?? v.FechaHora ?? '';
