@@ -53,6 +53,10 @@ namespace BackEndAPI.Repositories
             return reservaActualizada;
         }
 
+        public Task<bool> ExisteReservaConfirmada(Guid idSucursal, Guid idMesa, DateTime fechaHora, Guid? excluirId = null) =>
+            db.Reservas.AnyAsync(r => r.IdSucursal == idSucursal && r.IdMesa == idMesa &&
+                r.FechaHora == fechaHora && r.IdEstadoReserva == 2 && (!excluirId.HasValue || r.Id != excluirId.Value));
+
         public Task<bool> MesaPerteneceASucursal(Guid idMesa, Guid idSucursal) =>
             db.Mesas.AnyAsync(m => m.Id == idMesa && m.Plano != null && m.Plano.IdSucursal == idSucursal);
 

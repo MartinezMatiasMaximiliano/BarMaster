@@ -58,6 +58,10 @@ namespace BackEndAPI.Data
             modelBuilder.Entity<Reserva>().HasOne(r => r.Mesa).WithMany()
                 .HasForeignKey(r => r.IdMesa).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Reserva>().HasIndex(r => new { r.IdSucursal, r.FechaHora });
+            modelBuilder.Entity<Reserva>()
+                .HasIndex(r => new { r.IdSucursal, r.IdMesa, r.FechaHora })
+                .IsUnique()
+                .HasFilter("\"IdEstadoReserva\" = 2 AND \"IdMesa\" IS NOT NULL");
             modelBuilder.Entity<EstacionImpresion>(entity =>
             {
                 entity.ToTable("EstacionesImpresion");

@@ -113,6 +113,8 @@ namespace BackEndAPI.Controllers
                     case "La mesa no pertenece a la sucursal":
                     case "El nombre de la reserva es obligatorio":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "La mesa ya tiene una reserva confirmada en ese horario":
+                        return Conflict(new ErrorDTO(409, "CONFLICT", ex.Message));
                     case "El teléfono de la reserva es obligatorio":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Sucursal no identificada":
@@ -139,6 +141,8 @@ namespace BackEndAPI.Controllers
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Reserva no encontrada":
                         return NotFound(new ErrorDTO(404, "NOT FOUND", $"No existe la reserva buscada"));
+                    case "La mesa ya tiene una reserva confirmada en ese horario":
+                        return Conflict(new ErrorDTO(409, "CONFLICT", ex.Message));
                     default:
                         return StatusCode(500, "Error Interno de servidor: " + ex.Message);
                 }

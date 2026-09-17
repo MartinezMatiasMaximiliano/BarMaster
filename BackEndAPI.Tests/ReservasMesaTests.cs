@@ -169,4 +169,39 @@ public class ReservasMesaTests
         Assert.IsType<NotFoundObjectResult>(await controller.EliminarReserva(reservaAjena.Id));
         Assert.Equal("Ajena", (await db.Reservas.SingleAsync(x => x.Id == reservaAjena.Id)).NombreReserva);
     }
+
+    [Fact]
+    public async Task NormalizaAlMinutoYRechazaConflictoAlCrearYModificar()
+    {
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+        await db.Database.EnsureCreatedAsync();
+        var sucursal = Guid.NewGuid();
+        var plano = new Plano { IdSucursal = sucursal, Nombre = "Salón" };
+        var mesa1 = new Mesa { Numero = 1, Plano = plano };
+        var mesa2 = new Mesa { Numero = 2, Plano = plano };
+        db.Mesas.AddRange(mesa1, mesa2);
+        await db.SaveChangesAsync();
+        var servicio = new ReservasServices(new ReservasRepository(new Contexto(db)));
+        var fecha = new DateTime(2030, 1, 2, 15, 4, 59, 987, DateTimeKind.Utc);
+        var primera = await servicio.CrearReserva(new CrearReservaDTO
+        {
+            NombreReserva = "Una", Telefono = "1", FechaHora = fecha, IdMesa = mesa1.Id
+        }, sucursal);
+        Assert.Equal(new DateTime(2030, 1, 2, 15, 4, 0, DateTimeKind.Utc), primera.FechaHora);
+
+        var conflicto = await Assert.ThrowsAsync<Exception>(() => servicio.CrearReserva(new CrearReservaDTO
+        {
+            NombreReserva = "Dos", Telefono = "2", FechaHora = fecha.AddSeconds(-40), IdMesa = mesa1.Id
+        }, sucursal));
+        Assert.Equal("La mesa ya tiene una reserva confirmada en ese horario", conflicto.Message);
+        var segunda = await servicio.CrearReserva(new CrearReservaDTO
+        {
+            NombreReserva = "Dos", Telefono = "2", FechaHora = fecha, IdMesa = mesa2.Id
+        }, sucursal);
+        await Assert.ThrowsAsync<Exception>(() => servicio.ActualizarReserva(new ModificarReservaDTO
+        {
+            Id = segunda.Id, IdEstadoReserva = 2, FechaHora = fecha, IdMesa = mesa1.Id
+        }, sucursal));
+    }
 }

@@ -5,6 +5,8 @@ using BackEndAPI.Repositories;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace BackEndAPI.Services
 {
@@ -44,6 +46,23 @@ namespace BackEndAPI.Services
                 : fechaHora.ToUniversalTime();
         }
 
+        private static DateTime NormalizarAlMinuto(DateTime fechaHora)
+        {
+            var utc = FechaHoraLocalUtc(fechaHora);
+            return new DateTime(utc.Year, utc.Month, utc.Day, utc.Hour, utc.Minute, 0, DateTimeKind.Utc);
+        }
+
+        private async Task ValidarDisponibilidad(Guid idSucursal, Guid? idMesa, DateTime fechaHora, int estado, Guid? excluirId = null)
+        {
+            if (estado == 2 && idMesa.HasValue &&
+                await _reservasRepository.ExisteReservaConfirmada(idSucursal, idMesa.Value, fechaHora, excluirId))
+                throw new Exception("La mesa ya tiene una reserva confirmada en ese horario");
+        }
+
+        private static bool EsConflictoReserva(DbUpdateException ex) =>
+            ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation,
+                ConstraintName: "IX_Reservas_IdSucursal_IdMesa_FechaHora" };
+
         public async Task<IEnumerable<Reserva>> BuscarReservasPorRangoFechas(Guid IdSucursal, DateTime Desde, DateTime? Hasta)
         {
             if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
@@ -60,18 +79,22 @@ namespace BackEndAPI.Services
         {
             ValidarEstado(request.IdEstadoReserva);
             await ValidarMesa(request.IdMesa, IdSucursal);
+            var fechaHora = NormalizarAlMinuto(request.FechaHora);
+            await ValidarDisponibilidad(IdSucursal, request.IdMesa, fechaHora, request.IdEstadoReserva);
             Reserva nuevaReserva = new Reserva
             {
                 IdSucursal = IdSucursal,
                 IdEstadoReserva = request.IdEstadoReserva,
-                FechaHora = FechaHoraLocalUtc(request.FechaHora),
+                FechaHora = fechaHora,
                 NombreReserva = request.NombreReserva,
                 Telefono = request.Telefono,
                 CantidadDePersonas = request.CantidadDePersonas,
                 IdMesa = request.IdMesa
             };
 
-            return await _reservasRepository.CrearReserva(nuevaReserva);
+            try { return await _reservasRepository.CrearReserva(nuevaReserva); }
+            catch (DbUpdateException ex) when (EsConflictoReserva(ex))
+            { throw new Exception("La mesa ya tiene una reserva confirmada en ese horario", ex); }
         }
 
         public async Task<Reserva?> ActualizarReserva(ModificarReservaDTO ReservaActualizada, Guid idSucursal) {
@@ -83,11 +106,14 @@ namespace BackEndAPI.Services
                 reserva.IdMesa = ReservaActualizada.IdMesa;
             }
             reserva.IdEstadoReserva = ReservaActualizada.IdEstadoReserva;
-            reserva.FechaHora = ReservaActualizada.FechaHora != default ? FechaHoraLocalUtc(ReservaActualizada.FechaHora) : reserva.FechaHora;
+            reserva.FechaHora = ReservaActualizada.FechaHora != default ? NormalizarAlMinuto(ReservaActualizada.FechaHora) : reserva.FechaHora;
             reserva.NombreReserva = !String.IsNullOrEmpty(ReservaActualizada.NombreReserva) ? ReservaActualizada.NombreReserva : reserva.NombreReserva;
             reserva.Telefono = !String.IsNullOrEmpty(ReservaActualizada.Telefono) ? ReservaActualizada.Telefono : reserva.Telefono;
             reserva.CantidadDePersonas = ReservaActualizada.CantidadDePersonas.HasValue ? ReservaActualizada.CantidadDePersonas : reserva.CantidadDePersonas;
-            return await _reservasRepository.ActualizarReserva(reserva);
+            await ValidarDisponibilidad(idSucursal, reserva.IdMesa, reserva.FechaHora, reserva.IdEstadoReserva, reserva.Id);
+            try { return await _reservasRepository.ActualizarReserva(reserva); }
+            catch (DbUpdateException ex) when (EsConflictoReserva(ex))
+            { throw new Exception("La mesa ya tiene una reserva confirmada en ese horario", ex); }
         }
 
         public async Task<Reserva?> EliminarReserva(Guid Id, Guid idSucursal) {
