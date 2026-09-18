@@ -2,7 +2,7 @@
 param(
     [string]$OutputRoot = (Join-Path $env:LOCALAPPDATA 'BarMaster\qz-pki-development'),
     [string]$OpenSslPath = 'D:\Git\usr\bin\openssl.exe',
-    [string]$BackendProject = (Join-Path $PSScriptRoot '..\..\BackEndAPI\BackEndAPI.csproj'),
+    [string]$BackendProject = (Join-Path $PSScriptRoot '..\..\..\BackEndAPI\BackEndAPI.csproj'),
     [string]$PublicRoot = (Join-Path $PSScriptRoot 'public\development')
 )
 

@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
 const base = new URL(process.env.BARMASTER_API_URL || 'http://192.168.100.15:5145/');
-const carpeta = resolve('tools/datos-demo/fotos');
-const archivo = resolve('tools/datos-demo/fotos.json');
+const carpeta = resolve('frontendMozo/tools/datos-demo/fotos');
+const archivo = resolve('frontendMozo/tools/datos-demo/fotos.json');
 const subir = process.argv.includes('--subir');
 const informe = existsSync(archivo) ? JSON.parse(readFileSync(archivo, 'utf8')) : { productos: [] };
 mkdirSync(carpeta, { recursive: true });
@@ -182,7 +182,7 @@ async function main() {
     const escapar = (s) => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const filas = informe.productos.map(p => `<tr><td>${escapar(p.nombre)}</td><td><a href="${escapar(p.fuente)}">${escapar(p.titulo)}</a></td><td>${escapar(p.autor.replace(/<[^>]*>/g, ''))}</td><td><a href="${escapar(p.licenciaUrl || p.fuente)}">${escapar(p.licencia)}</a></td></tr>`).join('\n');
     const creditos = `<!doctype html><html lang="es"><meta charset="utf-8"><title>Créditos de fotografías demo de BarMaster</title><style>body{font:16px system-ui;margin:32px}table{border-collapse:collapse}td,th{padding:12px;border:1px solid #ddd;text-align:left}</style><h1>Fotografías del catálogo de demostración</h1><p>Fotografías procedentes de Wikimedia Commons. Cada imagen conserva la licencia indicada. Se utiliza la miniatura publicada por Wikimedia; no se hicieron otros cambios. Algunas imágenes ilustran variantes del mismo plato.</p><table><thead><tr><th>Producto</th><th>Fotografía y fuente</th><th>Autor</th><th>Licencia</th></tr></thead><tbody>${filas}</tbody></table></html>`;
-    writeFileSync(resolve('tools/datos-demo/creditos-fotos.html'), creditos);
+    writeFileSync(resolve('frontendMozo/tools/datos-demo/creditos-fotos.html'), creditos);
     if (subir) writeFileSync(resolve('BackEndAPI/wwwroot/uploads/ImagenesProductos/CREDITOS_FOTOS_DEMO.html'), creditos);
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });

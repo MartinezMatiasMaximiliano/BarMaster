@@ -461,15 +461,15 @@ Ambas banderas tienen valor predeterminado `true`, son opciones de build y son i
 
 ### 8.1 Instalador descargable y preparación de Windows
 
-`/primeros_pasos` (Ayuda → Primeros pasos) muestra el estado local de QZ, ofrece `BarMaster-Impresion-Setup.exe` y enlaza a Impresiones. El paquete se genera con `tools/qz/windows/Build-PrintingSetup.ps1` e incluye scripts, manifiesto, logos y raíz pública. Descarga QZ por HTTPS del repositorio oficial si falta o es anterior al manifiesto, verifica SHA-256 y firma Authenticode y conserva una versión más nueva. El flujo está preparado para Windows 10/11 de 64 bits, x64 o ARM64.
+`/primeros_pasos` (Ayuda → Primeros pasos) muestra el estado local de QZ, ofrece `BarMaster-Impresion-Setup.exe` y enlaza a Impresiones. El paquete se genera con `frontendMozo/tools/qz/windows/Build-PrintingSetup.ps1` e incluye scripts, manifiesto, logos y raíz pública. Descarga QZ por HTTPS del repositorio oficial si falta o es anterior al manifiesto, verifica SHA-256 y firma Authenticode y conserva una versión más nueva. El flujo está preparado para Windows 10/11 de 64 bits, x64 o ARM64.
 
 Al elegir «Instalar y configurar» solicita UAC. La fase elevada instala/configura QZ, cierra sus instancias mediante `preinstall`, coloca `override.crt` y configura `authcert.override`; el proceso original abre QZ con el usuario habitual. No distribuye claves privadas ni instala la raíz en el almacén general de Windows. Las utilidades capturan su salida sin abrir consola y el arranque final usa el ejecutable gráfico de QZ. La instalación debe realizarse fuera de una impresión en curso porque cierra instancias de QZ.
 
 `npm run dev` y `npm run build` ejecutan la preparación del instalador en Windows. El EXE se genera en `frontendMozo/public/downloads`, no se versiona y Vite lo copia al build. En CI Linux se debe proporcionar el artefacto generado en Windows antes del build. El build del instalador ejecuta `--verify` para extraer/validar recursos sin instalar; `--preview` permite renderizar el diálogo sin UAC. Esto no equivale a una instalación completa en una máquina limpia. El EXE BarMaster generado no está firmado; el instalador oficial QZ sí se verifica.
 
-Si cambia la raíz del backend, actualizar `tools/qz/windows/public/override.crt` y su hash en `qz-manifest.json`, regenerar el instalador y actualizar los equipos. El certificado del paquete debe corresponder a la raíz del backend. Instalar primero el driver y verificar una página de prueba de Windows.
+Si cambia la raíz del backend, actualizar `frontendMozo/tools/qz/windows/public/override.crt` y su hash en `qz-manifest.json`, regenerar el instalador y actualizar los equipos. El certificado del paquete debe corresponder a la raíz del backend. Instalar primero el driver y verificar una página de prueba de Windows.
 
-Los scripts de `tools/printing` son auxiliares para preparar/comprobar una estación; su README conserva referencias a pantallas anteriores. Para el flujo actual usar Primeros pasos → Impresiones y el [README del instalador](tools/qz/windows/README.md).
+Los scripts de `frontendMozo/tools/printing` son auxiliares para preparar/comprobar una estación; su README conserva referencias a pantallas anteriores. Para el flujo actual usar Primeros pasos → Impresiones y el [README del instalador](frontendMozo/tools/qz/windows/README.md).
 
 ## 9. Garantías y límites
 
@@ -515,9 +515,9 @@ No se aplicaron migraciones, no se ejecutó impresión física ni una instalaci�
 | Restricciones específicas con caja activa y protección de transiciones concurrentes. | `ProteccionConfiguracionImpresion.cs` y `Data/Configuraciones/ConfiguracionImpresionDistribuida.cs`. |
 | Formateo antes del envío, validación de documentos, limpieza de texto ESC/POS, esperas interrumpibles y diagnóstico por etapas. | `services/impresion/trabajadorImpresion.js`, `esperaTrabajador.js`, `textoEscPos.js` y `registroDiagnosticoImpresion.js`. |
 | Página de dos apartados, indicador QZ, tabla de equipos de la sucursal y alta/recuperación de credenciales. | `pages/Impresiones/Impresiones.jsx`, `EncontrarImpresoras.jsx` y `services/impresion/apiImpresion.js`. |
-| Ayuda inicial e instalador Windows descargable, generado antes de desarrollo/build. | `pages/Ayuda/PrimerosPasos.jsx`, `scripts/preparar-instalador-impresion.mjs` y `tools/qz/windows`. |
+| Ayuda inicial e instalador Windows descargable, generado antes de desarrollo/build. | `pages/Ayuda/PrimerosPasos.jsx`, `scripts/preparar-instalador-impresion.mjs` y `frontendMozo/tools/qz/windows`. |
 
-Las referencias identifican archivos y módulos del backend (`BackEndAPI/Impresion`, `Models`, `Services` y `Data`), del frontend (`frontendMozo/src/services/impresion` y `pages`) y de preparación del instalador (`frontendMozo/scripts` y `tools/qz/windows`). Son referencias del estado observado, no una cronología de despliegues.
+Las referencias identifican archivos y módulos del backend (`BackEndAPI/Impresion`, `Models`, `Services` y `Data`), del frontend (`frontendMozo/src/services/impresion` y `pages`) y de preparación del instalador (`frontendMozo/scripts` y `frontendMozo/tools/qz/windows`). Son referencias del estado observado, no una cronología de despliegues.
 
 Verificación posterior del manejo de teclado, el mismo 15 de septiembre: 57 pruebas aprobadas (53 de teclado, incluyendo ambos frontends y un modal real de stock, y 4 de la pantalla de impresoras); `npm run build` correcto en ambos frontends. El lint de los archivos nuevos pasó en `frontendMozo`. En `FrontEndCliente` la ejecución de ESLint está bloqueada por una configuración previa inválida en `.eslintrc.cjs` (`react/prop-types` como propiedad de nivel superior).
 

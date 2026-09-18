@@ -5,8 +5,8 @@
 3. Ejecutá PowerShell como el mismo usuario que operará BarMaster:
 
    ```powershell
-   .\tools\printing\Install-BarMasterPrintingStation.ps1 -BarMasterUrl "https://URL-DE-BARMASTER/"
-   .\tools\printing\Test-BarMasterPrintingStation.ps1
+   .\frontendMozo\tools\printing\Install-BarMasterPrintingStation.ps1 -BarMasterUrl "https://URL-DE-BARMASTER/"
+   .\frontendMozo\tools\printing\Test-BarMasterPrintingStation.ps1
    ```
 
 4. Desactivá la suspensión automática del equipo, abrí BarMaster y entrá en **Configuración > Impresoras**.

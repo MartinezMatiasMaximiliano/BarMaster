@@ -751,7 +751,7 @@ Secuencia segura:
 9. Mantener temporalmente el flujo local como rollback.
 10. Eliminar `PrinterAssignment` y código heredado únicamente después del piloto y de una versión estable.
 
-La herramienta `tools/BarMaster.MigrationTool` debe:
+La herramienta `BackEndAPI/Tools/BarMaster.MigrationTool` debe:
 
 - Detectar migraciones pendientes por tenant.
 - Exigir backup verificable antes de aplicar.
@@ -999,7 +999,7 @@ PC Cocina     QZ + térmica USB/Bluetooth
 Implementado y verificado entre el 3 y el 4 de septiembre de 2026:
 
 - Migración aditiva `20260903200842_AddDistributedPrinting`, incluido su SQL de subida y un `Down` completo generado por EF Core.
-- Herramienta segura de diagnóstico/aplicación por tenant en `tools/BarMaster.MigrationTool`; el modo por defecto no modifica bases y `--apply` exige crear y validar un backup de cada tenant.
+- Herramienta segura de diagnóstico/aplicación por tenant en `BackEndAPI/Tools/BarMaster.MigrationTool`; el modo por defecto no modifica bases y `--apply` exige crear y validar un backup de cada tenant.
 - Credencial de estación de 256 bits, hash SHA-256, comparación constante, rotación, revocación, JWT corto y rate limit de sesión.
 - Inventario completo, presencia sin borrado y nombres amigables en `/configuracion_impresion`; el perfil térmico y el ancho permanecen como configuración interna.
 - Rutas primarias, adicionales y de respaldo, políticas offline, sectores por sucursal y validación administrativa en `/destinos_impresion`.
@@ -1012,7 +1012,7 @@ Implementado y verificado entre el 3 y el 4 de septiembre de 2026:
 - Configuración operativa autorizada tanto con administrador de la sucursal como con su credencial de sucursal; fallback controlado cuando un token personal antiguo no contiene una sucursal válida.
 - Errores de permisos diferenciados de los errores de conexión local para evitar indicar incorrectamente que el servicio de impresión está cerrado.
 - Formato único ESC/POS: APIs sin selector de formato, enum limitado a `Raw`, trabajos normalizados a `Raw` y único payload QZ `raw/command/plain`.
-- Scripts operativos en `tools/printing` para inicio de QZ, acceso directo y diagnóstico de la estación.
+- Scripts operativos en `frontendMozo/tools/printing` para inicio de QZ, acceso directo y diagnóstico de la estación.
 
 Verificaciones ejecutadas:
 

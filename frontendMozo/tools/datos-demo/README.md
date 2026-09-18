@@ -6,10 +6,10 @@ Requiere Node.js 20 o posterior y un backend en ejecución. Desde la raíz del r
 
 ```powershell
 # Consultar cantidades actuales sin crear datos de negocio.
-node tools/datos-demo/cargar.mjs
+node frontendMozo/tools/datos-demo/cargar.mjs
 
 # Ejecutar la carga.
-node tools/datos-demo/cargar.mjs --ejecutar
+node frontendMozo/tools/datos-demo/cargar.mjs --ejecutar
 ```
 
 ## Alcance
@@ -44,8 +44,8 @@ Los GET finales confirmaron 60 mesas, 20 categorías, 200 productos, 9 mozos, 1 
 `fotos.mjs` prepara fotografías de Wikimedia Commons y las asigna exclusivamente a los productos con código `DEMO-...`. Algunas variantes comparten una fotografía representativa. Las imágenes se descargan primero y se suben luego mediante `PATCH /Productos` con `IdProducto` e `Imagen` en multipart; el resto de los campos se conserva.
 
 ```powershell
-node tools/datos-demo/fotos.mjs
-node tools/datos-demo/fotos.mjs --subir
+node frontendMozo/tools/datos-demo/fotos.mjs
+node frontendMozo/tools/datos-demo/fotos.mjs --subir
 ```
 
 Usa las mismas variables de entorno de autenticación que la carga inicial. `fotos.json` registra fuente, autor, licencia, hash y fecha de subida; `creditos-fotos.html` conserva las atribuciones. Se utilizan fotografías con licencia CC0, dominio público, CC BY o CC BY-SA; cada una conserva su licencia original. Al subirlas, se publica una copia de los créditos junto a las imágenes del backend, en `/uploads/ImagenesProductos/CREDITOS_FOTOS_DEMO.html`.

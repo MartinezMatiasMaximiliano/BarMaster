@@ -6,14 +6,14 @@ $manifest = Get-QzManifest
 $root = Assert-QzRootArtifact -Manifest $manifest
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 if (-not (Test-Path -LiteralPath $compiler)) { throw 'Se necesita el compilador de .NET Framework 4 en Windows para generar el instalador.' }
-$workspace = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
-$logoDirectory = Join-Path $workspace 'frontendMozo/public/logo'
+$frontendRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
+$logoDirectory = Join-Path $frontendRoot 'public/logo'
 $favicon = Join-Path $logoDirectory 'favicon.png'
 $logo = Join-Path $logoDirectory 'logo_completo.png'
 # Windows requiere un contenedor ICO para los recursos del ejecutable.
 # Generar sus tamaños desde favicon.png sin modificar el archivo original.
 Add-Type -AssemblyName System.Drawing
-$assetDirectory = Join-Path $workspace '.tmp/printing-installer'
+$assetDirectory = Join-Path $frontendRoot '.tmp/printing-installer'
 $null = New-Item -ItemType Directory -Path $assetDirectory -Force
 $iconPath = Join-Path $assetDirectory 'favicon.ico'
 $sourceImage = [Drawing.Image]::FromFile($favicon)
@@ -46,7 +46,7 @@ try {
     }
     foreach ($frame in $frames) { $writer.Write([byte[]]$frame.Bytes) }
 } finally { $writer.Dispose(); $iconStream.Dispose() }
-$outputDirectory = Join-Path $workspace 'frontendMozo/public/downloads'
+$outputDirectory = Join-Path $frontendRoot 'public/downloads'
 $null = New-Item -ItemType Directory -Path $outputDirectory -Force
 $output = Join-Path $outputDirectory 'BarMaster-Impresion-Setup.exe'
 $arguments = @('/nologo', '/target:winexe', '/platform:anycpu', '/optimize+', "/out:$output",

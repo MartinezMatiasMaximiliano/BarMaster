@@ -1,4 +1,4 @@
-import qz from '../../frontendMozo/node_modules/qz-tray/qz-tray.js';
+import qz from '../../node_modules/qz-tray/qz-tray.js';
 
 const required = ['BARMASTER_QZ_BACKEND', 'BARMASTER_QZ_TOKEN', 'BARMASTER_QZ_TENANT', 'BARMASTER_QZ_STATION'];
 for (const name of required) {

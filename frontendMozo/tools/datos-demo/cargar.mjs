@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 
 // Solo usa endpoints públicos de la aplicación y credenciales suministradas.
 const base = new URL(process.env.BARMASTER_API_URL || 'http://192.168.100.15:5145/');
-const archivo = resolve(process.env.BARMASTER_DEMO_REPORT || 'tools/datos-demo/resultado.json');
+const archivo = resolve(process.env.BARMASTER_DEMO_REPORT || 'frontendMozo/tools/datos-demo/resultado.json');
 const journal = archivo.replace(/\.json$/, '') + '.jsonl';
 const ejecutar = process.argv.includes('--ejecutar');
 let token = process.env.BARMASTER_TOKEN;

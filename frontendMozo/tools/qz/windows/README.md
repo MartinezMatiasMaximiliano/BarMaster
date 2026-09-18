@@ -22,7 +22,7 @@ No instala la raíz en el almacén general de Windows, ni distribuye claves priv
 Desde la raíz del repositorio en Windows:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/qz/windows/Build-PrintingSetup.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File frontendMozo/tools/qz/windows/Build-PrintingSetup.ps1
 ```
 
 Usa el compilador .NET Framework incluido en Windows, sin instalar herramientas.

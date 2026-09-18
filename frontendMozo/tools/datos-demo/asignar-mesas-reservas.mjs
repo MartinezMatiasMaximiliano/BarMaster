@@ -46,7 +46,7 @@ console.log(JSON.stringify({ total: plan.length, conMesa: plan.filter(p => p.idM
     sinMesa: plan.filter(p => !p.idMesa).length, cambios: plan.filter(p => p.idMesa !== p.anterior).length,
     ejecutar }));
 if (ejecutar) {
-    const carpeta = 'tools/datos-demo';
+    const carpeta = 'frontendMozo/tools/datos-demo';
     mkdirSync(carpeta, { recursive: true });
     const respaldo = `${carpeta}/asignaciones-reservas-${Date.now()}.json`;
     writeFileSync(respaldo, JSON.stringify({ api: new URL(base).origin, tenant, plan }, null, 2), { flag: 'wx' });

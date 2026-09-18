@@ -6,13 +6,13 @@ La herramienta está dentro de `tools` porque es una utilidad operativa y no for
 
 ```powershell
 $env:BARMASTER_MASTER_CONNECTION='Host=...;Database=...;Username=...;Password=...'
-dotnet run --project .\tools\BarMaster.MigrationTool --configuration Release
+dotnet run --project .\BackEndAPI\Tools\BarMaster.MigrationTool --configuration Release
 ```
 
 Para limitar el diagnóstico a una empresa:
 
 ```powershell
-dotnet run --project .\tools\BarMaster.MigrationTool --configuration Release -- --tenant "Nombre exacto"
+dotnet run --project .\BackEndAPI\Tools\BarMaster.MigrationTool --configuration Release -- --tenant "Nombre exacto"
 ```
 
 ## 2. Aplicación con backup obligatorio
@@ -20,7 +20,7 @@ dotnet run --project .\tools\BarMaster.MigrationTool --configuration Release -- 
 `--apply` exige la ubicación de `pg_dump.exe` y un directorio de backups. Antes de migrar cada empresa, crea un dump en formato custom y lo valida ejecutando `pg_restore.exe --list`. Si el backup falla o no puede validarse, esa base no se migra.
 
 ```powershell
-dotnet run --project .\tools\BarMaster.MigrationTool --configuration Release -- `
+dotnet run --project .\BackEndAPI\Tools\BarMaster.MigrationTool --configuration Release -- `
   --apply `
   --pg-dump "C:\Program Files\PostgreSQL\16\bin\pg_dump.exe" `
   --backup-directory "D:\Backups\BarMaster"

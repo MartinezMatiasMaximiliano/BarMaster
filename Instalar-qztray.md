@@ -1201,7 +1201,7 @@ Son tres funciones independientes.
 Crear una carpeta versionada sin secretos:
 
 ```text
-tools/qz/windows/
+frontendMozo/tools/qz/windows/
 ├── Install-BarMasterQz.ps1
 ├── Repair-BarMasterQz.ps1
 ├── Test-BarMasterQz.ps1

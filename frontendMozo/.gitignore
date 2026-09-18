@@ -25,5 +25,5 @@ dist-ssr
 
 .env
 
-# Instalador generado por tools/qz/windows/Build-PrintingSetup.ps1
+# Instalador generado por frontendMozo/tools/qz/windows/Build-PrintingSetup.ps1
 /public/downloads/BarMaster-Impresion-Setup.exe
