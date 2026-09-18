@@ -13,6 +13,8 @@ export const MesaModalActions = ({
     onFacturarTodo,
     onFacturarPartes,
     onAgregarPedidos,
+    onPrintPreticket,
+    printing,
     onClose
 }) => (
     <DialogActions sx={{
@@ -48,7 +50,7 @@ export const MesaModalActions = ({
                 Cobrar por partes {productosSeleccionadosCount > 0 && `(${productosSeleccionadosCount})`}
             </Button>
             <Button
-                onClick={onAgregarPedidos}
+                data-enter-action="true" onClick={onAgregarPedidos}
                 variant="contained"
                 color="success"
                 disabled={!puedeAgregarPedidos}
@@ -60,13 +62,15 @@ export const MesaModalActions = ({
             <Button
                 variant="outlined"
                 color="primary"
+                onClick={onPrintPreticket}
+                disabled={printing || !puedeFacturarTodo}
                 startIcon={<PrintIcon />}
                 size="small"
             >
-                Imprimir Preticket
+                {printing ? 'Imprimiendo…' : 'Imprimir cuenta'}
             </Button>
         </Box>
-        <Button onClick={onClose} variant="outlined" size="small">
+        <Button data-escape-action="true" onClick={onClose} variant="outlined" size="small">
             Cerrar
         </Button>
     </DialogActions>

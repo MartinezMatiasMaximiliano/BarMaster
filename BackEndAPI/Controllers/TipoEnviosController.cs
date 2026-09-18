@@ -116,8 +116,8 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                await _tipoEnviosServices.ModificarTipoEnvio(id, request);
-                return Ok("Tipo de envio modificado exitosamente");
+                var tipo = await _tipoEnviosServices.ModificarTipoEnvio(id, request);
+                return Ok(new TipoEnvioDTO { Id = tipo!.Id, Nombre = tipo.Nombre, Precio = tipo.Precio });
             }
             catch (Exception ex)
             {

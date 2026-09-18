@@ -2,31 +2,23 @@
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { 
-    cambiarEstadoPagadoPorMesa, 
     eliminarProductos, 
     agregarVisita,
     actualizarVisita
 } from '../../redux/slices/visitasActivasSlice';
 import { EliminarProductosVisita, ObtenerVisitaPorId } from '../../API/APIVisitas';
 import { AbrirCerrarMesa } from '../../API/APIMesas';
-import { GenerarTicketPDF } from '../../API/APIPedidos';
 import { sendHubMessage } from '../../connections/HubConnMozo';
 
-export const useMesaLogic = () => {
+export const useMesaLogic = (showSnackbar) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
-    const obtenerIdProductosPendientes = (productos) => {
-        return productos
-            .filter(producto => !producto.estadoPagado)
-            .map(producto => producto.id);
-    };
 
     const cancelarPedidos = async (idsProductos, idVisita, numeroMesa, onSuccess) => {
         try {
             await EliminarProductosVisita(idVisita, idsProductos);
             dispatch(eliminarProductos({ 
-                numeroMesa, 
+                idVisita, 
                 idsProductos 
             }));
 
@@ -50,19 +42,6 @@ export const useMesaLogic = () => {
 
     const cerrarMesa = async (mesaId, numeroMesa, productos, index2 = false) => {
         try {
-            const productosPendientes = obtenerIdProductosPendientes(productos);
-            
-            // Generar factura si hay productos pendientes
-            if (productosPendientes.length > 0) {
-                await GenerarTicketPDF(numeroMesa, productosPendientes);
-            }
-
-            // Marcar todos los productos como pagados
-            dispatch(cambiarEstadoPagadoPorMesa({ 
-                numeroMesa, 
-                pagado: true 
-            }));
-
             // Cerrar mesa en DB usando el endpoint correcto AbrirCerrar con Abrir: false
             const requestDTO = {
                 IdMesa: mesaId,
@@ -81,6 +60,7 @@ export const useMesaLogic = () => {
             }
         } catch (error) {
             console.error('Error al cerrar mesa:', error);
+            showSnackbar?.(error.message || 'Error al cerrar la mesa', 'error');
         }
     };
 

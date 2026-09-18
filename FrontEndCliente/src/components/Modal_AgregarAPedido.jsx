@@ -62,7 +62,7 @@ function Modal_AgregarAPedido({ producto }) {
                 <Typography ><b>Pedir</b></Typography>
             </Button>
 
-            <Modal
+            <Modal data-keyboard-modal="true"
                 open={open}
                 onClose={handleClose}
                 aria-labelledby="modal-modal-title"
@@ -127,10 +127,10 @@ function Modal_AgregarAPedido({ producto }) {
                                     justifyContent: 'space-between',
                                 }}
                             >
-                                <Button onClick={handleClose} variant="contained" sx={{ color: 'white' }}>
+                                <Button data-escape-action="true" onClick={handleClose} variant="contained" sx={{ color: 'white' }}>
                                     Cancelar
                                 </Button>
-                                <Button onClick={handlePedido} variant="contained" sx={{ color: 'white' }}>
+                                <Button data-enter-action="true" onClick={handlePedido} variant="contained" sx={{ color: 'white' }}>
                                     Agregar {quantity > 1 ? `(${quantity})` : ""}
                                 </Button>
                             </ButtonGroup>

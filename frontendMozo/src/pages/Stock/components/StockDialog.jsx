@@ -98,7 +98,7 @@ export default function StockDialog({ abierto, producto, tipo, onCerrar, onGuard
                                 value={valores.cantidadMinima}
                                 onChange={(event) => actualizar('cantidadMinima', event.target.value)}
                                 inputProps={{ min: 0, step: 1 }}
-                                helperText="Cantidad mínima indica con qué cantidad se activará una alerta de baja cantidad del producto"
+                                helperText="Cantidad mínima indica el umbral de envío de alertas y facilita la ordenación en la tabla de stock"
                                 required
                             />
                             {!producto?.configurado && (
@@ -138,8 +138,8 @@ export default function StockDialog({ abierto, producto, tipo, onCerrar, onGuard
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCerrar} disabled={guardando}>Cancelar</Button>
-                <Button onClick={guardar} variant="contained" disabled={guardando}>
+                <Button data-escape-action="true" onClick={onCerrar} disabled={guardando}>Cancelar</Button>
+                <Button data-enter-action="true" onClick={guardar} variant="contained" disabled={guardando}>
                     {guardando ? 'Guardando...' : 'Guardar'}
                 </Button>
             </DialogActions>

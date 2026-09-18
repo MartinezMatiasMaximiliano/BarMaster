@@ -44,7 +44,7 @@ const Mapa_Calor = (props) => {
                 compactType={null}
             >
                 {props.layout.map((mesa) => {
-                    const nombreMesa = mesa.nombre ?? mesa.i;
+                    const nombreMesa = mesa.numero ?? mesa.i;
                     const count = ocupacionMap[nombreMesa] ?? 0;
                     const color = colorPorOcupacion(count, maxCount);
                     const colorTexto = maxCount > 0 && count / maxCount > 0.55
@@ -73,7 +73,7 @@ const Mapa_Calor = (props) => {
                                         fontSize: "14px",
                                     }}
                                 >
-                                    {nombreMesa}
+                                    Mesa {nombreMesa}
                                 </Paper>
                             </Tooltip>
                         </div>

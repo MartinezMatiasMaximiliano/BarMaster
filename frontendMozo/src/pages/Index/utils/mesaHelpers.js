@@ -18,7 +18,7 @@ export const normalizarPlano = (plano) => ({
  */
 export const normalizarMesa = (mesa) => ({
     id: mesa.id || mesa.Id,
-    nombre: mesa.nombre || mesa.Nombre,
+    numero: mesa.numero ?? mesa.Numero,
     x: mesa.x || DEFAULT_MESA_COORDS.x,
     y: mesa.y || DEFAULT_MESA_COORDS.y,
     w: mesa.w || DEFAULT_MESA_COORDS.w,
@@ -83,7 +83,7 @@ export const obtenerNombreMesa = (mesas, mesaId) => {
     if (!mesa) {
         return `Mesa ${mesaId}`;
     }
-    return mesa.nombre || mesa.Nombre || `Mesa ${mesaId}`;
+    return `Mesa ${mesa.numero ?? mesa.Numero}`;
 };
 
 /**
@@ -93,7 +93,7 @@ export const obtenerNombreMesa = (mesas, mesaId) => {
  */
 export const mapearDatosMesa = (mesa) => ({
     id: mesa.id,
-    nombre: mesa.nombre || mesa.Nombre || mesa.id,
+    numero: mesa.numero ?? mesa.Numero,
     codigoParaPedir: mesa.codigoParaPedir || null,
     visita: mesa.visita || null,
     plano: mesa.plano || null,

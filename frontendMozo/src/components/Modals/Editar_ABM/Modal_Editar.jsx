@@ -181,7 +181,7 @@ function Modal_Editar(props) {
                 <Divider />
                 <DialogContent sx={{ pt: 3, pb: 2 }}>
                     <Errores errors={errors} />
-                    <Box component="form" sx={{ mt: 1 }}>
+                    <Box component="form" onSubmit={(evento) => { evento.preventDefault(); handleSave(); }} sx={{ mt: 1 }}>
                         <Stack spacing={3}>
                             {props.campos.map((campo, index) => {
                                 const value = editValues[campo.name];
@@ -194,7 +194,7 @@ function Modal_Editar(props) {
                 <Divider />
                 <DialogActions sx={dialogActionsStyles}>
                     <Button 
-                        onClick={handleClose} 
+                        data-escape-action="true" onClick={handleClose}
                         variant="outlined"
                         startIcon={<CancelIcon />}
                         sx={cancelButtonStyles}
@@ -202,7 +202,7 @@ function Modal_Editar(props) {
                         Cancelar
                     </Button>
                     <LoadingButton 
-                        onClick={handleSave} 
+                        data-enter-action="true" onClick={handleSave}
                         variant="contained" 
                         color="primary"
                         startIcon={<SaveIcon />}

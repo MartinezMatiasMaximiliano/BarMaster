@@ -141,7 +141,7 @@ function Modal_Movimiento_CuentaCorriente(props) {
                                 />
 
                                 <DialogActions sx={{ px: 0, pb: 0 }}>
-                                    <Button onClick={onClose} disabled={guardando}>Cancelar</Button>
+                                    <Button data-escape-action="true" onClick={onClose} disabled={guardando}>Cancelar</Button>
                                     <Button type="submit" variant="contained" disabled={guardando || !puedeGuardar}>
                                         {guardando ? 'Registrando...' : 'Registrar Movimiento'}
                                     </Button>

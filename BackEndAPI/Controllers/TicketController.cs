@@ -40,8 +40,9 @@ namespace BackEndAPI.Controllers
                     Vuelto = movimiento.Vuelto,
                     MontoTotal = movimiento.MontoTotal,
                     FechaMovimiento = movimiento.FechaMovimiento,
-                    NombreMesa = movimiento.Visita?.Mesa?.Nombre,
+                    NombreMesa = movimiento.Visita?.Mesa?.Numero.ToString(),
                     NombreSucursal = movimiento.Caja?.Sucursal?.Nombre,
+                    NombreEmpresa = movimiento.Caja?.Sucursal?.Empresa?.Nombre,
                     NombreMozo = mozo != null ? $"{mozo.Nombres} {mozo.Apellido}" : null,
                     TipoPago = movimiento.TipoMovimientoCaja?.Nombre,
                     Productos = productosDelTicket

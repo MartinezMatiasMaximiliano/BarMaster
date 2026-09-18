@@ -502,11 +502,11 @@ export default function Modal_AgregarDelivery({
             </DialogContent>
 
             <DialogActions sx={{ px: 3, py: 2 }}>
-                <Button onClick={handleClose} variant="outlined">
+                <Button data-escape-action="true" onClick={handleClose} variant="outlined">
                     Cancelar
                 </Button>
                 <Button
-                    onClick={handleEnviar}
+                    data-enter-action="true" onClick={handleEnviar}
                     variant="contained"
                     color="primary"
                     disabled={comanda.length === 0 || loading}

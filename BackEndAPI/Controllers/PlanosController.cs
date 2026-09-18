@@ -73,7 +73,7 @@ namespace BackEndAPI.Controllers
                     Mesas = plano.Mesas.Select(mesa => new MesaDTO
                     {
                         Id = mesa.Id,
-                        Nombre = mesa.Nombre,
+                        Numero = mesa.Numero,
                         Capacidad = mesa.Capacidad,
                         CodigoParaPedir = mesa.CodigoParaPedir,
                         x = mesa.x,
@@ -118,7 +118,7 @@ namespace BackEndAPI.Controllers
                     Mesas = plano.Mesas.Select(mesa => new MesaDTO
                     {
                         Id = mesa.Id,
-                        Nombre = mesa.Nombre,
+                        Numero = mesa.Numero,
                         Capacidad = mesa.Capacidad,
                         x = mesa.x,
                         y = mesa.y,
@@ -151,7 +151,7 @@ namespace BackEndAPI.Controllers
             {
                 var planoModificado = await _planosServices.ActualizarPlano(request);
                 
-                // Mapear a DTO para evitar ciclos de referencia en la serialización
+                // Mapearear a DTO para evitar ciclos de referencia en la serialización
                 var response = new PlanoDTO
                 {
                     Id = planoModificado.Id,

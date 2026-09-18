@@ -9,6 +9,7 @@ namespace BackEndAPI.DTOs.Response
         public DateTime FechaMovimiento { get; set; }
         public string? NombreMesa { get; set; }
         public string? NombreSucursal { get; set; }
+        public string? NombreEmpresa { get; set; }
         public string? NombreMozo { get; set; }
         public string? TipoPago { get; set; }
         public List<TicketVirtualProductoDTO> Productos { get; set; } = new();

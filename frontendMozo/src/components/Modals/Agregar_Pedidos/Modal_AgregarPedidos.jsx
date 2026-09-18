@@ -109,11 +109,11 @@ function Modal_AgregarPedidos({ open, onClose, idVisita, numeroMesa }) {
             </DialogContent>
 
             <DialogActions sx={{ px: 3, py: 2 }}>
-                <Button onClick={handleClose} variant="outlined">
+                <Button data-escape-action="true" onClick={handleClose} variant="outlined">
                     Cancelar
                 </Button>
                 <Button
-                    onClick={handleEnviarPedidos}
+                    data-enter-action="true" onClick={handleEnviarPedidos}
                     variant="contained"
                     color="primary"
                     disabled={comanda.length === 0 || loading}

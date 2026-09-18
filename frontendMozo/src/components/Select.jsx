@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -7,6 +7,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Select_ from '@mui/material/Select';
 
 export default function Select(props) {
+    const labelId = useId();
     // Manejar valor inicial: si es null, undefined o vacío, usar cadena vacía
     const valorInicial = props.datoActual !== null && props.datoActual !== undefined && props.datoActual !== '' 
         ? props.datoActual 
@@ -33,8 +34,9 @@ export default function Select(props) {
 
     return (
         <FormControl fullWidth error={Boolean(props.error)}>
-            <InputLabel id="demo-simple-select-label">{props.campo.label}</InputLabel>
+            <InputLabel id={labelId}>{props.campo.label}</InputLabel>
             <Select_
+                    labelId={labelId}
                     value={value}
                     label={props.campo.label}
                     onChange={handleChange}

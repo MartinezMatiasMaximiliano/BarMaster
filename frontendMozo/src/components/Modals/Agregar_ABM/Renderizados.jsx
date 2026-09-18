@@ -75,6 +75,10 @@ export const Renderizados = (props, handleChange, errors = {}, values = {}) => (
       required={esCampoObligatorio(campo)}
       label={campo.label}
       type="datetime-local"
+      defaultValue={props.initialValues?.[campo.name] ? (() => {
+        const fecha = new Date(props.initialValues[campo.name]);
+        return new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      })() : undefined}
       InputLabelProps={{ shrink: true }}
       onChange={(e) => handleChange(e, campo.name, campo.type)}
       error={getFieldUiState(campo, errors).error}

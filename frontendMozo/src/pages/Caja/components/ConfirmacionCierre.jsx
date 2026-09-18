@@ -59,11 +59,11 @@ export const ConfirmacionCierre = ({ datos, guardando, onCancelar, onConfirmar }
                 </Typography>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 3 }}>
-                <Button onClick={onCancelar} disabled={guardando} variant="outlined">
+                <Button data-escape-action="true" onClick={onCancelar} disabled={guardando} variant="outlined">
                     Revisar monto
                 </Button>
                 <Button
-                    onClick={onConfirmar}
+                    data-enter-action="true" onClick={onConfirmar}
                     disabled={guardando}
                     variant="contained"
                     color="success"

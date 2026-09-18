@@ -6,6 +6,7 @@ using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
+using BackEndAPI.Impresion.Documentos;
 
 namespace BackEndAPI.Services
 {
@@ -14,19 +15,23 @@ namespace BackEndAPI.Services
         private readonly IVisitasRepository _visitasRepository;
         private readonly IPagosRepository _pagosRepository;
         private readonly IDeliveryTakeawayRepository _deliveryTakeawayRepository;
+        private readonly IServicioDocumentoImpresion _servicioDocumentoImpresion;
+        private readonly ILogger<PagosServices> _logger;
 
-        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository)
+        public PagosServices(IVisitasRepository visitasRepository, IPagosRepository pagosRepository, IDeliveryTakeawayRepository deliveryTakeawayRepository, IServicioDocumentoImpresion servicioDocumentoImpresion, ILogger<PagosServices> logger)
         {
             _visitasRepository = visitasRepository;
             _pagosRepository = pagosRepository;
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
+            _servicioDocumentoImpresion = servicioDocumentoImpresion;
+            _logger = logger;
         }
 
         public async Task<(MovimientoCaja, FacturaElectronica?)> PagarProductos(CrearPagoDTO infoPago)
         {
             var visita = await _visitasRepository.BuscarVisitaPorId(infoPago.IdVisita);
             if (visita == null) throw new Exception("Visita no encontrada");
-            if (visita.Estado == "Cerrada") throw new Exception("La visita ya fue cerrada");
+            if (visita.Estado == "Cerrada" && !(visita.Origen is "Delivery" or "Takeaway" && visita.Productos.Any(p => !p.EstadoPagado))) throw new Exception("La visita ya fue cerrada");
 
 
             var movimientoCaja = new MovimientoCaja
@@ -36,58 +41,54 @@ namespace BackEndAPI.Services
                 IdVisita = infoPago.IdVisita,
                 Facturado = infoPago.GenerarFactura,
                 Descripcion = visita.Origen == "Local" ?
-                 $"Pago de mesa {(visita.Mesa != null ? visita.Mesa.Nombre : "")}"
+                 $"Pago de mesa {(visita.Mesa != null ? visita.Mesa.Numero.ToString() : "")}"
                   :
                  $"Pago de {visita.Origen}"
             };
 
-            decimal TotalAPagar = 
-                visita.Origen == "Delivery" || visita.Origen == "Takeaway" ? 
-                await CalcularTotalDeliveryTakeaway(visita,movimientoCaja.Id)
-                : 
-                await CalcularTotalProductos(infoPago.ListaIdsProductos, visita, movimientoCaja.Id);
-            visita.Total = TotalAPagar - infoPago.descuentoDecimal + infoPago.recargoDecimal; //TODO: REVISAR
+            var esPedido = visita.Origen is "Delivery" or "Takeaway";
+            var ids = infoPago.ListaIdsProductos?.Distinct().ToArray() ?? [];
+            var productos = esPedido ? visita.Productos.ToList() : visita.Productos.Where(p => ids.Contains(p.Id)).ToList();
+            if (productos.Count == 0 || (!esPedido && productos.Count != ids.Length)) throw new Exception("Lista de ids vacia");
+            if (productos.Any(p => p.EstadoPagado)) throw new Exception("Producto ya pagado");
+            decimal subtotal = productos.Sum(p => p.PrecioDelMomento);
+            if (esPedido)
+            {
+                var pedido = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorIdVisita(visita.Id);
+                if (pedido == null) throw new Exception("delivery id no encontrado");
+                subtotal = pedido.PrecioTotal;
+            }
+            if (infoPago.descuentoDecimal < 0 || infoPago.descuentoDecimal > subtotal || infoPago.recargoDecimal < 0)
+                throw new Exception("Descuento o recargo inválido");
+            decimal TotalAPagar = subtotal - infoPago.descuentoDecimal + infoPago.recargoDecimal;
+            if (infoPago.MontoAbonado < 0 || infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
 
-            if (infoPago.MontoAbonado < TotalAPagar) throw new Exception("Monto insuficiente");
+            // Validar antes de alterar entidades seguidas por EF.
+            foreach (var producto in productos)
+            {
+                producto.EstadoPagado = true;
+                producto.IdMovimientoCaja = movimientoCaja.Id;
+            }
+            if (esPedido) visita.Estado = "Cerrada";
+            visita.Total = esPedido ? TotalAPagar : visita.Total - infoPago.descuentoDecimal + infoPago.recargoDecimal;
             movimientoCaja.MontoAbonado = infoPago.MontoAbonado;
             movimientoCaja.Vuelto = CalcularVuelto(TotalAPagar, movimientoCaja);
-            movimientoCaja.MontoTotal = visita.Total;
+            movimientoCaja.MontoTotal = TotalAPagar;
 
             var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(visita, movimientoCaja, infoPago.DatosFacturaARCA, TotalAPagar, infoPago.GenerarFactura, infoPago.MontoAbonado);
+            try
+            {
+                await _servicioDocumentoImpresion.EncolarComprobantePagoAsync(visita, productos, ResultadoPagoCreado, CancellationToken.None,
+                    infoPago.descuentoDecimal, infoPago.recargoDecimal);
+            }
+            catch (Exception exception)
+            {
+                // El pago ya fue confirmado: un problema de impresión no debe informarlo como fallido ni duplicarlo al reintentar.
+                _logger.LogWarning(exception, "No se pudo encolar el comprobante del pago {IdPago}.", ResultadoPagoCreado.Id);
+            }
             return (ResultadoPagoCreado, FacturaElectronica);
         }
 
-
-        private async Task<decimal> CalcularTotalDeliveryTakeaway(Visita visita, Guid IdMovimientoCaja)
-        {
-            //RECORDATORIO: en caso de DyTKW,la funcion de crearPago solo se llama con todos los productos de la visita, por lo que el envio
-            //solo se cobra una vez, no pueden existir multiples pagos del mismo  DyTKW
-            var deliveryTakeaway = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorIdVisita(visita.Id);
-            if (deliveryTakeaway == null) throw new Exception("no encontrado");
-            deliveryTakeaway.Visita.Estado = "Cerrada";
-            foreach (var item in deliveryTakeaway.Visita.Productos)
-            {
-                item.EstadoPagado = true;
-                item.IdMovimientoCaja = IdMovimientoCaja;
-            }
-            return deliveryTakeaway.PrecioTotal;
-        }
-
-        private async Task<decimal> CalcularTotalProductos(ICollection<int> IdProductos, Visita visita, Guid IdMovimientoCaja)
-        {
-            decimal TotalAPagar = 0;
-            foreach (int id in IdProductos)
-            {
-                var productoPorVisita = visita.Productos.FirstOrDefault(p => p.Id == id);
-                if (productoPorVisita != null)
-                {
-                    TotalAPagar = TotalAPagar + productoPorVisita.PrecioDelMomento; // TODO: Verificar si se debe sumar el IVA o no
-                    productoPorVisita.IdMovimientoCaja = IdMovimientoCaja;
-                    productoPorVisita.EstadoPagado = true;
-                }
-            }
-            return TotalAPagar;
-        }
 
         private decimal CalcularVuelto(decimal totalAPagar, MovimientoCaja movimientoCaja)
         {

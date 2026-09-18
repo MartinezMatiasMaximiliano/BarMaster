@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Models;
@@ -16,6 +16,19 @@ namespace BackEndAPI.Controllers
         public EmpresasController(IEmpresasServices empresasServices)
         {
             _empresasServices = empresasServices;
+        }
+
+        [Authorize]
+        [HttpGet("/Empresa/Plan")]
+        public async Task<IActionResult> ObtenerPlan()
+        {
+            if (!Guid.TryParse(User.FindFirst("IdEmpresa")?.Value, out var idEmpresa) || idEmpresa == Guid.Empty)
+                return Unauthorized(new ErrorDTO(401, "UNAUTHORIZED", "Token inválido"));
+            var empresa = await _empresasServices.GetEmpresaById(idEmpresa);
+            if (empresa == null) return NotFound(new ErrorDTO(404, "NOT FOUND", "Empresa no encontrada"));
+            var plan = empresa.TipoSubscripcion;
+            if (plan == null) return NoContent();
+            return Ok(new PlanEmpresaDTO(plan.Id, plan.Nombre, plan.Precio, plan.Features ?? []));
         }
 
         [Authorize]

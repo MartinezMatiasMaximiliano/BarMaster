@@ -47,7 +47,6 @@ export default function Mesa_Deshabilitada(props) {
             '&:hover': { backgroundColor: COLOR_MESA_OTRO_MOZO },
         }
         : {
-            ...estilo,
             mx: 1,
             py: 2,
             px: 3,
@@ -64,6 +63,7 @@ export default function Mesa_Deshabilitada(props) {
                 boxShadow: 4,
             },
             transition: 'all 0.2s ease-in-out',
+            ...estilo,
         };
 
     return (
@@ -76,7 +76,7 @@ export default function Mesa_Deshabilitada(props) {
                 sx={botonSx}
             >
                 {simpleStyle ? (
-                    <>Mesa {datos_mesa.nombre}</>
+                    <>Mesa {datos_mesa.numero}</>
                 ) : (
                     <>
                         <img
@@ -85,7 +85,7 @@ export default function Mesa_Deshabilitada(props) {
                             style={{ width: 49.68, height: 49.68, objectFit: 'contain' }}
                         />
                         <Typography variant="body2" component="span" sx={{ fontWeight: 500 }}>
-                            Mesa {datos_mesa.nombre}
+                            Mesa {datos_mesa.numero}
                         </Typography>
                     </>
                 )}
@@ -105,7 +105,7 @@ export default function Mesa_Deshabilitada(props) {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <BsButton variant="primary" onClick={handleClose}>
+                    <BsButton data-enter-action="true" variant="primary" data-escape-action="true" onClick={handleClose}>
                         Cerrar
                     </BsButton>
                 </Modal.Footer>

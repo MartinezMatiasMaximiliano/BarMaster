@@ -170,13 +170,13 @@ export default function Modal_GestionarProductosMenu({
                     <LoadingButton
                         variant="contained"
                         color="primary"
-                        onClick={handleGuardar}
+                        data-enter-action="true" onClick={handleGuardar}
                         size="small"
                     >
                         Guardar cambios
                     </LoadingButton>
                     <Button
-                        onClick={handleClose}
+                        data-escape-action="true" onClick={handleClose}
                         variant="outlined"
                         size="small"
                     >

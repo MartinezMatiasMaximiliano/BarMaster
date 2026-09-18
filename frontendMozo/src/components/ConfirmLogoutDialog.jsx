@@ -46,14 +46,14 @@ export const ConfirmLogoutDialog = ({
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
                 <Button
-                    onClick={onClose}
+                    data-escape-action="true" onClick={onClose}
                     variant="outlined"
                     sx={cancelButtonStyles}
                 >
                     Cancelar
                 </Button>
                 <Button
-                    onClick={onConfirm}
+                    data-enter-action="true" onClick={onConfirm}
                     variant="contained"
                     color="error"
                     startIcon={<LogoutIcon />}

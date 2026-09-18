@@ -18,8 +18,10 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { useIndexTheme } from './hooks/useIndexTheme';
 import { createIndexTheme } from './indexTheme';
 import './IndexTheme.css';
+import { useCodigoMozoTeclado } from '../../hooks/useCodigoMozoTeclado';
 
 function Index(props) {
+    const codigoMozoInputRef = useCodigoMozoTeclado();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const loginContext = useContext(LoginContext);
@@ -83,26 +85,30 @@ function Index(props) {
     return (
         <ThemeProvider theme={indexTheme}>
             <Container
+                fluid
                 ref={indexContainerRef}
-                className={`position-relative bm-index-theme bm-index-theme--${themeMode}`}
-                style={{ height: "calc(100vh - 32px)", overflow: "hidden" }}
+                className={`position-relative px-0 bm-index-theme bm-index-theme--${themeMode}`}
             >
                 {!hayCajaActiva && (
-                    <div className="position-absolute top-0 start-0 end-0 m-3" style={{ zIndex: 10 }}>
+                    <div className="m-3 flex-shrink-0">
                         <Alert variant="warning" className="mb-0 d-flex align-items-center shadow-sm">
                             <WarningIcon className="me-2" style={{ fontSize: '1.5rem' }} />
                             <span>No se puede abrir mesas si no hay una caja activa</span>
                         </Alert>
                     </div>
                 )}
-                {cargandoMesas ? (
-                    <LoadingState />
-                ) : (
-                    <MesasGrid mesas={mesasParaMostrar} hayCajaActiva={hayCajaActiva} />
-                )}
+                <div className="bm-index-mesas-scroll">
+                    {cargandoMesas ? (
+                        <LoadingState />
+                    ) : (
+                        <MesasGrid mesas={mesasParaMostrar} hayCajaActiva={hayCajaActiva} />
+                    )}
+                </div>
                 
                 <BottomBar
+                    enFlujo
                     codigoMozo={codigoMozo}
+                    codigoMozoInputRef={codigoMozoInputRef}
                     handleChange={handleChange}
                     mozo={mozo}
                     themeMode={themeMode}

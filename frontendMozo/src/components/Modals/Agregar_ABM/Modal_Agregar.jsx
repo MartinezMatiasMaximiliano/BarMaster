@@ -18,6 +18,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import IconButton from '@mui/material/IconButton';
 import Errores from "./Errores"
 import Handlers from "./Handlers";
+import { LoadingButton } from '../../common/LoadingButton';
 import { Renderizados } from "./Renderizados";
 import { 
     gradientButtonStyles, 
@@ -34,6 +35,7 @@ function Modal_Agregar(props) {
         recargarComponentes: props.recargarComponentes,
         handleClose: () => setShow(false),
         campos: props.campos,
+        initialValues: props.initialValues,
     });
 
     const handleClose = () => {
@@ -117,7 +119,7 @@ function Modal_Agregar(props) {
                 <Divider />
                 <DialogContent sx={{ pt: 3, pb: 2 }}>
                     <Errores errors={errors} />
-                    <Box component="form" sx={{ mt: 1 }}>
+                    <Box component="form" onSubmit={(evento) => { evento.preventDefault(); handleSave(); }} sx={{ mt: 1 }}>
                         <Stack spacing={3}>
                             {props.campos.map((campo, index) => {   
                                 if (campo.visibleWhen && !campo.visibleWhen(values)) return null;
@@ -130,22 +132,22 @@ function Modal_Agregar(props) {
                 <Divider />
                 <DialogActions sx={dialogActionsStyles}>
                     <Button 
-                        onClick={handleClose} 
+                        data-escape-action="true" onClick={handleClose}
                         variant="outlined"
                         startIcon={<CancelIcon />}
                         sx={cancelButtonStyles}
                     >
                         Cancelar
                     </Button>
-                    <Button 
-                        onClick={handleSave} 
+                    <LoadingButton
+                        data-enter-action="true" onClick={handleSave}
                         variant="contained" 
                         color="primary"
                         startIcon={<SaveIcon />}
                         sx={gradientButtonStyles}
                     >
                         Agregar
-                    </Button>
+                    </LoadingButton>
                 </DialogActions>
             </Dialog>
         </>

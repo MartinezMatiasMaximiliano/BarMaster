@@ -335,11 +335,6 @@ namespace BackEndAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
-                            Nombre = "Pendiente"
-                        },
-                        new
-                        {
                             Id = 2,
                             Nombre = "Confirmada"
                         },
@@ -347,11 +342,344 @@ namespace BackEndAPI.Migrations
                         {
                             Id = 3,
                             Nombre = "Cancelada"
-                        },
-                        new
+                        });
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.ComandoPedidoVisita", b =>
+                {
+                    b.Property<Guid>("IdComando")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IdVisita")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("IdComando");
+
+                    b.HasIndex("IdVisita");
+
+                    b.ToTable("ComandosPedidoVisita", (string)null);
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.EstacionImpresion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CredencialCreadaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Habilitada")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("HashCredencial")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("IdInstalacionCliente")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTime?>("RevocadaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UltimaVersionAgente")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("UltimaVersionQz")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime?>("VistaPorUltimaVezEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdSucursal", "IdInstalacionCliente")
+                        .IsUnique();
+
+                    b.ToTable("EstacionesImpresion", (string)null);
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.Impresora", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short>("AnchoPapelMm")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("Codificacion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime?>("EliminadaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Formato")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<bool>("Habilitada")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("IdEstacion")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NombreSistema")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
+
+                    b.Property<string>("NombreSistemaNormalizado")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
+
+                    b.Property<string>("NombreVisible")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<bool>("Presente")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UltimoEstado")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("VistaPorUltimaVezEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdEstacion");
+
+                    b.HasIndex("IdEstacion", "NombreSistemaNormalizado")
+                        .IsUnique();
+
+                    b.ToTable("Impresoras", null, t =>
                         {
-                            Id = 4,
-                            Nombre = "Completada"
+                            t.HasCheckConstraint("CK_Impresoras_AnchoPapelMm", "\"AnchoPapelMm\" IN (58, 80)");
+                        });
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.ReglaImpresion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Habilitada")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("IdImpresora")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Momento")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("TipoSalida")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdImpresora");
+
+                    b.HasIndex("IdSucursal");
+
+                    b.HasIndex("IdSucursal", "IdImpresora", "TipoSalida", "Momento")
+                        .IsUnique();
+
+                    b.ToTable("ReglasImpresion", (string)null);
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.TrabajoImpresion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("AceptadoPorColaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short>("AnchoPapelMm")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("CantidadIntentos")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("ClaveIdempotencia")
+                        .IsRequired()
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)");
+
+                    b.Property<string>("Codificacion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ContenidoJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<short>("Copias")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DisponibleEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("EnvioIniciadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Estado")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("Formato")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("IdEntidadOrigen")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid>("IdEstacion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("IdPersonaSolicitante")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("IdRegla")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("IdReserva")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdSolicitud")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("IdTrabajoReimpreso")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NombreSistemaImpresora")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
+
+                    b.Property<string>("NombreVisibleImpresora")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTime?>("ReservaVenceEn")
+                        .IsConcurrencyToken()
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TipoDocumento")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("TipoEntidadOrigen")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("UltimoCodigoError")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("UltimoDetalleError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("VenceEn")
+                        .IsConcurrencyToken()
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short>("VersionEsquema")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("VersionPlantilla")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdEstacion");
+
+                    b.HasIndex("IdRegla");
+
+                    b.HasIndex("IdTrabajoReimpreso");
+
+                    b.HasIndex("Estado", "ReservaVenceEn")
+                        .HasFilter("\"Estado\" IN ('Reservado', 'Enviando')");
+
+                    b.HasIndex("IdSucursal", "ClaveIdempotencia")
+                        .IsUnique();
+
+                    b.HasIndex("IdSucursal", "IdSolicitud");
+
+                    b.HasIndex("IdEstacion", "Estado", "DisponibleEn", "CreadoEn")
+                        .HasFilter("\"Estado\" IN ('Pendiente', 'ReintentoProgramado')");
+
+                    b.ToTable("TrabajosImpresion", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_TrabajosImpresion_AnchoPapelMm", "\"AnchoPapelMm\" IN (58, 80)");
+
+                            t.HasCheckConstraint("CK_TrabajosImpresion_CantidadIntentos", "\"CantidadIntentos\" >= 0");
+
+                            t.HasCheckConstraint("CK_TrabajosImpresion_Copias", "\"Copias\" BETWEEN 1 AND 10");
+
+                            t.HasCheckConstraint("CK_TrabajosImpresion_Vencimiento", "\"VenceEn\" > \"CreadoEn\"");
+
+                            t.HasCheckConstraint("CK_TrabajosImpresion_Versiones", "\"VersionEsquema\" > 0 AND \"VersionPlantilla\" > 0");
                         });
                 });
 
@@ -393,9 +721,9 @@ namespace BackEndAPI.Migrations
                     b.Property<Guid?>("IdPlano")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Numero")
+                        .HasColumnType("integer")
+                        .HasColumnName("numero");
 
                     b.Property<float>("h")
                         .HasColumnType("real");
@@ -474,19 +802,19 @@ namespace BackEndAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<int>("Cantidad")
+                    b.Property<int>("Canal")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Canal")
+                    b.Property<int>("Cantidad")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("IdStockProductoSucursal")
+                    b.Property<Guid?>("IdMesa")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("IdMesa")
+                    b.Property<Guid>("IdStockProductoSucursal")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("IdVisita")
@@ -513,9 +841,9 @@ namespace BackEndAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdStockProductoSucursal");
-
                     b.HasIndex("IdMesa");
+
+                    b.HasIndex("IdStockProductoSucursal");
 
                     b.HasIndex("IdVisita");
 
@@ -691,6 +1019,9 @@ namespace BackEndAPI.Migrations
                     b.Property<decimal>("IVADelMomento")
                         .HasColumnType("numeric");
 
+                    b.Property<Guid?>("IdComandoAgregado")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("IdMovimientoCaja")
                         .HasColumnType("uuid");
 
@@ -711,7 +1042,7 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdProducto");
 
-                    b.HasIndex("IdVisita");
+                    b.HasIndex("IdVisita", "IdComandoAgregado");
 
                     b.ToTable("ProductosPorVisita");
                 });
@@ -731,12 +1062,11 @@ namespace BackEndAPI.Migrations
                     b.Property<int>("IdEstadoReserva")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("IdSucursal")
+                    b.Property<Guid?>("IdMesa")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("MesaReserva")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("NombreReserva")
                         .IsRequired()
@@ -750,9 +1080,18 @@ namespace BackEndAPI.Migrations
 
                     b.HasIndex("IdEstadoReserva");
 
-                    b.HasIndex("IdSucursal");
+                    b.HasIndex("IdMesa");
 
-                    b.ToTable("Reservas");
+                    b.HasIndex("IdSucursal", "FechaHora");
+
+                    b.HasIndex("IdSucursal", "IdMesa", "FechaHora")
+                        .IsUnique()
+                        .HasFilter("\"IdEstadoReserva\" = 2 AND \"IdMesa\" IS NOT NULL");
+
+                    b.ToTable("Reservas", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Reservas_EstadoPermitido", "\"IdEstadoReserva\" IN (2, 3)");
+                        });
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Rol", b =>
@@ -787,6 +1126,43 @@ namespace BackEndAPI.Migrations
                             Id = 3,
                             Nombre = "Cadete"
                         });
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.StockProductoSucursal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CantidadActual")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CantidadMinima")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("ControlaStock")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("EnviarAlerta")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IdProducto")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdSucursal")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdSucursal");
+
+                    b.HasIndex("IdProducto", "IdSucursal")
+                        .IsUnique();
+
+                    b.ToTable("StockProductosSucursales");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Sucursal", b =>
@@ -825,43 +1201,6 @@ namespace BackEndAPI.Migrations
                     b.HasIndex("IdEmpresa");
 
                     b.ToTable("Sucursales");
-                });
-
-            modelBuilder.Entity("BackEndAPI.Models.StockProductoSucursal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("CantidadActual")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("CantidadMinima")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("ControlaStock")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("EnviarAlerta")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("FechaActualizacion")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("IdProducto")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IdSucursal")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdSucursal");
-
-                    b.HasIndex("IdProducto", "IdSucursal")
-                        .IsUnique();
-
-                    b.ToTable("StockProductosSucursales");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.TipoEnvio", b =>
@@ -1251,6 +1590,91 @@ namespace BackEndAPI.Migrations
                     b.Navigation("TipoSubscripcion");
                 });
 
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.ComandoPedidoVisita", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Visita", "Visita")
+                        .WithMany()
+                        .HasForeignKey("IdVisita")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Visita");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.EstacionImpresion", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
+                        .WithMany("EstacionesImpresion")
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Sucursal");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.Impresora", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Impresion.EstacionImpresion", "Estacion")
+                        .WithMany("Impresoras")
+                        .HasForeignKey("IdEstacion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Estacion");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.ReglaImpresion", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Impresion.Impresora", "Impresora")
+                        .WithMany("Reglas")
+                        .HasForeignKey("IdImpresora")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
+                        .WithMany("ReglasImpresion")
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Impresora");
+
+                    b.Navigation("Sucursal");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.TrabajoImpresion", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Impresion.EstacionImpresion", "Estacion")
+                        .WithMany("TrabajosImpresion")
+                        .HasForeignKey("IdEstacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Impresion.ReglaImpresion", "Regla")
+                        .WithMany("Trabajos")
+                        .HasForeignKey("IdRegla")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
+                        .WithMany("TrabajosImpresion")
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BackEndAPI.Models.Impresion.TrabajoImpresion", "TrabajoReimpreso")
+                        .WithMany()
+                        .HasForeignKey("IdTrabajoReimpreso")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Estacion");
+
+                    b.Navigation("Regla");
+
+                    b.Navigation("Sucursal");
+
+                    b.Navigation("TrabajoReimpreso");
+                });
+
             modelBuilder.Entity("BackEndAPI.Models.Menu", b =>
                 {
                     b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
@@ -1323,9 +1747,9 @@ namespace BackEndAPI.Migrations
                         .HasForeignKey("IdVisita")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("StockProductoSucursal");
-
                     b.Navigation("Mesa");
+
+                    b.Navigation("StockProductoSucursal");
 
                     b.Navigation("Visita");
                 });
@@ -1412,6 +1836,11 @@ namespace BackEndAPI.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
+                    b.HasOne("BackEndAPI.Models.Mesa", "Mesa")
+                        .WithMany()
+                        .HasForeignKey("IdMesa")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("BackEndAPI.Models.Sucursal", "Sucursal")
                         .WithMany("Reservas")
                         .HasForeignKey("IdSucursal")
@@ -1420,18 +1849,9 @@ namespace BackEndAPI.Migrations
 
                     b.Navigation("Estado");
 
+                    b.Navigation("Mesa");
+
                     b.Navigation("Sucursal");
-                });
-
-            modelBuilder.Entity("BackEndAPI.Models.Sucursal", b =>
-                {
-                    b.HasOne("BackEndAPI.Models.Empresa", "Empresa")
-                        .WithMany("Sucursales")
-                        .HasForeignKey("IdEmpresa")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.StockProductoSucursal", b =>
@@ -1451,6 +1871,17 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Producto");
 
                     b.Navigation("Sucursal");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Sucursal", b =>
+                {
+                    b.HasOne("BackEndAPI.Models.Empresa", "Empresa")
+                        .WithMany("Sucursales")
+                        .HasForeignKey("IdEmpresa")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Visita", b =>
@@ -1527,9 +1958,31 @@ namespace BackEndAPI.Migrations
                     b.Navigation("Sucursales");
                 });
 
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.EstacionImpresion", b =>
+                {
+                    b.Navigation("Impresoras");
+
+                    b.Navigation("TrabajosImpresion");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.Impresora", b =>
+                {
+                    b.Navigation("Reglas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.Impresion.ReglaImpresion", b =>
+                {
+                    b.Navigation("Trabajos");
+                });
+
             modelBuilder.Entity("BackEndAPI.Models.Plano", b =>
                 {
                     b.Navigation("Mesas");
+                });
+
+            modelBuilder.Entity("BackEndAPI.Models.StockProductoSucursal", b =>
+                {
+                    b.Navigation("Movimientos");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Sucursal", b =>
@@ -1538,16 +1991,17 @@ namespace BackEndAPI.Migrations
 
                     b.Navigation("Deliveries");
 
+                    b.Navigation("EstacionesImpresion");
+
                     b.Navigation("Menus");
 
                     b.Navigation("Planos");
 
-                    b.Navigation("Reservas");
-                });
+                    b.Navigation("ReglasImpresion");
 
-            modelBuilder.Entity("BackEndAPI.Models.StockProductoSucursal", b =>
-                {
-                    b.Navigation("Movimientos");
+                    b.Navigation("Reservas");
+
+                    b.Navigation("TrabajosImpresion");
                 });
 
             modelBuilder.Entity("BackEndAPI.Models.Visita", b =>

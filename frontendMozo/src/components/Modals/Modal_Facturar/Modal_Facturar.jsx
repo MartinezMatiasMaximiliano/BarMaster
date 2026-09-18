@@ -28,7 +28,7 @@ import { cancelButtonStyles, dialogTitleGradientStyles, dialogActionsStyles } fr
 
 /**
  * Modal para facturar con método de pago, efectivo/vuelto, cuenta corriente (placeholder) y descuento.
- * Backend aún no recibe estos datos; el formulario queda listo para cuando se implemente.
+ * El descuento monetario se transmite junto al importe recibido.
  */
 export default function Modal_Facturar({
     open,
@@ -54,7 +54,7 @@ export default function Modal_Facturar({
     const tipoPagoSeleccionado = tiposPago.find(t => String(t.id) === String(idTipoPago));
     const esEfectivo = tipoPagoSeleccionado?.esEfectivo === true;
     const totalNum = Number(total) || 0;
-    const descuentoNum = Math.min(Number(montoDescuento) || 0, totalNum);
+    const descuentoNum = Math.max(0, Math.min(Number(montoDescuento) || 0, totalNum));
     const totalFinal = Math.max(0, totalNum - descuentoNum);
     const montoRecibidoNum = Number(montoRecibido) || 0;
     const vuelto = esEfectivo && montoRecibidoNum >= totalFinal ? montoRecibidoNum - totalFinal : null;
@@ -118,9 +118,9 @@ export default function Modal_Facturar({
         }
         setError('');
         const montoParaBackend = esEfectivo ? montoRecibidoNum : totalFinal;
-        onConfirm(productIds, Number(idTipoPago), montoParaBackend);
+        onConfirm(productIds, Number(idTipoPago), montoParaBackend, descuentoNum);
         handleClose();
-    }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, cajaInsuficiente, montoCaja, currencyFormatter, productIds, idTipoPago, onConfirm, handleClose]);
+    }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, cajaInsuficiente, montoCaja, currencyFormatter, productIds, idTipoPago, onConfirm, handleClose, descuentoNum]);
 
     if (!open) return null;
 
@@ -188,7 +188,7 @@ export default function Modal_Facturar({
                     </Box>
 
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
-                        <FormControl size="small" sx={{ width: { xs: '100%', sm: '65%' } }}>
+                        <FormControl size="small" sx={{ width: { xs: '80%', sm: '52%' } }}>
                             <InputLabel id="facturar-tipo-pago">Método de pago</InputLabel>
                             <Select
                                 labelId="facturar-tipo-pago"
@@ -210,7 +210,7 @@ export default function Modal_Facturar({
                                     onChange={(e) => setFacturarTicket(e.target.checked)}
                                 />
                             }
-                            label="Facturar ticket"
+                            label="Comprobante Fiscal"
                         />
                     </Stack>
 
@@ -314,11 +314,11 @@ export default function Modal_Facturar({
             </DialogContent>
 
             <DialogActions sx={dialogActionsStyles}>
-                <Button variant="outlined" color="secondary" onClick={handleClose} sx={cancelButtonStyles}>
+                <Button variant="outlined" color="secondary" data-escape-action="true" onClick={handleClose} sx={cancelButtonStyles}>
                     Cancelar
                 </Button>
-                <Button variant="contained" color="success" onClick={handleConfirm} startIcon={<ReceiptIcon />}>
-                    Confirmar facturación
+                <Button variant="contained" color="success" data-enter-action="true" onClick={handleConfirm} startIcon={<ReceiptIcon />}>
+                    Confirmar cobro
                 </Button>
             </DialogActions>
         </Dialog>

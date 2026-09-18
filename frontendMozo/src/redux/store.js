@@ -6,6 +6,7 @@ import codigoMozoReducer from './slices/codigoMozoSlice'
 import ticketReducer from './slices/ticketSlice'
 import cajaActivaReducer from './slices/cajaActivaSlice'
 import storage from 'redux-persist/lib/storage'
+import { persistStore } from 'redux-persist'
 import {
     FLUSH,
     PAUSE,
@@ -42,3 +43,5 @@ export const store = configureStore({
             },
         }),
 })
+
+export const persistor = persistStore(store)

@@ -9,7 +9,8 @@
         public string Telefono { get; set; } = null!;
         public string NombreReserva { get; set; } = null!;
         public int? CantidadDePersonas { get; set; }
-        public string MesaReserva { get; set; } = string.Empty;
+        public Guid? IdMesa { get; set; }
+        public Mesa? Mesa { get; set; }
 
         //navegacion
         public Sucursal Sucursal { get; set; } = null!;

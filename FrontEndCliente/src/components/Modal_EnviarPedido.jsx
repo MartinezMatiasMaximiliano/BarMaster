@@ -67,7 +67,7 @@ function Modal_EnviarPedido(props) {
                 <Typography ><b>Enviar Pedido</b></Typography>
             </Button>
 
-            <Modal
+            <Modal data-keyboard-modal="true"
                 open={open}
                 onClose={handleClose}
                 aria-labelledby="modal-modal-title"
@@ -96,10 +96,10 @@ function Modal_EnviarPedido(props) {
                                     justifyContent: 'space-between',
                                 }}
                             >
-                                <Button onClick={handleClose} variant="contained" sx={{ color: 'white' }}>
+                                <Button data-escape-action="true" onClick={handleClose} variant="contained" sx={{ color: 'white' }}>
                                     Cancelar
                                 </Button>
-                                <Button onClick={enviarPedido} disabled={enviando} variant="contained" sx={{ color: 'white' }}>
+                                <Button data-enter-action="true" onClick={enviarPedido} disabled={enviando} variant="contained" sx={{ color: 'white' }}>
                                     {enviando ? "Enviando..." : "Enviar"}
                                 </Button>
                             </ButtonGroup>

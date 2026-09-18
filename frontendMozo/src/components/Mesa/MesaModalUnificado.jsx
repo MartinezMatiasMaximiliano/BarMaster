@@ -24,6 +24,8 @@ import { MesaProductosPanel } from './components/MesaProductosPanel';
 import { PedidoTotalMesa } from './components/PedidoTotalMesa';
 import { useAutoSubmitPedidos } from './hooks/useAutoSubmitPedidos';
 import { formatearFecha } from './dateFormatter';
+import { solicitarPreticket } from '../../services/impresion/apiImpresion';
+import { normalizarErrorQz } from '../../services/impresion/erroresQz';
 
 const AUTO_SUBMIT_MS = 5000;
 
@@ -52,6 +54,7 @@ export const MesaModalUnificado = ({
 
     const [productosSeleccionados, setProductosSeleccionados] = useState([]);
     const [showModalFacturar, setShowModalFacturar] = useState(null);
+    const [printingPreticket, setPrintingPreticket] = useState(false);
     const [snackbarFacturacion, setSnackbarFacturacion] = useState({
         open: false,
         message: '',
@@ -76,7 +79,7 @@ export const MesaModalUnificado = ({
         handleEnviarPedidos,
         limpiarEstado,
         closeSnackbar
-    } = useAgregarPedidos(show, idVisita, datos_mesa.nombre, () => {});
+    } = useAgregarPedidos(show, idVisita, datos_mesa.numero, () => {});
 
     const hayPedidosPendientes = productosAPagar.length > 0;
     const hayPedidosProvisorios = comanda.length > 0;
@@ -120,8 +123,8 @@ export const MesaModalUnificado = ({
         );
     }, []);
 
-    const handleConfirmarFacturacion = useCallback((arregloIds, idTipoPago, monto) => {
-        PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto } : undefined);
+    const handleConfirmarFacturacion = useCallback((arregloIds, idTipoPago, monto, descuento = 0) => {
+        PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto, descuento } : undefined);
         setProductosSeleccionados([]);
         setShowModalFacturar(null);
     }, [PagarMesa, showSnackbarFacturacion]);
@@ -169,6 +172,28 @@ export const MesaModalUnificado = ({
         );
     }, [onCancelarPedidos, showSnackbar]);
 
+    const handlePrintPreticket = useCallback(async () => {
+        if (productosAPagar.length === 0) {
+            showSnackbar('No hay productos pendientes para imprimir', 'warning');
+            return;
+        }
+
+        if (!idVisita) {
+            showSnackbar('No se pudo identificar la visita de la mesa', 'error');
+            return;
+        }
+
+        setPrintingPreticket(true);
+        try {
+            await solicitarPreticket(idVisita);
+            showSnackbar('Solicitud recibida. La cuenta se imprimirá en el equipo configurado.', 'success');
+        } catch (error) {
+            showSnackbar(normalizarErrorQz(error).mensaje, 'error');
+        } finally {
+            setPrintingPreticket(false);
+        }
+    }, [idVisita, productosAPagar.length, showSnackbar]);
+
     return (
         <Dialog
             open={show}
@@ -180,7 +205,7 @@ export const MesaModalUnificado = ({
         >
             <MesaModalHeader
                 fecha={fechaFormateada}
-                numeroMesa={datos_mesa.nombre}
+                numeroMesa={datos_mesa.numero}
                 onClose={handleCloseWithCleanup}
             />
 
@@ -305,6 +330,8 @@ export const MesaModalUnificado = ({
                 totalItems={totalItems}
                 onFacturarTodo={() => setShowModalFacturar('todo')}
                 onFacturarPartes={handleFacturarPartes}
+                onPrintPreticket={handlePrintPreticket}
+                printing={printingPreticket}
                 onAgregarPedidos={handleEnviarPedidos}
                 onClose={handleCloseWithCleanup}
             />
@@ -327,7 +354,7 @@ export const MesaModalUnificado = ({
                 <Modal_Facturar
                     open={true}
                     onClose={() => setShowModalFacturar(null)}
-                    titulo="Facturar todo"
+                    titulo="Cobrar todo"
                     total={totalPedidos}
                     productIds={productosAPagar}
                     currencyFormatter={currencyFormatter}
@@ -338,7 +365,7 @@ export const MesaModalUnificado = ({
                 <Modal_Facturar
                     open={true}
                     onClose={() => setShowModalFacturar(null)}
-                    titulo="Facturar por partes"
+                    titulo="Cobrar por partes"
                     total={totalPartes}
                     productIds={productosSeleccionados}
                     currencyFormatter={currencyFormatter}

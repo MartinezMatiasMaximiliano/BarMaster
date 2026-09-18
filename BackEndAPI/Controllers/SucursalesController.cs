@@ -1,4 +1,4 @@
-﻿using BackEndAPI.DTOs.Request.Crear;
+using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Services.Global;
@@ -39,7 +39,7 @@ namespace BackEndAPI.Controllers
                     return NotFound(new ErrorDTO(404, "NOT FOUND", "Sucursal no encontrada"));
                 }
 
-                // Mapear a DTO para evitar referencias circulares
+                // Mapearear a DTO para evitar referencias circulares
                 var response = new SucursalDTO
                 {
                     Id = sucursal.Id,

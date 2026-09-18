@@ -1,4 +1,5 @@
 import * as SignalR from '@microsoft/signalr';
+import { normalizarArgumentosHub } from './argumentosHub';
 
 //HUB CONNECTION MOZO
 const hubURL = import.meta.env.VITE_BASE_URL + "NotificacionesHub"
@@ -34,6 +35,12 @@ connection.onreconnected(() => {
 });
 
 export async function sendHubMessage(methodName, ...args) {
+    try {
+        args = normalizarArgumentosHub(methodName, args);
+    } catch (error) {
+        window.dispatchEvent(new CustomEvent('error-signalr', { detail: error.message }));
+        return false;
+    }
     const connected = await ConectarAHub();
     if (!connected || connection.state !== SignalR.HubConnectionState.Connected) {
         return false;

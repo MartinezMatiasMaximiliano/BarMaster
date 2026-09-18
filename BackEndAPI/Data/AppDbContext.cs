@@ -1,6 +1,8 @@
-﻿using BackEndAPI.ARCA.Clases;
+using BackEndAPI.ARCA.Clases;
 using BackEndAPI.Controllers;
 using BackEndAPI.Models;
+using BackEndAPI.Models.Impresion;
+using BackEndAPI.Data.Configuraciones;
 using BackEndAPI.Tenancy.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -42,9 +44,36 @@ namespace BackEndAPI.Data
         public DbSet<FETokenAuth> FETokenAuths => Set<FETokenAuth>();
         public DbSet<StockProductoSucursal> StockProductosSucursales => Set<StockProductoSucursal>();
         public DbSet<MovimientoStock> MovimientosStock => Set<MovimientoStock>();
+        public DbSet<EstacionImpresion> EstacionesImpresion => Set<EstacionImpresion>();
+        public DbSet<Impresora> Impresoras => Set<Impresora>();
+        public DbSet<ReglaImpresion> ReglasImpresion => Set<ReglaImpresion>();
+        public DbSet<TrabajoImpresion> TrabajosImpresion => Set<TrabajoImpresion>();
+        public DbSet<ComandoPedidoVisita> ComandosPedidoVisita => Set<ComandoPedidoVisita>();
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Mesa>().Property(m => m.Numero).HasColumnName("numero");
+            modelBuilder.Entity<Reserva>().ToTable("Reservas", tabla =>
+                tabla.HasCheckConstraint("CK_Reservas_EstadoPermitido", "\"IdEstadoReserva\" IN (2, 3)"));
+            modelBuilder.Entity<Reserva>().HasOne(r => r.Mesa).WithMany()
+                .HasForeignKey(r => r.IdMesa).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Reserva>().HasIndex(r => new { r.IdSucursal, r.FechaHora });
+            modelBuilder.Entity<Reserva>()
+                .HasIndex(r => new { r.IdSucursal, r.IdMesa, r.FechaHora })
+                .IsUnique()
+                .HasFilter("\"IdEstadoReserva\" = 2 AND \"IdMesa\" IS NOT NULL");
+            modelBuilder.Entity<EstacionImpresion>(entity =>
+            {
+                entity.ToTable("EstacionesImpresion");
+                entity.Property(x => x.Nombre).HasMaxLength(120).IsRequired();
+                entity.HasIndex(x => new { x.IdSucursal, x.IdInstalacionCliente }).IsUnique();
+                entity.HasOne(x => x.Sucursal)
+                    .WithMany(x => x.EstacionesImpresion)
+                    .HasForeignKey(x => x.IdSucursal)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.ConfigurarImpresionDistribuida();
 
             modelBuilder.Entity<Rol>().HasData(
                 new Rol { Id = 1, Nombre = "Admin" },
@@ -53,10 +82,8 @@ namespace BackEndAPI.Data
             );
 
             modelBuilder.Entity<EstadoReserva>().HasData(
-               new EstadoReserva { Id = 1, Nombre = "Pendiente" },
                new EstadoReserva { Id = 2, Nombre = "Confirmada" },
-               new EstadoReserva { Id = 3, Nombre = "Cancelada" },
-               new EstadoReserva { Id = 4, Nombre = "Completada" }
+               new EstadoReserva { Id = 3, Nombre = "Cancelada" }
             );
 
             modelBuilder.Entity<TipoMovimientoCaja>().HasData(
@@ -238,7 +265,10 @@ namespace BackEndAPI.Data
                 .HasMany(v => v.Productos)
                 .WithOne(pv => pv.Visita)
                 .HasForeignKey(v => v.IdVisita)
-                .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ProductosPorVisita>()
+                .HasIndex(x => new { x.IdVisita, x.IdComandoAgregado });
 
             ////modelBuilder.Entity<Delivery>()
             ////.HasOne(d => d.Cadete)
@@ -388,12 +418,12 @@ namespace BackEndAPI.Data
         //            Timestamp = DateTime.UtcNow,
         //            PK = JsonSerializer.Serialize(entry.Properties
         //                .Where(p => p.Metadata.IsPrimaryKey())
-        //                .ToDictionary(p => p.Metadata.Name, p => p.CurrentValue)),
+        //                .ToDictionary(p => p.Metadata.Nombre, p => p.CurrentValue)),
         //            Anterior = entry.State == EntityState.Modified || entry.State == EntityState.Deleted
-        //                ? JsonSerializer.Serialize(entry.Properties.ToDictionary(p => p.Metadata.Name, p => entry.OriginalValues[p.Metadata.Name]))
+        //                ? JsonSerializer.Serialize(entry.Properties.ToDictionary(p => p.Metadata.Nombre, p => entry.OriginalValues[p.Metadata.Nombre]))
         //                : null,
         //            Posterior = entry.State == EntityState.Added || entry.State == EntityState.Modified
-        //                ? JsonSerializer.Serialize(entry.Properties.ToDictionary(p => p.Metadata.Name, p => entry.CurrentValues[p.Metadata.Name]))
+        //                ? JsonSerializer.Serialize(entry.Properties.ToDictionary(p => p.Metadata.Nombre, p => entry.CurrentValues[p.Metadata.Nombre]))
         //                : null
         //        };
 

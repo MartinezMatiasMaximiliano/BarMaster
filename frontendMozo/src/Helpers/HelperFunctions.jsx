@@ -7,14 +7,14 @@ import {
     validateFieldAndSetError,
     validateForm,
 } from "../validation/formValidation";
+import { clearBranchSession } from "../services/sessionCleanup";
 
 /* Funcion para confirmar el del sistema (sirve para el sistema de una sucursal y para el panel de sucursales) */
-export const handleConfirmarSalir = (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
+export const handleConfirmarSalir = async (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
     // Cerrar diálogo primero
     setOpenConfirmDialog(false);
     
-    // Limpiar localStorage
-    localStorage.clear();
+    await clearBranchSession();
     
     // Limpiar contextos - verificar qué método está disponible
     if (loginContext?.setLogeadoEmpresaSucursal) {
@@ -128,6 +128,8 @@ export function MappearReservas(reservas) {
             nombreReserva: reserva.nombreReserva,
             telefono: (reserva.telefono ?? reserva.Telefono ?? reserva.telefonoContacto ?? reserva.TelefonoContacto ?? '').toString().trim(),
             cantidadDePersonas: reserva.cantidadDePersonas,
+            mesaReserva: (reserva.mesaReserva ?? reserva.MesaReserva) ? `Mesa ${reserva.mesaReserva ?? reserva.MesaReserva}` : '',
+            idMesa: reserva.idMesa ?? null,
             IdEstadoReserva: reserva.estado.id,
             estado: reserva.estado.nombre
         }))
@@ -192,7 +194,7 @@ export function MappearMenu(menu) {
             codigo: item.codigo,
             nombre: item.nombre,
             precio: item.precio,
-            costoProduccion: item.costo,
+            costoProduccion: item.costoProduccion ?? item.CostoProduccion ?? item.costo,
             descripcion: item.descripcion,
             categorias: item.categorias,
             activo: item.activo,
@@ -204,7 +206,7 @@ export function MappearMesas(mesas) {
     return (
         mesas.map(mesa => ({
             id: mesa.id,
-            numero: mesa.nombre || mesa.numeroMesa || "", 
+            numero: mesa.numero ?? "", 
             codigoParaPedir: mesa.codigoParaPedir,
             capacidad: mesa.capacidad || 0,
             idPlano: mesa.plano?.id || mesa.idPlano || null,

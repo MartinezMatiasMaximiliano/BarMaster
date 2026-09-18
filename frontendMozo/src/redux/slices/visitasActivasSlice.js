@@ -75,8 +75,8 @@ export const visitasActivasSlice = createSlice({
 
         // eliminarProductos - Elimina productos de una visita (por ID de producto)
         eliminarProductos: (state, action) => {
-            const { numeroMesa, idsProductos } = action.payload;
-            const visita = state.value.find(v => v.numeroMesa === numeroMesa);
+            const { idVisita, idsProductos } = action.payload;
+            const visita = state.value.find(v => v.id === idVisita);
             if (visita && visita.productosConsumidos) {
                 visita.productosConsumidos = visita.productosConsumidos.filter(
                     p => !idsProductos.includes(p.id)

@@ -30,16 +30,17 @@ function normalizarProducto(producto) {
 }
 
 class CrearProductoDTO {
-    constructor(nombre, descripcion, precio, activo, listaIdCategorias, imagen, codigo, costoProduccion, controlaStock, cantidadMinima, cantidadInicial) {
+    constructor(nombre, descripcion, precioNeto, activo, listaIdCategorias, imagen, codigo, costoProduccion, controlaStock, enviarAlerta, cantidadMinima, cantidadInicial) {
         this.Codigo = codigo;
         this.Nombre = nombre;
         this.Descripcion = descripcion;
-        this.Precio = precio;
+        this.PrecioNeto = precioNeto;
         this.ListaIdCategorias = listaIdCategorias || [];
         this.CostoProduccion = costoProduccion || 0;
         this.Activo = activo;
         this.Imagen = imagen;
         this.ControlaStock = Boolean(controlaStock);
+        this.EnviarAlerta = this.ControlaStock && Boolean(enviarAlerta);
         if (this.ControlaStock) {
             this.CantidadMinima = Number(cantidadMinima);
             this.CantidadInicial = Number(cantidadInicial);
@@ -81,6 +82,7 @@ export async function CrearProducto(datos) {
                 datos.codigo,
                 normalizarDecimal(datos.costoProduccion, 0),
                 datos.controlaStock,
+                datos.enviarAlerta,
                 datos.cantidadMinima,
                 datos.cantidadInicial,
             ), {
@@ -104,7 +106,7 @@ export async function ModificarProducto(datos) {
             Codigo: datos.codigo,
             Nombre: datos.nombre,
             Descripcion: datos.descripcion,
-            Precio: normalizarDecimal(datos.precio),
+            PrecioNeto: normalizarDecimal(datos.precio),
             CostoProduccion: normalizarDecimal(datos.costoProduccion),
             Activo: datos.activo,
             categorias: datos.categorias,

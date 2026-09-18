@@ -6,6 +6,7 @@ import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutl
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
 import NavBar_Botones from './NavBar_Botones'
 import NavBar_Chip from './NavBar_Chip'
+import { clearPersonSession } from '../../services/sessionCleanup';
 
 function NavBar() {
 
@@ -13,11 +14,7 @@ function NavBar() {
     const navigate = useNavigate();
 
     function cerrarSesion() {
-        Object.keys(localStorage).forEach(key => {
-            if (key.startsWith("USER_")) {
-              localStorage.removeItem(key);
-            }
-          });
+        clearPersonSession();
         loginProvider.setLogeadoUsuario(false);
         loginProvider.setRol("");
         navigate('/');

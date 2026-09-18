@@ -4,7 +4,7 @@ namespace BackEndAPI.DTOs.Request.Crear
 {
     public class CrearMesaDTO
     {
-        public string Nombre { get; set; } = string.Empty;
+        public int Numero { get; set; }
         public Guid IdPlano { get; set; } = Guid.Empty;
         public int Capacidad { get; set; } = 0;
         public float x { get; set; } = 0;

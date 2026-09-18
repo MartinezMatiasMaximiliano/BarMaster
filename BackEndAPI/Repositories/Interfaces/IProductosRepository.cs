@@ -6,6 +6,7 @@ namespace BackEndAPI.Repositories.Interfaces
     {
         Task<IEnumerable<Producto>> GetAllProductos();
         Task<Producto?> GetProductoPorId(Guid id);
+        Task<IReadOnlyDictionary<Guid, Producto>> GetProductosPorIds(IEnumerable<Guid> ids);
         Task<Producto?> GetProductoPorNombre(string nombre);
         Task<Producto?> AddProducto(Producto producto);
         Task<Producto?> UpdateProducto(Producto producto);

@@ -36,9 +36,11 @@ const animacionTextoTema = keyframes`
 
 export const BottomBar = ({
     codigoMozo,
+    codigoMozoInputRef,
     handleChange,
     mozo,
     fechaHora: fechaHoraProp,
+    enFlujo = false,
     themeMode,
     onThemeToggle,
     onSalirClick
@@ -46,10 +48,11 @@ export const BottomBar = ({
     const fechaHoraFromHook = useDateTime();
     const fechaHora = fechaHoraProp ?? fechaHoraFromHook;
     return (
-        <div className="position-absolute bottom-0 start-0 w-100 p-3 d-flex align-items-end gap-3 flex-wrap">
+        <div className={`${enFlujo ? 'flex-shrink-0' : 'position-absolute bottom-0 start-0'} w-100 p-3 d-flex align-items-end gap-3 flex-wrap`}>
             <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                 <Form.Label>Código</Form.Label>
                 <Form.Control
+                    ref={codigoMozoInputRef}
                     onChange={handleChange}
                     type="password"
                     value={codigoMozo}

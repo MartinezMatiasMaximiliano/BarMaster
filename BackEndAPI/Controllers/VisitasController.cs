@@ -30,7 +30,7 @@ namespace BackEndAPI.Controllers
                     Total = visita.Total,
                     Origen = visita.Origen,
                     IdMesa = visita.Mesa?.Id,
-                    NumeroMesa = visita.Mesa?.Nombre,
+                    NumeroMesa = visita.Mesa?.Numero,
                     Mozo = visita.Mozo != null ? new MozoEnVisitaDTO
                     {
                         Id = visita.Mozo.Id,
@@ -74,7 +74,7 @@ namespace BackEndAPI.Controllers
                     Total = visita.Total,
                     Origen = visita.Origen,
                     IdMesa = visita.Mesa?.Id,
-                    NumeroMesa = visita.Mesa?.Nombre,
+                    NumeroMesa = visita.Mesa?.Numero,
                     Mozo = visita.Mozo != null ? new MozoEnVisitaDTO
                     {
                         Id = visita.Mozo.Id,
@@ -118,7 +118,7 @@ namespace BackEndAPI.Controllers
                     Total = visitaBuscada.Total,
                     Origen = visitaBuscada.Origen,
                     IdMesa = visitaBuscada.Mesa?.Id,
-                    NumeroMesa = visitaBuscada.Mesa?.Nombre,
+                    NumeroMesa = visitaBuscada.Mesa?.Numero,
                     ProductosConsumidos = visitaBuscada.Productos.Select(item => new ItemDTO
                     {
                         Id = item.Id,
@@ -148,11 +148,15 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost("/AgregarProductoAVisita")]
-        public async Task<IActionResult> AgregarproductosAVisita([FromBody] ICollection<AgregarProductoAVisita> listaProductos, [FromQuery]Guid IdVisita)
+        public async Task<IActionResult> AgregarproductosAVisita(
+            [FromBody] ICollection<AgregarProductoAVisita> listaProductos,
+            [FromQuery] Guid IdVisita,
+            [FromQuery] Guid? idComando)
         {
             try
             {
-                var visitaActualizada = await _visitasServices.AgregarProductos(listaProductos, IdVisita);
+                var visitaActualizada = await _visitasServices.AgregarProductos(
+                    listaProductos, IdVisita, idComando.GetValueOrDefault(Guid.NewGuid()));
                 
                 var response = new VisitaResponseDTO
                 {

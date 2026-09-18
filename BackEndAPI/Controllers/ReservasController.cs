@@ -19,7 +19,7 @@ namespace BackEndAPI.Controllers
             _ReservasServices = _reservasServices;
         }
 
-        private static ReservaDTO MappearReservaDTO(Reserva reserva)
+        private static ReservaDTO MapearpearReservaDTO(Reserva reserva)
         {
             return new ReservaDTO
             {
@@ -32,7 +32,9 @@ namespace BackEndAPI.Controllers
                     Nombre = reserva.Estado.Nombre
                 },
                 TelefonoContacto = reserva.Telefono,
-                CantidadDePersonas = reserva.CantidadDePersonas
+                CantidadDePersonas = reserva.CantidadDePersonas,
+                IdMesa = reserva.IdMesa,
+                MesaReserva = reserva.Mesa?.Numero.ToString() ?? string.Empty
             };
         }
 
@@ -41,8 +43,8 @@ namespace BackEndAPI.Controllers
         {
             try
             {
-                var reservas = await _ReservasServices.BuscarReservas();
-                var ListaReservas = reservas.Select(MappearReservaDTO).ToList();
+                var reservas = await _ReservasServices.BuscarReservas(ObtenerIdSucursal());
+                var ListaReservas = reservas.Select(MapearpearReservaDTO).ToList();
 
                 return Ok(ListaReservas);
             }
@@ -53,7 +55,7 @@ namespace BackEndAPI.Controllers
         }
         // Si "Hasta" es null, entonces se devuelven las reservas de la fecha "Desde" (así se obtienen las reservas de días exactos, y no en rangos de días)
         [HttpGet("/Reservas/Fechas")]
-        public async Task<IActionResult> GetReservasPorRangoFechas([FromQuery] DateTime Desde, [FromQuery] DateTime? Hasta)
+        public async Task<IActionResult> GetReservasPorRangoFechas([FromQuery] DateTimeOffset Desde, [FromQuery] DateTimeOffset? Hasta)
         {
             try
             {
@@ -63,7 +65,7 @@ namespace BackEndAPI.Controllers
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
 
                 var reservas = await _ReservasServices.BuscarReservasPorRangoFechas(IdSucursal, Desde, Hasta);
-                var ListaReservas = reservas.Select(MappearReservaDTO).ToList();
+                var ListaReservas = reservas.Select(MapearpearReservaDTO).ToList();
 
                 return Ok(ListaReservas);
             }
@@ -90,23 +92,11 @@ namespace BackEndAPI.Controllers
             {
                 var IdSucursal = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal") != null ? Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")!.Value) : Guid.Empty;
                 if (IdSucursal == Guid.Empty) throw new Exception("Sucursal no identificada");
-                if (DateTime.Compare(request.FechaHora, DateTime.Now) < 0) throw new Exception("La fecha y hora de la reserva no puede ser en el pasado");
                 if (string.IsNullOrWhiteSpace(request.NombreReserva)) throw new Exception("El nombre de la reserva es obligatorio");
                 if (string.IsNullOrWhiteSpace(request.Telefono)) throw new Exception("El teléfono de la reserva es obligatorio");
 
                 var nuevaReserva = await _ReservasServices.CrearReserva(request, IdSucursal);
-                var reservaDTO = new ReservaDTO
-                {
-                    Id = nuevaReserva.Id,
-                    FechaHora = nuevaReserva.FechaHora,
-                    NombreReserva = nuevaReserva.NombreReserva,
-                    CantidadDePersonas = nuevaReserva.CantidadDePersonas,
-                    Estado = new EstadoReservaDTO
-                    {
-                        Id = nuevaReserva.Estado.Id,
-                        Nombre = nuevaReserva.Estado.Nombre
-                    }
-                };
+                var reservaDTO = MapearpearReservaDTO(nuevaReserva);
                 return Ok(reservaDTO);
             }
             catch (Exception ex)
@@ -115,8 +105,12 @@ namespace BackEndAPI.Controllers
                 {
                     case "La fecha y hora de la reserva no puede ser en el pasado":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "El estado de la reserva debe ser Confirmada o Cancelada.":
+                    case "La mesa no pertenece a la sucursal":
                     case "El nombre de la reserva es obligatorio":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "La mesa ya tiene una reserva confirmada en ese horario":
+                        return Conflict(new ErrorDTO(409, "CONFLICT", ex.Message));
                     case "El teléfono de la reserva es obligatorio":
                         return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
                     case "Sucursal no identificada":
@@ -131,8 +125,33 @@ namespace BackEndAPI.Controllers
         public async Task<IActionResult> ModificarReserva(ModificarReservaDTO DTO) {
             try
             {
-                var reserva = await _ReservasServices.ActualizarReserva(DTO);
+                var reserva = await _ReservasServices.ActualizarReserva(DTO, ObtenerIdSucursal());
                 return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{DTO.Id}"));
+            }
+            catch (Exception ex)
+            {
+                switch (ex.Message)
+                {
+                    case "El estado de la reserva debe ser Confirmada o Cancelada.":
+                    case "La mesa no pertenece a la sucursal":
+                        return BadRequest(new ErrorDTO(400, "BAD REQUEST", ex.Message));
+                    case "Reserva no encontrada":
+                        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No existe la reserva buscada"));
+                    case "La mesa ya tiene una reserva confirmada en ese horario":
+                        return Conflict(new ErrorDTO(409, "CONFLICT", ex.Message));
+                    default:
+                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
+                }
+            }
+        }
+
+        [HttpDelete("/Reservas")]
+        public async Task<IActionResult> EliminarReserva(Guid Id)
+        {
+            try
+            {
+                await _ReservasServices.EliminarReserva(Id, ObtenerIdSucursal());
+                return Ok(new EntregaDTO(200, "OK", $"Eliminado exitosamente, Id:{Id}"));
             }
             catch (Exception ex)
             {
@@ -146,24 +165,20 @@ namespace BackEndAPI.Controllers
             }
         }
 
-        [HttpDelete("/Reservas")]
-        public async Task<IActionResult> EliminarReserva(Guid Id)
+        [HttpGet("/Reservas/Disponibilidad")]
+        public async Task<IActionResult> GetDisponibilidad([FromQuery] DateTimeOffset fechaHora)
         {
-            try
-            {
-                await _ReservasServices.EliminarReserva(Id);
-                return Ok(new EntregaDTO(200, "OK", $"Eliminado exitosamente, Id:{Id}"));
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "Reserva no encontrada":
-                        return NotFound(new ErrorDTO(404, "NOT FOUND", $"No existe la reserva buscada"));
-                    default:
-                        return StatusCode(500, "Error Interno de servidor: " + ex.Message);
-                }
-            }
+            if (fechaHora == default) return BadRequest(new ErrorDTO(400, "BAD REQUEST", "Fecha y hora no enviada"));
+            try { return Ok(await _ReservasServices.BuscarDisponibilidad(ObtenerIdSucursal(), fechaHora)); }
+            catch (Exception ex) { return StatusCode(500, "Error Interno de servidor: " + ex.Message); }
+        }
+
+        private Guid ObtenerIdSucursal()
+        {
+            var valor = User.Claims.FirstOrDefault(c => c.Type == "IdSucursal")?.Value;
+            return Guid.TryParse(valor, out var idSucursal) && idSucursal != Guid.Empty
+                ? idSucursal
+                : throw new Exception("Sucursal no identificada");
         }
     }
 }
