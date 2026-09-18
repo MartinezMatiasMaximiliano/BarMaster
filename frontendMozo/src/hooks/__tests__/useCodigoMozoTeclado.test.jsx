@@ -6,8 +6,8 @@ import codigoMozo, { modificar } from '../../redux/slices/codigoMozoSlice';
 import mozo from '../../redux/slices/mozoSlice';
 import { useCodigoMozoTeclado } from '../useCodigoMozoTeclado';
 
-function Pantalla() {
-    const ref = useCodigoMozoTeclado();
+function Pantalla({ limpiarConEscape = false }) {
+    const ref = useCodigoMozoTeclado({ limpiarConEscape });
     const codigo = useSelector((state) => state.codigoMozo.value);
     const dispatch = useDispatch();
     return <><input aria-label="Código" type="password" ref={ref} value={codigo}
@@ -15,11 +15,11 @@ function Pantalla() {
         <input aria-label="Otro campo" /><button>Mesa</button></>;
 }
 
-function montar(valor = '', mozoActivo = undefined) {
+function montar(valor = '', mozoActivo = undefined, limpiarConEscape = false) {
     const store = configureStore({ reducer: { codigoMozo, mozo }, preloadedState: {
         codigoMozo: { value: valor }, mozo: { value: mozoActivo },
     } });
-    return { store, ...render(<Provider store={store}><Pantalla /></Provider>) };
+    return { store, ...render(<Provider store={store}><Pantalla limpiarConEscape={limpiarConEscape} /></Provider>) };
 }
 
 afterEach(() => { cleanup(); document.body.innerHTML = ''; });
@@ -126,5 +126,24 @@ describe('Números al código de mozo', () => {
         unmount();
         fireEvent.keyDown(document.body, { key: '1' });
         expect(store.getState().codigoMozo.value).toBe('');
+    });
+
+    it('Escape borra todo el código cuando está habilitado en Index', () => {
+        montar('1234', { id: 1, codigoDeServicio: '1234' }, true);
+
+        fireEvent.keyDown(screen.getByRole('button'), { key: 'Escape' });
+
+        expect(screen.getByLabelText('Código').value).toBe('');
+    });
+
+    it('Escape cierra primero una ventana sin borrar el código', () => {
+        montar('1234', { id: 1, codigoDeServicio: '1234' }, true);
+        const modal = document.createElement('div');
+        modal.setAttribute('role', 'dialog');
+        document.body.append(modal);
+
+        fireEvent.keyDown(document.body, { key: 'Escape' });
+
+        expect(screen.getByLabelText('Código').value).toBe('1234');
     });
 });

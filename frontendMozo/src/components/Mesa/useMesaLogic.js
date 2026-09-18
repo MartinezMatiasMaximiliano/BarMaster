@@ -102,8 +102,11 @@ export const useMesaLogic = (showSnackbar) => {
             } else {
                 navigate('/sistema_sucursal?=' + Date.now());
             }
+            return datosVisita;
         } catch (error) {
             console.error('Error al abrir mesa:', error);
+            showSnackbar?.(error.message || 'Error al abrir la mesa', 'error');
+            return null;
         }
     };
 

@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const AUTO_SUBMIT_OK_MS = 450;
-
 export const useAutoSubmitPedidos = ({
     activo,
     duracionMs = 5000,
@@ -9,9 +7,8 @@ export const useAutoSubmitPedidos = ({
     resetKey,
     onSubmit
 }) => {
-    const [remainingMs, setRemainingMs] = useState(0);
     const [paused, setPaused] = useState(false);
-    const [complete, setComplete] = useState(false);
+    const [restartKey, setRestartKey] = useState(0);
     const onSubmitRef = useRef(onSubmit);
 
     useEffect(() => {
@@ -19,44 +16,17 @@ export const useAutoSubmitPedidos = ({
     }, [onSubmit]);
 
     useEffect(() => {
-        setComplete(false);
-    }, [resetKey]);
+        if (!activo || bloqueado || paused) return undefined;
 
-    useEffect(() => {
-        if (!activo || bloqueado || paused) {
-            setRemainingMs(0);
-            return undefined;
-        }
-
-        const startedAt = Date.now();
-        setRemainingMs(duracionMs);
-
-        const intervalId = window.setInterval(() => {
-            const elapsed = Date.now() - startedAt;
-            setRemainingMs(Math.max(duracionMs - elapsed, 0));
-        }, 100);
-
-        let okTimeoutId = null;
         const timeoutId = window.setTimeout(() => {
-            setRemainingMs(0);
-            setComplete(true);
-            okTimeoutId = window.setTimeout(() => {
-                onSubmitRef.current?.();
-            }, AUTO_SUBMIT_OK_MS);
+            onSubmitRef.current?.();
         }, duracionMs);
 
-        return () => {
-            window.clearInterval(intervalId);
-            window.clearTimeout(timeoutId);
-            if (okTimeoutId) {
-                window.clearTimeout(okTimeoutId);
-            }
-        };
-    }, [activo, bloqueado, paused, duracionMs, resetKey]);
+        return () => window.clearTimeout(timeoutId);
+    }, [activo, bloqueado, paused, duracionMs, resetKey, restartKey]);
 
     const pause = useCallback(() => {
         setPaused(true);
-        setComplete(false);
     }, []);
 
     const resume = useCallback(() => {
@@ -64,17 +34,18 @@ export const useAutoSubmitPedidos = ({
     }, []);
 
     const reset = useCallback(() => {
-        setRemainingMs(0);
         setPaused(false);
-        setComplete(false);
+        setRestartKey(key => key + 1);
+    }, []);
+
+    const restart = useCallback(() => {
+        setRestartKey(key => key + 1);
     }, []);
 
     return {
-        remainingMs,
-        paused,
-        complete,
         pause,
         resume,
-        reset
+        reset,
+        restart
     };
 };

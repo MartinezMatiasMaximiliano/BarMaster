@@ -8,6 +8,7 @@ export const ListaProductos = ({ productos, onAgregarProducto }) => {
                 width: '100%',
                 minWidth: 0,
                 flex: 1,
+                minHeight: 0,
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 pr: 1,

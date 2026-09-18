@@ -92,6 +92,16 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
         });
     }, []);
 
+    // Quitar exactamente una unidad del producto que se está buscando.
+    const quitarDeComanda = useCallback((producto) => {
+        commandIdRef.current = null;
+        setComanda((prev) => prev.flatMap(item => {
+            if (item.producto.id !== producto.id) return [item];
+            if (item.cantidad <= 1) return [];
+            return [{ ...item, cantidad: item.cantidad - 1 }];
+        }));
+    }, []);
+
     // Actualizar cantidad en comanda
     const actualizarCantidad = useCallback((productoId, nuevaCantidad) => {
         commandIdRef.current = null;
@@ -212,6 +222,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
         setBusqueda,
         setCategoriaFiltro,
         agregarAComanda,
+        quitarDeComanda,
         actualizarCantidad,
         actualizarIndicaciones,
         handleEnviarPedidos,

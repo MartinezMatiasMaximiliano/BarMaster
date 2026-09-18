@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Alert, Box, Checkbox, Chip, Stack, Typography } from '@mui/material';
-import { getEstadoColor, getNombre, getPrecio } from '../../Listas/helpers';
+import { getEstadoColor, getIndicaciones, getNombre, getPrecio } from '../../Listas/helpers';
 import { ProductoProvisorioItem } from './ProductoProvisorioItem';
 
 export const PedidoTotalMesa = ({
@@ -14,8 +14,7 @@ export const PedidoTotalMesa = ({
     onActualizarCantidadProvisoria,
     onActualizarIndicacionesProvisorias,
     onFocusIndicacionesProvisorias,
-    onBlurIndicacionesProvisorias,
-    autoSubmit
+    onBlurIndicacionesProvisorias
 }) => {
     const productosPendientes = useMemo(
         () => (visitaMesa?.productosConsumidos ?? []).filter(producto => !producto.estadoPagado),
@@ -89,6 +88,7 @@ export const PedidoTotalMesa = ({
                 {productosPendientes.map((producto) => {
                     const nombre = getNombre(producto);
                     const precio = getPrecio(producto);
+                    const indicaciones = getIndicaciones(producto);
                     const isSelected = productosSeleccionados?.includes(producto.id) || false;
                     const labelId = `checkbox-resumen-${producto.id}`;
 
@@ -109,7 +109,7 @@ export const PedidoTotalMesa = ({
                             }}
                             onClick={() => onToggleProducto?.(producto.id)}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
                                 <Checkbox
                                     checked={isSelected}
                                     onChange={() => onToggleProducto?.(producto.id)}
@@ -118,24 +118,35 @@ export const PedidoTotalMesa = ({
                                     sx={{ mr: 1 }}
                                     inputProps={{ 'aria-labelledby': labelId }}
                                 />
-                                <Typography
-                                    component="div"
-                                    variant="body2"
-                                    id={labelId}
-                                    sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}
-                                >
-                                    {nombre}
-                                    {producto.estadoPedido && (
-                                        <Chip
-                                            label={producto.estadoPedido}
-                                            size="small"
-                                            color={getEstadoColor(producto.estadoPedido)}
-                                            sx={{ height: 20, fontSize: '0.7rem' }}
-                                        />
+                                <Box sx={{ flex: 1, minWidth: 0, pt: 0.5 }}>
+                                    <Typography
+                                        component="div"
+                                        variant="body2"
+                                        id={labelId}
+                                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                                    >
+                                        {nombre}
+                                        {producto.estadoPedido && (
+                                            <Chip
+                                                label={producto.estadoPedido}
+                                                size="small"
+                                                color={getEstadoColor(producto.estadoPedido)}
+                                                sx={{ height: 20, fontSize: '0.7rem' }}
+                                            />
+                                        )}
+                                    </Typography>
+                                    {indicaciones && (
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{ display: 'block', mt: 0.25, fontSize: '0.72rem' }}
+                                        >
+                                            {indicaciones}
+                                        </Typography>
                                     )}
-                                </Typography>
+                                </Box>
                             </Box>
-                            <Typography variant="body2" sx={{ fontWeight: 'medium', ml: 2 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'medium', ml: 2, pt: 0.5 }}>
                                 {formatPrecio(precio)}
                             </Typography>
                         </Box>
@@ -147,7 +158,6 @@ export const PedidoTotalMesa = ({
                         key={item.producto.id}
                         item={item}
                         formatPrecio={formatPrecio}
-                        autoSubmit={autoSubmit}
                         onActualizarCantidad={onActualizarCantidadProvisoria}
                         onActualizarIndicaciones={onActualizarIndicacionesProvisorias}
                         onFocusIndicaciones={onFocusIndicacionesProvisorias}
