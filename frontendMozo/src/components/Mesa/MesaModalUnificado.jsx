@@ -24,6 +24,7 @@ import { MesaProductosPanel } from './components/MesaProductosPanel';
 import { PedidoTotalMesa } from './components/PedidoTotalMesa';
 import { useAutoSubmitPedidos } from './hooks/useAutoSubmitPedidos';
 import { useBusquedaProductosTeclado } from './hooks/useBusquedaProductosTeclado';
+import { useAtajosAccionesMesa } from './hooks/useAtajosAccionesMesa';
 import { formatearFecha } from './dateFormatter';
 import { solicitarPreticket } from '../../services/impresion/apiImpresion';
 import { normalizarErrorQz } from '../../services/impresion/erroresQz';
@@ -154,6 +155,10 @@ export const MesaModalUnificado = ({
         setShowModalFacturar('partes');
     }, [productosSeleccionados.length, showSnackbarFacturacion]);
 
+    const handleFacturarTodo = useCallback(() => {
+        if (productosAPagar.length > 0) setShowModalFacturar('todo');
+    }, [productosAPagar.length]);
+
     const handleCloseWithCleanup = useCallback(() => {
         setProductosSeleccionados([]);
         autoSubmitPedidos.reset();
@@ -209,6 +214,16 @@ export const MesaModalUnificado = ({
             setPrintingPreticket(false);
         }
     }, [idVisita, productosAPagar.length, showSnackbar]);
+
+    useAtajosAccionesMesa({
+        activo: show,
+        puedeImprimir: !printingPreticket && productosAPagar.length > 0,
+        puedeCobrarTodo: productosAPagar.length > 0,
+        puedeCobrarPartes: productosSeleccionados.length > 0,
+        onImprimir: handlePrintPreticket,
+        onCobrarTodo: handleFacturarTodo,
+        onCobrarPartes: handleFacturarPartes,
+    });
 
     return (
         <Dialog
@@ -342,7 +357,7 @@ export const MesaModalUnificado = ({
             <MesaModalActions
                 puedeFacturarTodo={productosAPagar.length > 0}
                 productosSeleccionadosCount={productosSeleccionados.length}
-                onFacturarTodo={() => setShowModalFacturar('todo')}
+                onFacturarTodo={handleFacturarTodo}
                 onFacturarPartes={handleFacturarPartes}
                 onPrintPreticket={handlePrintPreticket}
                 printing={printingPreticket}

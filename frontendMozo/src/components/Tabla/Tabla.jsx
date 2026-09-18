@@ -117,7 +117,7 @@ export default function Tabla(props) {
             }
             return {
                 maxHeight: maxHeightTabla,
-                overflow: "hidden",
+                overflow: "auto",
                 flex: "1 1 0",
                 minHeight: 0,
             };

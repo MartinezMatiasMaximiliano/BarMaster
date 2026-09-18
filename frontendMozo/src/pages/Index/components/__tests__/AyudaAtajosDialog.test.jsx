@@ -11,6 +11,9 @@ describe('Ayuda de atajos de mesas', () => {
         expect(screen.getByText('Abrir una mesa')).toBeInTheDocument();
         expect(screen.getByText('Sumar una unidad')).toBeInTheDocument();
         expect(screen.getByText('Quitar una unidad')).toBeInTheDocument();
+        expect(screen.getByText('Imprimir cuenta')).toBeInTheDocument();
+        expect(screen.getByText('Cobrar todo')).toBeInTheDocument();
+        expect(screen.getByText('Cobrar por partes')).toBeInTheDocument();
         expect(screen.getByText(/simplemente empezá a escribirlo/i)).toBeInTheDocument();
         expect(screen.getByText(/empezá a escribir el nombre del producto/i)).toBeInTheDocument();
     });

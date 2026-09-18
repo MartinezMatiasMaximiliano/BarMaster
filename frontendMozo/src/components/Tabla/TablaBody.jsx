@@ -23,11 +23,19 @@ export default function TablaBody({
         [grupos]
     );
 
-    const grupoEstaAbierto = (clave) => gruposAbiertos[clave] ?? true;
+    const grupoEstaAbierto = (clave) => (
+        gruposAbiertos[clave]
+        ?? gruposPorClave.get(clave)?.inicialmenteAbierto
+        ?? true
+    );
     const alternarGrupo = (clave) => {
         setGruposAbiertos((actuales) => ({
             ...actuales,
-            [clave]: !(actuales[clave] ?? true),
+            [clave]: !(
+                actuales[clave]
+                ?? gruposPorClave.get(clave)?.inicialmenteAbierto
+                ?? true
+            ),
         }));
     };
 

@@ -111,6 +111,21 @@ export const AyudaAtajosDialog = ({ open, onClose }) => (
                             detalle="Quita una unidad del producto encontrado. Si era la última, desaparece del pedido."
                         />
                         <FilaAtajo
+                            teclas={['Shift', 'I']}
+                            titulo="Imprimir cuenta"
+                            detalle="Solicita la impresión de la cuenta de la mesa abierta."
+                        />
+                        <FilaAtajo
+                            titulo="Cobrar todo"
+                            detalle="Mantené Shift, pulsá C y soltá Shift para cobrar todos los productos pendientes."
+                            teclas={['Shift', 'C']}
+                        />
+                        <FilaAtajo
+                            titulo="Cobrar por partes"
+                            detalle="Sin soltar Shift, pulsá C y después X para cobrar los productos seleccionados."
+                            teclas={['Shift', 'C', 'X']}
+                        />
+                        <FilaAtajo
                             teclas={['Esc']}
                             titulo="Cerrar la ventana"
                             detalle="Cierra la ventana que estés usando en ese momento."
