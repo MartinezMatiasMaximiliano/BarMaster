@@ -26,7 +26,19 @@ describe('impresionQz', () => {
 
         expect(qzMock.print).toHaveBeenCalledWith(
             { printer: 'KP-1025' },
-            [{ type: 'raw', format: 'command', flavor: 'plain', data: escPos }],
+            [{ type: 'raw', format: 'command', flavor: 'plain', data: '\x1B\x40\x1Bt\x13TICKET\n\x1D\x56\x00' }],
         );
+    });
+
+    it.each([
+        ['CP437', 0],
+        ['CP850', 2],
+        ['Windows-1252', 16],
+        ['CP858', 19],
+    ])('selecciona la tabla ESC/POS correspondiente a %s', async (codificacion, pagina) => {
+        const { seleccionarPaginaCaracteres } = await import('../impresionQz');
+
+        expect(seleccionarPaginaCaracteres('\x1B@Café, pingüino y ñandú', codificacion))
+            .toBe(`\x1B@\x1Bt${String.fromCharCode(pagina)}Café, pingüino y ñandú`);
     });
 });

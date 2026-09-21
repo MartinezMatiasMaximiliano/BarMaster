@@ -2,7 +2,7 @@
 import Input_Imagen from "../../Input_Imagen";
 import Multiple_Select from "../../Select_Multiple";
 import Select from "../../Select";
-import { InputAdornment, TextField, Tooltip } from "@mui/material";
+import { FormControlLabel, InputAdornment, Switch, TextField, Tooltip } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { esCampoObligatorio } from "../../../Helpers/HelperFunctions";
 
@@ -66,6 +66,19 @@ export const Renderizados = (props, handleChange, errors = {}) => ({
       handleChange={handleChange}
       error={getFieldUiState(campo, errors).error}
       helperText={getFieldUiState(campo, errors).helperText}
+    />
+  ),
+
+  checkbox: (campo, value, index) => (
+    <FormControlLabel
+      key={index}
+      control={(
+        <Switch
+          checked={Boolean(value)}
+          onChange={(e) => handleChange(e, campo.name, campo.type)}
+        />
+      )}
+      label={campo.label}
     />
   ),
 

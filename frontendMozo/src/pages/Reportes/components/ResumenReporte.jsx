@@ -6,7 +6,6 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import PeopleIcon from '@mui/icons-material/People';
-import PaymentIcon from '@mui/icons-material/Payment';
 import PercentIcon from '@mui/icons-material/Percent';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import { formatearMoneda, formatearPorcentaje } from '../utils/formatters';
@@ -15,7 +14,6 @@ import { brandColors } from '../../../styles/brandTokens';
 const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) => {
     // Calcular métricas adicionales
     const metricasAdicionales = useMemo(() => {
-        const totalPagos = visitas.reduce((sum, v) => sum + (v.pagos?.length || 0), 0);
         const promedioProductosPorVisita = metricas.cantidadVisitas > 0 
             ? (metricas.productosVendidos / metricas.cantidadVisitas).toFixed(1)
             : 0;
@@ -34,7 +32,6 @@ const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) 
         const totalCostos = metricas.totalVentas - metricas.margenGanancia;
         
         return {
-            totalPagos,
             promedioProductosPorVisita,
             mesasOcupadas,
             mozosActivos,
@@ -78,13 +75,6 @@ const ResumenReporte = ({ metricas, visitas = [], mesas = [], productos = [] }) 
             icono: <TrendingUpIcon sx={{ fontSize: 40 }} />,
             color: brandColors.error.dark,
             explicacion: 'La ganancia neta: lo que pagó el cliente menos lo que te costó a vos el producto, sumado para todas las ventas.'
-        },
-        {
-            titulo: 'Total de Pagos',
-            valor: metricasAdicionales.totalPagos || 0,
-            icono: <PaymentIcon sx={{ fontSize: 40 }} />,
-            color: brandColors.primary.main,
-            explicacion: 'Cuántas veces se cobró: si en una mesa pagaron con efectivo y tarjeta, son 2 pagos; cada forma de pago cuenta por separado.'
         },
         {
             titulo: 'Promedio Productos/Visita',

@@ -84,10 +84,14 @@ const TablaDetallada = ({ visitas, tipoReporte }) => {
 
     const filteredVisitas = sortedVisitas.filter(visita => {
         const searchLower = searchTerm.toLowerCase();
+        const numeroMesa = String(visita.numeroMesa ?? '').toLowerCase();
+        const estado = String(visita.estado ?? '').toLowerCase();
+        const total = String(visita.total ?? '');
+
         return (
-            visita.numeroMesa?.toLowerCase().includes(searchLower) ||
-            visita.estado?.toLowerCase().includes(searchLower) ||
-            visita.total?.toString().includes(searchTerm)
+            numeroMesa.includes(searchLower) ||
+            estado.includes(searchLower) ||
+            total.includes(searchTerm)
         );
     });
 

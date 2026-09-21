@@ -246,7 +246,11 @@ export default function EncontrarImpresoras({ integrada = false, encabezado = nu
     };
     const probar = (impresora) => ejecutar(async () => {
         const opciones = { nombreTrabajo: 'BarMaster - Prueba', codificacion: impresora.codificacion || 'CP858' };
-        await imprimirCrudo(impresora.nombreSistema, '\x1B@\x1Ba\x01BarMaster\nPrueba correcta\n\n\n\x1DV\x00', opciones);
+        await imprimirCrudo(
+            impresora.nombreSistema,
+            '\x1B@\x1Ba\x01BarMaster\nPrueba correcta\ná é í ó ú ñ Ñ ü\n\n\n\x1DV\x00',
+            opciones,
+        );
     }, 'Prueba enviada. Revisá que haya salido correctamente.');
     const probarRegistrada = (impresora) => ejecutar(
         () => solicitarPruebaRemotaImpresora(impresora.id),

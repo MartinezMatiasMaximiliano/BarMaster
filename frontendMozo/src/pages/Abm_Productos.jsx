@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Container } from "react-bootstrap";
 import Tabla from "../components/Tabla/Tabla";
 import Fila_Acciones from "../components/Tabla/Fila_Acciones";
@@ -15,10 +15,16 @@ import {
     ModificarProducto,
 } from "../API/APIProductos";
 import { Campos, inicializarCampos } from "../configs/agregar/Producto"
+import { BuscarStock, ConfigurarStock } from "../API/APIStock";
+import { agregarConfiguracionStock, crearConfiguracionStockEdicion } from "./productos/configuracionStockProducto";
 
 function Abm_Productos(props) {
     const [campos, setCampos] = useState(Campos);
-    const productos = useMemo(() => props.datos_productos || [], [props.datos_productos]);
+    const [configuracionesStock, setConfiguracionesStock] = useState([]);
+    const productos = useMemo(
+        () => agregarConfiguracionStock(props.datos_productos, configuracionesStock),
+        [props.datos_productos, configuracionesStock],
+    );
     const [filasFiltradas, setFilasFiltradas] = useState(productos);
     const [filasOrdenadas, setFilasOrdenadas] = useState(productos);
 
@@ -31,6 +37,20 @@ function Abm_Productos(props) {
         }
     }, []);
 
+    const cargarConfiguracionesStock = useCallback(async () => {
+        try {
+            const stock = await BuscarStock();
+            setConfiguracionesStock(Array.isArray(stock) ? stock : []);
+        } catch (error) {
+            console.error('Error al cargar la configuración de stock de los productos:', error);
+            setConfiguracionesStock([]);
+        }
+    }, []);
+
+    useEffect(() => {
+        cargarConfiguracionesStock();
+    }, [cargarConfiguracionesStock]);
+
     // Actualizar filas filtradas cuando cambien los datos originales
     useEffect(() => {
         setFilasFiltradas(productos);
@@ -42,13 +62,26 @@ function Abm_Productos(props) {
         setFilasOrdenadas(filasFiltradas);
     }, [filasFiltradas]);
 
+    const crearProducto = useCallback(async (datos) => {
+        const resultado = await CrearProducto(datos);
+        await cargarConfiguracionesStock();
+        return resultado;
+    }, [cargarConfiguracionesStock]);
+
+    const modificarProducto = useCallback(async (datos) => {
+        const resultado = await ModificarProducto(datos);
+        await ConfigurarStock(datos.id, crearConfiguracionStockEdicion(datos));
+        await cargarConfiguracionesStock();
+        return resultado;
+    }, [cargarConfiguracionesStock]);
+
     const api = useMemo(() => ({
-        crear: CrearProducto,
+        crear: crearProducto,
         eliminar: BorrarProducto,
         activar: ActivarProducto,
         desactivar: DesactivarProducto,
-        modificar: ModificarProducto,
-    }), []);
+        modificar: modificarProducto,
+    }), [crearProducto, modificarProducto]);
 
     const columnas = useMemo(() => ([
         { key: "imagen", label: "", type: "image", align: "right" },

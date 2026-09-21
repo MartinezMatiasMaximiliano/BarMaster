@@ -7,6 +7,8 @@ import Modal_Detalles_Pedido from "../components/Modals/Modal_Detalles_Pedido";
 import BotonCobrarPedido from "../components/DeliveryTakeaway/BotonCobrarPedido";
 import EntregaCountdown from "../components/DeliveryTakeaway/EntregaCountdown";
 import { formatearFecha } from "../Helpers/HelperFunctions"
+import Ordenar from "../components/Ordenar/Ordenar";
+import Filtros from "../components/Filtros/Filtros";
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, IconButton, Stack, Typography } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,6 +28,8 @@ function Delivery() {
     const dispatch = useDispatch();
     const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
     const visitasActivas = useSelector((state) => state.visitasActivas.value);
+    const [filasFiltradas, setFilasFiltradas] = useState([]);
+    const [filasOrdenadas, setFilasOrdenadas] = useState([]);
     const [showModalAgregar, setShowModalAgregar] = useState(false);
     const [deliveryEditando, setDeliveryEditando] = useState(null);
     const [actualizandoEntregaIds, setActualizandoEntregaIds] = useState([]);
@@ -58,6 +62,7 @@ function Delivery() {
                     PrecioTotal: item.precioTotal ?? productosConsumidos.reduce((acc, producto) => acc + (Number(producto.precio) || 0), 0),
                     pago: item.pago ?? null,
                     entregado: Boolean(item.entregado),
+                    entregadoTexto: item.entregado ? 'Sí' : 'No',
                     estadoCobro: productosConsumidos.every((producto) => producto.estadoPagado) ? 'Cobrado' : 'Pendiente',
                     pedido: item,
                     Productos: productosConsumidos.map((producto) => ({
@@ -99,6 +104,28 @@ function Delivery() {
     useEffect(() => {
         cargarDeliveries();
     }, [cargarDeliveries]);
+
+    const deliveriesPendientes = React.useMemo(
+        () => deliveries.filter((delivery) => (
+            !delivery.entregado || entregasEnTransicionIds.includes(delivery.id)
+        )),
+        [deliveries, entregasEnTransicionIds]
+    );
+    const deliveriesEntregados = React.useMemo(
+        () => deliveries.filter((delivery) => (
+            delivery.entregado && !entregasEnTransicionIds.includes(delivery.id)
+        )),
+        [deliveries, entregasEnTransicionIds]
+    );
+
+    useEffect(() => {
+        setFilasFiltradas(deliveriesPendientes);
+        setFilasOrdenadas(deliveriesPendientes);
+    }, [deliveriesPendientes]);
+
+    useEffect(() => {
+        setFilasOrdenadas(filasFiltradas);
+    }, [filasFiltradas]);
 
     const despacharEstadoEntrega = (fila, checked) => {
         dispatch(actualizarVisita({
@@ -167,13 +194,6 @@ function Delivery() {
     const finalizarTransicionEntrega = React.useCallback((id) => {
         setEntregasEnTransicionIds((prev) => prev.filter((itemId) => itemId !== id));
     }, []);
-
-    const deliveriesPendientes = deliveries.filter((delivery) => (
-        !delivery.entregado || entregasEnTransicionIds.includes(delivery.id)
-    ));
-    const deliveriesEntregados = deliveries.filter((delivery) => (
-        delivery.entregado && !entregasEnTransicionIds.includes(delivery.id)
-    ));
 
     const columnasDelivery = [
         {
@@ -274,7 +294,7 @@ function Delivery() {
             )}
             <Tabla
                 titulo="Delivery"
-                filas={deliveriesPendientes}
+                filas={filasOrdenadas}
                 columnas={columnasDelivery}
                 onRefresh={cargarDeliveries}
                 renderAgregar={() => (
@@ -296,6 +316,54 @@ function Delivery() {
                             Ver enviados ({deliveriesEntregados.length})
                         </Button>
                     </Stack>
+                )}
+                renderOrdenar={() => (
+                    <Ordenar
+                        filas={filasFiltradas}
+                        opcionesOrdenamiento={[
+                            { label: 'Fecha', campo: 'fechaHora', tipoOrden: 'fecha' },
+                            { label: 'Cliente', campo: 'Cliente', tipoOrden: 'texto' },
+                            { label: 'Dirección', campo: 'Direccion', tipoOrden: 'texto' },
+                            { label: 'Teléfono', campo: 'Telefono', tipoOrden: 'numero' },
+                            { label: 'Indicaciones', campo: 'Indicaciones', tipoOrden: 'texto' },
+                            { label: 'Cadete', campo: 'Cadete', tipoOrden: 'texto' },
+                            { label: 'Envío', campo: 'TipoEnvio', tipoOrden: 'texto' },
+                            { label: 'Total', campo: 'PrecioTotal', tipoOrden: 'numero' },
+                            { label: 'Entregado', campo: 'entregado', tipoOrden: 'booleano' },
+                        ]}
+                        onOrdenar={setFilasOrdenadas}
+                    />
+                )}
+                renderFiltros={() => (
+                    <Filtros
+                        filas={deliveriesPendientes}
+                        columnas={[
+                            { key: 'fechaHora', label: 'Fecha' },
+                            { key: 'Cliente', label: 'Cliente' },
+                            { key: 'Direccion', label: 'Dirección' },
+                            { key: 'Telefono', label: 'Teléfono' },
+                            { key: 'Indicaciones', label: 'Indicaciones' },
+                            { key: 'Cadete', label: 'Cadete' },
+                            { key: 'TipoEnvio', label: 'Envío' },
+                            { key: 'PrecioTotal', label: 'Total' },
+                            { key: 'entregadoTexto', label: 'Entregado' },
+                        ]}
+                        configuracionFiltros={{
+                            fechaHora: { tipo: 'text' },
+                            Cliente: { tipo: 'text' },
+                            Direccion: { tipo: 'text' },
+                            Telefono: { tipo: 'number' },
+                            Indicaciones: { tipo: 'text' },
+                            Cadete: { tipo: 'text' },
+                            TipoEnvio: { tipo: 'text' },
+                            PrecioTotal: { tipo: 'number' },
+                            entregadoTexto: {
+                                tipo: 'select',
+                                opciones: [{ nombre: 'Sí' }, { nombre: 'No' }],
+                            },
+                        }}
+                        onFiltrar={setFilasFiltradas}
+                    />
                 )}
             />
             <Drawer
