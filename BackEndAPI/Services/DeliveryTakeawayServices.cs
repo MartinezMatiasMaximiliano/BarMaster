@@ -169,6 +169,15 @@ namespace BackEndAPI.Services
                 deliveryTakeawayExistente.Cadete = cadete;
             }
 
+            //agregar productos si la lista es count > 0
+            if (request.ProductosAgregados.Count() > 0) await AgregarProductosHelperAsync(request.ProductosAgregados, deliveryTakeawayExistente);
+
+            //remover productos si la lista es count > 0
+            if (request.ProductosEliminados.Count() > 0) RemoverProductosHelper(request.ProductosEliminados, deliveryTakeawayExistente);
+
+            return await _deliveryTakeawayRepository.ModificarDeliveryTakeaway(deliveryTakeawayExistente);
+        }
+
         private async Task<DeliveryAndTakeaway> ObtenerPedidoEditableAsync(Guid idDeliveryTakeaway)
         {
             var pedido = await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(idDeliveryTakeaway)
@@ -291,15 +300,15 @@ namespace BackEndAPI.Services
                 .ToDictionary(x => x.Key, x => x.Count());
 
         private static void RemoverProductosHelper(
-            IEnumerable<ProductosPorVisita> productos,
-            DeliveryAndTakeaway deliveryTakeaway)
+            IEnumerable<int> productos,
+            DeliveryAndTakeaway DeliveryTakeaway)
         {
-            foreach (var item in ListaProductos)
+            foreach (var id in productos)
             {
                 //todo: ids not present on list
-                ProductosPorVisita? ppv = DeliveryTakeaway.Visita.Productos.FirstOrDefault(ppv => ppv.Id == item);
-                if (ppv == null) throw new Exception("item no encontrado");
-                if (ppv.EstadoPagado) throw new Exception("item pagado");
+                ProductosPorVisita? ppv = DeliveryTakeaway.Visita.Productos.FirstOrDefault(ppv => ppv.Id == id);
+                if (ppv == null) throw new NotFoundException("item no encontrado");
+                if (ppv.EstadoPagado) throw new ConflictException("item pagado");
                 DeliveryTakeaway.precioProductos -= ppv.PrecioDelMomento;
                 DeliveryTakeaway.Visita.Total -= ppv.PrecioDelMomento;
                 DeliveryTakeaway.Visita.Productos.Remove(ppv);
