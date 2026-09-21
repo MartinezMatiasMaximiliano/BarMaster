@@ -184,6 +184,7 @@ function Modal_Editar(props) {
                     <Box component="form" onSubmit={(evento) => { evento.preventDefault(); handleSave(); }} sx={{ mt: 1 }}>
                         <Stack spacing={3}>
                             {props.campos.map((campo, index) => {
+                                if (campo.visibleWhen && !campo.visibleWhen(editValues)) return null;
                                 const value = editValues[campo.name];
                                 const renderer = renderizados[campo.type] || renderizados.text;
                                 return renderer(campo, value, index);

@@ -278,7 +278,8 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
                         filas={filasOrdenadas}
                         columnas={columnas}
                         paginacion={true}
-                        rowsPerPage={10}
+                        rowsPerPage={15}
+                        ajustarAlturaAlContenido={true}
                         mostrarExportacion={true}
                         renderBuscar={() => (
                             <BuscadorTabla

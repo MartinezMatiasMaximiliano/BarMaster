@@ -6,6 +6,7 @@ export default function Handlers({ id, editValues, setEditValues, modificar, rec
   const [errors, setErrors] = useState({});
   
   const fieldHandlers = {
+    checkbox: (event) => event.target.checked,
     select_multiple: (event) => event.target.value,
     image: (event) => event.target.files[0],
     "datetime-local": (event) => {
@@ -46,7 +47,8 @@ export default function Handlers({ id, editValues, setEditValues, modificar, rec
   };
 
   const handleSave = async () => {
-    const erroresFormulario = validarFormulario(campos, editValues);
+    const camposVisibles = campos.filter((campo) => !campo.visibleWhen || campo.visibleWhen(editValues));
+    const erroresFormulario = validarFormulario(camposVisibles, editValues);
     if (Object.keys(erroresFormulario).length > 0) {
         setErrors(erroresFormulario);
         return;

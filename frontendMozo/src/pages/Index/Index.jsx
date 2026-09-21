@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useContext, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Container, Alert } from 'react-bootstrap';
@@ -19,15 +19,18 @@ import { useIndexTheme } from './hooks/useIndexTheme';
 import { createIndexTheme } from './indexTheme';
 import './IndexTheme.css';
 import { useCodigoMozoTeclado } from '../../hooks/useCodigoMozoTeclado';
+import { useAtajoMesaTeclado } from './hooks/useAtajoMesaTeclado';
+import { AyudaAtajosDialog } from './components/AyudaAtajosDialog';
 
 function Index(props) {
-    const codigoMozoInputRef = useCodigoMozoTeclado();
+    const codigoMozoInputRef = useCodigoMozoTeclado({ limpiarConEscape: true });
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const loginContext = useContext(LoginContext);
     const authTypeContext = useContext(AuthTypeContext);
     
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+    const [openAyudaAtajos, setOpenAyudaAtajos] = useState(false);
     const indexContainerRef = useRef(null);
     const { themeMode, toggleThemeMode } = useIndexTheme();
     const indexTheme = useMemo(() => createIndexTheme(themeMode), [themeMode]);
@@ -46,8 +49,23 @@ function Index(props) {
     // Obtener estado de caja activa desde Redux
     const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
 
-    const mesas = Array.isArray(props.mesas) ? props.mesas : [];
+    const mesas = useMemo(() => Array.isArray(props.mesas) ? props.mesas : [], [props.mesas]);
     const cargandoMesas = props.mesas == null;
+
+    const abrirMesaPorNumero = useCallback((numeroMesa) => {
+        const mesa = mesas.find((item) => Number(item.numero ?? item.Numero) === numeroMesa);
+        if (!mesa) return;
+
+        document.dispatchEvent(new CustomEvent('barmaster:abrir-mesa-por-numero', {
+            detail: { numeroMesa, idMesa: mesa.id ?? mesa.Id }
+        }));
+    }, [mesas]);
+
+    useAtajoMesaTeclado({
+        activo: hayCajaActiva && !cargandoMesas,
+        onNumeroMesa: abrirMesaPorNumero,
+        codigoMozoInputRef
+    });
     
     const { mesasParaMostrar } = useMesaFiltering(mesas, props.datos_mozos, hayCajaActiva);
 
@@ -113,7 +131,13 @@ function Index(props) {
                     mozo={mozo}
                     themeMode={themeMode}
                     onThemeToggle={toggleThemeMode}
+                    onAyudaAtajosClick={() => setOpenAyudaAtajos(true)}
                     onSalirClick={handleAbrirConfirmacion}
+                />
+
+                <AyudaAtajosDialog
+                    open={openAyudaAtajos}
+                    onClose={() => setOpenAyudaAtajos(false)}
                 />
 
                 <ConfirmLogoutDialog

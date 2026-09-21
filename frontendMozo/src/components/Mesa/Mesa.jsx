@@ -1,5 +1,5 @@
 // components/Mesa/Mesa.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MesaButton } from './MesaButton';
 import { MesaModalUnificado } from './MesaModalUnificado';
 import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
@@ -36,19 +36,23 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         cerrarMesa(mesaId, datos_mesa.numero, visitaMesa?.productosConsumidos || [], esVistaPlano);
     };
 
-    const handleAbrirMesa = () => {
+    const abrirMesaCerrada = async (mostrarModal = false) => {
         // No permitir abrir mesa si no hay caja activa
         if (!hayCajaActiva) {
-            return;
+            return null;
         }
-        var request = {
+        const request = {
             idMesa: datos_mesa.id,
             numeroMesa: datos_mesa.numero, // Necesario para crear la visita en Redux
             codigoServicioMozo: mozo.codigoDeServicio,
             abrir: true,
-        }
-        abrirMesa(request, esVistaPlano);
+        };
+        const visitaAbierta = await abrirMesa(request, esVistaPlano);
+        if (visitaAbierta && mostrarModal) handleShow();
+        return visitaAbierta;
     };
+
+    const handleAbrirMesa = () => abrirMesaCerrada(false);
 
     // Wrapper para handleShow que verifica si hay caja activa
     const handleShowConValidacion = () => {
@@ -58,25 +62,34 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         handleShow();
     };
 
+    useEffect(() => {
+        const abrirDesdeTeclado = (evento) => {
+            const coincidePorId = evento.detail?.idMesa != null
+                && String(evento.detail.idMesa) === String(datos_mesa.id);
+            const coincidePorNumero = evento.detail?.idMesa == null
+                && Number(evento.detail?.numeroMesa) === Number(datos_mesa.numero);
+            if ((!coincidePorId && !coincidePorNumero) || !hayCajaActiva) return;
+
+            if (datos_mesa.codigoParaPedir) {
+                handleShow();
+            } else if (mozo?.codigoDeServicio) {
+                abrirMesaCerrada(true);
+            }
+        };
+
+        document.addEventListener('barmaster:abrir-mesa-por-numero', abrirDesdeTeclado);
+        return () => document.removeEventListener('barmaster:abrir-mesa-por-numero', abrirDesdeTeclado);
+    });
+
     const renderMesaActiva = () => (
-        <>
-            <MesaButton
-                numeroMesa={datos_mesa.numero}
-                estilo={estilo}
-                variant={variant}
-                onClick={handleShowConValidacion}
-                simpleStyle={simpleStyle}
-                disabled={!hayCajaActiva}
-            />
-            <MesaModalUnificado
-                show={show}
-                handleClose={handleClose}
-                datos_mesa={datos_mesa}
-                visitaMesa={visitaMesa}
-                onCancelarPedidos={handleCancelarPedidos}
-                onCerrarMesa={handleCerrarMesa}
-            />
-        </>
+        <MesaButton
+            numeroMesa={datos_mesa.numero}
+            estilo={estilo}
+            variant={variant}
+            onClick={handleShowConValidacion}
+            simpleStyle={simpleStyle}
+            disabled={!hayCajaActiva}
+        />
     );
 
     // Renderizado condicional simplificado
@@ -133,5 +146,20 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         );
     };
 
-    return <>{renderMesa()}<SnackbarComponent /></>;
+    return (
+        <>
+            {renderMesa()}
+            {(datos_mesa.codigoParaPedir || visitaMesa || show) && (
+                <MesaModalUnificado
+                    show={show}
+                    handleClose={handleClose}
+                    datos_mesa={datos_mesa}
+                    visitaMesa={visitaMesa}
+                    onCancelarPedidos={handleCancelarPedidos}
+                    onCerrarMesa={handleCerrarMesa}
+                />
+            )}
+            <SnackbarComponent />
+        </>
+    );
 }

@@ -2,17 +2,12 @@ import { Box, Button, DialogActions } from '@mui/material';
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import PrintIcon from '@mui/icons-material/Print';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 export const MesaModalActions = ({
     puedeFacturarTodo,
     productosSeleccionadosCount,
-    puedeAgregarPedidos,
-    loading,
-    totalItems,
     onFacturarTodo,
     onFacturarPartes,
-    onAgregarPedidos,
     onPrintPreticket,
     printing,
     onClose
@@ -48,16 +43,6 @@ export const MesaModalActions = ({
                 size="small"
             >
                 Cobrar por partes {productosSeleccionadosCount > 0 && `(${productosSeleccionadosCount})`}
-            </Button>
-            <Button
-                data-enter-action="true" onClick={onAgregarPedidos}
-                variant="contained"
-                color="success"
-                disabled={!puedeAgregarPedidos}
-                startIcon={<ShoppingCartIcon />}
-                size="small"
-            >
-                {loading ? 'Enviando...' : `Agregar ${totalItems > 0 ? `${totalItems} item${totalItems > 1 ? 's' : ''}` : 'Pedidos'}`}
             </Button>
             <Button
                 variant="outlined"

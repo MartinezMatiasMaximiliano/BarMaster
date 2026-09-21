@@ -32,7 +32,7 @@ const camposBase = [
     required: true,
     min: 0,
     validation: { rule: "integer", min: 0 },
-    visibleWhen: (values) => Boolean(values.controlaStock),
+    visibleWhen: (values) => Boolean(values.controlaStock) && !values.stockConfigurado,
   },
 ];
 

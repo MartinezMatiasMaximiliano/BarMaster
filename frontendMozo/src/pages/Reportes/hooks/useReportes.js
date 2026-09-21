@@ -9,6 +9,7 @@ import { useDatosProductos } from '../reportes/productos/useDatosProductos';
 import { useDatosMozos } from '../reportes/mozos/useDatosMozos';
 import { useDatosMesas } from '../reportes/mesas/useDatosMesas';
 import { useDatosRentabilidad } from '../reportes/rentabilidad/useDatosRentabilidad';
+import { calcularMargenGanancia } from '../utils/metricasReporte';
 
 /** Normaliza mesas de la API al formato esperado por filtros (id, nombre, idMozo). */
 function normalizarMesasParaReportes(mesas) {
@@ -159,19 +160,7 @@ export const useReportes = (filtros) => {
             const prods = v.productos ?? [];
             return sum + prods.reduce((prodSum, p) => prodSum + (p.cantidad || 0), 0);
         }, 0);
-        const margenGanancia = visitasFiltradas.reduce((sum, v) => {
-            const prods = v.productos ?? [];
-            const margenVisita = prods.reduce((prodSum, p) => {
-                const producto = productos.find(prod => prod.nombre === (p.nombreProducto ?? p.nombre));
-                const costoUnit = producto?.costo;
-                if (producto && costoUnit != null) {
-                    const costoTotal = Number(costoUnit) * p.cantidad;
-                    return prodSum + (p.precioTotal - costoTotal);
-                }
-                return prodSum;
-            }, 0);
-            return sum + margenVisita;
-        }, 0);
+        const margenGanancia = calcularMargenGanancia(visitasFiltradas, productos);
 
         return {
             totalVentas,

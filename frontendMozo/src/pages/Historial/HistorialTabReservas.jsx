@@ -156,7 +156,8 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
                         filas={filasOrdenadas}
                         columnas={columnas}
                         paginacion={true}
-                        rowsPerPage={10}
+                        rowsPerPage={15}
+                        ajustarAlturaAlContenido={true}
                         mostrarExportacion={true}
                         renderBuscar={() => (
                             <BuscadorTabla

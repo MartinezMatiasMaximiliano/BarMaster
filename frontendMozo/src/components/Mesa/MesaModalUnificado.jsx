@@ -23,6 +23,8 @@ import { MesaModalHeader } from './components/MesaModalHeader';
 import { MesaProductosPanel } from './components/MesaProductosPanel';
 import { PedidoTotalMesa } from './components/PedidoTotalMesa';
 import { useAutoSubmitPedidos } from './hooks/useAutoSubmitPedidos';
+import { useBusquedaProductosTeclado } from './hooks/useBusquedaProductosTeclado';
+import { useAtajosAccionesMesa } from './hooks/useAtajosAccionesMesa';
 import { formatearFecha } from './dateFormatter';
 import { solicitarPreticket } from '../../services/impresion/apiImpresion';
 import { normalizarErrorQz } from '../../services/impresion/erroresQz';
@@ -69,17 +71,40 @@ export const MesaModalUnificado = ({
         busqueda,
         categoriaFiltro,
         loading,
-        totalItems,
         snackbar,
         setBusqueda,
         setCategoriaFiltro,
         agregarAComanda,
+        quitarDeComanda,
         actualizarCantidad,
         actualizarIndicaciones,
         handleEnviarPedidos,
         limpiarEstado,
         closeSnackbar
     } = useAgregarPedidos(show, idVisita, datos_mesa.numero, () => {});
+
+    const autoSubmitPedidos = useAutoSubmitPedidos({
+        activo: show && Boolean(idVisita) && comanda.length > 0,
+        duracionMs: AUTO_SUBMIT_MS,
+        bloqueado: loading,
+        resetKey: comanda,
+        onSubmit: handleEnviarPedidos
+    });
+    const reiniciarAutoSubmit = autoSubmitPedidos.restart;
+
+    const handleBusquedaChange = useCallback((nuevaBusqueda) => {
+        setBusqueda(nuevaBusqueda);
+        reiniciarAutoSubmit();
+    }, [reiniciarAutoSubmit, setBusqueda]);
+
+    const busquedaProductosTeclado = useBusquedaProductosTeclado({
+        activo: show,
+        busqueda,
+        productosFiltrados,
+        onBusquedaChange: handleBusquedaChange,
+        onAgregarProducto: agregarAComanda,
+        onQuitarProducto: quitarDeComanda
+    });
 
     const hayPedidosPendientes = productosAPagar.length > 0;
     const hayPedidosProvisorios = comanda.length > 0;
@@ -91,14 +116,6 @@ export const MesaModalUnificado = ({
             : loading
                 ? 'Esperá a que termine el envío de pedidos antes de cerrar la mesa'
                 : '';
-
-    const autoSubmitPedidos = useAutoSubmitPedidos({
-        activo: show && Boolean(idVisita) && comanda.length > 0,
-        duracionMs: AUTO_SUBMIT_MS,
-        bloqueado: loading,
-        resetKey: comanda,
-        onSubmit: handleEnviarPedidos
-    });
 
     const totalPartes = useMemo(() => {
         if (!visitaMesaFinal?.productosConsumidos || productosSeleccionados.length === 0) return 0;
@@ -137,6 +154,10 @@ export const MesaModalUnificado = ({
 
         setShowModalFacturar('partes');
     }, [productosSeleccionados.length, showSnackbarFacturacion]);
+
+    const handleFacturarTodo = useCallback(() => {
+        if (productosAPagar.length > 0) setShowModalFacturar('todo');
+    }, [productosAPagar.length]);
 
     const handleCloseWithCleanup = useCallback(() => {
         setProductosSeleccionados([]);
@@ -194,6 +215,16 @@ export const MesaModalUnificado = ({
         }
     }, [idVisita, productosAPagar.length, showSnackbar]);
 
+    useAtajosAccionesMesa({
+        activo: show,
+        puedeImprimir: !printingPreticket && productosAPagar.length > 0,
+        puedeCobrarTodo: productosAPagar.length > 0,
+        puedeCobrarPartes: productosSeleccionados.length > 0,
+        onImprimir: handlePrintPreticket,
+        onCobrarTodo: handleFacturarTodo,
+        onCobrarPartes: handleFacturarPartes,
+    });
+
     return (
         <Dialog
             open={show}
@@ -201,7 +232,10 @@ export const MesaModalUnificado = ({
             maxWidth="xl"
             fullWidth
             disableEnforceFocus
-            PaperProps={{ sx: { borderRadius: 3, height: '92vh', overflow: 'hidden', bgcolor: 'background.default' } }}
+            PaperProps={{
+                'data-mesa-modal': 'true',
+                sx: { borderRadius: 3, height: '92vh', overflow: 'hidden', bgcolor: 'background.default' }
+            }}
         >
             <MesaModalHeader
                 fecha={fechaFormateada}
@@ -288,12 +322,6 @@ export const MesaModalUnificado = ({
                                     onActualizarIndicacionesProvisorias={handleIndicacionesEnCargaChange}
                                     onFocusIndicacionesProvisorias={autoSubmitPedidos.pause}
                                     onBlurIndicacionesProvisorias={autoSubmitPedidos.resume}
-                                    autoSubmit={{
-                                        remainingMs: autoSubmitPedidos.remainingMs,
-                                        durationMs: AUTO_SUBMIT_MS,
-                                        paused: autoSubmitPedidos.paused,
-                                        complete: autoSubmitPedidos.complete
-                                    }}
                                 />
                             )}
                             {tabValue === 1 && (
@@ -309,13 +337,17 @@ export const MesaModalUnificado = ({
                     </Box>
 
                     <MesaProductosPanel
+                        panelRef={busquedaProductosTeclado.panelRef}
+                        busquedaInputRef={busquedaProductosTeclado.inputRef}
                         idVisita={idVisita}
                         productos={productos}
                         categorias={categorias}
                         productosFiltrados={productosFiltrados}
                         busqueda={busqueda}
                         categoriaFiltro={categoriaFiltro}
-                        onBusquedaChange={setBusqueda}
+                        onBusquedaChange={handleBusquedaChange}
+                        onBusquedaFocus={reiniciarAutoSubmit}
+                        onBusquedaBlur={reiniciarAutoSubmit}
                         onCategoriaChange={setCategoriaFiltro}
                         onAgregarProducto={agregarAComanda}
                     />
@@ -325,14 +357,10 @@ export const MesaModalUnificado = ({
             <MesaModalActions
                 puedeFacturarTodo={productosAPagar.length > 0}
                 productosSeleccionadosCount={productosSeleccionados.length}
-                puedeAgregarPedidos={comanda.length > 0 && !loading && Boolean(idVisita)}
-                loading={loading}
-                totalItems={totalItems}
-                onFacturarTodo={() => setShowModalFacturar('todo')}
+                onFacturarTodo={handleFacturarTodo}
                 onFacturarPartes={handleFacturarPartes}
                 onPrintPreticket={handlePrintPreticket}
                 printing={printingPreticket}
-                onAgregarPedidos={handleEnviarPedidos}
                 onClose={handleCloseWithCleanup}
             />
 

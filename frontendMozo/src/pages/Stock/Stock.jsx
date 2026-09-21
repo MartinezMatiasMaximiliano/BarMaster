@@ -24,6 +24,7 @@ const GRUPOS_STOCK = [
     {
         key: 'sinSeguimiento',
         label: 'Sin seguimiento de stock',
+        inicialmenteAbierto: false,
     },
 ];
 

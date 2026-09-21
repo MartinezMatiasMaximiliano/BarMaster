@@ -1,11 +1,14 @@
 import { Stack, Autocomplete, TextField } from '@mui/material';
 
 export const FiltrosProductos = ({ 
+    busquedaInputRef,
     productos, 
     categorias, 
     busqueda, 
     categoriaFiltro, 
     onBusquedaChange, 
+    onBusquedaFocus,
+    onBusquedaBlur,
     onCategoriaChange 
 }) => {
     return (
@@ -18,9 +21,13 @@ export const FiltrosProductos = ({
                 renderInput={(params) => (
                     <TextField
                         {...params}
+                        inputRef={busquedaInputRef}
+                        autoFocus={Boolean(busquedaInputRef)}
                         label="Buscar productos"
                         variant="outlined"
                         size="small"
+                        onFocus={onBusquedaFocus}
+                        onBlur={onBusquedaBlur}
                     />
                 )}
                 sx={{ flex: 1 }}

@@ -10,3 +10,9 @@ export const getEstadoColor = (estadoPedido) => {
 export const getNombre = (producto) => producto.nombre || producto.nombreProducto;
 
 export const getPrecio = (producto) => producto.precio || producto.precioDelMomento || 0;
+
+export const getIndicaciones = (producto) => producto.indicaciones
+    ?? producto.detalles
+    ?? producto.Indicaciones
+    ?? producto.Detalles
+    ?? '';

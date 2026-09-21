@@ -1,12 +1,13 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
-import { Chip, Box, Typography, Stack, Button } from '@mui/material';
+import { Chip, Box, Typography, Stack, Button, Tooltip } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { keyframes } from '@mui/material/styles';
 import { GetChipNombreCompleto, formatearFechaCompleta, formatearHoraCompleta } from '../Helpers/HelperFunctions';
 import { useDateTime } from '../hooks/useDateTime';
@@ -43,12 +44,30 @@ export const BottomBar = ({
     enFlujo = false,
     themeMode,
     onThemeToggle,
+    onAyudaAtajosClick,
     onSalirClick
 }) => {
     const fechaHoraFromHook = useDateTime();
     const fechaHora = fechaHoraProp ?? fechaHoraFromHook;
     return (
         <div className={`${enFlujo ? 'flex-shrink-0' : 'position-absolute bottom-0 start-0'} w-100 p-3 d-flex align-items-end gap-3 flex-wrap`}>
+            {onAyudaAtajosClick && (
+                <Tooltip title="Ayuda del teclado">
+                    <HelpOutlineIcon
+                        aria-label="Ayuda del teclado"
+                        role="button"
+                        tabIndex={0}
+                        onClick={onAyudaAtajosClick}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                onAyudaAtajosClick();
+                            }
+                        }}
+                        sx={{ color: 'primary.main', cursor: 'pointer', fontSize: 28, mb: 1 }}
+                    />
+                </Tooltip>
+            )}
             <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                 <Form.Label>Código</Form.Label>
                 <Form.Control
