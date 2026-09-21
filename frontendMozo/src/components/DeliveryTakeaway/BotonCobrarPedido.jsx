@@ -38,8 +38,7 @@ export default function BotonCobrarPedido({
         () => productosPendientes.reduce((acc, producto) => acc + (Number(producto.precio) || 0), 0),
         [productosPendientes]
     );
-    const hayProductosPagados = productos.some((producto) => producto.estadoPagado);
-    const precioEnvio = !hayProductosPagados ? Number(pedido?.PrecioEnvio || 0) : 0;
+    const precioEnvio = Number(pedido?.PrecioEnvio || 0);
     const total = totalProductosPendientes + precioEnvio;
     const idVisita = pedido?.idVisita;
     const estaCobrado = productos.length > 0 && productosPendientes.length === 0;
@@ -53,14 +52,14 @@ export default function BotonCobrarPedido({
         : Math.max(0, montoRecibido - totalPedido);
     const puedeCobrar = !disabled && Boolean(idVisita) && productIds.length > 0;
 
-    const handleConfirmar = useCallback(async (idsProductos, idTipoPago, monto) => {
+    const handleConfirmar = useCallback(async (idsProductos, idTipoPago, monto, descuento = 0) => {
         if (!idVisita) {
             showSnackbar('No se pudo identificar la visita del pedido', 'error');
             return;
         }
 
         try {
-            const pagoCreado = await Pagar(idVisita, idsProductos, idTipoPago, monto);
+            const pagoCreado = await Pagar(idVisita, idsProductos, idTipoPago, monto, descuento);
             const idMovimientoCaja = pagoCreado?.id || pagoCreado?.Id;
             dispatch(cambiarEstadoPagadoProductos({ idsProductos, pagado: true, idMovimientoCaja }));
             await sendHubMessage('RecargarDeliveryTakeaway');
@@ -95,7 +94,7 @@ export default function BotonCobrarPedido({
                     >
                         <Typography
                             variant="body2"
-                            fontWeight={600}
+                            fontWeight={200}
                             component="span"
                             tabIndex={0}
                             sx={{ cursor: 'help' }}
@@ -107,7 +106,7 @@ export default function BotonCobrarPedido({
                         </Typography>
                     </Tooltip>
                 ) : (
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" fontWeight={200}>
                     {metodoPagoTexto}
                 </Typography>
                 )}

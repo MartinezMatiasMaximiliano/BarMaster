@@ -17,6 +17,7 @@ export const obtenerColumnasFiltrables = (columnas) => {
     return columnas.filter(col => 
         col.key && 
         col.key !== '__acciones' && 
+        col.filtrable !== false &&
         col.label && 
         col.label.trim() !== ''
     );

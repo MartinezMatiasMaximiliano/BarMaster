@@ -30,9 +30,9 @@ export const BotonesExportacion = ({
                             disabled={deshabilitado}
                             size="small"
                             sx={{
-                                color: deshabilitado ? 'action.disabled' : '#d32f2f', // Rojo
+                                color: deshabilitado ? 'action.disabled' : 'error.dark',
                                 '&:hover': {
-                                    backgroundColor: deshabilitado ? 'transparent' : 'rgba(211, 47, 47, 0.08)'
+                                    backgroundColor: deshabilitado ? 'transparent' : 'error.light'
                                 }
                             }}
                         >
@@ -49,9 +49,9 @@ export const BotonesExportacion = ({
                             disabled={deshabilitado}
                             size="small"
                             sx={{
-                                color: deshabilitado ? 'action.disabled' : '#2e7d32', // Verde
+                                color: deshabilitado ? 'action.disabled' : 'success.dark',
                                 '&:hover': {
-                                    backgroundColor: deshabilitado ? 'transparent' : 'rgba(46, 125, 50, 0.08)'
+                                    backgroundColor: deshabilitado ? 'transparent' : 'success.light'
                                 }
                             }}
                         >

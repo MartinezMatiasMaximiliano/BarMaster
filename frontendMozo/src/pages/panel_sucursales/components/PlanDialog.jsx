@@ -46,7 +46,7 @@ const PlanDialog = ({
                     <AccountBalanceWalletIcon color="primary" />
                     <Typography variant="h6">Mi Plan</Typography>
                 </Stack>
-                <Button onClick={onClose} size="small" sx={{ minWidth: 'auto', p: 0.5, color: 'text.secondary' }}>
+                <Button data-escape-action="true" onClick={onClose} size="small" sx={{ minWidth: 'auto', p: 0.5, color: 'text.secondary' }}>
                     <CloseIcon fontSize="small" />
                 </Button>
             </DialogTitle>
@@ -102,11 +102,11 @@ const PlanDialog = ({
                                             </TableRow>
                                         </React.Fragment>
                                     ))}
-                                    <TableRow sx={{ bgcolor: 'primary.main' }}>
-                                        <TableCell colSpan={3} align="right" sx={{ fontWeight: 700, fontSize: '1rem', color: 'white' }}>
+                                    <TableRow sx={{ bgcolor: 'primary.dark' }}>
+                                        <TableCell colSpan={3} align="right" sx={{ fontWeight: 700, fontSize: '1rem', color: 'grey.50' }}>
                                             TOTAL:
                                         </TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700, fontSize: '1rem', color: 'white' }}>
+                                        <TableCell align="right" sx={{ fontWeight: 700, fontSize: '1rem', color: 'grey.50' }}>
                                             ${formatearMoneda(totalCalculado)}
                                         </TableCell>
                                     </TableRow>
@@ -123,7 +123,8 @@ const PlanDialog = ({
 
             <DialogActions sx={{ px: 3, pb: 2.5 }}>
                 <Button
-                    onClick={onClose}
+                    data-enter-action="true"
+                    data-escape-action="true" onClick={onClose}
                     variant="contained"
                     sx={{ textTransform: 'none', fontWeight: 600 }}
                 >

@@ -35,7 +35,7 @@ const SucursalPerformanceCard = ({ sucursal, periodoDias, expanded, onToggle }) 
                 p: { xs: 2, md: 2.5 },
                 borderRadius: 2,
                 borderColor: expanded ? 'primary.main' : 'divider',
-                boxShadow: expanded ? '0 8px 24px rgba(25, 118, 210, 0.12)' : 'none',
+                boxShadow: expanded ? '0 8px 24px rgba(112, 152, 250, 0.22)' : 'none',
                 transition: 'border-color 160ms ease, box-shadow 160ms ease'
             }}
         >
@@ -47,7 +47,7 @@ const SucursalPerformanceCard = ({ sucursal, periodoDias, expanded, onToggle }) 
                                 width: 40,
                                 height: 40,
                                 borderRadius: 1.5,
-                                bgcolor: 'primary.main',
+                                bgcolor: 'primary.dark',
                                 color: 'primary.contrastText',
                                 display: 'grid',
                                 placeItems: 'center',
@@ -117,7 +117,7 @@ const SucursalPerformanceCard = ({ sucursal, periodoDias, expanded, onToggle }) 
                         label="Margen"
                         value={formatearMoneda(margen)}
                         helper={formatearPorcentaje(kpis.margenPorcentaje)}
-                        color={margen >= 0 ? 'success.main' : 'error.main'}
+                        color={margen >= 0 ? 'success.dark' : 'error.dark'}
                     />
                     <KpiTile
                         icon={<AccountBalanceWalletIcon fontSize="small" color={caja.abierta ? 'success' : 'error'} />}

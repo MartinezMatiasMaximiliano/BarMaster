@@ -9,8 +9,7 @@ import EntregaCountdown from "../components/DeliveryTakeaway/EntregaCountdown";
 import { formatearFecha } from "../Helpers/HelperFunctions";
 import Ordenar from "../components/Ordenar/Ordenar";
 import Filtros from "../components/Filtros/Filtros";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
+import AddIcon from '@mui/icons-material/Add';
 import { Box, Button, Checkbox, Divider, Drawer, IconButton, Stack, Typography } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -311,7 +310,7 @@ function TakeAway() {
                             variant="contained"
                             color="primary"
                             onClick={() => setShowModalAgregar(true)}
-                            startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
+                            startIcon={<AddIcon />}
                             disabled={!hayCajaActiva}
                         >
                             Agregar

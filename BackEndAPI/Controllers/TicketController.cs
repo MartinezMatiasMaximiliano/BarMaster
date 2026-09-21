@@ -32,19 +32,20 @@ namespace BackEndAPI.Controllers
 
             var mozo = movimiento.Visita?.Mozo;
 
-            var ticket = new TicketVirtualDTO
-            {
-                Id = movimiento.Id,
-                MontoAbonado = movimiento.MontoAbonado,
-                Vuelto = movimiento.Vuelto,
-                MontoTotal = movimiento.MontoTotal,
-                FechaMovimiento = movimiento.FechaMovimiento,
-                NombreMesa = movimiento.Visita?.Mesa?.Nombre,
-                NombreSucursal = movimiento.Caja?.Sucursal?.Nombre,
-                NombreMozo = mozo != null ? $"{mozo.Nombres} {mozo.Apellido}" : null,
-                TipoPago = movimiento.TipoMovimientoCaja?.Nombre,
-                Productos = productosDelTicket
-            };
+                var ticket = new TicketVirtualDTO
+                {
+                    Id = movimiento.Id,
+                    MontoAbonado = movimiento.MontoAbonado,
+                    Vuelto = movimiento.Vuelto,
+                    MontoTotal = movimiento.MontoTotal,
+                    FechaMovimiento = movimiento.FechaMovimiento,
+                    NombreMesa = movimiento.Visita?.Mesa?.Numero.ToString(),
+                    NombreSucursal = movimiento.Caja?.Sucursal?.Nombre,
+                    NombreEmpresa = movimiento.Caja?.Sucursal?.Empresa?.Nombre,
+                    NombreMozo = mozo != null ? $"{mozo.Nombres} {mozo.Apellido}" : null,
+                    TipoPago = movimiento.TipoMovimientoCaja?.Nombre,
+                    Productos = productosDelTicket
+                };
 
             return Ok(ticket);
         }

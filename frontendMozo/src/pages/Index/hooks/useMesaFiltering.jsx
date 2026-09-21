@@ -3,12 +3,14 @@ import { useSelector } from 'react-redux';
 import Mesa from '../../../components/Mesa/Mesa';
 
 const ESTILO_MESAS = {
-    width: "7vw",
-    height: "10vh",
-    minWidth: "80px",
-    minHeight: "80px",
-    maxWidth: "120px",
-    maxHeight: "120px",
+    width: '100%',
+    minWidth: 0,
+    minHeight: 96,
+    mx: 0,
+    py: 1,
+    px: 1,
+    '& img': { maxWidth: 40, maxHeight: 40 },
+    '& .MuiTypography-root': { fontSize: '0.75rem', overflowWrap: 'anywhere' },
 };
 
 /**
@@ -22,15 +24,14 @@ const ESTILO_MESAS = {
 export const useMesaFiltering = (mesas, datosMozos, hayCajaActiva = true) => {
     const mozo = useSelector((state) => state.mozo.value);
 
-    // Renderizar TODAS las mesas sin filtrar por plano, ordenadas por nombre ascendente
+    // Renderizar TODAS las mesas sin filtrar por plano, ordenadas por número ascendente
     const mesasParaMostrar = useMemo(() => {
         if (!mesas || !Array.isArray(mesas) || mesas.length === 0) {
             return [];
         }
 
-        const nombre = (mesa) => (mesa.nombre ?? mesa.Nombre ?? '').toString();
         const ordenadas = [...mesas].sort((a, b) =>
-            nombre(a).localeCompare(nombre(b), undefined, { numeric: true })
+            (a.numero ?? a.Numero) - (b.numero ?? b.Numero)
         );
 
         return ordenadas.map((mesa, i) => {

@@ -131,7 +131,7 @@ function Modal_Ver_Cuenta(props) {
                         <Stack direction="row" spacing={1} alignItems="center">
                             <ReceiptLongIcon color="primary" />
                             <Typography variant="h6">
-                                {props.titulo} · Mesa {props.datos_mesa.nombre}
+                                {props.titulo} · Mesa {props.datos_mesa.numero}
                             </Typography>
                         </Stack>
                         <IconButton onClick={handleCloseWithCleanup} size="small">
@@ -211,7 +211,7 @@ function Modal_Ver_Cuenta(props) {
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Modal_Generico
                             textoBoton="Facturar todo"
-                            titulo="Facturar todo"
+                            titulo="Cobrar todo"
                             cuerpo="¿Confirmar el pago de todos los productos pendientes?"
                             confirmar={true}
                             func={handlePagarMesa}
@@ -237,7 +237,7 @@ function Modal_Ver_Cuenta(props) {
                         </Button>
                     </Stack>
                     <Button 
-                        onClick={handleCloseWithCleanup} 
+                        data-enter-action="true" data-escape-action="true" onClick={handleCloseWithCleanup}
                         variant="outlined"
                         size="small"
                         sx={{

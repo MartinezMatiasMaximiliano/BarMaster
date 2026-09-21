@@ -1,23 +1,38 @@
 import api from '../services/axiosInstance'
 import { construirError } from './APIError';
 
+export async function BuscarMesasDisponibles(fechaHora) {
+    try {
+        const instante = new Date(fechaHora).getTime();
+        if (!Number.isFinite(instante)) throw new Error('Seleccioná un día y una hora válidos.');
+        const response = await api.get('Reservas/Disponibilidad', { params: { fechaHora: new Date(instante).toISOString() } });
+        if (!Array.isArray(response.data)) {
+            throw new Error('No se pudo consultar la disponibilidad.');
+        }
+        return response.data;
+    } catch (error) {
+        throw construirError(error, 'Error al consultar la disponibilidad');
+    }
+}
+
 export async function BuscarTodasLasReservas() {
     try {
         const response = await api.get('Reservas');
         return response.data;
     } catch (error) {
         console.error("Error:", construirError(error, 'Error al buscar reservas'));
-        return error.response;
+        throw construirError(error, 'Error al buscar reservas');
     }
 }
 
-export async function BuscarUnaReserva(Id) {
+export async function RecargarReservasConservando(asignar, buscar = BuscarTodasLasReservas) {
     try {
-        const response = await api.get(`Reservas/${Id}`);
-        return response.data;
+        const datos = await buscar();
+        if (!Array.isArray(datos)) throw new Error('La respuesta de reservas no es válida.');
+        asignar(datos);
+        return { ok: true, datos };
     } catch (error) {
-        console.error('Error al buscar reserva:', construirError(error, 'Error al buscar la reserva'));
-        return error.response;
+        return { ok: false, error: construirError(error, 'No se pudo actualizar la agenda') };
     }
 }
 
@@ -27,13 +42,13 @@ export async function CrearReserva(datos) {
         return response.data;
     } catch (error) {
         console.error('Error al crear reserva:', construirError(error, 'Error al crear la reserva'));
-        return error.response;
+        throw construirError(error, 'Error al crear la reserva');
     }
 }
 
 export async function ModificarReserva(datos) {
     try {
-        const response = await api.put('Reservas', datos);
+        const response = await api.put('Reservas', { ...datos, ...(Object.hasOwn(datos, 'idMesa') ? { idMesa: datos.idMesa || null } : {}) });
         return response.data;
     } catch (error) {
         throw construirError(error, "Error al modificar la reserva");

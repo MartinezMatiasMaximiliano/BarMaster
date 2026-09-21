@@ -15,15 +15,17 @@ namespace BackEndAPI.Repositories
             _currentDbContext= currentDbContext;
             db = _currentDbContext.Db;
         }
-        public async Task<IEnumerable<Reserva>> GetAllReservas()
+        public async Task<IEnumerable<Reserva>> GetAllReservas(Guid idSucursal)
         {
-            return await db.Reservas.Include(r => r.Estado).ToListAsync();
+            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa)
+                .Where(r => r.IdSucursal == idSucursal).ToListAsync();
         }
 
         public async Task<IEnumerable<Reserva>> GetReservasPorRangoFechas(Guid idSucursal, DateTime desde, DateTime hastaExclusive)
         {
             return await db.Reservas
                 .Include(r => r.Estado)
+                .Include(r => r.Mesa)
                 .Where(r =>
                     r.IdSucursal == idSucursal &&
                     r.FechaHora >= desde &&
@@ -32,16 +34,17 @@ namespace BackEndAPI.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Reserva?> GetReservaPorId(Guid id)
+        public async Task<Reserva?> GetReservaPorId(Guid id, Guid idSucursal)
         {
-            return await db.Reservas.Include(r => r.Estado).FirstOrDefaultAsync(r => r.Id == id);
+            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa)
+                .FirstOrDefaultAsync(r => r.Id == id && r.IdSucursal == idSucursal);
         }
 
         public async Task<Reserva> CrearReserva(Reserva nuevaReserva)
         {
             await db.Reservas.AddAsync(nuevaReserva);
             await db.SaveChangesAsync();
-            return await db.Reservas.Include(r => r.Estado).FirstOrDefaultAsync(r => r.Id == nuevaReserva.Id) ?? nuevaReserva;
+            return await db.Reservas.Include(r => r.Estado).Include(r => r.Mesa).FirstOrDefaultAsync(r => r.Id == nuevaReserva.Id) ?? nuevaReserva;
         }
 
         public async Task<Reserva?> ActualizarReserva(Reserva reservaActualizada) {
@@ -49,6 +52,25 @@ namespace BackEndAPI.Repositories
             await db.SaveChangesAsync();
             return reservaActualizada;
         }
+
+        public Task<bool> ExisteReservaConfirmada(Guid idSucursal, Guid idMesa, DateTime fechaHora, Guid? excluirId = null) =>
+            db.Reservas.AnyAsync(r => r.IdSucursal == idSucursal && r.IdMesa == idMesa &&
+                r.FechaHora == fechaHora && r.IdEstadoReserva == 2 && (!excluirId.HasValue || r.Id != excluirId.Value));
+
+        public async Task<IReadOnlyList<Mesa>> GetMesasConPlano(Guid idSucursal) => await db.Mesas
+            .AsNoTracking().Include(m => m.Plano)
+            .Where(m => m.Plano != null && m.Plano.IdSucursal == idSucursal)
+            .ToListAsync();
+
+        public async Task<IReadOnlyList<Reserva>> GetReservasConfirmadasCercanas(Guid idSucursal, DateTime desde, DateTime hasta) =>
+            await db.Reservas.AsNoTracking()
+                .Where(r => r.IdSucursal == idSucursal && r.IdEstadoReserva == 2 && r.IdMesa != null &&
+                    r.FechaHora >= desde && r.FechaHora <= hasta)
+                .Select(r => new Reserva { IdMesa = r.IdMesa, FechaHora = r.FechaHora })
+                .ToListAsync();
+
+        public Task<bool> MesaPerteneceASucursal(Guid idMesa, Guid idSucursal) =>
+            db.Mesas.AnyAsync(m => m.Id == idMesa && m.Plano != null && m.Plano.IdSucursal == idSucursal);
 
         public async Task<Reserva?> EliminarReserva(Reserva reservaAEliminar) {
             db.Reservas.Remove(reservaAEliminar);

@@ -18,10 +18,6 @@ namespace BackEndAPI.Controllers
         {
             _visitasServices = visitasServices;
         }
-
-        // Ya no hay try/catch acá: si algo falla, la excepción (tipada o no) burbujea hasta
-        // ExceptionHandlingMiddleware, que decide el status code y loguea con el contexto completo.
-
         [HttpGet("/VisitasActivas")]
         public async Task<IActionResult> VisitasActivas()
         {
@@ -44,9 +40,9 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost("/AgregarProductoAVisita")]
-        public async Task<IActionResult> AgregarproductosAVisita([FromBody] ICollection<AgregarProductoAVisita> listaProductos, [FromQuery] Guid IdVisita)
+        public async Task<IActionResult> AgregarproductosAVisita([FromBody] ICollection<AgregarProductoAVisita> listaProductos, [FromQuery] Guid IdVisita, [FromQuery] Guid idComando)
         {
-            var visitaActualizada = await _visitasServices.AgregarProductos(listaProductos, IdVisita);
+            var visitaActualizada = await _visitasServices.AgregarProductos(listaProductos, IdVisita, idComando);
             return Ok(MapearVisita(visitaActualizada));
         }
 
@@ -64,10 +60,6 @@ namespace BackEndAPI.Controllers
             return Ok(new EntregaDTO(200, "OK", "Estado del producto actualizado correctamente"));
         }
 
-        // Antes había 4 bloques de mapeo a VisitaResponseDTO repetidos y con formas
-        // ligeramente distintas entre sí: GetVisitaPorId no devolvía Mozo, y
-        // AgregarproductosAVisita no devolvía IdMesa/NumeroMesa/Mozo. Quedan unificados
-        // acá con la forma más completa (la que ya usaban VisitasActivas/TodasLasVisitas).
         private static VisitaResponseDTO MapearVisita(Visita visita) => new VisitaResponseDTO
         {
             Id = visita.Id,
@@ -76,7 +68,7 @@ namespace BackEndAPI.Controllers
             Total = visita.Total,
             Origen = visita.Origen,
             IdMesa = visita.Mesa?.Id,
-            NumeroMesa = visita.Mesa?.Nombre,
+            NumeroMesa = visita.Mesa?.Numero,
             Mozo = visita.Mozo != null ? new MozoEnVisitaDTO
             {
                 Id = visita.Mozo.Id,

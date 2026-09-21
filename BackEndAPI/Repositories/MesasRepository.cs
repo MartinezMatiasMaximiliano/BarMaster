@@ -23,9 +23,9 @@ namespace BackEndAPI.Repositories
             return mesa;
         }
 
-        public async Task<Mesa?> ExisteMesaEnPlano(Guid idPlano, string nombreMesa)
+        public async Task<Mesa?> ExisteMesaEnPlano(Guid idPlano, int numeroMesa)
         {
-            var mesa = await db.Mesas.FirstOrDefaultAsync(m => m.IdPlano == idPlano && m.Nombre.ToLower() == nombreMesa.ToLower());
+            var mesa = await db.Mesas.FirstOrDefaultAsync(m => m.IdPlano == idPlano && m.Numero == numeroMesa);
             return mesa;
         }
 

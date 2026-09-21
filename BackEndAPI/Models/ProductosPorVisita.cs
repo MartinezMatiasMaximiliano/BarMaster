@@ -13,6 +13,7 @@
         public bool EstadoPagado { get; set; } = false;
         public DateTime FechaAgregado { get; set; } = DateTime.UtcNow;
         public string EstadoPedido { get; set; } = "Pendiente";
+        public Guid? IdComandoAgregado { get; set; }
 
         //navegacion
         public Visita Visita { get; set; } = null!;

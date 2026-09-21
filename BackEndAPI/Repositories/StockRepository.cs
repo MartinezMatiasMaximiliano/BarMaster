@@ -255,7 +255,7 @@ namespace BackEndAPI.Repositories
 
                 return new ContextoMovimientoVenta(
                     visita.IdMesa,
-                    visita.Mesa?.Nombre,
+                    visita.Mesa?.Numero.ToString(),
                     visita.Mozo == null
                         ? null
                         : $"{visita.Mozo.Nombres} {visita.Mozo.Apellido}".Trim());

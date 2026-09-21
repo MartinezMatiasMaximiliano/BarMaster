@@ -24,7 +24,8 @@ namespace BackEndAPI.Tenancy.Services
 
         public async Task<Tenant?> BuscarTenantPorNombreEmpresa(string nombreEmpresa)
         {
-            return await _masterDbContext.Tenants.FirstOrDefaultAsync(tenant => tenant.NombreEmpresa == nombreEmpresa.ToLower().Replace(" ",string.Empty));
+            var normalized = TenantIdentifier.Normalize(nombreEmpresa);
+            return await _masterDbContext.Tenants.FirstOrDefaultAsync(tenant => tenant.NombreEmpresa == normalized);
         }
         
         public async Task<Tenant?> BuscarTenantPorId(Guid id)
@@ -50,7 +51,7 @@ namespace BackEndAPI.Tenancy.Services
         {
                 var tenant = new Tenant
                 {
-                    NombreEmpresa = request.Nombre.ToLower().Replace(" ",string.Empty),
+                    NombreEmpresa = TenantIdentifier.Normalize(request.Nombre),
                     FechaCreacion = request.FechaInscripcion,
                 };
 

@@ -84,6 +84,7 @@ namespace BackEndAPI.Repositories
                 .Include(m => m.TipoMovimientoCaja)
                 .Include(m => m.Caja)
                     .ThenInclude(c => c.Sucursal)
+                    .ThenInclude(s => s.Empresa)
                 .Include(m => m.Visita)
                     .ThenInclude(v => v!.Mesa)
                 .Include(m => m.Visita)

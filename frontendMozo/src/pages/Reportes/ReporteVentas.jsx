@@ -77,7 +77,8 @@ const ReporteVentas = () => {
     const dataParaMapa = useMemo(() => {
         const list = (v) => v.productos ?? v.productosConsumidos ?? [];
         return reportes.visitas.flatMap((v) => {
-            const nombreMesa = v.numeroMesa ?? reportes.mesas.find((m) => m.id === v.idMesa)?.nombre ?? String(v.idMesa ?? '');
+            const numeroMesa = v.numeroMesa ?? reportes.mesas.find((m) => m.id === v.idMesa)?.numero;
+            const nombreMesa = numeroMesa != null ? `Mesa ${numeroMesa}` : String(v.idMesa ?? '');
             return list(v).map((p) => ({
                 fecha: v.fechaHora,
                 mesa: nombreMesa,
@@ -174,7 +175,7 @@ const ReporteVentas = () => {
                                     label={({ nombre, cantidad }) => (cantidad > 0 ? `${nombre}: ${cantidad}` : null)}
                                 >
                                     {visitasPorOrigen.map((_, index) => (
-                                        <Cell key={index} fill={['#1976d2', '#388e3c', '#f57c00'][index % 3]} />
+                                        <Cell key={index} fill={['var(--bm-primary-dark)', 'var(--bm-success-dark)', 'var(--bm-warning-dark)'][index % 3]} />
                                     ))}
                                 </Pie>
                                 <Tooltip />

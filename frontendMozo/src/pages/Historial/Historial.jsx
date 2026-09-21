@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Container, Typography, Tabs, Tab } from '@mui/material';
+import { Box, Container, Tab, Tabs, Typography } from '@mui/material';
 import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
 import DeliveryDiningOutlinedIcon from '@mui/icons-material/DeliveryDiningOutlined';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
@@ -61,7 +61,6 @@ export default function Historial() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 El rango seleccionado impacta en todas las pestañas del historial.
             </Typography>
-
             <Tabs
                 value={tabValue}
                 onChange={handleTabChange}

@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { validarCampos, validarFormulario } from "../../../Helpers/HelperFunctions";
 
-export default function Handlers({ agregar, recargarComponentes, handleClose, campos }) {
+export default function Handlers({ agregar, recargarComponentes, handleClose, campos, initialValues = {} }) {
   const [errors, setErrors] = useState({});
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState(initialValues);
 
   const resetForm = () => {
-    setValues({});
+    setValues(initialValues);
     setErrors({});
   };
 
   const fieldHandlers = {
+    checkbox: (event) => event.target.checked,
     select_multiple: (event) => event.target.value,
     select: (event) => {
       // Convertir cadena vacía a null para campos opcionales como idPlano
@@ -46,7 +47,8 @@ export default function Handlers({ agregar, recargarComponentes, handleClose, ca
   };
 
   const handleSave = async () => {
-    const erroresFormulario = validarFormulario(campos, values);
+    const camposVisibles = campos.filter((campo) => !campo.visibleWhen || campo.visibleWhen(values));
+    const erroresFormulario = validarFormulario(camposVisibles, values);
     if (Object.keys(erroresFormulario).length > 0) {
       setErrors(erroresFormulario);
       return;
@@ -62,5 +64,5 @@ export default function Handlers({ agregar, recargarComponentes, handleClose, ca
     }
   };
 
-  return { errors, setErrors, handleChange, handleSave, resetForm };
+  return { errors, setErrors, values, handleChange, handleSave, resetForm };
 }

@@ -46,7 +46,7 @@ namespace BackEndAPI.Services
             return await _deliveryTakeawayRepository.ObtenerDeliveryTakeawayPorId(IdDeliveryTakeaway)
                 ?? throw new NotFoundException("No se encontró el pedido");
         }
-        public async Task<DeliveryAndTakeaway?> CambiarEntregado(Guid IdDeliveryTakeaway, bool entregado)
+        public async Task<DeliveryAndTakeaway?> MarcarComoEntregado(Guid IdDeliveryTakeaway, bool entregado = true)
         {
             if (IdDeliveryTakeaway == Guid.Empty) throw new BusinessRuleException("Id vacio");
 
@@ -120,6 +120,7 @@ namespace BackEndAPI.Services
 
             await AgregarProductosHelperAsync(request.ListaProductos, DeliveryTakeaway);
             visitaCreada.Total += DeliveryTakeaway.PrecioEnvio;
+            DeliveryTakeaway.PrecioTotal = visitaCreada.Total;
 
             DeliveryAndTakeaway? response = await _deliveryTakeawayRepository.CrearDeliveryTakeaway(DeliveryTakeaway, visitaCreada);
 

@@ -1,5 +1,5 @@
 import api from '../services/axiosInstance'
-import connection from '../connections/HubConnMozo'
+import { sendHubMessage } from '../connections/HubConnMozo'
 import { construirError } from './APIError';
 
 function normalizarDecimal(valor, fallback = undefined) {
@@ -11,23 +11,49 @@ function normalizarDecimal(valor, fallback = undefined) {
     return Number.isNaN(numero) ? fallback : numero;
 }
 
+function normalizarProducto(producto) {
+    if (!producto) return producto;
+
+    return {
+        ...producto,
+        // La API expone actualmente PrecioNeto/porcentajeIVA, mientras que las
+        // vistas y cálculos de comandas consumen la propiedad histórica `precio`.
+        precio: normalizarDecimal(
+            producto.precio ?? producto.precioNeto ?? producto.Precio ?? producto.PrecioNeto,
+            0
+        ),
+        porcentajeIVA: normalizarDecimal(
+            producto.porcentajeIVA ?? producto.PorcentajeIVA,
+            0
+        ),
+    };
+}
+
 class CrearProductoDTO {
-    constructor(nombre, descripcion, precio, activo, listaIdCategorias, imagen, codigo, costoProduccion) {
+    constructor(nombre, descripcion, precioNeto, activo, listaIdCategorias, imagen, codigo, costoProduccion, controlaStock, enviarAlerta, cantidadMinima, cantidadInicial) {
         this.Codigo = codigo;
         this.Nombre = nombre;
         this.Descripcion = descripcion;
-        this.Precio = precio;
+        this.PrecioNeto = precioNeto;
         this.ListaIdCategorias = listaIdCategorias || [];
         this.CostoProduccion = costoProduccion || 0;
         this.Activo = activo;
         this.Imagen = imagen;
+        this.ControlaStock = Boolean(controlaStock);
+        this.EnviarAlerta = this.ControlaStock && Boolean(enviarAlerta);
+        if (this.ControlaStock) {
+            this.CantidadMinima = Number(cantidadMinima);
+            this.CantidadInicial = Number(cantidadInicial);
+        }
     }
 }
 
 export async function BuscarTodosLosProductos() {
     try {
         const response = await api.get('Productos/');
-        return response.data;
+        return Array.isArray(response.data)
+            ? response.data.map(normalizarProducto)
+            : [];
     } catch (error) {
         console.error("Error:", construirError(error, 'Error al buscar productos'));
     }
@@ -36,7 +62,7 @@ export async function BuscarTodosLosProductos() {
 export async function BuscarUnProducto(Id) {
     try {
         const response = await api.get('Productos/' + Id);
-        return response.data;
+        return normalizarProducto(response.data);
     } catch (error) {
         console.error("Error:", construirError(error, 'Error al buscar el producto'));
     }
@@ -55,12 +81,17 @@ export async function CrearProducto(datos) {
                 datos.imagen,
                 datos.codigo,
                 normalizarDecimal(datos.costoProduccion, 0),
+                datos.controlaStock,
+                datos.enviarAlerta,
+                datos.cantidadMinima,
+                datos.cantidadInicial,
             ), {
             headers: {
                 "Content-Type": "multipart/form-data"
             }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
+        if (datos.controlaStock) await sendHubMessage("StockActualizado");
         return response.data;
     } catch (error) {
         console.error("Error al crear producto:", construirError(error, 'Error al crear el producto'));
@@ -75,7 +106,7 @@ export async function ModificarProducto(datos) {
             Codigo: datos.codigo,
             Nombre: datos.nombre,
             Descripcion: datos.descripcion,
-            Precio: normalizarDecimal(datos.precio),
+            PrecioNeto: normalizarDecimal(datos.precio),
             CostoProduccion: normalizarDecimal(datos.costoProduccion),
             Activo: datos.activo,
             categorias: datos.categorias,
@@ -87,7 +118,7 @@ export async function ModificarProducto(datos) {
                 "Content-Type": "multipart/form-data"
             }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error("Error al modificar producto:", construirError(error, 'Error al modificar el producto'));
@@ -107,7 +138,7 @@ export async function ActivarProducto(Id) {
                 "Content-Type": "multipart/form-data"
             }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error("Error al activar producto:", construirError(error, 'Error al activar el producto'));
@@ -127,7 +158,7 @@ export async function DesactivarProducto(Id) {
                 "Content-Type": "multipart/form-data"
             }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error("Error al desactivar producto:", construirError(error, 'Error al desactivar el producto'));
@@ -141,7 +172,7 @@ export async function BorrarProducto(Id, Token) {
         const response = await api.delete('Productos/', {
             params: { IdProducto: Id }
         });
-        connection.send("RecargarMenu");
+        await sendHubMessage("RecargarMenu");
         return response.data;
     } catch (error) {
         console.error('Error al borrar producto:', construirError(error, 'Error al eliminar el producto'));

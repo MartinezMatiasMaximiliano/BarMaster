@@ -28,7 +28,7 @@ namespace BackEndAPI.Controllers
             var response = mesasConVisita.Select(t => new MesaDTO
             {
                 Id = t.mesa.Id,
-                Nombre = t.mesa.Nombre,
+                Numero = t.mesa.Numero,
                 Capacidad = t.mesa.Capacidad,
                 CodigoParaPedir = t.mesa.CodigoParaPedir,
                 x = t.mesa.x,

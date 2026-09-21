@@ -10,7 +10,7 @@ export const LoadingState = () => {
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'center', 
-            height: 'calc(98vh - 80px)' 
+            height: '100%'
         }}>
             <p>Cargando mesas...</p>
         </div>

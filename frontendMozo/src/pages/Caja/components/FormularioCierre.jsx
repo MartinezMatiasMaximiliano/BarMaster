@@ -86,7 +86,7 @@ export const FormularioCierre = ({
                             Diferencia vs. esperado:{' '}
                             <strong
                                 style={{
-                                    color: diferencia === 0 ? 'inherit' : diferencia > 0 ? '#1b5e20' : '#b71c1c'
+                                    color: diferencia === 0 ? 'inherit' : diferencia > 0 ? 'success.dark' : 'error.dark'
                                 }}
                             >
                                 {currencyFormatter.format(diferencia)}
@@ -94,7 +94,10 @@ export const FormularioCierre = ({
                         </Typography>
                     </Stack>
                     {mesasAbiertas > 0 && (
-                        <Alert severity="warning" sx={{ mt: 2 }}>
+                        <Alert
+                            severity="warning"
+                            sx={{ mt: 2, '& .MuiAlert-icon': { color: 'warning.dark' } }}
+                        >
                             No se puede cerrar caja si hay mesas abiertas, o algun delivery o takeaway activo.
                         </Alert>
                     )}

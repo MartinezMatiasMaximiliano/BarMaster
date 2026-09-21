@@ -23,8 +23,9 @@ import { MesaModalHeader } from './components/MesaModalHeader';
 import { MesaProductosPanel } from './components/MesaProductosPanel';
 import { PedidoTotalMesa } from './components/PedidoTotalMesa';
 import { useAutoSubmitPedidos } from './hooks/useAutoSubmitPedidos';
-import { boxDividerLine } from '../../styles/boxStyles';
 import { formatearFecha } from './dateFormatter';
+import { solicitarPreticket } from '../../services/impresion/apiImpresion';
+import { normalizarErrorQz } from '../../services/impresion/erroresQz';
 
 const AUTO_SUBMIT_MS = 5000;
 
@@ -53,6 +54,7 @@ export const MesaModalUnificado = ({
 
     const [productosSeleccionados, setProductosSeleccionados] = useState([]);
     const [showModalFacturar, setShowModalFacturar] = useState(null);
+    const [printingPreticket, setPrintingPreticket] = useState(false);
     const [snackbarFacturacion, setSnackbarFacturacion] = useState({
         open: false,
         message: '',
@@ -77,7 +79,7 @@ export const MesaModalUnificado = ({
         handleEnviarPedidos,
         limpiarEstado,
         closeSnackbar
-    } = useAgregarPedidos(show, idVisita, datos_mesa.nombre, () => {});
+    } = useAgregarPedidos(show, idVisita, datos_mesa.numero, () => {});
 
     const hayPedidosPendientes = productosAPagar.length > 0;
     const hayPedidosProvisorios = comanda.length > 0;
@@ -121,8 +123,8 @@ export const MesaModalUnificado = ({
         );
     }, []);
 
-    const handleConfirmarFacturacion = useCallback((arregloIds, idTipoPago, monto) => {
-        PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto } : undefined);
+    const handleConfirmarFacturacion = useCallback((arregloIds, idTipoPago, monto, descuento = 0) => {
+        PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto, descuento } : undefined);
         setProductosSeleccionados([]);
         setShowModalFacturar(null);
     }, [PagarMesa, showSnackbarFacturacion]);
@@ -170,6 +172,28 @@ export const MesaModalUnificado = ({
         );
     }, [onCancelarPedidos, showSnackbar]);
 
+    const handlePrintPreticket = useCallback(async () => {
+        if (productosAPagar.length === 0) {
+            showSnackbar('No hay productos pendientes para imprimir', 'warning');
+            return;
+        }
+
+        if (!idVisita) {
+            showSnackbar('No se pudo identificar la visita de la mesa', 'error');
+            return;
+        }
+
+        setPrintingPreticket(true);
+        try {
+            await solicitarPreticket(idVisita);
+            showSnackbar('Solicitud recibida. La cuenta se imprimirá en el equipo configurado.', 'success');
+        } catch (error) {
+            showSnackbar(normalizarErrorQz(error).mensaje, 'error');
+        } finally {
+            setPrintingPreticket(false);
+        }
+    }, [idVisita, productosAPagar.length, showSnackbar]);
+
     return (
         <Dialog
             open={show}
@@ -177,15 +201,15 @@ export const MesaModalUnificado = ({
             maxWidth="xl"
             fullWidth
             disableEnforceFocus
-            PaperProps={{ sx: { borderRadius: 3, height: '92vh', overflow: 'hidden', bgcolor: '#f3f6f9' } }}
+            PaperProps={{ sx: { borderRadius: 3, height: '92vh', overflow: 'hidden', bgcolor: 'background.default' } }}
         >
             <MesaModalHeader
                 fecha={fechaFormateada}
-                numeroMesa={datos_mesa.nombre}
+                numeroMesa={datos_mesa.numero}
                 onClose={handleCloseWithCleanup}
             />
 
-            <DialogContent sx={{ p: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: '#f3f6f9' }}>
+            <DialogContent sx={{ p: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
                 <Box
                     sx={{
                         flex: 1,
@@ -197,13 +221,31 @@ export const MesaModalUnificado = ({
                         overflow: 'hidden'
                     }}
                 >
-                    <Box sx={{ minHeight: 0, bgcolor: '#ffffff', borderRadius: 2, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <Tabs value={tabValue} onChange={handleTabChange} sx={{ ...boxDividerLine, px: 2, flexShrink: 0 }}>
+                    <Box sx={{
+                        minHeight: 0,
+                        bgcolor: (theme) => theme.palette.mode === 'light'
+                            ? theme.palette.grey[200]
+                            : theme.palette.background.paper,
+                        borderRadius: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden'
+                    }}>
+                        <Tabs value={tabValue} onChange={handleTabChange} sx={{ px: 2, flexShrink: 0 }}>
                             <Tab label="Resumen" icon={<RestaurantMenuIcon />} iconPosition="start" />
                             <Tab label="Pagos registrados" icon={<CheckCircleIcon />} iconPosition="start" disabled={!visitaMesaFinal} />
                         </Tabs>
 
-                        <Box sx={{ px: 2, pt: 2, pb: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, bgcolor: '#ffffff' }}>
+                        <Box sx={{
+                            px: 2,
+                            pt: 2,
+                            pb: 1,
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            alignItems: 'center',
+                            gap: 1,
+                            bgcolor: 'transparent'
+                        }}>
                             <Tooltip title={motivoBloqueoCerrarMesa}>
                                 <span style={{ display: 'inline-flex' }}>
                                     <Modal_Generico
@@ -232,7 +274,7 @@ export const MesaModalUnificado = ({
                             />
                         </Box>
 
-                        <Box sx={{ p: 2, pt: 1, flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: '#ffffff' }}>
+                        <Box sx={{ p: 2, pt: 1, flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: 'transparent' }}>
                             {tabValue === 0 && (
                                 <PedidoTotalMesa
                                     visitaMesa={visitaMesaFinal}
@@ -288,6 +330,8 @@ export const MesaModalUnificado = ({
                 totalItems={totalItems}
                 onFacturarTodo={() => setShowModalFacturar('todo')}
                 onFacturarPartes={handleFacturarPartes}
+                onPrintPreticket={handlePrintPreticket}
+                printing={printingPreticket}
                 onAgregarPedidos={handleEnviarPedidos}
                 onClose={handleCloseWithCleanup}
             />
@@ -310,7 +354,7 @@ export const MesaModalUnificado = ({
                 <Modal_Facturar
                     open={true}
                     onClose={() => setShowModalFacturar(null)}
-                    titulo="Facturar todo"
+                    titulo="Cobrar todo"
                     total={totalPedidos}
                     productIds={productosAPagar}
                     currencyFormatter={currencyFormatter}
@@ -321,7 +365,7 @@ export const MesaModalUnificado = ({
                 <Modal_Facturar
                     open={true}
                     onClose={() => setShowModalFacturar(null)}
-                    titulo="Facturar por partes"
+                    titulo="Cobrar por partes"
                     total={totalPartes}
                     productIds={productosSeleccionados}
                     currencyFormatter={currencyFormatter}

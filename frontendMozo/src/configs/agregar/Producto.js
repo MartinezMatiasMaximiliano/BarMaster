@@ -8,6 +8,32 @@ const camposBase = [
   { name: "costoProduccion", label: "Costo de Producción", type: "decimal", validation: { rule: "money" } },
   { name: "descripcion", label: "Descripción", type: "text", validation: { rule: "text" } },
   { name: "categorias", label: "Categorías", type: "select_multiple", required: true, validation: { rule: "select_multiple" }, options: [] },
+  { name: "controlaStock", label: "Controlar stock de este producto", type: "checkbox" },
+  {
+    name: "enviarAlerta",
+    label: "Mostrar alerta de stock bajo en el inicio",
+    type: "checkbox",
+    visibleWhen: (values) => Boolean(values.controlaStock),
+  },
+  {
+    name: "cantidadMinima",
+    label: "Cantidad mínima",
+    type: "number",
+    required: true,
+    min: 0,
+    validation: { rule: "integer", min: 0 },
+    helperText: "Cantidad mínima indica el umbral de envío de alertas y facilita la ordenación en la tabla de stock",
+    visibleWhen: (values) => Boolean(values.controlaStock),
+  },
+  {
+    name: "cantidadInicial",
+    label: "Cantidad inicial",
+    type: "number",
+    required: true,
+    min: 0,
+    validation: { rule: "integer", min: 0 },
+    visibleWhen: (values) => Boolean(values.controlaStock),
+  },
 ];
 
 // Función para inicializar los campos con los datos de categorías

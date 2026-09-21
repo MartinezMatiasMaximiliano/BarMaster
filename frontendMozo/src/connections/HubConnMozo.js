@@ -1,4 +1,5 @@
 import * as SignalR from '@microsoft/signalr';
+import { normalizarArgumentosHub } from './argumentosHub';
 
 //HUB CONNECTION MOZO
 const hubURL = import.meta.env.VITE_BASE_URL + "NotificacionesHub"
@@ -20,8 +21,7 @@ export async function ConectarAHub() {
         }
 
         if (connection.state === SignalR.HubConnectionState.Connected) {
-            await connection.send("RegistrarMozoAGrupo", connection.connectionId);
-            return true;
+            return await sendHubMessage("RegistrarMozoAGrupo", connection.connectionId);
         }
     } catch (err) {
         console.error("Connection error:", err);
@@ -31,11 +31,16 @@ export async function ConectarAHub() {
 }
 
 connection.onreconnected(() => {
-    connection.send("RegistrarMozoAGrupo", connection.connectionId)
-        .catch(err => console.error("Error re-registering after reconnect:", err));
+    sendHubMessage("RegistrarMozoAGrupo", connection.connectionId);
 });
 
 export async function sendHubMessage(methodName, ...args) {
+    try {
+        args = normalizarArgumentosHub(methodName, args);
+    } catch (error) {
+        window.dispatchEvent(new CustomEvent('error-signalr', { detail: error.message }));
+        return false;
+    }
     const connected = await ConectarAHub();
     if (!connected || connection.state !== SignalR.HubConnectionState.Connected) {
         return false;

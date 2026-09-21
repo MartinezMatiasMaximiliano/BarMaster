@@ -1,4 +1,6 @@
 import api from '../services/axiosInstance';
+import { generarUUID } from '../Helpers/generarUUID';
+import { sendHubMessage } from '../connections/HubConnMozo';
 import { construirError } from './APIError';
 
 /** GET /TodasLasVisitas - Obtiene todas las visitas (activas y cerradas) para reportes y gráficas */
@@ -32,13 +34,13 @@ export async function BuscarVisitasActivas() {
     }
 }
 
-export async function AgregarProductosAVisita(idVisita, productos) {
+export async function AgregarProductosAVisita(idVisita, productos, idComando = generarUUID()) {
     try {
         const response = await api.post(
-            `AgregarProductoAVisita?IdVisita=${idVisita}`,
+            `AgregarProductoAVisita?IdVisita=${idVisita}&idComando=${idComando}`,
             productos
         );
-        
+        await sendHubMessage('StockActualizado');
         return response.data;
     } catch (error) {
         console.error('Error al agregar productos a la visita:', construirError(error, 'Error al agregar productos a la visita'));
@@ -66,6 +68,7 @@ export async function EliminarProductosVisita(idVisita, idsProductos) {
                 }
             }
         );
+        await sendHubMessage('StockActualizado');
         return response.data;
     } catch (error) {
         console.error('Error al eliminar productos de la visita:', construirError(error, 'Error al eliminar productos de la visita'));
@@ -194,12 +197,5 @@ export async function BuscarPagosPorVisita(idVisita) {
     return [];
 }
 
-export async function BuscarVisitaPorId(idVisita) {
-    try {
-        const response = await api.get(`Visitas/${idVisita}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error al obtener visita por ID:', construirError(error, 'Error al obtener visita por ID'));
-        return null;
-    }
-}
+// Alias conservado para consumidores externos; comparte el contrato actual.
+export const BuscarVisitaPorId = ObtenerVisitaPorId;

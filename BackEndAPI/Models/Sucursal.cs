@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace BackEndAPI.Models
 {
@@ -24,6 +24,9 @@ namespace BackEndAPI.Models
         public ICollection<Menu> Menus { get; set; } = new List<Menu>();
         public ICollection<Caja> Cajas { get; set; } = new List<Caja>();
         public ICollection<DeliveryAndTakeaway> Deliveries { get; set; } = new List<DeliveryAndTakeaway>();
+        public ICollection<Impresion.EstacionImpresion> EstacionesImpresion { get; set; } = new List<Impresion.EstacionImpresion>();
+        public ICollection<Impresion.ReglaImpresion> ReglasImpresion { get; set; } = new List<Impresion.ReglaImpresion>();
+        public ICollection<Impresion.TrabajoImpresion> TrabajosImpresion { get; set; } = new List<Impresion.TrabajoImpresion>();
 
         //public ICollection<Persona> Personas { get; set; } = new List<Persona>();
         //public Persona? Encargado { get; set; } 

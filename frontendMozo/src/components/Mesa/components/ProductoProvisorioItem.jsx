@@ -37,7 +37,7 @@ export const ProductoProvisorioItem = ({
                 mt: 1,
                 p: 1.25,
                 borderColor: 'success.main',
-                bgcolor: 'rgba(46, 125, 50, 0.06)'
+                bgcolor: 'success.light'
             }}
         >
             <Stack spacing={1}>

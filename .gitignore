@@ -552,3 +552,20 @@ bin/
 .claude/settings.local.json
 BackEndAPI/Properties/launchSettings.json
 BackEndAPI/.config/dotnet-tools.json
+
+# QZ Tray signing secrets and private PKI material
+*.pfx
+*.p12
+*.key
+*.key.pem
+*.csr
+*.csr.pem
+*.srl
+*.pass
+**/secrets/**
+**/qz-pki-private/**
+.tmp/
+
+# Operational database migration artifacts (may contain tenant metadata/data)
+tenant-migration-*.jsonl
+*.dump

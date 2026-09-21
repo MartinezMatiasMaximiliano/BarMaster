@@ -28,14 +28,13 @@ namespace BackEndAPI.Services
 
         public async Task<Mesa?> CrearMesa(CrearMesaDTO request)
         {
-            if (string.IsNullOrEmpty(request.Nombre)) throw new BusinessRuleException("El nombre de la mesa no puede estar vacio");
             if (request.Capacidad <= 0) throw new BusinessRuleException("La capacidad no puede ser negativa");
-
+            if (request.Numero <= 0) throw new BusinessRuleException("El número de la mesa debe ser mayor que cero");
             var PlanoExiste = await _planosRepository.ObtenerPlanoPorId(request.IdPlano);
             if (PlanoExiste == null) throw new NotFoundException("El plano seleccionado no existe");
 
 
-            var MesaExiste = await _mesasRepository.ExisteMesaEnPlano(request.IdPlano, request.Nombre);
+            var MesaExiste = await _mesasRepository.ExisteMesaEnPlano(request.IdPlano, request.Numero);
 
             if (MesaExiste != null) throw new ConflictException($"Ya existe la mesa en el plano seleccionado");
 
@@ -43,7 +42,7 @@ namespace BackEndAPI.Services
             var nuevaMesa = new Mesa
             {
                 IdPlano = request.IdPlano,
-                Nombre = request.Nombre,
+                Numero = request.Numero,
                 CodigoParaPedir = null,
                 Capacidad = request.Capacidad,
                 x = request.x,
@@ -57,14 +56,15 @@ namespace BackEndAPI.Services
 
         public async Task<Mesa?> ModificarMesa(ModificarMesaDTO request)
         {
+            if (request.Numero.HasValue && request.Numero.Value <= 0) throw new Exception("El número de la mesa debe ser mayor que cero");
             var buscarMesa = await _mesasRepository.ObtenerMesaPorId(request.Id);
 
             if (buscarMesa == null) throw new NotFoundException("La mesa que intenta modificar no existe");
 
             var planoDeMesa = await _planosRepository.ObtenerPlanoPorId((Guid)buscarMesa.IdPlano!);
-            if (planoDeMesa.Mesas.Any(mesa => mesa.Nombre == request.Nombre)) throw new ConflictException("El nombre de mesa ya existe en este plano");
+            if (planoDeMesa.Mesas.Any(mesa => mesa.Id != request.Id && mesa.Numero == request.Numero)) throw new ConflictException("El número de mesa ya existe en este plano");
 
-            if (!string.IsNullOrEmpty(request.Nombre)) buscarMesa.Nombre = request.Nombre;
+            if (request.Numero.HasValue) buscarMesa.Numero = request.Numero.Value;
             if (request.Capacidad.HasValue) buscarMesa.Capacidad = request.Capacidad.Value;
             if (request.x.HasValue) buscarMesa.x = request.x.Value;
             if (request.y.HasValue) buscarMesa.y = request.y.Value;

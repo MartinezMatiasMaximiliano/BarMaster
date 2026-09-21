@@ -34,7 +34,7 @@ const GraficaProductos = ({ datosProductos }) => {
                             <XAxis type="number" tickFormatter={(value) => formatearMoneda(value)} />
                             <YAxis dataKey="nombre" type="category" width={80} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Bar dataKey="ingresos" fill="#1976d2" />
+                            <Bar dataKey="ingresos" fill="var(--bm-primary-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -73,7 +73,7 @@ const GraficaProductos = ({ datosProductos }) => {
                             <XAxis dataKey="nombre" angle={-45} textAnchor="end" height={100} />
                             <YAxis tickFormatter={(value) => formatearMoneda(value)} />
                             <Tooltip formatter={(value) => formatearMoneda(value)} />
-                            <Bar dataKey="margen" fill="#388e3c" />
+                            <Bar dataKey="margen" fill="var(--bm-success-dark)" />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>

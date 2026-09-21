@@ -119,8 +119,9 @@ function Modal_Generico(props) {
                 <DialogActions sx={{ px: 3, py: 2 }}>
                     <Button 
                         variant="outlined" 
+                        data-enter-action={props.confirmar ? undefined : 'true'}
                         color="secondary" 
-                        onClick={handleClose}
+                        data-escape-action="true" onClick={handleClose}
                         startIcon={<CancelIcon />}
                     >
                         Cancelar
@@ -129,7 +130,7 @@ function Modal_Generico(props) {
                         <Button 
                             variant="contained" 
                             color="primary" 
-                            onClick={confirmarModal}
+                            data-enter-action="true" onClick={confirmarModal}
                             startIcon={<CheckCircleIcon />}
                         >
                             Confirmar

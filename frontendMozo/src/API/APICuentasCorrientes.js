@@ -1,12 +1,14 @@
 import api from '../services/axiosInstance';
-import { ObtenerCajaActiva } from './APICaja';
 import { construirError } from './APIError';
 
 function normalizarMovimiento(movimiento) {
     return {
-        idMovimientoCaja: movimiento.idMovimimientoCaja ?? movimiento.IdMovimimientoCaja ?? null,
+        idMovimientoCaja: movimiento.idMovimientoCaja ?? movimiento.IdMovimientoCaja
+            ?? movimiento.idMovimimientoCaja ?? movimiento.IdMovimimientoCaja ?? null,
         descripcion: (movimiento.descripcion ?? movimiento.Descripcion ?? '').toString().trim(),
-        monto: Number(movimiento.monto ?? movimiento.Monto ?? 0),
+        monto: Number(movimiento.montoTotal ?? movimiento.MontoTotal ?? movimiento.monto ?? movimiento.Monto ?? 0),
+        montoAbonado: Number(movimiento.montoAbonado ?? movimiento.MontoAbonado ?? 0),
+        vuelto: Number(movimiento.vuelto ?? movimiento.Vuelto ?? 0),
         fechaMovimiento: movimiento.fechaMovimiento ?? movimiento.FechaMovimiento ?? null,
         esIngreso: movimiento.esIngreso ?? movimiento.EsIngreso ?? false,
         esEfectivo: movimiento.esEfectivo ?? movimiento.EsEfectivo ?? false,
@@ -21,7 +23,7 @@ function normalizarCuentaCorriente(cuenta) {
         id: cuenta.id ?? cuenta.Id,
         nombre: (cuenta.nombre ?? cuenta.Nombre ?? '').toString().trim(),
         telefono: (cuenta.telefono ?? cuenta.Telefono ?? '').toString().trim(),
-        domicilio: (cuenta.domicilio ?? cuenta.Domicilio ?? '').toString().trim(),
+        domicilio: (cuenta.domicilio ?? cuenta.Domicilio ?? cuenta.domicilo ?? cuenta.Domicilo ?? '').toString().trim(),
         balance: Number(cuenta.balance ?? cuenta.Balance ?? 0),
         descuento: Number(cuenta.descuento ?? cuenta.Descuento ?? 0),
         movimientos,
@@ -90,7 +92,7 @@ export async function ModificarCuentaCorriente(datos) {
 
 export async function EliminarCuentaCorriente(id) {
     try {
-        const response = await api.delete('CuentasCorrientes', {
+        const response = await api.delete('CuentasCorrientes/Eliminar', {
             params: { IdCuenta: id },
         });
         return response.data;
@@ -101,17 +103,11 @@ export async function EliminarCuentaCorriente(id) {
 
 export async function CrearMovimientoCuentaCorriente(idCuenta, datos) {
     try {
-        const cajaActiva = await ObtenerCajaActiva();
-
-        if (!cajaActiva?.id) {
-            throw new Error('No hay una caja abierta. Debes abrir una caja primero.');
-        }
-
         const payload = {
             idTipoMovimientoCaja: Number(datos.idTipoMovimientoCaja),
-            idCaja: cajaActiva.id,
-            monto: Number(datos.monto),
-            descripcion: datos.descripcion || '',
+            montoTotal: Number(datos.valorMovimiento),
+            montoAbonado: Number(datos.montoAbonado),
+            descripcion: datos.descripcion?.trim() || '',
         };
 
         const response = await api.post('CuentasCorrientes/CrearMovimiento', payload, {
@@ -123,4 +119,3 @@ export async function CrearMovimientoCuentaCorriente(idCuenta, datos) {
         throw construirError(error, 'Error al crear el movimiento de la cuenta corriente');
     }
 }
-

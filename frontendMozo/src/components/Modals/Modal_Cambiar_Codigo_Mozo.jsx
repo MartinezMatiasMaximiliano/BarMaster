@@ -74,7 +74,7 @@ function Modal_Cambiar_Codigo_Mozo(props) {
                     <Modal.Title>Cambiar código de mozo</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form>
+                    <Form onSubmit={(evento) => { evento.preventDefault(); if (!saving) handleSave(); }}>
                         <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                             <Form.Label>Codigo</Form.Label>
                             <Form.Control
@@ -89,10 +89,10 @@ function Modal_Cambiar_Codigo_Mozo(props) {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
+                    <Button variant="secondary" data-escape-action="true" onClick={handleClose}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleSave} disabled={saving}>
+                    <Button variant="primary" data-enter-action="true" onClick={handleSave} disabled={saving}>
                         {saving ? 'Modificando...' : 'Modificar'}
                     </Button>
                 </Modal.Footer>

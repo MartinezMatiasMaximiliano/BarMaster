@@ -15,6 +15,7 @@ import { useCaja } from './hooks/useCaja';
 import { EstadoActual } from './components/EstadoActual';
 import { FormularioApertura } from './components/FormularioApertura';
 import { FormularioCierre } from './components/FormularioCierre';
+import { ConfirmacionCierre } from './components/ConfirmacionCierre';
 import { Movimientos } from './components/Movimientos';
 import { LoadingWrapper } from '../../components/common/LoadingWrapper';
 import { boxDividerLine } from '../../styles/boxStyles';
@@ -31,6 +32,7 @@ function Caja() {
         fieldErrors,
         tabValue,
         formCierre,
+        confirmacionCierre,
         diferencia,
         balanceActual,
         balanceNoEfectivo,
@@ -43,6 +45,8 @@ function Caja() {
         handleChange,
         onAbrirCaja,
         onCerrarCaja,
+        cancelarCierreCaja,
+        confirmarCierreCaja,
         setFormCierre
     } = useCaja();
 
@@ -124,6 +128,12 @@ function Caja() {
                         </Card>
                     </>
                 </LoadingWrapper>
+                <ConfirmacionCierre
+                    datos={confirmacionCierre}
+                    guardando={guardando}
+                    onCancelar={cancelarCierreCaja}
+                    onConfirmar={confirmarCierreCaja}
+                />
             </Stack>
         </Container>
     );

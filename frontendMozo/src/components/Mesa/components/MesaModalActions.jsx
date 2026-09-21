@@ -13,9 +13,21 @@ export const MesaModalActions = ({
     onFacturarTodo,
     onFacturarPartes,
     onAgregarPedidos,
+    onPrintPreticket,
+    printing,
     onClose
 }) => (
-    <DialogActions sx={{ px: 3, py: 2, bgcolor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+    <DialogActions sx={{
+        px: 3,
+        py: 2,
+        bgcolor: (theme) => theme.palette.mode === 'light'
+            ? theme.palette.grey[200]
+            : theme.palette.background.paper,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 1.5
+    }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
             <Button
                 variant="contained"
@@ -38,7 +50,7 @@ export const MesaModalActions = ({
                 Cobrar por partes {productosSeleccionadosCount > 0 && `(${productosSeleccionadosCount})`}
             </Button>
             <Button
-                onClick={onAgregarPedidos}
+                data-enter-action="true" onClick={onAgregarPedidos}
                 variant="contained"
                 color="success"
                 disabled={!puedeAgregarPedidos}
@@ -50,13 +62,15 @@ export const MesaModalActions = ({
             <Button
                 variant="outlined"
                 color="primary"
+                onClick={onPrintPreticket}
+                disabled={printing || !puedeFacturarTodo}
                 startIcon={<PrintIcon />}
                 size="small"
             >
-                Imprimir Preticket
+                {printing ? 'Imprimiendo…' : 'Imprimir cuenta'}
             </Button>
         </Box>
-        <Button onClick={onClose} variant="outlined" size="small">
+        <Button data-escape-action="true" onClick={onClose} variant="outlined" size="small">
             Cerrar
         </Button>
     </DialogActions>

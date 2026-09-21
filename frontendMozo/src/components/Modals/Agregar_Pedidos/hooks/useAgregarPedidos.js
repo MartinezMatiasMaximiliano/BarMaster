@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { generarUUID } from '../../../../Helpers/generarUUID';
 import { useDispatch } from 'react-redux';
 import { BuscarTodosLosProductos } from '../../../../API/APIProductos';
 import { BuscarTodasLasCategorias } from '../../../../API/APICategorias';
@@ -6,6 +7,7 @@ import { AgregarProductosAVisita } from '../../../../API/APIVisitas';
 import { actualizarVisita } from '../../../../redux/slices/visitasActivasSlice';
 import { sendHubMessage } from '../../../../connections/HubConnMozo';
 import { useSnackbar } from '../../../../hooks/useSnackbar.jsx';
+import { registrarDiagnosticoImpresion } from '../../../../services/impresion/registroDiagnosticoImpresion';
 
 export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
     const dispatch = useDispatch();
@@ -17,6 +19,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
     const [comanda, setComanda] = useState([]);
     const [loading, setLoading] = useState(false);
     const enviandoRef = useRef(false);
+    const commandIdRef = useRef(null);
 
     // Cargar productos y categorías
     useEffect(() => {
@@ -75,6 +78,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
     // Agregar producto a la comanda (useCallback estable para evitar re-renders de ListaProductos)
     const agregarAComanda = useCallback((producto) => {
+        commandIdRef.current = null;
         setComanda((prev) => {
             const existe = prev.find(item => item.producto.id === producto.id);
             if (existe) {
@@ -90,6 +94,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
     // Actualizar cantidad en comanda
     const actualizarCantidad = useCallback((productoId, nuevaCantidad) => {
+        commandIdRef.current = null;
         setComanda((prev) => {
             if (nuevaCantidad <= 0) {
                 return prev.filter(item => item.producto.id !== productoId);
@@ -104,6 +109,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
     // Actualizar indicaciones
     const actualizarIndicaciones = useCallback((productoId, indicaciones) => {
+        commandIdRef.current = null;
         setComanda((prev) =>
             prev.map(item =>
                 item.producto.id === productoId
@@ -119,6 +125,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
         enviandoRef.current = true;
         setLoading(true);
+        const inicioEnvio = performance.now();
         try {
             const itemsParaEnviar = [];
             comanda.forEach(item => {
@@ -130,7 +137,19 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
                 });
             });
             
-            const visitaActualizada = await AgregarProductosAVisita(idVisita, itemsParaEnviar);
+            commandIdRef.current ||= generarUUID();
+            registrarDiagnosticoImpresion('pedido.envio_iniciado', {
+                idComando: commandIdRef.current,
+                idVisita,
+                cantidadLineas: itemsParaEnviar.length,
+                cantidadProductos: itemsParaEnviar.reduce((total, item) => total + item.cantidad, 0),
+            });
+            const visitaActualizada = await AgregarProductosAVisita(idVisita, itemsParaEnviar, commandIdRef.current);
+            registrarDiagnosticoImpresion('pedido.backend_respondio', {
+                idComando: commandIdRef.current,
+                idVisita,
+                duracionMs: Math.round(performance.now() - inicioEnvio),
+            });
             
             if (visitaActualizada) {
                 const visitaActualizadaConMesa = {
@@ -145,13 +164,21 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
                 await sendHubMessage("NotificarVisitaActualizada", visitaActualizadaConMesa);
                 await sendHubMessage("RecargarTicket", numeroMesa);
                 setComanda([]);
+                commandIdRef.current = null;
                 onClose();
             } else {
                 // Si no hay productos en la respuesta, al menos cerrar el modal
                 setComanda([]);
+                commandIdRef.current = null;
                 onClose();
             }
         } catch (error) {
+            registrarDiagnosticoImpresion('pedido.envio_error', {
+                idComando: commandIdRef.current,
+                idVisita,
+                duracionMs: Math.round(performance.now() - inicioEnvio),
+                error: error?.message || String(error),
+            });
             console.error('Error al enviar pedidos:', error);
             showSnackbar('Error al agregar los pedidos. Por favor, intenta nuevamente.', 'error');
         } finally {
@@ -162,6 +189,7 @@ export const useAgregarPedidos = (open, idVisita, numeroMesa, onClose) => {
 
     // Limpiar estado
     const limpiarEstado = () => {
+        commandIdRef.current = null;
         setComanda([]);
         setBusqueda('');
         setCategoriaFiltro(null);

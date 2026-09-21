@@ -22,7 +22,7 @@ namespace BackEndAPI.Services
         public async Task<IReadOnlyCollection<StockProductoDTO>> ObtenerStockAsync(Guid idSucursal)
         {
             var stock = await _stockRepository.ObtenerStockAsync(idSucursal);
-            return stock.Select(MapearStock).ToArray();
+            return stock.Select(MapearearStock).ToArray();
         }
 
         public async Task<IReadOnlyCollection<AlertaStockDTO>> ObtenerAlertasAsync(Guid idSucursal)
@@ -33,7 +33,7 @@ namespace BackEndAPI.Services
         public async Task<IReadOnlyCollection<MovimientoStockDTO>> ObtenerMovimientosAsync(Guid idProducto, Guid idSucursal)
         {
             var movimientos = await _stockRepository.ObtenerMovimientosAsync(idProducto, idSucursal);
-            return movimientos.Select(MapearMovimiento).ToArray();
+            return movimientos.Select(MapearearMovimiento).ToArray();
         }
 
         public async Task<StockProductoDTO> ConfigurarAsync(
@@ -55,7 +55,7 @@ namespace BackEndAPI.Services
                 request.CantidadInicial);
 
             stock.Producto = producto;
-            return MapearStock(stock);
+            return MapearearStock(stock);
         }
 
         public async Task<StockProductoDTO> RegistrarMovimientoAsync(
@@ -69,7 +69,7 @@ namespace BackEndAPI.Services
                 idSucursal,
                 request.Cantidad,
                 request.Motivo);
-            return MapearStock(stock);
+            return MapearearStock(stock);
         }
 
         public Task DescontarVentaAsync(
@@ -86,7 +86,7 @@ namespace BackEndAPI.Services
             CanalMovimientoStock canal) =>
             _stockRepository.AplicarVentaAsync(idSucursal, productos, idVisita, true, canal);
 
-        private static StockProductoDTO MapearStock(StockProductoSucursal stock)
+        private static StockProductoDTO MapearearStock(StockProductoSucursal stock)
         {
             return new StockProductoDTO
             {
@@ -102,7 +102,7 @@ namespace BackEndAPI.Services
             };
         }
 
-        private static MovimientoStockDTO MapearMovimiento(MovimientoStock movimiento)
+        private static MovimientoStockDTO MapearearMovimiento(MovimientoStock movimiento)
         {
             return new MovimientoStockDTO
             {

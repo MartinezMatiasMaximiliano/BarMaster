@@ -16,8 +16,10 @@ import { MesasGridLayout } from './components/MesasGridLayout';
 import { LoadingState } from './components/LoadingState';
 import { EmptyState } from './components/EmptyState';
 import WarningIcon from '@mui/icons-material/Warning';
+import { useCodigoMozoTeclado } from '../../hooks/useCodigoMozoTeclado';
 
 function Index2(props) {
+    const codigoMozoInputRef = useCodigoMozoTeclado();
     const dispatch = useDispatch();
     const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
 
@@ -105,6 +107,7 @@ function Index2(props) {
             
             <BottomBar
                 codigoMozo={codigoMozo}
+                codigoMozoInputRef={codigoMozoInputRef}
                 handleChange={handleChange}
                 mozo={mozo}
                 onSalirClick={handleAbrirConfirmacion}

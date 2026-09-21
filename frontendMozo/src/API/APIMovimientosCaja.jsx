@@ -25,20 +25,19 @@ export async function ObtenerTiposMovimientoCaja(entorno = 'Movimiento') {
 
 export async function CrearMovimientoCaja(datos) {
     try {
-        // Primero obtener la caja activa para usar su ID
+        // Verificar que exista una caja activa. El backend obtiene su ID desde la sucursal autenticada.
         const cajaActiva = await ObtenerCajaActiva();
 
         if (!cajaActiva || !cajaActiva.id) {
             throw new Error('No hay una caja abierta. Debes abrir una caja primero.');
         }
 
+        const monto = Number(datos.monto);
         const payload = {
             idTipoMovimientoCaja: datos.idTipoMovimientoCaja,
-            idCaja: cajaActiva.id,
-            monto: Number(datos.monto),
-            descripcion: datos.descripcion || '',
-            idVisita: datos.idVisita ?? null,
-            listaIdsProductos: datos.listaIdsProductos ?? []
+            montoAbonado: monto,
+            montoTotal: monto,
+            descripcion: datos.descripcion || ''
         };
 
         const response = await api.post('MovimientosCaja', payload);

@@ -61,18 +61,20 @@ const ConfirmExitDialog = ({
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
                 <Button
-                    onClick={onClose}
+                    data-escape-action="true" onClick={onClose}
                     variant="outlined"
                     sx={{
                         textTransform: 'none',
                         fontWeight: 600,
-                        px: 3
+                        px: 3,
+                        color: 'grey.50',
+                        '& .MuiSvgIcon-root': { color: 'grey.50' }
                     }}
                 >
                     Cancelar
                 </Button>
                 <Button
-                    onClick={handleConfirm}
+                    data-enter-action="true" onClick={handleConfirm}
                     variant="contained"
                     color="error"
                     startIcon={<LogoutIcon />}

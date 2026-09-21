@@ -4,7 +4,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 
 export const MesaModalHeader = ({ fecha, numeroMesa, onClose }) => (
-    <DialogTitle sx={{ bgcolor: '#ffffff', px: 3, py: 2 }}>
+    <DialogTitle sx={{
+        bgcolor: (theme) => theme.palette.mode === 'light'
+            ? theme.palette.grey[200]
+            : theme.palette.background.paper,
+        px: 3,
+        py: 2
+    }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                 <Stack direction="row" spacing={1} alignItems="center">

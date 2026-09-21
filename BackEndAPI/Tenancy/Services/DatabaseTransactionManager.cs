@@ -31,9 +31,9 @@ namespace BackEndAPI.Tenancy.Services
                 await action();
                 await transaction.CommitAsync();
             }
-            catch (Exception ex)
+            catch 
             {
-                _logger.LogError(ex, "Se hizo rollback de una transacción por una excepción");
+                //_logger.LogError(ex, "Se hizo rollback de una transacción por una excepción");
                 await transaction.RollbackAsync();
                 // Se re-lanza la excepción original (con su tipo y stack trace intactos) en vez de
                 // envolverla en un Exception genérico: así el logging de más arriba y cualquier
@@ -56,9 +56,9 @@ namespace BackEndAPI.Tenancy.Services
                 await transaction.CommitAsync();
                 return result;
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex, "Se hizo rollback de una transacción por una excepción");
+                //_logger.LogError(ex, "Se hizo rollback de una transacción por una excepción");
                 await transaction.RollbackAsync();
                 throw;
             }

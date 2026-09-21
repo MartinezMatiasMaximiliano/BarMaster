@@ -1,21 +1,20 @@
 /* eslint-disable react-refresh/only-export-components */
 import Toast_Notificacion from "../components/Toast_Notificacion";
-import { Chip } from "@mui/material";
-import Avatar from '@mui/material/Avatar';
+import { ChipNombreCompleto } from "../components/PersonajeSelector";
 import {
     getFieldError,
     isRequiredField,
     validateFieldAndSetError,
     validateForm,
 } from "../validation/formValidation";
+import { clearBranchSession } from "../services/sessionCleanup";
 
 /* Funcion para confirmar el del sistema (sirve para el sistema de una sucursal y para el panel de sucursales) */
-export const handleConfirmarSalir = (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
+export const handleConfirmarSalir = async (loginContext, authTypeContext, setOpenConfirmDialog, navigate) => {
     // Cerrar diálogo primero
     setOpenConfirmDialog(false);
     
-    // Limpiar localStorage
-    localStorage.clear();
+    await clearBranchSession();
     
     // Limpiar contextos - verificar qué método está disponible
     if (loginContext?.setLogeadoEmpresaSucursal) {
@@ -94,19 +93,18 @@ export function formatearHoraCompleta(fecha) {
     });
 }
 
-export function GetChipNombreCompleto(Nombre, Apellido) {
-    const nombres = Nombre || localStorage.getItem('USER_nombres') || '';
-    const apellido = Apellido || localStorage.getItem('USER_apellido') || '';
- 
-    const ChipNombreCompleto =
-        <Chip
-            avatar={<Avatar>{nombres?.[0]?.toUpperCase() || ''}</Avatar>}
-            label={`${nombres} ${apellido}`}
-            variant="outlined"
-            color="success"
-        />;
-
-    return ChipNombreCompleto;
+export function GetChipNombreCompleto(Nombre, Apellido, PersonajeId, opciones = {}) {
+    return (
+        <ChipNombreCompleto
+            nombre={Nombre}
+            apellido={Apellido}
+            personajeIdInicial={PersonajeId}
+            editable={opciones.editable ?? false}
+            esUsuarioLogueado={opciones.esUsuarioLogueado ?? (!Nombre && !Apellido)}
+            validarCodigo={opciones.validarCodigo ?? false}
+            onPersonajeChange={opciones.onPersonajeChange}
+        />
+    );
 }
 
 export function MappearPedidos(visitas) {
@@ -130,6 +128,8 @@ export function MappearReservas(reservas) {
             nombreReserva: reserva.nombreReserva,
             telefono: (reserva.telefono ?? reserva.Telefono ?? reserva.telefonoContacto ?? reserva.TelefonoContacto ?? '').toString().trim(),
             cantidadDePersonas: reserva.cantidadDePersonas,
+            mesaReserva: (reserva.mesaReserva ?? reserva.MesaReserva) ? `Mesa ${reserva.mesaReserva ?? reserva.MesaReserva}` : '',
+            idMesa: reserva.idMesa ?? null,
             IdEstadoReserva: reserva.estado.id,
             estado: reserva.estado.nombre
         }))
@@ -152,6 +152,7 @@ export function MappearPersonas(personas) {
                 email: datosPersonales.email ?? datosPersonales.Email ?? '',
                 rol: rol?.id ?? rol?.Id ?? persona.idRol ?? persona.IdRol,
                 rolNombre: rol?.nombre ?? rol?.Nombre ?? '',
+                personajeId: persona.personajeId ?? persona.PersonajeId ?? 0,
                 activo: Boolean(datosPersonales.activo ?? datosPersonales.Activo ?? persona.activo ?? persona.Activo ?? false),
             };
         })
@@ -161,11 +162,12 @@ export function MappearPersonas(personas) {
 export function MappearMozos(mozos) {
     return (
         mozos.map(mozo => ({
-            id: mozo.id,
+            id: mozo.id ?? mozo.Id,
             codigoDeServicio: mozo.codigoDeServicio,
             idRol: mozo.rol?.id,
             nombre: mozo.datosPersonales.nombres,
             apellido: mozo.datosPersonales.apellido,
+            personajeId: mozo.personajeId ?? mozo.PersonajeId ?? 0,
             dni: mozo.datosPersonales.dni,
             direccion: mozo.datosPersonales.direccion,
             telefono: mozo.datosPersonales.telefono,
@@ -192,7 +194,7 @@ export function MappearMenu(menu) {
             codigo: item.codigo,
             nombre: item.nombre,
             precio: item.precio,
-            costoProduccion: item.costo,
+            costoProduccion: item.costoProduccion ?? item.CostoProduccion ?? item.costo,
             descripcion: item.descripcion,
             categorias: item.categorias,
             activo: item.activo,
@@ -204,7 +206,7 @@ export function MappearMesas(mesas) {
     return (
         mesas.map(mesa => ({
             id: mesa.id,
-            numero: mesa.nombre || mesa.numeroMesa || "", 
+            numero: mesa.numero ?? "", 
             codigoParaPedir: mesa.codigoParaPedir,
             capacidad: mesa.capacidad || 0,
             idPlano: mesa.plano?.id || mesa.idPlano || null,

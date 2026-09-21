@@ -32,19 +32,22 @@ namespace BackEndAPI.Controllers
                     Nombre = reserva.Estado.Nombre
                 },
                 TelefonoContacto = reserva.Telefono,
-                CantidadDePersonas = reserva.CantidadDePersonas
+                CantidadDePersonas = reserva.CantidadDePersonas,
+                IdMesa = reserva.IdMesa,
+                MesaReserva = reserva.Mesa?.Numero.ToString() ?? string.Empty
             };
         }
 
         [HttpGet("/Reservas")]
         public async Task<IActionResult> GetReservas()
         {
-            var reservas = await _ReservasServices.BuscarReservas();
+            var idsucursal = ObtenerIdSucursal();
+            var reservas = await _ReservasServices.BuscarReservas(idsucursal);
             return Ok(reservas.Select(MappearReservaDTO).ToList());
         }
 
         [HttpGet("/Reservas/Fechas")]
-        public async Task<IActionResult> GetReservasPorRangoFechas([FromQuery] DateTime Desde, [FromQuery] DateTime? Hasta)
+        public async Task<IActionResult> GetReservasPorRangoFechas([FromQuery] DateTimeOffset Desde, [FromQuery] DateTimeOffset? Hasta)
         {
             var idSucursal = ObtenerIdSucursal();
             var reservas = await _ReservasServices.BuscarReservasPorRangoFechas(idSucursal, Desde, Hasta);
@@ -61,14 +64,16 @@ namespace BackEndAPI.Controllers
 
         [HttpPut("/Reservas")]
         public async Task<IActionResult> ModificarReserva(ModificarReservaDTO DTO) {
-            await _ReservasServices.ActualizarReserva(DTO);
+            var idsucursal = ObtenerIdSucursal();
+            await _ReservasServices.ActualizarReserva(DTO,idsucursal);
             return Ok(new EntregaDTO(200, "OK", $"Modificado exitosamente, Id:{DTO.Id}"));
         }
 
         [HttpDelete("/Reservas")]
         public async Task<IActionResult> EliminarReserva(Guid Id)
         {
-            await _ReservasServices.EliminarReserva(Id);
+            var idsucursal = ObtenerIdSucursal();
+            await _ReservasServices.EliminarReserva(Id, idsucursal);
             return Ok(new EntregaDTO(200, "OK", $"Eliminado exitosamente, Id:{Id}"));
         }
 

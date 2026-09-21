@@ -28,7 +28,7 @@ import { cancelButtonStyles, dialogTitleGradientStyles, dialogActionsStyles } fr
 
 /**
  * Modal para facturar con método de pago, efectivo/vuelto, cuenta corriente (placeholder) y descuento.
- * Backend aún no recibe estos datos; el formulario queda listo para cuando se implemente.
+ * El descuento monetario se transmite junto al importe recibido.
  */
 export default function Modal_Facturar({
     open,
@@ -54,7 +54,7 @@ export default function Modal_Facturar({
     const tipoPagoSeleccionado = tiposPago.find(t => String(t.id) === String(idTipoPago));
     const esEfectivo = tipoPagoSeleccionado?.esEfectivo === true;
     const totalNum = Number(total) || 0;
-    const descuentoNum = Math.min(Number(montoDescuento) || 0, totalNum);
+    const descuentoNum = Math.max(0, Math.min(Number(montoDescuento) || 0, totalNum));
     const totalFinal = Math.max(0, totalNum - descuentoNum);
     const montoRecibidoNum = Number(montoRecibido) || 0;
     const vuelto = esEfectivo && montoRecibidoNum >= totalFinal ? montoRecibidoNum - totalFinal : null;
@@ -118,9 +118,9 @@ export default function Modal_Facturar({
         }
         setError('');
         const montoParaBackend = esEfectivo ? montoRecibidoNum : totalFinal;
-        onConfirm(productIds, Number(idTipoPago), montoParaBackend);
+        onConfirm(productIds, Number(idTipoPago), montoParaBackend, descuentoNum);
         handleClose();
-    }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, cajaInsuficiente, montoCaja, currencyFormatter, productIds, idTipoPago, onConfirm, handleClose]);
+    }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, cajaInsuficiente, montoCaja, currencyFormatter, productIds, idTipoPago, onConfirm, handleClose, descuentoNum]);
 
     if (!open) return null;
 
@@ -132,13 +132,31 @@ export default function Modal_Facturar({
             fullWidth
             PaperProps={{ sx: { borderRadius: 2 } }}
         >
-            <DialogTitle sx={dialogTitleGradientStyles}>
+            <DialogTitle sx={(theme) => ({
+                ...dialogTitleGradientStyles,
+                ...(theme.palette.mode === 'dark' && {
+                    background: '#7098FA',
+                    color: theme.palette.common.white
+                })
+            })}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Stack direction="row" spacing={1} alignItems="center">
-                        <ReceiptIcon color="primary" />
+                        <ReceiptIcon sx={{
+                            color: (theme) => theme.palette.mode === 'dark'
+                                ? theme.palette.common.white
+                                : theme.palette.primary.main
+                        }} />
                         <Typography variant="h6" component="span">{titulo}</Typography>
                     </Stack>
-                    <IconButton aria-label="cerrar" onClick={handleClose} sx={{ color: (theme) => theme.palette.grey[500] }}>
+                    <IconButton
+                        aria-label="cerrar"
+                        onClick={handleClose}
+                        sx={{
+                            color: (theme) => theme.palette.mode === 'dark'
+                                ? theme.palette.common.white
+                                : theme.palette.grey[500]
+                        }}
+                    >
                         <CloseIcon />
                     </IconButton>
                 </Stack>
@@ -146,13 +164,31 @@ export default function Modal_Facturar({
 
             <DialogContent dividers>
                 <Stack spacing={2.5} sx={{ pt: 0.5 }}>
-                    <Box sx={{ ...boxCardBorder, p: 2 }}>
-                        <Typography variant="subtitle2" color="text.secondary">Total a pagar</Typography>
-                        <Typography variant="h5" color="primary.main">{currencyFormatter.format(totalNum)}</Typography>
+                    <Box sx={(theme) => ({
+                        ...boxCardBorder,
+                        p: 2,
+                        ...(theme.palette.mode === 'dark' && {
+                            bgcolor: '#7098FA',
+                            borderColor: '#7098FA',
+                            color: theme.palette.common.white
+                        })
+                    })}>
+                        <Typography
+                            variant="subtitle2"
+                            color={(theme) => theme.palette.mode === 'dark' ? 'inherit' : 'text.secondary'}
+                        >
+                            Total a pagar
+                        </Typography>
+                        <Typography
+                            variant="h5"
+                            color={(theme) => theme.palette.mode === 'dark' ? 'inherit' : 'primary.main'}
+                        >
+                            {currencyFormatter.format(totalNum)}
+                        </Typography>
                     </Box>
 
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
-                        <FormControl size="small" sx={{ width: { xs: '100%', sm: '65%' } }}>
+                        <FormControl size="small" sx={{ width: { xs: '80%', sm: '52%' } }}>
                             <InputLabel id="facturar-tipo-pago">Método de pago</InputLabel>
                             <Select
                                 labelId="facturar-tipo-pago"
@@ -174,7 +210,7 @@ export default function Modal_Facturar({
                                     onChange={(e) => setFacturarTicket(e.target.checked)}
                                 />
                             }
-                            label="Facturar ticket"
+                            label="Comprobante Fiscal"
                         />
                     </Stack>
 
@@ -192,7 +228,7 @@ export default function Modal_Facturar({
                                 helperText={cajaInsuficiente ? `La caja no tiene suficiente efectivo (disponible: ${currencyFormatter.format(montoCaja)})` : ''}
                             />
                             {vuelto !== null && vuelto >= 0 && (
-                                <Typography variant="body2" color={cajaInsuficiente ? 'error.main' : 'success.main'} sx={{ mt: 0.5, fontWeight: 600 }}>
+                                <Typography variant="body2" color={cajaInsuficiente ? 'error.dark' : 'success.dark'} sx={{ mt: 0.5, fontWeight: 600 }}>
                                     Vuelto: {currencyFormatter.format(vuelto)}
                                 </Typography>
                             )}
@@ -278,11 +314,11 @@ export default function Modal_Facturar({
             </DialogContent>
 
             <DialogActions sx={dialogActionsStyles}>
-                <Button variant="outlined" color="secondary" onClick={handleClose} sx={cancelButtonStyles}>
+                <Button variant="outlined" color="secondary" data-escape-action="true" onClick={handleClose} sx={cancelButtonStyles}>
                     Cancelar
                 </Button>
-                <Button variant="contained" color="success" onClick={handleConfirm} startIcon={<ReceiptIcon />}>
-                    Confirmar facturación
+                <Button variant="contained" color="success" data-enter-action="true" onClick={handleConfirm} startIcon={<ReceiptIcon />}>
+                    Confirmar cobro
                 </Button>
             </DialogActions>
         </Dialog>

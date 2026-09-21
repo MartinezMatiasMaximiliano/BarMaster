@@ -46,11 +46,14 @@ import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 
 const menuConfig = {
     admin: {
         "Gestión": [
             { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
+            { path: "/stock", label: "Stock", icon: Inventory2OutlinedIcon },
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_envios", label: "Tipos de Envío", icon: DeliveryDiningOutlinedIcon },
@@ -83,9 +86,11 @@ const menuConfig = {
             { path: "/historial", label: "Historial", icon: HistoryIcon },
         ],
         "Configuración": [
+            { path: "/impresiones", label: "Impresiones", icon: PrintOutlinedIcon },
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         ],
         "Ayuda": [
+            { path: "/primeros_pasos", label: "Primeros pasos", icon: ChecklistOutlinedIcon },
             { path: "/documentacion", label: "Documentación de uso", icon: ArticleOutlinedIcon },
             { path: "/comentarios", label: "Enviar Comentarios", icon: FeedbackOutlinedIcon },
         ],
@@ -93,6 +98,7 @@ const menuConfig = {
     cajero: {
         "Gestión": [
             { path: "/abm_productos", label: "Productos", icon: RestaurantMenuOutlinedIcon },
+            { path: "/stock", label: "Stock", icon: Inventory2OutlinedIcon },
             { path: "/abm_mesas", label: "Mesas", icon: TableRestaurantOutlinedIcon },
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_envios", label: "Tipos de Envío", icon: DeliveryDiningOutlinedIcon },
@@ -127,6 +133,7 @@ const menuConfig = {
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         ],
         "Ayuda": [
+            { path: "/primeros_pasos", label: "Primeros pasos", icon: ChecklistOutlinedIcon },
             { path: "/documentacion", label: "Documentación de uso", icon: ArticleOutlinedIcon },
             { path: "/comentarios", label: "Enviar Comentarios", icon: FeedbackOutlinedIcon },
         ],
@@ -243,11 +250,11 @@ function NavBar_Botones(props) {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setShowLogout(false)}>Cancelar</Button>
+                    <Button data-escape-action="true" onClick={() => setShowLogout(false)}>Cancelar</Button>
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => {
+                        data-enter-action="true" onClick={() => {
                             setShowLogout(false);
                             props.cerrarSesion();
                         }}

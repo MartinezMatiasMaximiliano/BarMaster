@@ -64,6 +64,11 @@ export const authService = {
         }
     },
 
+    isTokenValid: (token) => {
+        const decoded = authService.decodeToken(token);
+        return Boolean(decoded?.exp && decoded.exp * 1000 > Date.now());
+    },
+
     // Función para obtener el IdSucursal del token
     getIdSucursal: () => {
         const token = localStorage.getItem('token');
@@ -91,11 +96,16 @@ export const authService = {
                 // Guardar el token
                 localStorage.setItem('USER_token', tokenData.access_token);
                 localStorage.setItem('USER_auth_type', tokenData.auth_type);
+                localStorage.setItem('USER_personaje', String(tokenData.personajeId ?? 0));
                 
                 // Decodificar el token para extraer información de la persona
                 const decoded = authService.decodeToken(tokenData.access_token);
                 
                 if (decoded) {
+                    localStorage.setItem('USER_id', decoded.IdPersona || '');
+                    const requestedRole = decoded.RequestedRole?.trim().toLowerCase();
+                    localStorage.setItem('USER_auth_type', requestedRole || tokenData.auth_type);
+
                     // Extraer nombres y apellido del claim RequestedBy
                     const requestedBy = decoded.RequestedBy || '';
                     if (requestedBy) {
@@ -108,7 +118,8 @@ export const authService = {
                 return {
                     success: true,
                     token: tokenData.access_token,
-                    authType: tokenData.auth_type
+                    authType: tokenData.auth_type,
+                    personajeId: tokenData.personajeId ?? 0
                 };
             }
             

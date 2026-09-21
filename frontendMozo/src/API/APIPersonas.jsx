@@ -98,6 +98,18 @@ export async function ModificarPassword(contraseñaActual, contraseñaNueva, con
     }
 }
 
+export async function ModificarPersonaje(idPersona, personajeId) {
+    try {
+        const response = await api.put('Persona/Personaje', {
+            idPersona,
+            personajeId,
+        });
+        return response.data;
+    } catch (error) {
+        throw construirError(error, 'Error al guardar el personaje');
+    }
+}
+
 
 
 export async function ModificarCodigoMozo(datos) {

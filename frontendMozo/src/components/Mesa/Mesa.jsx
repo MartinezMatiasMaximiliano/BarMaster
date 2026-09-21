@@ -4,6 +4,7 @@ import { MesaButton } from './MesaButton';
 import { MesaModalUnificado } from './MesaModalUnificado';
 import Mesa_Deshabilitada from '../Mesa_Deshabilitada';
 import { useMesaState } from './useMesaState';
+import { useSnackbar } from '../../hooks/useSnackbar';
 import { useMesaLogic } from './useMesaLogic';
 
 export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = false, hayCajaActiva = true, esVistaPlano = false }) {
@@ -13,10 +14,11 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         handleShow,
         handleClose,
         setCheckBoxSeleccionados
-    } = useMesaState(datos_mesa.nombre);
+    } = useMesaState(datos_mesa.id);
 
 
-    const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic();
+    const { showSnackbar, SnackbarComponent } = useSnackbar();
+    const { cancelarPedidos, cerrarMesa, abrirMesa } = useMesaLogic(showSnackbar);
 
     // Handlers con contexto
     const handleCancelarPedidos = (idsProductos) => {
@@ -25,13 +27,13 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         cancelarPedidos(
             idsProductos,
             idVisita,
-            datos_mesa.nombre,
+            datos_mesa.numero,
             () => setCheckBoxSeleccionados([])
         );
     };
 
     const handleCerrarMesa = (mesaId) => {
-        cerrarMesa(mesaId, datos_mesa.nombre, visitaMesa?.productosConsumidos || [], esVistaPlano);
+        cerrarMesa(mesaId, datos_mesa.numero, visitaMesa?.productosConsumidos || [], esVistaPlano);
     };
 
     const handleAbrirMesa = () => {
@@ -41,7 +43,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         }
         var request = {
             idMesa: datos_mesa.id,
-            numeroMesa: datos_mesa.nombre, // Necesario para crear la visita en Redux
+            numeroMesa: datos_mesa.numero, // Necesario para crear la visita en Redux
             codigoServicioMozo: mozo.codigoDeServicio,
             abrir: true,
         }
@@ -59,7 +61,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
     const renderMesaActiva = () => (
         <>
             <MesaButton
-                numeroMesa={datos_mesa.nombre}
+                numeroMesa={datos_mesa.numero}
                 estilo={estilo}
                 variant={variant}
                 onClick={handleShowConValidacion}
@@ -83,7 +85,7 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         if (!datos_mesa.codigoParaPedir) {
             return (
                 <MesaButton
-                    numeroMesa={datos_mesa.nombre}
+                    numeroMesa={datos_mesa.numero}
                     estilo={estilo}
                     variant="secondary"
                     onClick={handleAbrirMesa}
@@ -131,5 +133,5 @@ export default function Mesa({ datos_mesa, estilo, variant, mozo, simpleStyle = 
         );
     };
 
-    return renderMesa();
+    return <>{renderMesa()}<SnackbarComponent /></>;
 }
