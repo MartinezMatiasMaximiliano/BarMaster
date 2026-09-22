@@ -15,14 +15,41 @@ export async function BuscarMesasDisponibles(fechaHora) {
     }
 }
 
-export async function BuscarTodasLasReservas() {
+export async function BuscarTodasLasReservas(desde, hasta) {
     try {
-        const response = await api.get('Reservas');
+        const response = await api.get('Reservas', {
+            params: {
+                ...(desde ? { desde } : {}),
+                ...(hasta ? { hasta } : {}),
+            },
+        });
         return response.data;
     } catch (error) {
         console.error("Error:", construirError(error, 'Error al buscar reservas'));
         throw construirError(error, 'Error al buscar reservas');
     }
+}
+
+const fechaConOffsetArgentina = (anio, mes, dia) => (
+    `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}T12:00:00-03:00`
+);
+
+export function obtenerRangoMesReservas(fecha) {
+    const anio = fecha.getFullYear();
+    const mes = fecha.getMonth() + 1;
+    const ultimoDia = new Date(anio, mes, 0).getDate();
+
+    return {
+        desde: fechaConOffsetArgentina(anio, mes, 1),
+        hasta: fechaConOffsetArgentina(anio, mes, ultimoDia),
+    };
+}
+
+export function obtenerRangoDiasReservas(fechaInicio, fechaFin) {
+    return {
+        desde: `${fechaInicio}T12:00:00-03:00`,
+        hasta: `${fechaFin}T12:00:00-03:00`,
+    };
 }
 
 export async function RecargarReservasConservando(asignar, buscar = BuscarTodasLasReservas) {

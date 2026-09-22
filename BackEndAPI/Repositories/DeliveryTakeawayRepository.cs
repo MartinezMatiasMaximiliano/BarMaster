@@ -21,9 +21,9 @@ namespace BackEndAPI.Repositories
             _transactionManager = transactionManager;
         }
 
-        public async Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdSucursal(Guid idSucursal)
+        public async Task<IEnumerable<DeliveryAndTakeaway>> ObtenerPorIdSucursal(Guid idSucursal, DateTime? desde, DateTime? hasta)
         {
-            return await Db.DeliveriesTakeaways
+            IQueryable<DeliveryAndTakeaway> consulta = Db.DeliveriesTakeaways
                 .Include(d => d.Visita)
                 .ThenInclude(v => v.Productos)
                 .Include(d => d.Visita)
@@ -31,7 +31,20 @@ namespace BackEndAPI.Repositories
                 .ThenInclude(p => p.TipoMovimientoCaja)
                 .Include(e=> e.TipoEnvio)
                 .Include(c => c.Cadete)
-                .Where(d => d.IdSucursal == idSucursal)
+                .Where(d => d.IdSucursal == idSucursal);
+
+            if (desde.HasValue)
+            {
+                consulta = consulta.Where(d => d.FechaHora >= desde.Value);
+            }
+
+            if (hasta.HasValue)
+            {
+                consulta = consulta.Where(d => d.FechaHora <= hasta.Value);
+            }
+
+            return await consulta
+                .OrderByDescending(d => d.FechaHora)
                 .AsSplitQuery()
                 .ToListAsync();
         }

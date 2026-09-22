@@ -5,11 +5,13 @@ import HistoryIcon from '@mui/icons-material/History';
 import { useFiltros } from './hooks/useFiltros';
 import { useReportes } from './hooks/useReportes';
 import ResumenReporte from './components/ResumenReporte';
+import ConfirmarHistoricoDialog from '../../components/ConfirmarHistoricoDialog';
 
 const ReporteResumido = () => {
     const filtros = useFiltros();
     const reportes = useReportes(filtros);
     const prevFechasRef = useRef({ fechaInicio: '', fechaFin: '' });
+    const [confirmarHistorico, setConfirmarHistorico] = React.useState(false);
 
     // Auto-cargar cuando ambas fechas están seleccionadas
     useEffect(() => {
@@ -25,7 +27,7 @@ const ReporteResumido = () => {
     const handleHistorico = useCallback(() => {
         filtros.actualizarFiltro('fechaInicio', '');
         filtros.actualizarFiltro('fechaFin', '');
-        reportes.cargarVisitas();
+        reportes.cargarVisitas({ historico: true });
     }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
 
     if (reportes.loading) {
@@ -82,7 +84,7 @@ const ReporteResumido = () => {
                                 <Button
                                     variant="outlined"
                                     startIcon={<HistoryIcon />}
-                                    onClick={handleHistorico}
+                                    onClick={() => setConfirmarHistorico(true)}
                                 >
                                     Histórico
                                 </Button>
@@ -105,7 +107,7 @@ const ReporteResumido = () => {
             {!reportes.datosCargados ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                        Seleccioná un rango de fechas para ver los datos, o presioná "Histórico" para ver todo.
+                        {'Seleccioná un rango de fechas para ver los datos, o presioná "Histórico" para ver todo.'}
                     </Typography>
                 </Box>
             ) : (
@@ -116,6 +118,14 @@ const ReporteResumido = () => {
                     productos={reportes.productos}
                 />
             )}
+            <ConfirmarHistoricoDialog
+                open={confirmarHistorico}
+                onCancelar={() => setConfirmarHistorico(false)}
+                onConfirmar={() => {
+                    setConfirmarHistorico(false);
+                    handleHistorico();
+                }}
+            />
         </Container>
     );
 };

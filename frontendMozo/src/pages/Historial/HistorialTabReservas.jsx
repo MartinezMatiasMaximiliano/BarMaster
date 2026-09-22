@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Box, CircularProgress, Alert, Typography } from '@mui/material';
-import { BuscarTodasLasReservas, ModificarReserva } from '../../API/APIReservas';
+import { BuscarTodasLasReservas, ModificarReserva, obtenerRangoDiasReservas } from '../../API/APIReservas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
 import BuscadorTabla from '../../components/Tabla/BuscadorTabla';
@@ -33,7 +33,10 @@ export default function HistorialTabReservas({ fechaInicio, fechaFin, modoHistor
             setLoading(true);
             setError('');
             try {
-                const data = await BuscarTodasLasReservas();
+                const rango = modoHistorico
+                    ? {}
+                    : obtenerRangoDiasReservas(fechaInicio, fechaFin);
+                const data = await BuscarTodasLasReservas(rango.desde, rango.hasta);
                 if (ignorar) return;
                 const raw = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
                 setReservas(raw);

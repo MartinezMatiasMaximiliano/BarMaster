@@ -191,9 +191,16 @@ namespace BackEndAPI.Services
             return await _visitasRepository.ObtenerVisitasActivas();
         }
 
-        public async Task<IEnumerable<Visita>> ObtenerTodasLasVisitas()
+        public async Task<IEnumerable<Visita>> ObtenerTodasLasVisitas(DateTimeOffset? desde, DateTimeOffset? hasta)
         {
-            return await _visitasRepository.ObtenerTodasLasVisitas();
+            if (desde.HasValue != hasta.HasValue)
+                throw new BusinessRuleException("Las fechas desde y hasta deben enviarse juntas");
+            if (desde.HasValue && hasta!.Value < desde.Value)
+                throw new BusinessRuleException("La fecha hasta no puede ser anterior a la fecha desde");
+
+            return await _visitasRepository.ObtenerTodasLasVisitas(
+                desde?.UtcDateTime,
+                hasta?.UtcDateTime);
         }
 
         public async Task<decimal> CalcularTotal(Guid IdVisita)

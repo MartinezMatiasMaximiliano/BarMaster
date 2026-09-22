@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Button, TextField, Stack } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
+import ConfirmarHistoricoDialog from '../ConfirmarHistoricoDialog';
 
 export default function FiltroFechas({ onBuscar, onHistorico, loading = false }) {
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
+    const [confirmarHistorico, setConfirmarHistorico] = useState(false);
     const prevFechasRef = useRef({ fechaInicio: '', fechaFin: '' });
 
     useEffect(() => {
@@ -16,6 +18,11 @@ export default function FiltroFechas({ onBuscar, onHistorico, loading = false })
     }, [fechaInicio, fechaFin, onBuscar]);
 
     const handleHistoricoClick = () => {
+        setConfirmarHistorico(true);
+    };
+
+    const handleConfirmarHistorico = () => {
+        setConfirmarHistorico(false);
         prevFechasRef.current = { fechaInicio: '', fechaFin: '' };
         setFechaInicio('');
         setFechaFin('');
@@ -55,6 +62,11 @@ export default function FiltroFechas({ onBuscar, onHistorico, loading = false })
                     Histórico
                 </Button>
             </Stack>
+            <ConfirmarHistoricoDialog
+                open={confirmarHistorico}
+                onCancelar={() => setConfirmarHistorico(false)}
+                onConfirmar={handleConfirmarHistorico}
+            />
         </Box>
     );
 }

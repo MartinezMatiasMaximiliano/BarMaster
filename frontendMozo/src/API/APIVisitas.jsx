@@ -3,15 +3,27 @@ import { generarUUID } from '../Helpers/generarUUID';
 import { sendHubMessage } from '../connections/HubConnMozo';
 import { construirError } from './APIError';
 
-/** GET /TodasLasVisitas - Obtiene todas las visitas (activas y cerradas) para reportes y gráficas */
-export async function ObtenerTodasLasVisitas() {
+/** GET /TodasLasVisitas - Obtiene visitas activas y cerradas, opcionalmente dentro de un rango. */
+export async function ObtenerTodasLasVisitas(desde, hasta) {
     try {
-        const response = await api.get('TodasLasVisitas');
+        const response = await api.get('TodasLasVisitas', {
+            params: {
+                ...(desde ? { desde } : {}),
+                ...(hasta ? { hasta } : {}),
+            },
+        });
         return response.data ?? [];
     } catch (error) {
         console.error('Error al obtener todas las visitas:', construirError(error, 'Error al obtener todas las visitas'));
         return [];
     }
+}
+
+export function obtenerRangoDiasVisitas(fechaInicio, fechaFin) {
+    return {
+        desde: `${fechaInicio}T00:00:00-03:00`,
+        hasta: `${fechaFin}T23:59:59.999-03:00`,
+    };
 }
 
 export async function ObtenerVisitaPorId(idVisita) {
@@ -103,7 +115,10 @@ export async function CambiarEstadoProducto(idProducto, estado) {
 
 export async function BuscarTodasLasVisitas(filtros = {}) {
     try {
-        const visitas = await ObtenerTodasLasVisitas();
+        const rango = filtros.fechaInicio && filtros.fechaFin
+            ? obtenerRangoDiasVisitas(filtros.fechaInicio, filtros.fechaFin)
+            : {};
+        const visitas = await ObtenerTodasLasVisitas(rango.desde, rango.hasta);
         if (!Array.isArray(visitas)) return [];
 
         let resultado = [...visitas];
@@ -112,7 +127,8 @@ export async function BuscarTodasLasVisitas(filtros = {}) {
             resultado = resultado.filter(v => new Date(v.fechaHora) >= new Date(filtros.fechaInicio));
         }
         if (filtros.fechaFin) {
-            resultado = resultado.filter(v => new Date(v.fechaHora) <= new Date(filtros.fechaFin));
+            const fechaFin = new Date(`${filtros.fechaFin}T23:59:59.999`);
+            resultado = resultado.filter(v => new Date(v.fechaHora) <= fechaFin);
         }
         if (filtros.idMesa) {
             resultado = resultado.filter(v => v.idMesa === filtros.idMesa);
@@ -130,7 +146,7 @@ export async function BuscarTodasLasVisitas(filtros = {}) {
 
 export async function BuscarVisitasPorRango(fechaInicio, fechaFin) {
     try {
-        const visitas = await ObtenerTodasLasVisitas();
+        const visitas = await ObtenerTodasLasVisitas(fechaInicio, fechaFin);
         if (!Array.isArray(visitas)) return [];
         const inicio = new Date(fechaInicio);
         const fin = new Date(fechaFin);
@@ -146,7 +162,10 @@ export async function BuscarVisitasPorRango(fechaInicio, fechaFin) {
 
 export async function BuscarVisitasPorMozo(idMozo, filtros = {}) {
     try {
-        const visitas = await ObtenerTodasLasVisitas();
+        const rango = filtros.fechaInicio && filtros.fechaFin
+            ? obtenerRangoDiasVisitas(filtros.fechaInicio, filtros.fechaFin)
+            : {};
+        const visitas = await ObtenerTodasLasVisitas(rango.desde, rango.hasta);
         if (!Array.isArray(visitas)) return [];
         let resultado = visitas.filter(v => v.idMozo === idMozo || v.IdMozo === idMozo);
         if (filtros.fechaInicio) {
@@ -164,7 +183,10 @@ export async function BuscarVisitasPorMozo(idMozo, filtros = {}) {
 
 export async function BuscarVisitasPorMesa(idMesa, filtros = {}) {
     try {
-        const visitas = await ObtenerTodasLasVisitas();
+        const rango = filtros.fechaInicio && filtros.fechaFin
+            ? obtenerRangoDiasVisitas(filtros.fechaInicio, filtros.fechaFin)
+            : {};
+        const visitas = await ObtenerTodasLasVisitas(rango.desde, rango.hasta);
         if (!Array.isArray(visitas)) return [];
         let resultado = visitas.filter(v => (v.idMesa ?? v.IdMesa) === idMesa);
         if (filtros.fechaInicio) {
@@ -182,9 +204,7 @@ export async function BuscarVisitasPorMesa(idMesa, filtros = {}) {
 
 export async function BuscarProductosPorVisita(idVisita) {
     try {
-        const visitas = await ObtenerTodasLasVisitas();
-        if (!Array.isArray(visitas)) return [];
-        const visita = visitas.find(v => (v.id ?? v.Id) === idVisita);
+        const visita = await ObtenerVisitaPorId(idVisita);
         const productos = visita?.productosConsumidos ?? visita?.ProductosConsumidos ?? visita?.Productos ?? [];
         return Array.isArray(productos) ? productos : [];
     } catch (error) {

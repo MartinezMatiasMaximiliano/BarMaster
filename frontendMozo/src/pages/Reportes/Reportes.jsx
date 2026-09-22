@@ -18,7 +18,7 @@ const Reportes = () => {
     const handleHistorico = useCallback(() => {
         filtros.actualizarFiltro('fechaInicio', '');
         filtros.actualizarFiltro('fechaFin', '');
-        reportes.cargarVisitas();
+        reportes.cargarVisitas({ historico: true });
     }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
 
     const renderContenidoReporte = () => {
@@ -118,7 +118,7 @@ const Reportes = () => {
             {!reportes.datosCargados ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300, py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                        Seleccioná un rango de fechas para ver los datos, o presioná "Histórico" para ver todo.
+                        {'Seleccioná un rango de fechas para ver los datos, o presioná "Histórico" para ver todo.'}
                     </Typography>
                 </Box>
             ) : (

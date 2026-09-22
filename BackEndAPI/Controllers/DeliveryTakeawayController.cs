@@ -73,10 +73,12 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetListaDeliveryTakeaways()
+        public async Task<IActionResult> GetListaDeliveryTakeaways(
+            [FromQuery] DateTimeOffset? desde,
+            [FromQuery] DateTimeOffset? hasta)
         {
             var idSucursal = ObtenerIdSucursal();
-            var result = await _deliveryTakeawayServices.GetListaDeliveryTakeaways(idSucursal);
+            var result = await _deliveryTakeawayServices.GetListaDeliveryTakeaways(idSucursal, desde, hasta);
             var response = (result ?? Enumerable.Empty<DeliveryAndTakeaway>()).Select(MappearDeliveryTakeawayDTO).ToList();
             return Ok(response);
         }

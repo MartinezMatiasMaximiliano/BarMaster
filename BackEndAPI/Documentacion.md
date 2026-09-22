@@ -256,8 +256,7 @@ Base: `/Reservas`. **Requiere JWT**.
 
 | Verbo | Ruta | Params | Body | Devuelve | Descripción |
 |---|---|---|---|---|---|
-| GET | `/Reservas` | — | — | `List<ReservaDTO>` | Todas las reservas |
-| GET | `/Reservas/Fechas` | query `Desde: DateTime`, `Hasta?: DateTime`; claim `IdSucursal` | — | lista | Reservas por fecha/rango (sin `Hasta` → un solo día) |
+| GET | `/Reservas` | query opcional `desde: DateTimeOffset`, `hasta: DateTimeOffset` (deben enviarse juntos); claim `IdSucursal` | — | `List<ReservaDTO>` | Reservas del rango indicado; sin rango devuelve todas |
 | POST | `/Reservas` | claim `IdSucursal` | `CrearReservaDTO {IdEstadoReserva, FechaHora, Telefono, NombreReserva, CantidadDePersonas?}` | `ReservaDTO` | Crea reserva |
 | PUT | `/Reservas` | — | `ModificarReservaDTO {Id, IdEstadoReserva, Telefono, FechaHora, NombreReserva, CantidadDePersonas?}` | 200 | Modifica reserva |
 | DELETE | `/Reservas` | query `Id: Guid` | — | 200 | Elimina reserva |
@@ -343,7 +342,7 @@ Base: `/`. **Sin `[Authorize]`** (acceso público).
 | Verbo | Ruta | Params | Body | Devuelve | Descripción |
 |---|---|---|---|---|---|
 | GET | `/VisitasActivas` | — | — | `List<VisitaResponseDTO>` | Visitas activas actualmente (mesa, delivery, takeaway) |
-| GET | `/TodasLasVisitas` | — | — | lista | Historial completo de visitas |
+| GET | `/TodasLasVisitas` | query opcional `desde: DateTimeOffset`, `hasta: DateTimeOffset` (deben enviarse juntos) | — | lista | Visitas del rango indicado; sin rango devuelve el historial completo |
 | GET | `/Visita` | query `IdVisita: Guid` | — | `VisitaResponseDTO` | Visita por id |
 | POST | `/AgregarProductoAVisita` | query `IdVisita: Guid` | `AgregarProductoAVisita[] {IdProducto, Detalles, Cantidad}` | 200 | Agrega productos a una visita |
 | DELETE | `/Visitas/EliminarProductos` | — | `EliminarProductosDTO {IdVisita, IdsProductos: int[]}` | 200 | Quita productos de una visita |

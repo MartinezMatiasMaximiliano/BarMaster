@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Button, Paper, Stack, Typography } from '@mui/material';
-import { CrearReserva, ModificarReserva, BorrarReserva } from '../API/APIReservas';
+import { CrearReserva, ModificarReserva, BorrarReserva, obtenerRangoMesReservas } from '../API/APIReservas';
 import Tabla from '../components/Tabla/Tabla';
 import Fila_Acciones from '../components/Tabla/Fila_Acciones';
 import Modal_Agregar from '../components/Modals/Agregar_ABM/Modal_Agregar';
@@ -15,7 +15,17 @@ export default function Abm_Reservas({ datos_reservas = [], mesas = [], recargar
     const [dia, setDia] = useState(() => claveDia(new Date()));
     const [mes, setMes] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
     const [errorEstado, setErrorEstado] = useState('');
-    const campos = useMemo(() => camposConMesas(mesas), [mesas]);
+    const rangoMes = useMemo(() => obtenerRangoMesReservas(mes), [mes]);
+    const recargarMes = useCallback(
+        () => recargarComponentes(rangoMes.desde, rangoMes.hasta),
+        [recargarComponentes, rangoMes]
+    );
+
+    useEffect(() => {
+        recargarMes();
+    }, [recargarMes]);
+
+    const campos = useMemo(() => camposConMesas(mesas || []), [mesas]);
     const reservasDia = useMemo(() => datos_reservas.filter(r => claveDia(r.fechaHora) === dia)
         .sort((a, b) => new Date(a.fechaHora) - new Date(b.fechaHora)), [datos_reservas, dia]);
     const conteos = useMemo(() => datos_reservas.reduce((resultado, reserva) => {
@@ -35,10 +45,10 @@ export default function Abm_Reservas({ datos_reservas = [], mesas = [], recargar
             idEstado={fila.IdEstadoReserva} onError={setErrorEstado} onCambiar={async idEstado => {
                 setErrorEstado('');
                 await ModificarReserva({ id: fila.id, IdEstadoReserva: idEstado });
-                await recargarComponentes();
+                await recargarMes();
             }} /> },
         { key: '__acciones', label: 'Acciones', render: fila => <Fila_Acciones fila={fila} api={api}
-            recargar={recargarComponentes} showEditar showToggle={() => false} campos={campos} /> },
+            recargar={recargarMes} showEditar showToggle={() => false} campos={campos} /> },
     ];
     const inicio = (mes.getDay() + 6) % 7;
     const diasEnMes = new Date(mes.getFullYear(), mes.getMonth() + 1, 0).getDate();
@@ -53,7 +63,8 @@ export default function Abm_Reservas({ datos_reservas = [], mesas = [], recargar
             const fecha = new Date(fechaHora);
             setDia(claveDia(fecha));
             setMes(new Date(fecha.getFullYear(), fecha.getMonth(), 1));
-            return await recargarComponentes();
+            const rango = obtenerRangoMesReservas(fecha);
+            return await recargarComponentes(rango.desde, rango.hasta);
         }} />
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '340px minmax(0, 1fr)' }, gap: 3, alignItems: 'start' }}>
             <Paper component="section" aria-label="Calendario de reservas" variant="outlined" sx={{ p: 2 }}>
@@ -82,9 +93,9 @@ export default function Abm_Reservas({ datos_reservas = [], mesas = [], recargar
                 {errorEstado && <Alert severity="error" onClose={() => setErrorEstado('')} sx={{ mb: 2 }}>{errorEstado}</Alert>}
                 <Stack direction="row" flexWrap="wrap" gap={1} alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
                     <Typography variant="h5" component="h2">{new Date(`${dia}T12:00:00`).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</Typography>
-                    <Button onClick={recargarComponentes}>Actualizar</Button>
+                    <Button onClick={recargarMes}>Actualizar</Button>
                     <Modal_Agregar key={dia} nombre="reserva" campos={campos} agregar={api.crear}
-                        initialValues={{ IdEstadoReserva: 2, fechaHora: new Date(`${dia}T20:00:00`).toISOString() }} recargarComponentes={recargarComponentes} />
+                        initialValues={{ IdEstadoReserva: 2, fechaHora: new Date(`${dia}T20:00:00`).toISOString() }} recargarComponentes={recargarMes} />
                 </Stack>
                 <Typography color="text.secondary" sx={{ mb: 2 }}>{reservasDia.length} reservas</Typography>
                 {reservasDia.length === 0 && <Typography role="status" sx={{ mb: 2 }}>No hay reservas para este día.</Typography>}

@@ -70,12 +70,24 @@ namespace BackEndAPI.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Visita>> ObtenerTodasLasVisitas()
+        public async Task<IEnumerable<Visita>> ObtenerTodasLasVisitas(DateTime? desde, DateTime? hasta)
         {
-            return await db.Visitas
+            IQueryable<Visita> consulta = db.Visitas
                 .Include(v => v.Mesa)
                 .Include(v => v.Mozo)
-                .Include(v => v.Productos)
+                .Include(v => v.Productos);
+
+            if (desde.HasValue)
+            {
+                consulta = consulta.Where(v => v.FechaHora >= desde.Value);
+            }
+
+            if (hasta.HasValue)
+            {
+                consulta = consulta.Where(v => v.FechaHora <= hasta.Value);
+            }
+
+            return await consulta
                 .OrderByDescending(v => v.FechaHora)
                 .ToListAsync();
         }

@@ -55,7 +55,17 @@ export default function HistorialTabDeliveryTakeaway({ titulo, tipo, fechaInicio
             setLoading(true);
             setError('');
             try {
-                const data = await GetDeliveryTakeaway();
+                let desde;
+                let hasta;
+
+                if (!modoHistorico) {
+                    const inicio = new Date(`${fechaInicio}T00:00:00`);
+                    const fin = new Date(`${fechaFin}T23:59:59.999`);
+                    desde = inicio.toISOString();
+                    hasta = fin.toISOString();
+                }
+
+                const data = await GetDeliveryTakeaway(desde, hasta);
                 if (ignorar) return;
                 setDatos(Array.isArray(data) ? data : []);
                 setDatosCargados(true);

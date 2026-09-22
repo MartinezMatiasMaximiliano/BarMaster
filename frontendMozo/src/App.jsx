@@ -53,7 +53,7 @@ import { BuscarTodosLosPlanos } from './API/APIPlanos'
 import { BuscarTodasLasMesas } from './API/APIMesas'
 import { BuscarTodosLosMenus } from './API/APIMenus'
 import { BuscarTodasLasCuentasCorrientes } from './API/APICuentasCorrientes'
-import { GetDeliveryTakeaway, normalizarDeliveryTakeaway, normalizarDeliveryTakeawayComoVisita } from './API/APIDeliveryTakeaway'
+import { GetDeliveryTakeaway, normalizarDeliveryTakeaway, normalizarDeliveryTakeawayComoVisita, obtenerRangoUltimas24Horas } from './API/APIDeliveryTakeaway'
 
 import { authService } from './services/authService'
 import { useSelector, useDispatch } from 'react-redux'
@@ -119,6 +119,7 @@ function App() {
         let cancelled = false;
         const esVistaMesas = location.pathname === '/sistema_sucursal' || location.pathname === '/Index2';
         const esVistaKDS = location.pathname === '/kds';
+        const esVistaReservas = location.pathname === '/reservas';
         const esVistaAbmCuentasCorrientes = location.pathname === '/abm_cuentas_corrientes';
         if (esVistaMesas || esVistaKDS) {
             if (localStorage.getItem('token')) {
@@ -143,9 +144,6 @@ function App() {
                 BuscarTodasLasCategorias()
                     .then(data => { if (!cancelled) SetCategorias(Array.isArray(data) ? data : []); })
                     .catch(() => { if (!cancelled) SetCategorias([]); });
-                BuscarTodasLasReservas()
-                    .then(data => { if (!cancelled) SetReservas(Array.isArray(data) ? data : []); })
-                    .catch(() => { /* conservar la agenda anterior ante un fallo transitorio */ });
                 BuscarTodosLosPlanos()
                     .then(data => { if (!cancelled) SetPlanos(Array.isArray(data) ? data : []); })
                     .catch(() => { if (!cancelled) SetPlanos([]); });
@@ -170,6 +168,17 @@ function App() {
             }
         }
 
+        if (esVistaReservas) {
+            if (localStorage.getItem('token')) {
+                BuscarTodasLasMesas()
+                    .then(data => { if (!cancelled) SetMesas(Array.isArray(data) ? data : []); })
+                    .catch(() => { if (!cancelled) SetMesas([]); });
+            } else {
+                SetMesas([]);
+                SetReservas([]);
+            }
+        }
+
         if (esVistaAbmCuentasCorrientes) {
             if (localStorage.getItem('token')) {
                 BuscarTodasLasCuentasCorrientes()
@@ -187,7 +196,8 @@ function App() {
         if (!localStorage.getItem('token')) return;
 
         try {
-            const data = await GetDeliveryTakeaway();
+            const { desde, hasta } = obtenerRangoUltimas24Horas();
+            const data = await GetDeliveryTakeaway(desde, hasta);
             const visitasDeliveryTakeaway = (Array.isArray(data) ? data : [])
                 .map(normalizarDeliveryTakeaway)
                 .map(normalizarDeliveryTakeawayComoVisita);
@@ -262,9 +272,9 @@ function App() {
         SetMozos(Array.isArray(data) ? data : []);
     }
 
-    async function recargarReservas() {
-        return RecargarReservasConservando(SetReservas);
-    }
+    const recargarReservas = useCallback(async (desde, hasta) => (
+        RecargarReservasConservando(SetReservas, () => BuscarTodasLasReservas(desde, hasta))
+    ), []);
 
     async function recargarPlanos() {
         const data = await BuscarTodosLosPlanos().catch(() => []);

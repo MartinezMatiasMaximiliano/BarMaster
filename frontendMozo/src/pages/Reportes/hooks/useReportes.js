@@ -77,11 +77,14 @@ export const useReportes = (filtros) => {
     }, []);
 
     // Función para cargar visitas (llamada por el usuario via "Buscar" o "Histórico")
-    const cargarVisitas = async () => {
+    const cargarVisitas = async ({ historico = false } = {}) => {
         setLoading(true);
         setError(null);
         try {
-            const visitasData = await BuscarTodasLasVisitas({});
+            const visitasData = await BuscarTodasLasVisitas(historico ? {} : {
+                fechaInicio: filtros.filtros.fechaInicio,
+                fechaFin: filtros.filtros.fechaFin,
+            });
             setVisitas((Array.isArray(visitasData) ? visitasData : []).map(normalizarVisitaParaReportes));
             setDatosCargados(true);
         } catch (err) {

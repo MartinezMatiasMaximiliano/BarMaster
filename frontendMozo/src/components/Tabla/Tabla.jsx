@@ -15,6 +15,7 @@ import { useMemo } from "react";
  * @param {Array} props.filas - Array de filas a mostrar
  * @param {Array} props.columnas - Array de configuración de columnas
  * @param {string} props.titulo - Título de la tabla
+ * @param {string} [props.subtitulo] - Texto secundario junto al título
  * @param {number} [props.rowsPerPage=10] - Número de filas por página
  * @param {boolean} [props.paginacion=true] - Si la paginación está habilitada
  * @param {number|string|Object} [props.maxHeightTabla='70vh'] - Alto máximo del área desplazable
@@ -140,6 +141,7 @@ export default function Tabla(props) {
                     title={
                         <TablaHeader
                             titulo={props.titulo}
+                            subtitulo={props.subtitulo}
                             renderAgregar={props.renderAgregar}
                             onRefresh={props.onRefresh}
                             onExportarPDF={mostrarExportacion ? handleExportarPDF : null}

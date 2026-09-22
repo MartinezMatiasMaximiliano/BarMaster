@@ -18,6 +18,7 @@ import {
     GetDeliveryTakeaway,
     normalizarDeliveryTakeaway,
     normalizarDeliveryTakeawayComoVisita,
+    obtenerRangoUltimas24Horas,
 } from "../API/APIDeliveryTakeaway";
 import { sincronizarVisitasDeliveryTakeaway, actualizarVisita } from "../redux/slices/visitasActivasSlice";
 import WarningIcon from '@mui/icons-material/Warning';
@@ -105,7 +106,8 @@ function TakeAway() {
         if (!localStorage.getItem('token')) return;
         try {
             setErrorCarga('');
-            const data = await GetDeliveryTakeaway();
+            const { desde, hasta } = obtenerRangoUltimas24Horas();
+            const data = await GetDeliveryTakeaway(desde, hasta);
             const visitas = (Array.isArray(data) ? data : [])
                 .map(normalizarDeliveryTakeaway)
                 .map(normalizarDeliveryTakeawayComoVisita);
@@ -274,6 +276,7 @@ function TakeAway() {
             )}
             <Tabla
                 titulo="Take Away"
+                subtitulo="Últimas 24hs"
                 filas={filasOrdenadas}
                 columnas={columnasTakeAway}
                 onRefresh={cargarTakeAways}

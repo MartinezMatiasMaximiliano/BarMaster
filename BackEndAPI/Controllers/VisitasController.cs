@@ -26,9 +26,11 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("/TodasLasVisitas")]
-        public async Task<IActionResult> TodasLasVisitas()
+        public async Task<IActionResult> TodasLasVisitas(
+            [FromQuery] DateTimeOffset? desde,
+            [FromQuery] DateTimeOffset? hasta)
         {
-            var visitas = await _visitasServices.ObtenerTodasLasVisitas();
+            var visitas = await _visitasServices.ObtenerTodasLasVisitas(desde, hasta);
             return Ok(visitas.Select(MapearVisita).ToList());
         }
 

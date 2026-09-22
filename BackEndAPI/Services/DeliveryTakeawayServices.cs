@@ -2,9 +2,12 @@ using Amazon.Runtime.Internal;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
 using BackEndAPI.Exceptions;
+using BackEndAPI.Impresion.Documentos;
+using BackEndAPI.Impresion.Trabajos;
 using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Interfaces;
+using BackEndAPI.Services.Pedidos;
 using BackEndAPI.Tenancy.Services;
 
 namespace BackEndAPI.Services
@@ -17,11 +20,15 @@ namespace BackEndAPI.Services
         private readonly IPersonasRepository _personasRepository;
         private readonly IStockServices _stockServices;
         private readonly IDatabaseTransactionManager _transactionManager;
+        private readonly IServicioDocumentoImpresion _servicioDocumentoImpresion;
+        private readonly IPublicadorNotificacionesPedido _publicadorNotificaciones;
         public DeliveryTakeawayServices(IDeliveryTakeawayRepository deliveryTakeawayRepository, ICajasServices cajasServices,
             IProductosRepository productosRepository,
             IPersonasRepository personasRepository,
             IStockServices stockServices,
-            IDatabaseTransactionManager transactionManager)
+            IDatabaseTransactionManager transactionManager,
+            IServicioDocumentoImpresion servicioDocumentoImpresion,
+            IPublicadorNotificacionesPedido publicadorNotificaciones)
         {
             _deliveryTakeawayRepository = deliveryTakeawayRepository;
             _cajasServices = cajasServices;
@@ -29,12 +36,20 @@ namespace BackEndAPI.Services
             _personasRepository = personasRepository;
             _stockServices = stockServices;
             _transactionManager = transactionManager;
+            _servicioDocumentoImpresion = servicioDocumentoImpresion;
+            _publicadorNotificaciones = publicadorNotificaciones;
         }
 
         //METODOS
-        public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeaways(Guid IdSucursal)
+        public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeaways(Guid IdSucursal, DateTimeOffset? Desde, DateTimeOffset? Hasta)
         {
-            return await _deliveryTakeawayRepository.ObtenerPorIdSucursal(IdSucursal);
+            if (Desde.HasValue && Hasta.HasValue && Hasta.Value < Desde.Value)
+                throw new BusinessRuleException("La fecha hasta no puede ser anterior a la fecha desde");
+
+            return await _deliveryTakeawayRepository.ObtenerPorIdSucursal(
+                IdSucursal,
+                Desde?.UtcDateTime,
+                Hasta?.UtcDateTime);
         }
         public async Task<IEnumerable<DeliveryAndTakeaway>?> GetListaDeliveryTakeawaysPorCaja(Guid IdSucursal, Guid IdCaja)
         {
@@ -59,8 +74,29 @@ namespace BackEndAPI.Services
         }
 
         //METODOS
-        public Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(Guid Idsucursal, CrearDeliveryTakeawayDTO request) =>
-            _transactionManager.ExecuteAsync(() => CrearDeliveryTakeawayCoreAsync(Idsucursal, request));
+        public async Task<DeliveryAndTakeaway?> CrearDeliveryTakeaway(Guid Idsucursal, CrearDeliveryTakeawayDTO request)
+        {
+            var idComando = Guid.NewGuid();
+            IReadOnlyList<CrearSolicitudImpresionRespuesta> solicitudes = [];
+
+            var pedido = await _transactionManager.ExecuteAsync(async () =>
+            {
+                var creado = await CrearDeliveryTakeawayCoreAsync(Idsucursal, request);
+                if (creado != null)
+                {
+                    solicitudes = await _servicioDocumentoImpresion.EncolarComandasAsync(
+                        creado.Visita,
+                        creado.Visita.Productos.ToList(),
+                        idComando,
+                        CancellationToken.None);
+                }
+
+                return creado;
+            });
+
+            await _publicadorNotificaciones.PublicarAsync(solicitudes, idComando);
+            return pedido;
+        }
         public Task<DeliveryAndTakeaway?> ModificarDeliveryTakeaway(ModificarDeliveryTakeawayDTO request) =>
             _transactionManager.ExecuteAsync(() => ModificarDatosDeliveryTakeawayCoreAsync(request));
         public Task<bool> EliminarDeliveryTakeaway(Guid IdDeliveryTakeaway) =>

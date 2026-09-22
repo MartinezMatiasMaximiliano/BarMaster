@@ -5,7 +5,7 @@ import { BotonesExportacion } from './BotonesExportacion';
 /**
  * Componente para el header de la tabla
  */
-export default function TablaHeader({ titulo, renderAgregar, onRefresh, onExportarPDF, onExportarExcel, deshabilitarExportacion }) {
+export default function TablaHeader({ titulo, subtitulo, renderAgregar, onRefresh, onExportarPDF, onExportarExcel, deshabilitarExportacion }) {
     return (
         <Box
             sx={{
@@ -18,10 +18,15 @@ export default function TablaHeader({ titulo, renderAgregar, onRefresh, onExport
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
                 {typeof renderAgregar === "function" ? renderAgregar() : null}
             </Box>
-            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 1 }}>
                 <Typography variant="h5" component="h2" fontWeight={600}>
                     {titulo}
                 </Typography>
+                {subtitulo && (
+                    <Typography variant="body2" component="span" color="text.secondary" fontWeight={400}>
+                        {subtitulo}
+                    </Typography>
+                )}
             </Box>
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                 {(onExportarPDF || onExportarExcel) && (

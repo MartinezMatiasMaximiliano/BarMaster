@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import api from '../../services/axiosInstance';
-import { BuscarMesasDisponibles } from '../APIReservas';
+import { BuscarMesasDisponibles, BuscarTodasLasReservas, obtenerRangoMesReservas } from '../APIReservas';
 vi.mock('../../services/axiosInstance', () => ({ default: { get: vi.fn() } }));
 
 describe('Disponibilidad de mesas', () => {
@@ -18,5 +18,24 @@ describe('Disponibilidad de mesas', () => {
     it('propaga errores de consulta en lugar de anunciar mesas libres', async () => {
         api.get.mockRejectedValue(new Error('Sin conexión'));
         await expect(BuscarMesasDisponibles('2026-09-16T20:00:00-03:00')).rejects.toThrow();
+    });
+});
+
+describe('Consulta de reservas por fechas', () => {
+    it('envía desde y hasta al endpoint unificado', async () => {
+        api.get.mockResolvedValue({ data: [] });
+        const desde = '2026-09-01T12:00:00-03:00';
+        const hasta = '2026-09-30T12:00:00-03:00';
+
+        await BuscarTodasLasReservas(desde, hasta);
+
+        expect(api.get).toHaveBeenCalledWith('Reservas', { params: { desde, hasta } });
+    });
+
+    it('calcula el mes visible completo', () => {
+        expect(obtenerRangoMesReservas(new Date(2026, 8, 15))).toEqual({
+            desde: '2026-09-01T12:00:00-03:00',
+            hasta: '2026-09-30T12:00:00-03:00',
+        });
     });
 });

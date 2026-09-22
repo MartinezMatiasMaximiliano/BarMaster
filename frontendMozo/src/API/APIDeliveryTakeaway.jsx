@@ -149,8 +149,8 @@ export function normalizarTakeawayDesdeVisita(visita) {
     };
 }
 
-export async function GetTakeawaysDesdeVisitas() {
-    const visitas = await ObtenerTodasLasVisitas();
+export async function GetTakeawaysDesdeVisitas(desde, hasta) {
+    const visitas = await ObtenerTodasLasVisitas(desde, hasta);
     return (Array.isArray(visitas) ? visitas : [])
         .filter((visita) => {
             const origen = visita.origen ?? visita.Origen ?? '';
@@ -161,16 +161,33 @@ export async function GetTakeawaysDesdeVisitas() {
 
 /**
  * GET /DeliveryTakeaway - Lista de deliveries/takeaway de la sucursal (según token).
+ * @param {string} [desde] - Inicio opcional del rango en formato ISO 8601.
+ * @param {string} [hasta] - Fin opcional del rango en formato ISO 8601.
  * @returns {Promise<Array>} Lista de DeliveryAndTakeaway
  */
-export async function GetDeliveryTakeaway() {
+export async function GetDeliveryTakeaway(desde, hasta) {
     try {
-        const response = await api.get('DeliveryTakeaway');
+        const response = await api.get('DeliveryTakeaway', {
+            params: {
+                ...(desde ? { desde } : {}),
+                ...(hasta ? { hasta } : {}),
+            },
+        });
         return response.data ?? [];
     } catch (error) {
         console.error('Error al obtener deliveries/takeaway:', construirError(error, 'Error al obtener deliveries/takeaway'));
         throw construirError(error, 'Error al obtener deliveries/takeaway');
     }
+}
+
+export function obtenerRangoUltimas24Horas() {
+    const hasta = new Date();
+    const desde = new Date(hasta.getTime() - 24 * 60 * 60 * 1000);
+
+    return {
+        desde: desde.toISOString(),
+        hasta: hasta.toISOString(),
+    };
 }
 
 /**

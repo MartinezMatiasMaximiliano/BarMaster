@@ -24,6 +24,11 @@ beforeEach(() => {
     }));
 });
 
+it('explica que la regla de comandas también contempla delivery y takeaway', async () => {
+    render(<ReglasImpresion />);
+    expect(await screen.findByText('Al enviar productos a una mesa o crear un delivery o takeaway.')).toBeInTheDocument();
+});
+
 it.each([
     ['Comandas', 'Comanda', 'AlCargarProductosMesa'],
     ['Cuenta previa', 'Ticket', 'AlGenerarPreticket'],

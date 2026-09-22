@@ -10,7 +10,7 @@ namespace BackEndAPI.Repositories.Interfaces
         Task<Visita> ModificarVisita(Visita request);
         Task<bool> EliminarVisita(Visita request);
         Task<IEnumerable<Visita>> ObtenerVisitasActivas();
-        Task<IEnumerable<Visita>> ObtenerTodasLasVisitas();
+        Task<IEnumerable<Visita>> ObtenerTodasLasVisitas(DateTime? desde, DateTime? hasta);
         Task<bool> EliminarProductos(Visita visita, ICollection<int> IdsProductos);
         Task<bool> CambiarEstadoProducto(int idProducto, string estado);
     }

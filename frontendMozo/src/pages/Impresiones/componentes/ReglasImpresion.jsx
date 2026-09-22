@@ -5,7 +5,7 @@ import { eliminarReglaImpresion, obtenerImpresoras, obtenerReglasImpresion, guar
 import { normalizarErrorQz } from '../../../services/impresion/erroresQz';
 
 const ACCIONES = [
-    { titulo: 'Comandas', descripcion: 'Al enviar productos a una mesa.', tipoSalida: 'Comanda', momento: 'AlCargarProductosMesa' },
+    { titulo: 'Comandas', descripcion: 'Al enviar productos a una mesa o crear un delivery o takeaway.', tipoSalida: 'Comanda', momento: 'AlCargarProductosMesa' },
     { titulo: 'Cuenta previa', descripcion: 'Al presionar “Imprimir cuenta”, antes de cobrar.', tipoSalida: 'Ticket', momento: 'AlGenerarPreticket' },
     { titulo: 'Comprobante de pago', descripcion: 'Después de confirmar “Cobrar todo” o “Cobrar por partes”.', tipoSalida: 'Ticket', momento: 'AlCobrarProductosSinFacturar' },
 ];

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Box, CircularProgress, Alert, Typography, Button, Stack, Popover, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
-import { ObtenerTodasLasVisitas } from '../../API/APIVisitas';
+import { ObtenerTodasLasVisitas, obtenerRangoDiasVisitas } from '../../API/APIVisitas';
 import { formatearFechaCompleta } from '../../Helpers/HelperFunctions';
 import Tabla from '../../components/Tabla/Tabla';
 import BuscadorTabla from '../../components/Tabla/BuscadorTabla';
@@ -35,7 +35,10 @@ export default function HistorialTabLocal({ fechaInicio, fechaFin, modoHistorico
             setLoading(true);
             setError('');
             try {
-                const visitasData = await ObtenerTodasLasVisitas();
+                const rango = modoHistorico
+                    ? {}
+                    : obtenerRangoDiasVisitas(fechaInicio, fechaFin);
+                const visitasData = await ObtenerTodasLasVisitas(rango.desde, rango.hasta);
                 if (ignorar) return;
                 setVisitas(Array.isArray(visitasData) ? visitasData : []);
                 setDatosCargados(true);

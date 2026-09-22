@@ -13,7 +13,7 @@ const ReporteCaja = () => {
     const handleHistorico = useCallback(() => {
         filtros.actualizarFiltro('fechaInicio', '');
         filtros.actualizarFiltro('fechaFin', '');
-        reportes.cargarVisitas();
+        reportes.cargarVisitas({ historico: true });
     }, [filtros.actualizarFiltro, reportes.cargarVisitas]);
 
     useEffect(() => {

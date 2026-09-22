@@ -19,9 +19,11 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
 import HistoryIcon from '@mui/icons-material/History';
+import ConfirmarHistoricoDialog from '../../../components/ConfirmarHistoricoDialog';
 
 const FiltrosAvanzados = ({ filtros, actualizarFiltro, limpiarFiltros, mesas, categorias, tipoPagos, ocultarTipoReporte = false, onBuscar, onHistorico }) => {
     const [collapsed, setCollapsed] = useState(false);
+    const [confirmarHistorico, setConfirmarHistorico] = useState(false);
     const tiposReporte = [
         { value: 'ventas', label: 'Ventas' },
         { value: 'productos', label: 'Productos' },
@@ -131,7 +133,7 @@ const FiltrosAvanzados = ({ filtros, actualizarFiltro, limpiarFiltros, mesas, ca
                         <Button
                             variant="outlined"
                             startIcon={<HistoryIcon />}
-                            onClick={onHistorico}
+                            onClick={() => setConfirmarHistorico(true)}
                         >
                             Histórico
                         </Button>
@@ -145,6 +147,14 @@ const FiltrosAvanzados = ({ filtros, actualizarFiltro, limpiarFiltros, mesas, ca
                     </Button>
                 </Stack>
             </CardContent>
+            <ConfirmarHistoricoDialog
+                open={confirmarHistorico}
+                onCancelar={() => setConfirmarHistorico(false)}
+                onConfirmar={() => {
+                    setConfirmarHistorico(false);
+                    onHistorico();
+                }}
+            />
         </Card>
     );
 };

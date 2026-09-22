@@ -1,8 +1,33 @@
 import { describe, it, expect, vi } from 'vitest';
-const { api } = vi.hoisted(() => ({ api: { post: vi.fn().mockResolvedValue({ data: {} }), patch: vi.fn().mockResolvedValue({ data: {} }) } }));
+const { api } = vi.hoisted(() => ({ api: { get: vi.fn().mockResolvedValue({ data: [] }), post: vi.fn().mockResolvedValue({ data: {} }), patch: vi.fn().mockResolvedValue({ data: {} }) } }));
 vi.mock('../../services/axiosInstance', () => ({ default: api }));
 vi.mock('../../connections/HubConnMozo', () => ({ sendHubMessage: vi.fn() }));
-import { CrearDeliveryTakeaway, CrearDeliveryTakeawayFromComanda } from '../APIDeliveryTakeaway';
+import { CrearDeliveryTakeaway, CrearDeliveryTakeawayFromComanda, GetDeliveryTakeaway, obtenerRangoUltimas24Horas } from '../APIDeliveryTakeaway';
+
+describe('Consulta por rango', () => {
+    it('envía desde y hasta como parámetros del endpoint', async () => {
+        const desde = '2026-09-21T15:00:00.000Z';
+        const hasta = '2026-09-22T15:00:00.000Z';
+
+        await GetDeliveryTakeaway(desde, hasta);
+
+        expect(api.get).toHaveBeenLastCalledWith('DeliveryTakeaway', {
+            params: { desde, hasta },
+        });
+    });
+
+    it('genera una ventana exacta de 24 horas', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-09-22T15:00:00.000Z'));
+
+        expect(obtenerRangoUltimas24Horas()).toEqual({
+            desde: '2026-09-21T15:00:00.000Z',
+            hasta: '2026-09-22T15:00:00.000Z',
+        });
+
+        vi.useRealTimers();
+    });
+});
 
 describe('Contrato de creación', () => {
     it.each(['Delivery', 'Takeaway'])('%s envía cantidades y detalles con ListaProductos', async (origen) => {

@@ -118,7 +118,7 @@ export default function BuscadorDisponibilidad({ onReservaCreada }) {
                 </IconButton>
             </Tooltip>}
         </Stack>
-        <Typography color="text.secondary" sx={{ mb: 2 }}>Elegí un día y una hora para ver las mesas libres. Las reservas canceladas no ocupan mesa.</Typography>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>Elegí un día y una hora para ver las mesas libres.</Typography>
         <Stack component="form" onSubmit={buscar} direction={{ xs: 'column', sm: 'row' }} gap={2} alignItems={{ sm: 'center' }}>
             <TextField label="Día" type="date" value={dia} required disabled={buscando || guardando} inputProps={{ min: claveDia(new Date()) }}
                 onChange={e => cambiar(setDia, e.target.value)} InputLabelProps={{ shrink: true }} />

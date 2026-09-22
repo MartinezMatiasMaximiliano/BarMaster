@@ -18,6 +18,7 @@ import {
     GetDeliveryTakeaway,
     normalizarDeliveryTakeaway,
     normalizarDeliveryTakeawayComoVisita,
+    obtenerRangoUltimas24Horas,
 } from "../API/APIDeliveryTakeaway";
 import { BuscarTodosLosTipoEnvios } from "../API/APITipoEnvios";
 import { sincronizarVisitasDeliveryTakeaway, actualizarVisita } from "../redux/slices/visitasActivasSlice";
@@ -81,8 +82,9 @@ function Delivery() {
     const cargarDeliveries = React.useCallback(async () => {
         if (!localStorage.getItem('token')) return;
         try {
+            const { desde, hasta } = obtenerRangoUltimas24Horas();
             const [data, tiposEnvio] = await Promise.all([
-                GetDeliveryTakeaway(),
+                GetDeliveryTakeaway(desde, hasta),
                 BuscarTodosLosTipoEnvios().catch(() => []),
             ]);
             const mapaTiposEnvio = new Map((Array.isArray(tiposEnvio) ? tiposEnvio : []).map((tipo) => [Number(tipo.id), tipo]));
@@ -294,6 +296,7 @@ function Delivery() {
             )}
             <Tabla
                 titulo="Delivery"
+                subtitulo="Últimas 24hs"
                 filas={filasOrdenadas}
                 columnas={columnasDelivery}
                 onRefresh={cargarDeliveries}

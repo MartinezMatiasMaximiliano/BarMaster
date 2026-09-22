@@ -39,18 +39,17 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("/Reservas")]
-        public async Task<IActionResult> GetReservas()
+        public async Task<IActionResult> GetReservas(
+            [FromQuery] DateTimeOffset? desde,
+            [FromQuery] DateTimeOffset? hasta)
         {
             var idsucursal = ObtenerIdSucursal();
-            var reservas = await _ReservasServices.BuscarReservas(idsucursal);
-            return Ok(reservas.Select(MappearReservaDTO).ToList());
-        }
+            if (desde.HasValue != hasta.HasValue)
+                throw new BusinessRuleException("Las fechas desde y hasta deben enviarse juntas");
 
-        [HttpGet("/Reservas/Fechas")]
-        public async Task<IActionResult> GetReservasPorRangoFechas([FromQuery] DateTimeOffset Desde, [FromQuery] DateTimeOffset? Hasta)
-        {
-            var idSucursal = ObtenerIdSucursal();
-            var reservas = await _ReservasServices.BuscarReservasPorRangoFechas(idSucursal, Desde, Hasta);
+            var reservas = desde.HasValue
+                ? await _ReservasServices.BuscarReservasPorRangoFechas(idsucursal, desde.Value, hasta)
+                : await _ReservasServices.BuscarReservas(idsucursal);
             return Ok(reservas.Select(MappearReservaDTO).ToList());
         }
 
