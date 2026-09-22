@@ -118,26 +118,8 @@ namespace BackEndAPI.Controllers
         [HttpPatch("Entregado")]
         public async Task<IActionResult> MarcarEntregado([FromQuery] Guid id, [FromQuery] bool entregado = true)
         {
-            try
-            {
-                if (id == Guid.Empty) throw new Exception("Id vacio");
-                var action = await _deliveryTakeawayServices.MarcarComoEntregado(id, entregado);
-                if (action == null) throw new Exception("");
-                var result = MappearDeliveryTakeawayDTO(action);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                switch (ex.Message)
-                {
-                    case "no encontrado":
-                        return BadRequest("No se encontró el Delivery o Takeaway");
-                    case "Id vacio":
-                        return BadRequest("Id vacio. Asegúrate de enviar un Id válido en el campo 'id.");
-                    default:
-                        return StatusCode(500, $"Internal server error: {ex.Message}");
-                }
-            }
+            var action = await _deliveryTakeawayServices.MarcarComoEntregado(id, entregado);
+            return Ok(MappearDeliveryTakeawayDTO(action!));
         }
 
         [HttpDelete]

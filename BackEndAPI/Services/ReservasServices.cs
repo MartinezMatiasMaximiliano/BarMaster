@@ -66,7 +66,7 @@ namespace BackEndAPI.Services
         public async Task<Reserva> CrearReserva(CrearReservaDTO request, Guid IdSucursal)
         {
             if (IdSucursal == Guid.Empty) throw new BusinessRuleException("Sucursal no identificada");
-            if (DateTime.Compare(request.FechaHora, DateTime.Now) < 0) throw new BusinessRuleException("La fecha y hora de la reserva no puede ser en el pasado");
+            if (_horario.AUtc(request.FechaHora) < _horario.Ahora.UtcDateTime) throw new BusinessRuleException("La fecha y hora de la reserva no puede ser en el pasado");
             if (string.IsNullOrWhiteSpace(request.NombreReserva)) throw new BusinessRuleException("El nombre de la reserva es obligatorio");
             if (string.IsNullOrWhiteSpace(request.Telefono)) throw new BusinessRuleException("El teléfono de la reserva es obligatorio");
 

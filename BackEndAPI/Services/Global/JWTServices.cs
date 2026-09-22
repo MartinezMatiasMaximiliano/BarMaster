@@ -31,7 +31,6 @@ namespace BackEndAPI.Services.Global
                 new Claim("TenantId", tenantId.ToString()),
                 new Claim("IdEmpresa", request.IdEmpresa.ToString()),
                 new Claim("IdSucursal", request.Id.ToString()),
-                new Claim("TenantId", GetTenantId()),
                 new Claim("TipoAuth","sucursal")
             };
 
@@ -65,7 +64,6 @@ namespace BackEndAPI.Services.Global
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
                 new Claim("TenantId", tenantId.ToString()),
                 new Claim("IdEmpresa", request.Id.ToString()),
-                new Claim("TenantId", GetTenantId()),
                 new Claim("TipoAuth","empresa")
             };
 
@@ -101,7 +99,6 @@ namespace BackEndAPI.Services.Global
                 new Claim("IdPersona", persona.Id.ToString()),
                 new Claim("IdEmpresa", persona.IdEmpresa.ToString()),
                 new Claim("IdSucursal", ResolvePersonaSucursal(persona)),
-                new Claim("TenantId", GetTenantId()),
                 new Claim("RequestedBy",$"{persona.Apellido},{persona.Nombres}"),
                 new Claim("RequestedRole", persona.Rol?.Nombre ?? string.Empty),
                 new Claim("TipoAuth","admin"),

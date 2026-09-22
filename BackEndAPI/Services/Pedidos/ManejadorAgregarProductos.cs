@@ -59,6 +59,7 @@ public sealed class ManejadorAgregarProductos(
             {
                 var linea = new ProductosPorVisita { IdVisita = idVisita, IdProducto = item.IdProducto,
                     NombreProducto = producto.Nombre, Detalles = item.Detalles, PrecioDelMomento = producto.PrecioNeto,
+                    IVADelMomento = producto.PorcentajeIVA,
                     EstadoPagado = false, EstadoPedido = "Pendiente", IdComandoAgregado = idComando };
                 visita.Productos.Add(linea); agregados.Add(linea); totalAgregado += producto.PrecioNeto;
             }

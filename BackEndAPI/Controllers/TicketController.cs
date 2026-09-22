@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndAPI.Controllers
 {
-    [Authorize]
+    [AllowAnonymous]
     [Route("[controller]")]
     [ApiController]
     public class TicketController : ControllerBase

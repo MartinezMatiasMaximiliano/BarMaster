@@ -37,7 +37,7 @@ namespace BackEndAPI.Services
 
             var visita = await _visitasRepository.BuscarVisitaPorId(infoPago.IdVisita);
             if (visita == null) throw new NotFoundException("Visita no encontrada");
-            if (visita.Estado == "Cerrada") throw new ConflictException("La visita ya fue cerrada");
+            if (visita.Estado == "Cerrada" && visita.Origen == "Local") throw new ConflictException("La visita ya fue cerrada");
 
 
             var movimientoCaja = new MovimientoCaja
@@ -79,11 +79,20 @@ namespace BackEndAPI.Services
             visita.Total = esPedido ? TotalAPagar : visita.Total - infoPago.descuentoDecimal + infoPago.recargoDecimal;
             movimientoCaja.MontoAbonado = infoPago.MontoAbonado;
             movimientoCaja.Vuelto = CalcularVuelto(TotalAPagar, movimientoCaja);
-            movimientoCaja.MontoTotal = visita.Total;
-            var montosFactura = infoPago.GenerarFactura ? CalcularMontosComprobante(productos) : null;
+            movimientoCaja.MontoTotal = TotalAPagar;
+            var montosFactura = infoPago.GenerarFactura ? CalcularMontosComprobante(productos, TotalAPagar) : null;
 
             var (ResultadoPagoCreado, FacturaElectronica) = await _pagosRepository.CrearPago(
                 visita, movimientoCaja, infoPago.DatosFacturaARCA, montosFactura, TotalAPagar, infoPago.GenerarFactura, infoPago.MontoAbonado);
+            try
+            {
+                await _servicioDocumentoImpresion.EncolarComprobantePagoAsync(visita, productos,
+                    ResultadoPagoCreado, CancellationToken.None, infoPago.descuentoDecimal, infoPago.recargoDecimal);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, "No se pudo encolar el comprobante del pago {IdPago}.", ResultadoPagoCreado.Id);
+            }
             return (ResultadoPagoCreado, FacturaElectronica);
         }
 
@@ -145,13 +154,15 @@ namespace BackEndAPI.Services
         /// descuentoDecimal/recargoDecimal de <see cref="DTOs.Request.Crear.CrearPagoDTO"/> —
         /// quedan fuera del comprobante fiscal hasta que se defina cómo deben reflejarse ahí.
         /// </summary>
-        private static MontosComprobante CalcularMontosComprobante(IEnumerable<ProductosPorVisita> items)
+        private static MontosComprobante CalcularMontosComprobante(IEnumerable<ProductosPorVisita> items, decimal totalCobrado)
         {
             var montos = new MontosComprobante();
+            var totalProductos = items.Sum(i => i.PrecioDelMomento);
+            var factor = totalProductos == 0 ? 1 : totalCobrado / totalProductos;
 
             foreach (var grupo in items.GroupBy(i => i.IVADelMomento))
             {
-                var precioConIva = grupo.Sum(i => i.PrecioDelMomento);
+                var precioConIva = grupo.Sum(i => i.PrecioDelMomento) * factor;
                 var neto = grupo.Key == 0
                     ? precioConIva
                     : Math.Round(precioConIva / (1 + grupo.Key / 100m), 2);
@@ -177,7 +188,9 @@ namespace BackEndAPI.Services
                 }
             }
 
-            montos.ImpTotal = montos.ImpNeto + montos.ImpIVA + montos.ImpTotConc + montos.ImpOpEx + montos.ImpTrib;
+            montos.ImpNeto = Math.Round(montos.ImpNeto, 2);
+            montos.ImpIVA = totalCobrado - montos.ImpNeto;
+            montos.ImpTotal = totalCobrado;
             return montos;
         }
 

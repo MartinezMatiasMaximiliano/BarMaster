@@ -95,10 +95,9 @@ public sealed class ServicioCredencialEstacion : IServicioCredencialEstacion
 
         var ahora = proveedorTiempo.GetUtcNow().UtcDateTime;
         var venceEn = ahora.AddHours(opciones.HorasTokenEstacion);
-        var idInquilino = accesorContextoHttp.HttpContext?.Request.Headers["X-Tenant-ID"].ToString();
-        if (string.IsNullOrWhiteSpace(idInquilino))
+        var idInquilino = accesorContextoHttp.HttpContext?.Items["TenantId"]?.ToString();
+        if (!Guid.TryParse(idInquilino, out _))
             throw new ExcepcionEstacionImpresion("EMPRESA_REQUERIDA", "Falta identificar la empresa.", StatusCodes.Status400BadRequest);
-        idInquilino = TenantIdentifier.Normalize(idInquilino);
         var claimsJwt = new[]
         {
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),

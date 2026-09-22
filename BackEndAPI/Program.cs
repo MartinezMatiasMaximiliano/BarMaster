@@ -396,7 +396,6 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseRouting();
 app.UseCors("BarMaster");
-app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
@@ -410,7 +409,6 @@ app.UseRateLimiter();
 app.UseMiddleware<MiddlewareExcepcionesImpresion>();
 app.UseMiddleware<TenantDbMiddleware>();
 app.UseAuthorization();
-app.UseMiddleware<TenantDbMiddleware>();
 app.UseMiddleware<RequestUserContextMiddleware>();
 #endregion
 

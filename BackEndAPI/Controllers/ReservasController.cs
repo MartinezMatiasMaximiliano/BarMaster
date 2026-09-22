@@ -54,6 +54,13 @@ namespace BackEndAPI.Controllers
             return Ok(reservas.Select(MappearReservaDTO).ToList());
         }
 
+        [HttpGet("/Reservas/Disponibilidad")]
+        public async Task<IActionResult> GetDisponibilidad([FromQuery] DateTimeOffset FechaHora)
+        {
+            if (FechaHora == default) throw new BusinessRuleException("Fecha y hora no enviada");
+            return Ok(await _ReservasServices.BuscarDisponibilidad(ObtenerIdSucursal(), FechaHora));
+        }
+
         [HttpPost("/Reservas")]
         public async Task<IActionResult> CrearReserva([FromBody] CrearReservaDTO request)
         {
