@@ -10,8 +10,9 @@ import { GRID_CONFIG } from '../constants/gridConfig';
  * @param {string} planoSeleccionado - ID del plano seleccionado
  * @returns {Object} { mesasFiltradas, layout, obtenerMesaPorId, obtenerDatosMesa }
  */
-export const useMesasGrid = (mesas, planoSeleccionado) => {
+export const useMesasGrid = (mesas, planoSeleccionado, operador) => {
     const mozoRedux = useSelector((state) => state.mozo.value);
+    const mozo = operador?.mozo ?? mozoRedux;
 
     // Filtrar mesas por plano seleccionado
     const mesasFiltradas = useMemo(() => {
@@ -33,12 +34,14 @@ export const useMesasGrid = (mesas, planoSeleccionado) => {
         if (!mesa) return null;
         
         const datosMesa = mapearDatosMesa(mesa);
-        const variant = obtenerVariantMesa(mesa, mozoRedux);
+        const variant = operador?.accesoGlobal && datosMesa.codigoParaPedir
+            ? 'success'
+            : obtenerVariantMesa(mesa, mozo);
         
         return {
             datosMesa,
             variant,
-            mozo: mozoRedux
+            mozo
         };
     };
 

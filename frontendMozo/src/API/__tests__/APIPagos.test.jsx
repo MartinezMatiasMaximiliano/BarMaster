@@ -14,6 +14,19 @@ it('envía el descuento del modal al contrato de pago con otros medios', async (
     fireEvent.click(screen.getByText('Mostrar opciones extra'));
     fireEvent.change(screen.getByLabelText('Monto del descuento'), { target: { value: '20' } });
     fireEvent.click(screen.getByText('Confirmar cobro'));
-    expect(confirmar).toHaveBeenCalledWith([1], 2, 80, 20);
+    await waitFor(() => expect(confirmar).toHaveBeenCalledWith([1], 2, 80, 20));
     expect(api.post).toHaveBeenCalledWith('Pagar', expect.objectContaining({ montoAbonado: 80, descuentoDecimal: 20 }));
+});
+
+it('mantiene abierto el modal cuando el cobro no fue confirmado', async () => {
+    const cerrar = vi.fn();
+    const confirmar = vi.fn().mockResolvedValue(false);
+    render(<Modal open onClose={cerrar} total={100} productIds={[1]} currencyFormatter={new Intl.NumberFormat('es-AR')} onConfirm={confirmar} />);
+    await waitFor(() => expect(screen.getByRole('combobox')).toHaveTextContent('Tarjeta'));
+
+    fireEvent.click(screen.getByText('Confirmar cobro'));
+
+    await waitFor(() => expect(confirmar).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByText('Confirmar cobro')).toBeEnabled());
+    expect(cerrar).not.toHaveBeenCalled();
 });

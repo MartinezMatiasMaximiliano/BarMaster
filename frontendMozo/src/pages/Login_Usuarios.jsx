@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import LoginForm from '../components/LoginForm';
 import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
-import { LoginContext } from '../App';
+import { LoginContext } from '../contexts/AppContexts';
 import { useSnackbar } from '../hooks/useSnackbar.jsx';
 import { SnackbarWrapper } from '../components/common/SnackbarWrapper';
 

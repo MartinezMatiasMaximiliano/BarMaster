@@ -23,7 +23,7 @@ import { ListaProductos } from '../Agregar_Pedidos/components/ListaProductos';
 import { Comanda } from '../Agregar_Pedidos/components/Comanda';
 import { CrearDeliveryTakeawayFromComanda, ModificarDeliveryTakeaway } from '../../../API/APIDeliveryTakeaway';
 import { BuscarTodosLosTipoEnvios } from '../../../API/APITipoEnvios';
-import { BuscarTodasLasPersonas } from '../../../API/APIPersonas';
+import { BuscarCadetesActivos } from '../../../API/APIPersonas';
 import { useSnackbar } from '../../../hooks/useSnackbar';
 import { validarCampos, validarFormulario } from '../../../Helpers/HelperFunctions';
 import { Campos as camposTakeAwayBase } from '../../../configs/agregar/TakeAway';
@@ -206,7 +206,7 @@ export default function Modal_AgregarDelivery({
                 console.error('Error al cargar tipos de envío:', error);
                 return [];
             }),
-            BuscarTodasLasPersonas().catch((error) => {
+            BuscarCadetesActivos().catch((error) => {
                 console.error('Error al cargar cadetes:', error);
                 return [];
             }),
@@ -217,7 +217,6 @@ export default function Modal_AgregarDelivery({
                     setCadetes(
                         (Array.isArray(personasData) ? personasData : [])
                             .map(normalizarCadete)
-                            .filter((persona) => Number(persona.idRol) === 3 && persona.activo !== false)
                     );
                 }
             })
@@ -350,10 +349,10 @@ export default function Modal_AgregarDelivery({
         <Dialog
             open={open}
             onClose={handleClose}
-            maxWidth="lg"
+            maxWidth="xl"
             fullWidth
             disableEnforceFocus
-            PaperProps={{ sx: { height: '90vh' } }}
+            PaperProps={{ sx: { borderRadius: 3, height: '92vh', overflow: 'hidden', bgcolor: 'background.default' } }}
         >
             <DialogTitle>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -364,118 +363,126 @@ export default function Modal_AgregarDelivery({
                 </Stack>
             </DialogTitle>
 
-            <DialogContent dividers>
+            <DialogContent
+                dividers
+                sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}
+            >
                 {errors.servidor && (
                     <Alert severity="error" sx={{ mb: 2 }}>
                         <AlertTitle>No se pudo guardar</AlertTitle>
                         {errors.servidor}
                     </Alert>
                 )}
-                <Stack spacing={2} sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" color="text.secondary">Datos del pedido</Typography>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap">
-                        <TextField
-                            label="Cliente"
-                            value={formValues.Cliente}
-                            onChange={handleFormChange('Cliente')}
-                            variant="outlined"
-                            size="small"
-                            required
-                            error={Boolean(errors.Cliente)}
-                            helperText={errors.Cliente ?? ' '}
-                            sx={{ minWidth: 180 }}
+                <Box sx={{ display: 'flex', gap: 2, minWidth: 0, minHeight: 0, overflow: 'hidden', flex: 1 }}>
+                    <Box sx={{ width: '35%', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: 2, p: 1, bgcolor: 'background.paper' }}>
+                        <Comanda
+                            comanda={comanda}
+                            totalComanda={totalComanda}
+                            onActualizarCantidad={actualizarCantidad}
+                            onActualizarIndicaciones={actualizarIndicaciones}
+                            compact
+                            showTotal={false}
                         />
-                        {origen === 'Delivery' && (
-                            <TextField
-                                label="Dirección"
-                                value={formValues.Direccion}
-                                onChange={handleFormChange('Direccion')}
-                                variant="outlined"
-                                size="small"
-                                required
-                                error={Boolean(errors.Direccion)}
-                                helperText={errors.Direccion ?? ' '}
-                                sx={{ minWidth: 220 }}
-                            />
-                        )}
-                        <TextField
-                            label="Teléfono"
-                            value={formValues.Telefono}
-                            onChange={handleFormChange('Telefono')}
-                            variant="outlined"
-                            size="small"
-                            error={Boolean(errors.Telefono)}
-                            helperText={errors.Telefono ?? ' '}
-                            sx={{ minWidth: 140 }}
-                        />
-                        <TextField
-                            label="Indicaciones"
-                            value={formValues.Indicaciones}
-                            onChange={handleFormChange('Indicaciones')}
-                            variant="outlined"
-                            size="small"
-                            placeholder={origen === 'Takeaway' ? 'Ej: Retirar en 30 min...' : 'Ej: Timbre A, dejar en portón...'}
-                            error={Boolean(errors.Indicaciones)}
-                            helperText={errors.Indicaciones ?? ' '}
-                            sx={{ minWidth: 200 }}
-                        />
-                        {origen === 'Delivery' && (
-                            <TextField
-                                select
-                                label="Tipo de envío"
-                                value={formValues.TipoEnvio}
-                                onChange={handleFormChange('TipoEnvio')}
-                                variant="outlined"
-                                size="small"
-                                required
-                                error={Boolean(errors.TipoEnvio)}
-                                helperText={errors.TipoEnvio ?? ' '}
-                                sx={{ minWidth: 160 }}
-                            >
-                                <MenuItem value="">-</MenuItem>
-                                {tiposDeEnvio.map((t) => (
-                                    <MenuItem key={t.id} value={t.id}>
-                                        {t.nombre} ($ {Number(t.precio ?? 0)})
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        )}
-                        {origen === 'Delivery' && (
-                            <TextField
-                                select
-                                label="Cadete"
-                                value={formValues.Cadete}
-                                onChange={handleFormChange('Cadete')}
-                                variant="outlined"
-                                size="small"
-                                required
-                                error={Boolean(errors.Cadete)}
-                                helperText={errors.Cadete ?? ' '}
-                                sx={{ minWidth: 180 }}
-                            >
-                                <MenuItem value="">-</MenuItem>
-                                {cadetes.map((cadete) => (
-                                    <MenuItem key={cadete.id} value={cadete.id}>
-                                        {`${cadete.nombre} ${cadete.apellido}`.trim() || `Cadete ${cadete.id}`}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        )}
-                    </Stack>
-                </Stack>
-
-                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                    Productos - hacé clic en un producto para agregarlo a la comanda
-                </Typography>
-                {errors.Productos && (
-                    <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-                        {errors.Productos}
-                    </Typography>
-                )}
-
-                <Box sx={{ display: 'flex', gap: 2, minWidth: 0, overflow: 'hidden', flex: 1 }}>
-                    <Box sx={{ width: '65%', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <Stack spacing={2} sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+                    </Box>
+                    <Box sx={{ width: '65%', minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: 2, p: 2, bgcolor: (theme) => theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.background.paper }}>
+                        <Stack spacing={1.5} sx={{ width: '100%', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+                            <Typography variant="subtitle2" color="text.secondary" sx={{ flexShrink: 0 }}>
+                                Datos del pedido
+                            </Typography>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 1, flexShrink: 0 }}>
+                                <TextField
+                                    label="Cliente"
+                                    value={formValues.Cliente}
+                                    onChange={handleFormChange('Cliente')}
+                                    variant="outlined"
+                                    size="small"
+                                    required
+                                    error={Boolean(errors.Cliente)}
+                                    helperText={errors.Cliente ?? ' '}
+                                    sx={{ minWidth: 0 }}
+                                />
+                                {origen === 'Delivery' && (
+                                    <TextField
+                                        label="Dirección"
+                                        value={formValues.Direccion}
+                                        onChange={handleFormChange('Direccion')}
+                                        variant="outlined"
+                                        size="small"
+                                        required
+                                        error={Boolean(errors.Direccion)}
+                                        helperText={errors.Direccion ?? ' '}
+                                        sx={{ minWidth: 0 }}
+                                    />
+                                )}
+                                <TextField
+                                    label="Teléfono"
+                                    value={formValues.Telefono}
+                                    onChange={handleFormChange('Telefono')}
+                                    variant="outlined"
+                                    size="small"
+                                    error={Boolean(errors.Telefono)}
+                                    helperText={errors.Telefono ?? ' '}
+                                    sx={{ minWidth: 0 }}
+                                />
+                                {origen === 'Delivery' && (
+                                    <TextField
+                                        select
+                                        label="Tipo de envío"
+                                        value={formValues.TipoEnvio}
+                                        onChange={handleFormChange('TipoEnvio')}
+                                        variant="outlined"
+                                        size="small"
+                                        required
+                                        error={Boolean(errors.TipoEnvio)}
+                                        helperText={errors.TipoEnvio ?? ' '}
+                                        sx={{ minWidth: 0 }}
+                                    >
+                                        <MenuItem value="">-</MenuItem>
+                                        {tiposDeEnvio.map((t) => (
+                                            <MenuItem key={t.id} value={t.id}>
+                                                {t.nombre} ($ {Number(t.precio ?? 0)})
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                )}
+                                {origen === 'Delivery' && (
+                                    <TextField
+                                        select
+                                        label="Cadete"
+                                        value={formValues.Cadete}
+                                        onChange={handleFormChange('Cadete')}
+                                        variant="outlined"
+                                        size="small"
+                                        required
+                                        error={Boolean(errors.Cadete)}
+                                        helperText={errors.Cadete ?? ' '}
+                                        sx={{ minWidth: 0 }}
+                                    >
+                                        <MenuItem value="">-</MenuItem>
+                                        {cadetes.map((cadete) => (
+                                            <MenuItem key={cadete.id} value={cadete.id}>
+                                                {`${cadete.nombre} ${cadete.apellido}`.trim() || `Cadete ${cadete.id}`}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                )}
+                                <TextField
+                                    label="Indicaciones"
+                                    value={formValues.Indicaciones}
+                                    onChange={handleFormChange('Indicaciones')}
+                                    variant="outlined"
+                                    size="small"
+                                    placeholder={origen === 'Takeaway' ? 'Ej: Retirar en 30 min...' : 'Ej: Timbre A, dejar en portón...'}
+                                    error={Boolean(errors.Indicaciones)}
+                                    helperText={errors.Indicaciones ?? ' '}
+                                    sx={{ minWidth: 0 }}
+                                />
+                            </Box>
+                            {errors.Productos && (
+                                <Typography variant="body2" color="error" sx={{ flexShrink: 0 }}>
+                                    {errors.Productos}
+                                </Typography>
+                            )}
                             <FiltrosProductos
                                 productos={productos}
                                 categorias={categorias}
@@ -490,30 +497,27 @@ export default function Modal_AgregarDelivery({
                             />
                         </Stack>
                     </Box>
-                    <Box sx={{ width: '35%', display: 'flex', flexDirection: 'column' }}>
-                        <Comanda
-                            comanda={comanda}
-                            totalComanda={totalComanda}
-                            onActualizarCantidad={actualizarCantidad}
-                            onActualizarIndicaciones={actualizarIndicaciones}
-                        />
-                    </Box>
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, py: 2 }}>
-                <Button data-escape-action="true" onClick={handleClose} variant="outlined">
-                    Cancelar
-                </Button>
-                <Button
-                    data-enter-action="true" onClick={handleEnviar}
-                    variant="contained"
-                    color="primary"
-                    disabled={comanda.length === 0 || loading}
-                    startIcon={<ShoppingCartIcon />}
-                >
-                    {textoBoton}
-                </Button>
+            <DialogActions sx={{ px: 3, py: 1.5, justifyContent: 'space-between' }}>
+                <Typography variant="subtitle1" fontWeight="bold" color="primary">
+                    Total: ${totalComanda.toFixed(2)}
+                </Typography>
+                <Stack direction="row" spacing={1}>
+                    <Button data-escape-action="true" onClick={handleClose} variant="outlined">
+                        Cancelar
+                    </Button>
+                    <Button
+                        data-enter-action="true" onClick={handleEnviar}
+                        variant="contained"
+                        color="primary"
+                        disabled={comanda.length === 0 || loading}
+                        startIcon={<ShoppingCartIcon />}
+                    >
+                        {textoBoton}
+                    </Button>
+                </Stack>
             </DialogActions>
 
             <SnackbarWrapper

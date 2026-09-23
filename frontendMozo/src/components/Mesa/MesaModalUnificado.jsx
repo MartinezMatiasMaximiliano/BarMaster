@@ -140,10 +140,13 @@ export const MesaModalUnificado = ({
         );
     }, []);
 
-    const handleConfirmarFacturacion = useCallback((arregloIds, idTipoPago, monto, descuento = 0) => {
-        PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto, descuento } : undefined);
-        setProductosSeleccionados([]);
-        setShowModalFacturar(null);
+    const handleConfirmarFacturacion = useCallback(async (arregloIds, idTipoPago, monto, descuento = 0) => {
+        const confirmado = await PagarMesa(arregloIds, showSnackbarFacturacion, idTipoPago != null && monto != null ? { idTipoPago, monto, descuento } : undefined);
+        if (confirmado) {
+            setProductosSeleccionados([]);
+            setShowModalFacturar(null);
+        }
+        return confirmado;
     }, [PagarMesa, showSnackbarFacturacion]);
 
     const handleFacturarPartes = useCallback(() => {

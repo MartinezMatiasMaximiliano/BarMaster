@@ -8,7 +8,7 @@ API REST en ASP.NET Core para gestión de bares/restaurantes (multi-tenant, mult
 - **Tokens JWT** (`Services/Global/JWTServices.cs`), tres variantes según el flujo de login:
   - Login de sucursal (`POST /Login`): claims `IdEmpresa`, `IdSucursal`, `TipoAuth=sucursal`.
   - Login de empresa: claims `IdEmpresa`, `TipoAuth=empresa`.
-  - Login de persona (`POST /LoginPersona`): claims `IdPersona`, `RequestedBy`, `RequestedRole`, `TipoAuth=admin`.
+  - Login de persona (`POST /LoginPersona`): claims `IdPersona`, `IdRol`, `RequestedBy`, `RequestedRole` y `TipoAuth` según el rol (`admin` o `cajero`).
   - Varios controladores leen `IdSucursal`/`IdEmpresa` de los claims del token para acotar las consultas automáticamente (no van en la ruta ni en el body).
 - **Multi-tenant**: header `X-Tenant-ID` (documentado en Swagger como API Key) + `TenantDbMiddleware`, que resuelve el `DbContext` del tenant en cada request antes de llegar al controlador.
 - **CORS**: política `AllowAll` (cualquier origen/método/header).

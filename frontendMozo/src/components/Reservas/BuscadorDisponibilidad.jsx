@@ -167,8 +167,8 @@ export default function BuscadorDisponibilidad({ onReservaCreada }) {
             {resultado.mesas.length > 0 && <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1.5 }} aria-label="Referencia de disponibilidad">
                 {[
                     ['Verde: 90 min o más', 'verde', 'La reserva activa más cercana está a 90 minutos o más, antes o después de la hora buscada, o la mesa no tiene otras reservas.'],
-                    ['Amarilla: entre 30 y 90 min', 'amarilla', 'La reserva activa más cercana está a más de 30 y menos de 90 minutos, antes o después de la hora buscada.'],
-                    ['Roja: hasta 30 min', 'roja', 'La mesa tiene una reserva activa hasta 30 minutos antes o después de la hora buscada. Conviene dejar margen entre ambas reservas.'],
+                    ['Amarilla: entre 30 y 90 min', 'amarilla', 'La mesa está disponible entre 30 y 90 minutos, antes o después de la hora buscada.'],
+                    ['Roja: hasta 30 min', 'roja', 'La mesa está disponible por 30 minutos máximo o hay una reserva 30 minutos antes.'],
                 ].map(([etiqueta, estado, explicacion]) => <Tooltip key={estado} title={explicacion} arrow>
                     <Box component="span" tabIndex={0} sx={{ display: 'inline-flex', alignItems: 'center', cursor: 'help',
                         minHeight: 32, px: 1.25, border: '1px solid', borderRadius: 2, fontSize: '0.8125rem', fontWeight: 700,

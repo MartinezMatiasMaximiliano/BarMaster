@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BackEndAPI.Controllers;
 
 [ApiController]
-[Authorize(Policy = "Impresion.Configurar")]
+[Authorize(Policy = "Impresion.ConfigurarReglas")]
 [Route("impresion/reglas")]
 public sealed class ReglasImpresionController : ControllerBase
 {

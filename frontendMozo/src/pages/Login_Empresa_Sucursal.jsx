@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { TextField, Button, Box, Typography, Alert, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { LoginContext, AuthTypeContext } from '../App';
+import { LoginContext, AuthTypeContext } from '../contexts/AppContexts';
 import { authService } from '../services/authService';
 
 const LoginEmpresaSucursal = () => {

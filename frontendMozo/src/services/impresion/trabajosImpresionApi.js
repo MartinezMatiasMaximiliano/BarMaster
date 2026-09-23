@@ -6,7 +6,7 @@ export async function marcarTrabajoEnviando(id, idReserva) { await asegurarSesio
 export async function marcarTrabajoAceptado(id, idReserva) { await asegurarSesionEstacion(); await apiEstacion.post(`impresion/estacion/trabajos/${id}/aceptado-por-cola`, { idReserva }); }
 export async function fallarTrabajoImpresion(id, cuerpo) { await asegurarSesionEstacion(); await apiEstacion.post(`impresion/estacion/trabajos/${id}/fallido`, cuerpo); }
 export async function renovarReservaTrabajo(id, idReserva) { await asegurarSesionEstacion(); await apiEstacion.post(`impresion/estacion/trabajos/${id}/renovar-reserva`, { idReserva }); }
-export async function solicitarPreticket(idVisita, idsProductos = [], idComando = generarUUID()) { return (await apiSucursal.post('impresion/solicitudes/preticket', { idComando, idVisita, idsProductos })).data; }
+export async function solicitarPreticket(idVisita, idsProductos = [], idComando = generarUUID()) { return (await apiAdministrativa.post('impresion/solicitudes/preticket', { idComando, idVisita, idsProductos })).data; }
 export async function obtenerSolicitudImpresion(id) { return (await apiSucursal.get(`impresion/solicitudes/${id}`)).data; }
 export async function obtenerPanelImpresion() { return (await apiAdministrativa.get('impresion/panel')).data; }
 export async function obtenerTrabajosImpresion(params = {}) { return (await apiAdministrativa.get('impresion/trabajos', { params })).data; }

@@ -84,7 +84,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
             if (showSnackbar) {
                 showSnackbar("No hay productos para facturar", "warning");
             }
-            return;
+            return false;
         }
 
         const idVisita = visitaMesa?.id || visitaMesa?.Id || datosMesa.visita?.id || datosMesa.visita?.Id;
@@ -92,7 +92,7 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
             if (showSnackbar) {
                 showSnackbar("No se pudo identificar la visita de la mesa", "error");
             }
-            return;
+            return false;
         }
 
         try {
@@ -123,12 +123,14 @@ export const useModalVerCuenta = (datosMesa, cerrarModalMesa, options) => {
             if (showSnackbar) {
                 showSnackbar("Productos facturados correctamente", "success");
             }
+            return true;
         } catch (error) {
             console.error("Error al facturar:", error);
             if (showSnackbar) {
                 const msg = error.response?.data;
                 showSnackbar(typeof msg === 'string' ? msg : "Error al facturar. Intente de nuevo.", "error");
             }
+            return false;
         }
     }, [
         datosMesa.numero,

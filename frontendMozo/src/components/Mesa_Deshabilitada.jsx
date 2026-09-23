@@ -40,6 +40,9 @@ export default function Mesa_Deshabilitada(props) {
             minHeight: 0,
             padding: '4px 8px',
             fontSize: '0.75rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.25,
             textTransform: 'none',
             ...estilo,
             backgroundColor: COLOR_MESA_OTRO_MOZO,
@@ -75,20 +78,16 @@ export default function Mesa_Deshabilitada(props) {
                 disabled={deshabilitadaPorCaja}
                 sx={botonSx}
             >
-                {simpleStyle ? (
-                    <>Mesa {datos_mesa.numero}</>
-                ) : (
-                    <>
-                        <img
-                            src="/iconos/mesa_ocupada_blanca.png"
-                            alt="Mesa ocupada"
-                            style={{ width: 49.68, height: 49.68, objectFit: 'contain' }}
-                        />
-                        <Typography variant="body2" component="span" sx={{ fontWeight: 500 }}>
-                            Mesa {datos_mesa.numero}
-                        </Typography>
-                    </>
-                )}
+                <img
+                    src="/iconos/mesa_ocupada_blanca.png"
+                    alt="Mesa ocupada"
+                    style={simpleStyle
+                        ? { width: '45%', height: '45%', minWidth: 20, minHeight: 20, maxWidth: 49.68, maxHeight: 49.68, objectFit: 'contain' }
+                        : { width: 49.68, height: 49.68, objectFit: 'contain' }}
+                />
+                <Typography variant="body2" component="span" sx={{ fontWeight: 500, lineHeight: 1.1 }}>
+                    Mesa {datos_mesa.numero}
+                </Typography>
             </Button>
 
             <Modal show={show} onHide={handleClose}>

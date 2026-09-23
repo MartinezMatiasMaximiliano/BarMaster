@@ -161,18 +161,20 @@ export function MappearPersonas(personas) {
 
 export function MappearMozos(mozos) {
     return (
-        mozos.map(mozo => ({
+        mozos.map(mozo => {
+            const datosPersonales = mozo.datosPersonales ?? mozo.DatosPersonales ?? {};
+            return ({
             id: mozo.id ?? mozo.Id,
-            codigoDeServicio: mozo.codigoDeServicio,
-            idRol: mozo.rol?.id,
-            nombre: mozo.datosPersonales.nombres,
-            apellido: mozo.datosPersonales.apellido,
+            codigoDeServicio: String(mozo.codigoDeServicio ?? mozo.CodigoDeServicio ?? ''),
+            idRol: mozo.rol?.id ?? mozo.Rol?.Id ?? 2,
+            nombre: datosPersonales.nombres ?? datosPersonales.Nombres ?? mozo.nombres ?? mozo.Nombres ?? '',
+            apellido: datosPersonales.apellido ?? datosPersonales.Apellido ?? mozo.apellido ?? mozo.Apellido ?? '',
             personajeId: mozo.personajeId ?? mozo.PersonajeId ?? 0,
-            dni: mozo.datosPersonales.dni,
-            direccion: mozo.datosPersonales.direccion,
-            telefono: mozo.datosPersonales.telefono,
-            activo: mozo.datosPersonales.activo
-        }))
+            dni: datosPersonales.dni ?? datosPersonales.Dni ?? '',
+            direccion: datosPersonales.direccion ?? datosPersonales.Direccion ?? '',
+            telefono: datosPersonales.telefono ?? datosPersonales.Telefono ?? '',
+            activo: datosPersonales.activo ?? datosPersonales.Activo ?? true
+        })})
     )
 }
 

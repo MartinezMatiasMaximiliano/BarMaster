@@ -1133,6 +1133,11 @@ namespace BackEndAPI.Migrations
                         {
                             Id = 3,
                             Nombre = "Cadete"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Nombre = "Cajero"
                         });
                 });
 

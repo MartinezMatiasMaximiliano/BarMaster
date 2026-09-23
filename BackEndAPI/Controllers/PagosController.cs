@@ -20,6 +20,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost("/Pagar")]
+        [Authorize(Policy = "Mesas.Operar")]
         public async Task<IActionResult> PagarItemsDeVisita([FromBody] CrearPagoDTO request)
         {
             var (movimientoCaja, facturaElectronica) = await _PagosServices.PagarProductos(request);

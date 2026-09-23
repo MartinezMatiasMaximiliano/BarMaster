@@ -5,6 +5,21 @@ vi.mock('../../redux/store', () => ({ persistor: { purge } }));
 vi.mock('../impresion/conexionQz', () => ({ desconectarQz: vi.fn(() => Promise.resolve()) }));
 
 describe('limpieza de sesión', () => {
+    it('elimina sólo la sesión personal y conserva la sesión de sucursal', async () => {
+        localStorage.setItem('token', 'branch-secret');
+        localStorage.setItem('auth_type', 'sucursal');
+        localStorage.setItem('USER_token', 'person-secret');
+        localStorage.setItem('USER_codigo_servicio', '1234');
+
+        const { clearPersonSession } = await import('../sessionCleanup');
+        clearPersonSession();
+
+        expect(localStorage.getItem('USER_token')).toBeNull();
+        expect(localStorage.getItem('USER_codigo_servicio')).toBeNull();
+        expect(localStorage.getItem('token')).toBe('branch-secret');
+        expect(localStorage.getItem('auth_type')).toBe('sucursal');
+    });
+
     it('elimina el estado sensible y conserva sólo la identidad de impresión', async () => {
         localStorage.setItem('token', 'secret');
         localStorage.setItem('USER_token', 'person-secret');

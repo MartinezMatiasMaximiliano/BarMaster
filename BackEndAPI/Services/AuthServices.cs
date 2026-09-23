@@ -2,6 +2,7 @@ using BackEndAPI.Data;
 using BackEndAPI.DTOs.Request;
 using BackEndAPI.DTOs.Response;
 using BackEndAPI.Exceptions;
+using BackEndAPI.Models;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services.Global;
 using BackEndAPI.Services.Interfaces;
@@ -85,10 +86,14 @@ public class AuthServices : IAuthServices
         if(request.Username is null || request.Password is null) throw new BusinessRuleException("Usuario o contraseña vacios");
         var persona = await _personasRepository.GetPersonaPorDni(request.Username);
         if (persona == null) throw new NotFoundException("Persona no encontrada");
+        if (!persona.Activo) throw new UnauthorizedException("La persona se encuentra inactiva");
 
         var PasswordValido = _passwordService.VerificarPasswordHash(request.Password, persona.PasswordHash, persona.PasswordSalt);
 
         if (!PasswordValido) throw new UnauthorizedException("Contraseña incorrecta");
+        if (!Roles.PuedeIniciarSesion(persona.IdRol))
+            throw new UnauthorizedException("El rol de la persona no tiene habilitado el acceso al sistema");
+
         var token = _jwtServices.CrearJWTPersona(persona, TenantIdActual);
         return token;
 

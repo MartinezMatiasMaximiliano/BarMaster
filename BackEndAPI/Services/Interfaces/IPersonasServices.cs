@@ -15,5 +15,7 @@ namespace BackEndAPI.Services.Interfaces
         Task<Persona?> CambiarEstado(Guid IdPersona);
         Task<Persona?> EliminarPersona(Guid IdPersona);
         Task<ICollection<Persona>> BuscarMozos();
+        Task<ICollection<Persona>> BuscarPersonasPorRol(int idRol);
+        Task<Persona?> ValidarCodigoMozo(string codigo);
     }
 }

@@ -92,16 +92,23 @@ namespace BackEndAPI.Services.Global
         public JWTToken CrearJWTPersona(Persona persona, Guid tenantId)
         {
             int hours_expire = 1;
+            var tipoAuth = persona.IdRol switch
+            {
+                Roles.Admin => "admin",
+                Roles.Cajero => "cajero",
+                _ => throw new InvalidOperationException("El rol de la persona no puede iniciar sesión.")
+            };
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //jti = json token id
                 new Claim("TenantId", tenantId.ToString()),
                 new Claim("IdPersona", persona.Id.ToString()),
+                new Claim("IdRol", persona.IdRol.ToString()),
                 new Claim("IdEmpresa", persona.IdEmpresa.ToString()),
                 new Claim("IdSucursal", ResolvePersonaSucursal(persona)),
                 new Claim("RequestedBy",$"{persona.Apellido},{persona.Nombres}"),
                 new Claim("RequestedRole", persona.Rol?.Nombre ?? string.Empty),
-                new Claim("TipoAuth","admin"),
+                new Claim("TipoAuth", tipoAuth),
             };
 
             var key = _key;
@@ -120,8 +127,9 @@ namespace BackEndAPI.Services.Global
             {
                 Access_token = tokenString,
                 Token_type = "bearer",
-                Auth_type = "admin",
+                Auth_type = tipoAuth,
                 PersonajeId = persona.PersonajeId,
+                CodigoDeServicio = persona.CodigoDeServicio,
                 expires = token.ValidTo.ToString(),
                 Expires_in = 3600 * hours_expire
             };

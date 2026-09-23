@@ -14,17 +14,15 @@ namespace BackEndAPI.Repositories
 {
     public class PagosRepository : IPagosRepository
     {
-        private readonly WsfeService _wsfeService;
-        private readonly WsaaAuthService _wsaaAuthService;
+        private readonly Func<WsfeService> _crearWsfeService;
         private readonly ICurrentDbContext _context;
         private readonly AppDbContext Db;
         private readonly ICajasRepository _cajasRepository;
 
-        public PagosRepository(ICurrentDbContext context, WsfeService wsfeService, WsaaAuthService wsaaAuthService, ICajasRepository cajasRepository)
+        public PagosRepository(ICurrentDbContext context, Func<WsfeService> crearWsfeService, ICajasRepository cajasRepository)
         {
             _context = context;
-            _wsfeService = wsfeService;
-            _wsaaAuthService = wsaaAuthService;
+            _crearWsfeService = crearWsfeService;
             Db = _context.Db;
             _cajasRepository = cajasRepository;
         }
@@ -48,7 +46,10 @@ namespace BackEndAPI.Repositories
                 if (generarFactura)
                 {
                     if (montosFactura == null) throw new BusinessRuleException("No se pudieron calcular los montos del comprobante");
-                    var facturaElectronica = await _wsfeService.CrearFacturaElectronica(DatosFactura, montosFactura);
+                    // ARCA depende de AWS/S3 para obtener el certificado. Se resuelve recién
+                    // cuando se solicita una factura fiscal, para que un cobro común no requiera
+                    // credenciales de AWS durante la construcción del controlador.
+                    var facturaElectronica = await _crearWsfeService().CrearFacturaElectronica(DatosFactura, montosFactura);
                     movimientoCaja.Facturado = true;
                     movimientoCaja.IdFactura = facturaElectronica.Id;
 

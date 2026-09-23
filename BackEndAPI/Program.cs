@@ -14,6 +14,7 @@ using BackEndAPI.Impresion.Reglas;
 using BackEndAPI.Impresion.Trabajos;
 using BackEndAPI.Impresion.Notificaciones;
 using BackEndAPI.Impresion.Documentos;
+using BackEndAPI.Models;
 using BackEndAPI.Repositories;
 using BackEndAPI.Repositories.Interfaces;
 using BackEndAPI.Services;
@@ -171,6 +172,7 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddHttpClient<WsfeService>();
 builder.Services.AddHttpClient<WsaaAuthService>();
+builder.Services.AddScoped<Func<WsfeService>>(provider => provider.GetRequiredService<WsfeService>);
 builder.Services.Configure<ArcaOptions>(builder.Configuration.GetSection("Arca"));
 builder.Services.AddScoped<TraGenerator>();
 builder.Services.AddScoped<CmsSignerService>();
@@ -295,13 +297,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy("SoloAdmin", policy => policy.RequireAssertion(context =>
+        context.User.HasClaim("TipoAuth", "admin")
+        && context.User.HasClaim("IdRol", Roles.Admin.ToString())
+        && context.User.HasClaim(claim => claim.Type == "IdPersona" && Guid.TryParse(claim.Value, out _))));
+
+    options.AddPolicy("Mesas.Operar", policy => policy.RequireAssertion(context =>
+        (context.User.HasClaim("TipoAuth", "sucursal")
+            && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _)))
+        || (context.User.Claims.Any(claim => claim.Type == "TipoAuth"
+                && (claim.Value == "admin" || claim.Value == "cajero"))
+            && context.User.HasClaim(claim => claim.Type == "IdPersona" && Guid.TryParse(claim.Value, out _))
+            && context.User.Claims.Any(claim => claim.Type == "IdRol"
+                && int.TryParse(claim.Value, out var idRol) && Roles.PuedeIniciarSesion(idRol)))));
+
     options.AddPolicy("Impresion.Usar", policy => policy.RequireAssertion(context =>
-        context.User.HasClaim("TipoAuth", "sucursal")
+        (context.User.HasClaim("TipoAuth", "sucursal")
+            || (context.User.Claims.Any(claim => claim.Type == "TipoAuth"
+                    && (claim.Value == "admin" || claim.Value == "cajero"))
+                && context.User.Claims.Any(claim => claim.Type == "IdRol"
+                    && int.TryParse(claim.Value, out var idRol) && Roles.PuedeIniciarSesion(idRol))))
         && context.User.HasClaim(claim => claim.Type == "TenantId" && !string.IsNullOrWhiteSpace(claim.Value))
         && context.User.HasClaim(claim => claim.Type == "IdSucursal" && Guid.TryParse(claim.Value, out _))));
 
     options.AddPolicy("Impresion.Configurar", policy => policy.RequireAssertion(context =>
         AutorizacionImpresion.PuedeConfigurar(context.User)));
+
+    options.AddPolicy("Impresion.ConfigurarReglas", policy => policy.RequireAssertion(context =>
+        AutorizacionImpresion.PuedeConfigurarReglas(context.User)));
 
     options.AddPolicy("Impresion.Diagnosticos", policy => policy.RequireAssertion(context =>
         context.User.Identity?.IsAuthenticated == true

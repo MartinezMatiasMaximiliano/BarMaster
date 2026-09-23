@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndAPI.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "SoloAdmin")]
     [Route("[controller]")]
     [ApiController]
     public class RolesController : ControllerBase

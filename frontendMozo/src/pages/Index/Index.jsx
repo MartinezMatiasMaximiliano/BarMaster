@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Alert } from 'react-bootstrap';
 import { ThemeProvider } from '@mui/material';
 import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoSlice';
-import { LoginContext, AuthTypeContext } from '../../App';
+import { LoginContext, AuthTypeContext } from '../../contexts/AppContexts';
 import { handleConfirmarSalir } from '../../Helpers/HelperFunctions';
 import { useMesaFiltering } from './hooks/useMesaFiltering.jsx';
-import { useMozoCode } from './hooks/useMozoCode';
+import { useOperadorMesas } from '../../hooks/useOperadorMesas';
 import { MesasGrid } from './components/MesasGrid';
 import { BottomBar } from '../../components/BottomBar';
 import { ConfirmLogoutDialog } from '../../components/ConfirmLogoutDialog';
@@ -23,7 +23,8 @@ import { useAtajoMesaTeclado } from './hooks/useAtajoMesaTeclado';
 import { AyudaAtajosDialog } from './components/AyudaAtajosDialog';
 
 function Index(props) {
-    const codigoMozoInputRef = useCodigoMozoTeclado({ limpiarConEscape: true });
+    const { codigoMozo, mozo, accesoGlobal } = useOperadorMesas(props.datos_mozos);
+    const codigoMozoInputRef = useCodigoMozoTeclado({ limpiarConEscape: true, activo: !accesoGlobal });
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const loginContext = useContext(LoginContext);
@@ -64,12 +65,10 @@ function Index(props) {
     useAtajoMesaTeclado({
         activo: hayCajaActiva && !cargandoMesas,
         onNumeroMesa: abrirMesaPorNumero,
-        codigoMozoInputRef
+        codigoMozoInputRef: accesoGlobal ? null : codigoMozoInputRef
     });
     
-    const { mesasParaMostrar } = useMesaFiltering(mesas, props.datos_mozos, hayCajaActiva);
-
-    const { codigoMozo, mozo } = useMozoCode(props.datos_mozos);
+    const { mesasParaMostrar } = useMesaFiltering(mesas, props.datos_mozos, hayCajaActiva, { mozo, accesoGlobal });
 
     // Cargar estado de caja activa al montar el componente
     useEffect(() => {
@@ -133,6 +132,7 @@ function Index(props) {
                     onThemeToggle={toggleThemeMode}
                     onAyudaAtajosClick={() => setOpenAyudaAtajos(true)}
                     onSalirClick={handleAbrirConfirmacion}
+                    ocultarCodigo={accesoGlobal}
                 />
 
                 <AyudaAtajosDialog

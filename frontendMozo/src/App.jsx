@@ -1,5 +1,5 @@
 import './styles/App.css'
-import React, { useState, useEffect, createContext, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Route, Routes, useLocation, Navigate } from "react-router-dom"
 import { Box } from '@mui/material'
 import { MappearPersonas, MappearMozos, MappearMesas, MappearMenu, MappearNotificaciones, MappearPedidos, MappearReservas, MappearPlanos } from './Helpers/HelperFunctions'
@@ -16,7 +16,6 @@ import Abm_TipoEnvios from './pages/Abm_TipoEnvios'
 import Abm_CuentasCorrientes from './pages/Abm_CuentasCorrientes'
 import Abm_Personas from './pages/Abm_Personas'
 import Cambiar_Clave from './pages/Cambiar_Clave'
-import Distribucion_mesas from './pages/Distribucion_mesas'
 import Delivery from './pages/Delivery'
 import TakeAway from './pages/TakeAway'
 import Abm_Reservas from './pages/Abm_Reservas'
@@ -66,10 +65,7 @@ import Stock from './pages/Stock/Stock';
 import StockAlerts from './components/StockAlerts';
 import Impresiones from './pages/Impresiones/Impresiones';
 import { ProveedorImpresion } from './contexts/ContextoImpresion';
-
-export const LoginContext = createContext();
-export const SucursalContext = createContext();
-export const AuthTypeContext = createContext();
+import { LoginContext, AuthTypeContext } from './contexts/AppContexts';
 
 const MENUS_ENABLED = false;
 
@@ -121,14 +117,12 @@ function App() {
         const esVistaKDS = location.pathname === '/kds';
         const esVistaReservas = location.pathname === '/reservas';
         const esVistaAbmCuentasCorrientes = location.pathname === '/abm_cuentas_corrientes';
+        const esVistaListadoMozos = location.pathname === '/lista_mozos';
         if (esVistaMesas || esVistaKDS) {
             if (localStorage.getItem('token')) {
                 BuscarTodasLasMesas()
                     .then(data => { if (!cancelled) SetMesas(Array.isArray(data) ? data : []); })
                     .catch(() => { if (!cancelled) SetMesas([]); });
-                BuscarTodosLosMozos()
-                    .then(data => { if (!cancelled) SetMozos(Array.isArray(data) ? data : []); })
-                    .catch(() => { if (!cancelled) SetMozos([]); });
                 BuscarTodosLosProductos()
                     .then(data => { if (!cancelled) SetMenu(Array.isArray(data) ? data : []); })
                     .catch(() => { if (!cancelled) SetMenu([]); });
@@ -187,6 +181,12 @@ function App() {
             } else {
                 setCuentasCorrientes([]);
             }
+        }
+
+        if (esVistaListadoMozos) {
+            BuscarTodosLosMozos()
+                .then(data => { if (!cancelled) SetMozos(Array.isArray(data) ? data : []); })
+                .catch(() => { if (!cancelled) SetMozos([]); });
         }
 
         return () => { cancelled = true; };
@@ -388,13 +388,13 @@ function App() {
                             <Route path="/sistema_sucursal" element={<Index mesas={mesas} datos_mozos={datos_mozos_listado} />} />
                             <Route path="/Index2" element={<Index2 mesas={mesas} datos_mozos={datos_mozos_listado} />} />
                             <Route path="/caja" element={<Control_Login><Caja /></Control_Login>} />
-                            <Route path="/historial" element={<Control_Login><Historial /></Control_Login>} />
+                            <Route path="/historial" element={<Control_Login rolesPermitidos={[1]}><Historial /></Control_Login>} />
                             <Route path="/historial_caja" element={<Control_Login><HistorialCaja /></Control_Login>} />
                             <Route path="/movimiento_caja" element={<Control_Login><MovimientoCaja /></Control_Login>} />
                             <Route path="/abm_categorias" element={<Control_Login><Abm_Categorias recargarComponentes={recargarCategorias} datos_categorias={categorias} titulo="Categorias" /></Control_Login>} />
                             <Route path="/abm_tipo_envios" element={<Control_Login><Abm_TipoEnvios titulo="Tipos de Envío" /></Control_Login>} />
                             <Route path="/abm_cuentas_corrientes" element={<Control_Login><Abm_CuentasCorrientes recargarComponentes={recargarCuentasCorrientes} datos_cuentas_corrientes={cuentasCorrientes} titulo="Cuentas Corrientes" /></Control_Login>} />
-                            <Route path="/lista_mozos" element={<Control_Login><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
+                            <Route path="/lista_mozos" element={<Control_Login rolesPermitidos={[1]}><Listado_Mozos recargarComponentes={recargarListadoMozos} datos_mozos={datos_mozos_listado} titulo="Mozos" /></Control_Login>} />
                             <Route path="/abm_mesas" element={<Control_Login><Abm_Mesas recargarComponentes={recargarPlanos} datos_mesas={planos} datos_select={datos_mozos_listado} titulo="Mesas" /></Control_Login>} />
                             <Route path="/abm_productos" element={<Control_Login><Abm_Productos recargarComponentes={recargarProductos} datos_productos={datos_menu_abm} categorias={categorias} titulo="Productos" /></Control_Login>} />
                             <Route path="/stock" element={<Control_Login><Stock /></Control_Login>} />
@@ -417,18 +417,18 @@ function App() {
                                         : <Navigate to="/sistema_sucursal" replace />
                                 }
                             />
-                            <Route path="/abm_personas" element={<Control_Login><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
+                            <Route path="/abm_personas" element={<Control_Login rolesPermitidos={[1]}><Abm_Personas recargarComponentes={recargarPersonas} datos_personas={datos_personas_abm} datos_select={roles} titulo="Personas" /></Control_Login>} />
                             <Route path="/reservas" element={<Control_Login><Abm_Reservas recargarComponentes={recargarReservas} datos_reservas={datos_reservas} mesas={mesas} titulo="Reservas" /></Control_Login>} />
-                            <Route path="/abm_planos" element={<Control_Login><Abm_Planos recargarComponentes={recargarPlanos} datos_planos={datos_planos_abm} titulo="Planos" /></Control_Login>} />
-                            <Route path="/reportes" element={<Control_Login><Reportes /></Control_Login>} />
-                            <Route path="/reporte_ventas" element={<Control_Login><ReporteVentas /></Control_Login>} />
-                            <Route path="/reporte_productos" element={<Control_Login><ReporteProductos /></Control_Login>} />
-                            <Route path="/reporte_mozos" element={<Control_Login><ReporteMozos /></Control_Login>} />
-                            <Route path="/reporte_mesas" element={<Control_Login><ReporteMesas /></Control_Login>} />
-                            <Route path="/reporte_rentabilidad" element={<Control_Login><ReporteRentabilidad /></Control_Login>} />
-                            <Route path="/reporte_caja" element={<Control_Login><ReporteCaja /></Control_Login>} />
-                            <Route path="/reporte_resumido" element={<Control_Login><ReporteResumido /></Control_Login>} />
-                            <Route path="/distribucion_mesas" element={<Control_Login><Distribucion_mesas /></Control_Login>} />
+                            <Route path="/abm_planos" element={<Control_Login><Abm_Planos recargarComponentes={recargarPlanos} datos_planos={datos_planos_abm} planos={planos} titulo="Planos" /></Control_Login>} />
+                            <Route path="/reportes" element={<Control_Login rolesPermitidos={[1]}><Reportes /></Control_Login>} />
+                            <Route path="/reporte_ventas" element={<Control_Login rolesPermitidos={[1]}><ReporteVentas /></Control_Login>} />
+                            <Route path="/reporte_productos" element={<Control_Login rolesPermitidos={[1]}><ReporteProductos /></Control_Login>} />
+                            <Route path="/reporte_mozos" element={<Control_Login rolesPermitidos={[1]}><ReporteMozos /></Control_Login>} />
+                            <Route path="/reporte_mesas" element={<Control_Login rolesPermitidos={[1]}><ReporteMesas /></Control_Login>} />
+                            <Route path="/reporte_rentabilidad" element={<Control_Login rolesPermitidos={[1]}><ReporteRentabilidad /></Control_Login>} />
+                            <Route path="/reporte_caja" element={<Control_Login rolesPermitidos={[1]}><ReporteCaja /></Control_Login>} />
+                            <Route path="/reporte_resumido" element={<Control_Login rolesPermitidos={[1]}><ReporteResumido /></Control_Login>} />
+                            <Route path="/distribucion_mesas" element={<Navigate to="/abm_planos" replace />} />
                             <Route path="/delivery" element={<Control_Login><Delivery recargarComponentes={recargarDeliveryTakeAway} titulo="Delivery" /></Control_Login>} />
                             <Route path="/takeaway" element={<Control_Login><TakeAway recargarComponentes={recargarDeliveryTakeAway} titulo="Take Away" /></Control_Login>} />
                             <Route path="/kds" element={<Control_Login><KDS /></Control_Login>} />

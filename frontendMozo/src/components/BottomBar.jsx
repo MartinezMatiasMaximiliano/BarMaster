@@ -45,7 +45,8 @@ export const BottomBar = ({
     themeMode,
     onThemeToggle,
     onAyudaAtajosClick,
-    onSalirClick
+    onSalirClick,
+    ocultarCodigo = false
 }) => {
     const fechaHoraFromHook = useDateTime();
     const fechaHora = fechaHoraProp ?? fechaHoraFromHook;
@@ -68,7 +69,7 @@ export const BottomBar = ({
                     />
                 </Tooltip>
             )}
-            <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
+            {!ocultarCodigo && <Form.Group controlId="exampleForm.ControlInput1" className="mb-0">
                 <Form.Label>Código</Form.Label>
                 <Form.Control
                     ref={codigoMozoInputRef}
@@ -77,8 +78,8 @@ export const BottomBar = ({
                     value={codigoMozo}
                     className="w-100"
                 />
-            </Form.Group>
-            {mozo?.nombre ? GetChipNombreCompleto(
+            </Form.Group>}
+            {!ocultarCodigo && (mozo?.nombre ? GetChipNombreCompleto(
                 mozo.nombre,
                 mozo.apellido,
                 mozo.personajeId,
@@ -103,7 +104,7 @@ export const BottomBar = ({
                         };
                     }}
                 />
-            )}
+            ))}
 
             <Box sx={{ ml: 'auto', display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-end' }}>
                 <Stack direction="row" spacing={1} alignItems="center">

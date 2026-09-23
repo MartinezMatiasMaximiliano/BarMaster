@@ -158,12 +158,24 @@ namespace BackEndAPI.Services
         }
         public async Task<ICollection<Persona>> BuscarMozos()
         {
-            var mozos = await _personasRepository.GetPersonasPorNombreRol("Mozo");
+            var mozos = await _personasRepository.GetPersonasPorIdRol(Roles.Mozo);
             if (mozos == null || mozos.Count == 0)
             {
                 throw new NotFoundException("No se encontraron mozos.");
             }
             return mozos;
+        }
+
+        public Task<ICollection<Persona>> BuscarPersonasPorRol(int idRol) =>
+            _personasRepository.GetPersonasPorIdRol(idRol);
+
+        public async Task<Persona?> ValidarCodigoMozo(string codigo)
+        {
+            var persona = await _personasRepository.GetPersonaPorCodigoDeServicio(codigo);
+            return persona is { Activo: true }
+                && persona.IdRol == Roles.Mozo
+                    ? persona
+                    : null;
         }
     }
 }

@@ -1,7 +1,7 @@
 // hooks/useLogoutHandlers.js
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LoginContext, AuthTypeContext } from '../../../App';
+import { LoginContext, AuthTypeContext } from '../../../contexts/AppContexts';
 import { handleConfirmarSalir } from '../../../Helpers/HelperFunctions';
 
 /**

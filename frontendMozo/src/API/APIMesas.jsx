@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance'
+import apiOperativo from '../services/axiosOperativo';
 import { construirError } from './APIError';
 
 class CrearMesaDTO {
@@ -28,7 +29,7 @@ export async function CrearMesa(datos) {
 
 export async function AbrirCerrarMesa(request) {
     try {
-        const response = await api.patch('Mesa/AbrirCerrar', request);
+        const response = await apiOperativo.patch('Mesa/AbrirCerrar', request);
         return response.data;
     } catch (error) {
         console.error("Error:", construirError(error, 'Error al abrir/cerrar la mesa'));

@@ -5,6 +5,8 @@ using BackEndAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using BackEndAPI.DTOs.Request.Crear;
 using BackEndAPI.DTOs.Request.Modificar;
+using BackEndAPI.DTOs.Request;
+using BackEndAPI.Models;
 
 
 namespace BackEndAPI.Controllers
@@ -21,6 +23,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("/ListaEmpleados")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> GetListaPersonasDeEmpresa()
         {
             var listaPersonas = await _personasServices.BuscarTodasLasPersonas();
@@ -48,6 +51,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("/Persona")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> GetPersonaPorId([FromQuery] Guid Id)
         {
             var persona = await _personasServices.BuscarPersonaPorId(Id);
@@ -74,6 +78,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost("/Registrar")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> RegistrarPersona(CrearPersonaDTO request)
         {
             if (request == null
@@ -91,6 +96,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPut("/Modificar")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> ModificarPersona(ModificarPersonaDTO DTO)
         {
             await _personasServices.ActualizarPersona(DTO);
@@ -98,6 +104,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPut("/activarDesactivar/{Id}")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> ActivarDesactivarPersona(Guid Id)
         {
             await _personasServices.CambiarEstado(Id);
@@ -105,6 +112,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPut("/Persona/Personaje")]
+        [AllowAnonymous]
         public async Task<IActionResult> ModificarPersonaje([FromBody] ModificarPersonajeDTO request)
         {
             if (request.IdPersona == Guid.Empty)
@@ -120,6 +128,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpDelete("/Eliminar/{Id}")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> EliminarPersona(Guid Id)
         {
             await _personasServices.EliminarPersona(Id);
@@ -127,6 +136,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("/Mozos")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> GetMozos()
         {
             var mozos = await _personasServices.BuscarMozos();
@@ -151,6 +161,36 @@ namespace BackEndAPI.Controllers
             }).ToList();
 
             return Ok(response);
+        }
+
+        [HttpPost("/Mozos/ValidarCodigo")]
+        [Authorize(Policy = "Mesas.Operar")]
+        public async Task<IActionResult> ValidarCodigoMozo([FromBody] ValidarCodigoMozoDTO request)
+        {
+            var persona = await _personasServices.ValidarCodigoMozo(request.Codigo);
+            return persona == null
+                ? Ok(null)
+                : Ok(new MozoValidadoDTO
+                {
+                    Id = persona.Id,
+                    Nombres = persona.Nombres,
+                    Apellido = persona.Apellido,
+                    PersonajeId = persona.PersonajeId,
+                });
+        }
+
+        [HttpGet("/Cadetes")]
+        public async Task<IActionResult> GetCadetes()
+        {
+            var personas = (await _personasServices.BuscarPersonasPorRol(Roles.Cadete))
+                .Where(persona => persona.Activo);
+            return Ok(personas.Select(persona => new CadeteDTO
+            {
+                Id = persona.Id,
+                Nombre = persona.Nombres,
+                Apellido = persona.Apellido,
+                Telefono = persona.Telefono,
+            }).ToList());
         }
     }
 }

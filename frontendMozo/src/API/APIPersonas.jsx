@@ -23,6 +23,24 @@ export async function BuscarTodasLasPersonas() {
     }
 }
 
+export async function ValidarCodigoMozo(codigo) {
+    try {
+        const response = await api.post('Mozos/ValidarCodigo', { codigo });
+        return response.data || null;
+    } catch (error) {
+        throw construirError(error, 'Error al validar el código del mozo');
+    }
+}
+
+export async function BuscarCadetesActivos() {
+    try {
+        const response = await api.get('Cadetes');
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        throw construirError(error, 'Error al buscar cadetes');
+    }
+}
+
 export async function RegistrarPersona(datos) {
     try {
         const response = await api.post('Registrar', {

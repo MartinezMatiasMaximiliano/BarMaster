@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Box, CircularProgress } from '@mui/material';
-import { LoginContext, AuthTypeContext } from '../../App';
+import { LoginContext, AuthTypeContext } from '../../contexts/AppContexts';
 import Header from './components/Header';
 import ConfirmExitDialog from './components/ConfirmExitDialog';
 import PanelResumenHeader from './components/PanelResumenHeader';

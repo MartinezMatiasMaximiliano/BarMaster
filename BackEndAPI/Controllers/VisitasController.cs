@@ -26,6 +26,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("/TodasLasVisitas")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> TodasLasVisitas(
             [FromQuery] DateTimeOffset? desde,
             [FromQuery] DateTimeOffset? hasta)
@@ -42,6 +43,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPost("/AgregarProductoAVisita")]
+        [Authorize(Policy = "Mesas.Operar")]
         public async Task<IActionResult> AgregarproductosAVisita([FromBody] ICollection<AgregarProductoAVisita> listaProductos, [FromQuery] Guid IdVisita, [FromQuery] Guid idComando)
         {
             var visitaActualizada = await _visitasServices.AgregarProductos(listaProductos, IdVisita, idComando);
@@ -49,6 +51,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpDelete("/Visitas/EliminarProductos")]
+        [Authorize(Policy = "Mesas.Operar")]
         public async Task<IActionResult> EliminarProducto([FromBody] EliminarProductosDTO request)
         {
             await _visitasServices.EliminarProductos(request.IdVisita, request.IdsProductos);
@@ -56,6 +59,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPatch("/Visitas/CambiarEstadoProducto")]
+        [Authorize(Policy = "Mesas.Operar")]
         public async Task<IActionResult> CambiarEstadoProducto([FromBody] CambiarEstadoProductoDTO request)
         {
             await _visitasServices.CambiarEstadoProducto(request.IdProducto, request.Estado);

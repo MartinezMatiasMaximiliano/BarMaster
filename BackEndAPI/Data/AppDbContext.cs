@@ -76,9 +76,10 @@ namespace BackEndAPI.Data
             modelBuilder.ConfigurarImpresionDistribuida();
 
             modelBuilder.Entity<Rol>().HasData(
-                new Rol { Id = 1, Nombre = "Admin" },
-                new Rol { Id = 2, Nombre = "Mozo" },
-                new Rol { Id = 3, Nombre = "Cadete" }
+                new Rol { Id = BackEndAPI.Models.Roles.Admin, Nombre = "Admin" },
+                new Rol { Id = BackEndAPI.Models.Roles.Mozo, Nombre = "Mozo" },
+                new Rol { Id = BackEndAPI.Models.Roles.Cadete, Nombre = "Cadete" },
+                new Rol { Id = BackEndAPI.Models.Roles.Cajero, Nombre = "Cajero" }
             );
 
             modelBuilder.Entity<EstadoReserva>().HasData(

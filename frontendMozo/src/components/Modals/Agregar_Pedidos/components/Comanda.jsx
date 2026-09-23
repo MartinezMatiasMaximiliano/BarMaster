@@ -20,21 +20,24 @@ export const Comanda = ({
     comanda, 
     totalComanda, 
     onActualizarCantidad, 
-    onActualizarIndicaciones 
+    onActualizarIndicaciones,
+    compact = false,
+    showTotal = true
 }) => {
     return (
         <Paper
             sx={{
-                p: 2,
+                p: compact ? 1 : 2,
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                maxHeight: '70vh'
+                minHeight: 0,
+                maxHeight: compact ? 'none' : '70vh'
             }}
         >
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: compact ? 0.75 : 2, flexShrink: 0 }}>
                 <ShoppingCartIcon color="primary" />
-                <Typography variant="h6">
+                <Typography variant={compact ? 'subtitle1' : 'h6'}>
                     Comanda
                 </Typography>
                 {comanda.length > 0 && (
@@ -47,7 +50,7 @@ export const Comanda = ({
                 )}
             </Stack>
 
-            <Divider sx={{ mb: 2 }} />
+            <Divider sx={{ mb: compact ? 1 : 2, flexShrink: 0 }} />
 
             {comanda.length === 0 ? (
                 <Box
@@ -70,7 +73,8 @@ export const Comanda = ({
                         sx={{
                             flex: 1,
                             overflowY: 'auto',
-                            mb: 2,
+                            mb: compact ? 1 : 2,
+                            minHeight: 0,
                             scrollbarGutter: 'stable',
                             '&::-webkit-scrollbar': {
                                 width: '8px',
@@ -223,15 +227,19 @@ export const Comanda = ({
                         </Stack>
                     </Box>
 
-                    <Divider sx={{ my: 2 }} />
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="h6">
-                            Total:
-                        </Typography>
-                        <Typography variant="h6" color="primary" fontWeight="bold">
-                            ${totalComanda.toFixed(2)}
-                        </Typography>
-                    </Stack>
+                    {showTotal && (
+                        <>
+                            <Divider sx={{ my: compact ? 1 : 2, flexShrink: 0 }} />
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Typography variant={compact ? 'body1' : 'h6'}>
+                                    Total:
+                                </Typography>
+                                <Typography variant={compact ? 'subtitle1' : 'h6'} color="primary" fontWeight="bold">
+                                    ${totalComanda.toFixed(2)}
+                                </Typography>
+                            </Stack>
+                        </>
+                    )}
                 </>
             )}
         </Paper>

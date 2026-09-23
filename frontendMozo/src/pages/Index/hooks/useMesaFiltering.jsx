@@ -21,8 +21,10 @@ const ESTILO_MESAS = {
  * @param {boolean} hayCajaActiva - Indica si hay una caja activa
  * @returns {Object} { mesasParaMostrar, ESTILO_MESAS }
  */
-export const useMesaFiltering = (mesas, datosMozos, hayCajaActiva = true) => {
-    const mozo = useSelector((state) => state.mozo.value);
+export const useMesaFiltering = (mesas, datosMozos, hayCajaActiva = true, operador) => {
+    const mozoRedux = useSelector((state) => state.mozo.value);
+    const mozo = operador?.mozo ?? mozoRedux;
+    const accesoGlobal = operador?.accesoGlobal === true;
 
     // Renderizar TODAS las mesas sin filtrar por plano, ordenadas por número ascendente
     const mesasParaMostrar = useMemo(() => {
@@ -37,7 +39,9 @@ export const useMesaFiltering = (mesas, datosMozos, hayCajaActiva = true) => {
         return ordenadas.map((mesa, i) => {
             
             // Determinar el variant según el mozo asignado
-            const variant = !mesa.visita || !mesa.visita.mozo
+            const variant = accesoGlobal
+                ? (mesa.visita ? "success" : "secondary")
+                : !mesa.visita || !mesa.visita.mozo
                 ? "secondary"
                 : mozo && mesa.visita.mozo.codigoDeServicio === mozo.codigoDeServicio
                     ? "success"
@@ -54,7 +58,7 @@ export const useMesaFiltering = (mesas, datosMozos, hayCajaActiva = true) => {
                 />
             );
         });
-    }, [mesas, mozo, hayCajaActiva]);
+    }, [mesas, mozo, hayCajaActiva, accesoGlobal]);
 
     return { mesasParaMostrar, ESTILO_MESAS };
 };

@@ -21,6 +21,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpGet("/Cajas")]
+        [Authorize(Policy = "SoloAdmin")]
         public async Task<IActionResult> GetListaCajas()
         {
             var cajas = await _cajasServices.BuscarListaCajas();

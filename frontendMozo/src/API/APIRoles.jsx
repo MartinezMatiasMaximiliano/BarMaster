@@ -21,15 +21,6 @@ export async function BuscarTodosLosRoles() {
     }
 }
 
-export async function CrearRol(nombre) {
-    try {
-        const response = await api.post('Roles/' , { nombre:nombre });
-        return response.data;
-    } catch (error) {
-        throw construirError(error, "Error al crear el rol. Intente nuevamente.");
-    }
-}
-
 export async function BuscarUnRol(Id) {
     try {
         const response = await api.get('Roles/' + Id);
@@ -40,22 +31,3 @@ export async function BuscarUnRol(Id) {
     }
 }
 
-export async function ModificarRol(Id, Nombre) {
-    try {
-        const response = await api.put('Roles/' + Id, { nombre: Nombre});
-        return response.data;
-    } catch (error) {
-        console.error('Error al modificar rol:', construirError(error, 'Error al modificar el rol'));
-        return error.response
-    }
-}
-
-export async function BorrarRol(Id, Token) {
-    try {
-        const response = await api.delete('Roles/' + Id)
-        return response.data;
-    } catch (error) {
-        console.error('Error al borrar rol:', construirError(error, 'Error al eliminar el rol'));
-        return error.response
-    }
-}

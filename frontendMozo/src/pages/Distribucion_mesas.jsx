@@ -1,69 +1,98 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Container, Box, FormControl, InputLabel, Select, MenuItem, Button, Typography, Alert, CircularProgress } from "@mui/material";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Container, Box, FormControl, InputLabel, Select, MenuItem, Typography, Alert, Stack } from "@mui/material";
 import GridLayout, { WidthProvider } from "react-grid-layout";
 import SaveIcon from "@mui/icons-material/Save";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { BuscarTodosLosPlanos } from "../API/APIPlanos";
 import { ModificarMesa } from "../API/APIMesas";
 import { LoadingButton } from "../components/common/LoadingButton";
+import Fila_Acciones from "../components/Tabla/Fila_Acciones";
+import Modal_Agregar from "../components/Modals/Agregar_ABM/Modal_Agregar";
+import { CrearPlano, ModificarPlano, BorrarPlano } from "../API/APIPlanos";
+import { Campos as Campos_Agregar } from "../configs/agregar/Planos";
+import { Campos as Campos_Editar } from "../configs/modificar/Planos";
 import { boxCardBorder } from '../styles/boxStyles';
 
 const ResponsiveGridLayout = WidthProvider(GridLayout);
 
-function Distribucion_mesas() {
-    const [planos, setPlanos] = useState([]);
+function ContenidoMesaDistribucion({ nombre, icono }) {
+    const contenidoRef = useRef(null);
+    const [medidas, setMedidas] = useState({ width: 60, height: 50 });
+
+    useEffect(() => {
+        const elemento = contenidoRef.current;
+        if (!elemento || typeof ResizeObserver === 'undefined') return undefined;
+
+        const observer = new ResizeObserver(([entry]) => {
+            const { width, height } = entry.contentRect;
+            setMedidas(actuales => (
+                actuales.width === width && actuales.height === height
+                    ? actuales
+                    : { width, height }
+            ));
+        });
+        observer.observe(elemento);
+        return () => observer.disconnect();
+    }, []);
+
+    const tamanoIcono = Math.max(8, Math.min(42, medidas.width * 0.35, medidas.height * 0.42));
+    const tamanoTexto = Math.max(6, Math.min(14, medidas.width / 6, medidas.height / 3.4));
+
+    return (
+        <Box
+            ref={contenidoRef}
+            sx={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: `${Math.min(4, medidas.height * 0.06)}px`,
+                overflow: 'hidden',
+            }}
+        >
+            <img
+                src={icono}
+                alt=""
+                aria-hidden="true"
+                style={{ width: tamanoIcono, height: tamanoIcono, objectFit: 'contain', flexShrink: 1 }}
+            />
+            <Typography
+                component="span"
+                sx={{ color: '#fff', fontWeight: 700, lineHeight: 1.1, fontSize: tamanoTexto, whiteSpace: 'nowrap' }}
+            >
+                {nombre}
+            </Typography>
+        </Box>
+    );
+}
+
+function Distribucion_mesas({ planos: planosOrigen = [], recargarPlanos }) {
+    const planos = useMemo(() => (planosOrigen || []).map(plano => ({
+        id: plano.id ?? plano.Id,
+        nombre: plano.nombre ?? plano.Nombre,
+        detalles: plano.detalles ?? plano.Detalles,
+        mesas: plano.mesas ?? plano.Mesas ?? [],
+    })), [planosOrigen]);
     const [planoSeleccionado, setPlanoSeleccionado] = useState('');
     const [mesas, setMesas] = useState([]);
     const [layout, setLayout] = useState([]);
-    const [cargando, setCargando] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
-    const [mostrarAlertaInfo, setMostrarAlertaInfo] = useState(true);
+    const planoSeleccionadoObj = planos.find(plano => plano.id === planoSeleccionado || String(plano.id) === String(planoSeleccionado));
+    const apiPlanos = useMemo(() => ({ crear: CrearPlano, modificar: ModificarPlano, eliminar: BorrarPlano }), []);
 
-    // Cargar planos al montar el componente
     useEffect(() => {
-        const cargarPlanos = async () => {
-            if (localStorage.getItem('token')) {
-                try {
-                    setCargando(true);
-                    const data = await BuscarTodosLosPlanos();
-                    
-                    // Verificar si es un array válido
-                    if (Array.isArray(data) && data.length > 0) {
-                        // Normalizar los datos (pueden venir con mayúsculas o minúsculas)
-                        const planosNormalizados = data.map(plano => ({
-                            id: plano.id || plano.Id,
-                            nombre: plano.nombre || plano.Nombre,
-                            detalles: plano.detalles || plano.Detalles,
-                            mesas: plano.mesas || plano.Mesas || []
-                        }));
-                        setPlanos(planosNormalizados);
-                    } else if (Array.isArray(data)) {
-                        // Array vacío
-                        setPlanos([]);
-                        setMensaje({ tipo: 'info', texto: 'No hay planos disponibles' });
-                    } else {
-                        // No es un array, puede ser un error
-                        setPlanos([]);
-                        setMensaje({ tipo: 'error', texto: 'Error al cargar los planos. La respuesta no es válida.' });
-                    }
-                } catch (error) {
-                    setMensaje({ tipo: 'error', texto: 'Error al cargar los planos: ' + (error.message || 'Error desconocido') });
-                    setPlanos([]);
-                } finally {
-                    setCargando(false);
-                }
-            }
-        };
-        cargarPlanos();
-    }, []);
+        if (planoSeleccionado && !planos.some(plano => String(plano.id) === String(planoSeleccionado))) {
+            setPlanoSeleccionado('');
+        }
+    }, [planos, planoSeleccionado]);
 
     // Cuando se selecciona un plano, cargar sus mesas y crear el layout
     useEffect(() => {
         if (planoSeleccionado && planos.length > 0) {
-            const plano = planos.find(p => p.id === planoSeleccionado);
+            const plano = planos.find(p => String(p.id) === String(planoSeleccionado));
             if (plano && plano.mesas && Array.isArray(plano.mesas) && plano.mesas.length > 0) {
                 setMesas(plano.mesas);
                 // Crear layout desde las mesas con sus coordenadas x, y, w, h
@@ -146,23 +175,25 @@ function Distribucion_mesas() {
         return mesa ? `Mesa ${mesa.numero ?? mesa.Numero}` : `Mesa ${mesaId}`;
     };
 
+    const obtenerIconoMesa = (mesaId) => {
+        const mesa = mesas.find(m => (m.id === mesaId || m.Id === mesaId));
+        const visita = mesa?.visita ?? mesa?.Visita;
+        return visita?.mozo ?? visita?.Mozo
+            ? '/iconos/mesa_ocupada_blanca.png'
+            : '/iconos/mesa_blanca.png';
+    };
+
     return (
-        <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Container maxWidth={false} sx={{ px: { xs: 0, md: 0 }, pt: 3 }}>
             <Box sx={{ mb: 3 }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                    Distribución de Mesas
+                <Typography variant="h5" component="h2" gutterBottom>
+                    Planos
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     Selecciona un plano y arrastra las mesas para reorganizar su distribución
                 </Typography>
-                {mostrarAlertaInfo && (
-                    <Alert severity="info" sx={{ mb: 2 }} onClose={() => setMostrarAlertaInfo(false)}>
-                        Para eliminar mesas, andá a <Link to="/abm_mesas">Gestión → Mesas</Link>.
-                    </Alert>
-                )}
-
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-                    <FormControl size="small" sx={{ minWidth: 250 }}>
+                    <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 280 }, maxWidth: 420 }}>
                         <InputLabel id="plano-select-label">Seleccionar Plano</InputLabel>
                         <Select
                             labelId="plano-select-label"
@@ -170,7 +201,6 @@ function Distribucion_mesas() {
                             value={planoSeleccionado}
                             label="Seleccionar Plano"
                             onChange={(e) => setPlanoSeleccionado(e.target.value)}
-                            disabled={cargando}
                         >
                             <MenuItem value="">
                                 <em>Selecciona un plano</em>
@@ -182,6 +212,14 @@ function Distribucion_mesas() {
                             ))}
                         </Select>
                     </FormControl>
+
+                    <Modal_Agregar
+                        nombre="plano"
+                        recargarComponentes={recargarPlanos}
+                        columnas={["Nombre", "Detalles"]}
+                        agregar={apiPlanos.crear}
+                        campos={Campos_Agregar}
+                    />
 
                     {planoSeleccionado && layout.length > 0 && (
                         <LoadingButton
@@ -207,11 +245,7 @@ function Distribucion_mesas() {
                 )}
             </Box>
 
-            {cargando ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                    <CircularProgress />
-                </Box>
-            ) : !planoSeleccionado ? (
+            {!planoSeleccionado ? (
                 <Box sx={{ 
                     display: 'flex', 
                     justifyContent: 'center', 
@@ -248,9 +282,28 @@ function Distribucion_mesas() {
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 2,
-                        minHeight: '600px'
+                        minHeight: '560px'
                     }}
                 >
+                    {planoSeleccionadoObj && (
+                        <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" sx={{ mb: 2, px: 1.5, py: 1, borderRadius: 1.5, bgcolor: 'action.hover' }}>
+                            <Box sx={{ minWidth: 0 }}>
+                                <Typography variant="subtitle1" fontWeight={600}>{planoSeleccionadoObj.nombre}</Typography>
+                                {planoSeleccionadoObj.detalles && (
+                                    <Typography variant="body2" color="text.secondary">{planoSeleccionadoObj.detalles}</Typography>
+                                )}
+                            </Box>
+                            <Fila_Acciones
+                                fila={planoSeleccionadoObj}
+                                api={apiPlanos}
+                                recargar={recargarPlanos}
+                                showEditar={true}
+                                showToggle={() => false}
+                                campos={Campos_Editar}
+                                deleteLabel="plano"
+                            />
+                        </Stack>
+                    )}
                     <ResponsiveGridLayout
                         className="layout"
                         layout={layout}
@@ -263,15 +316,17 @@ function Distribucion_mesas() {
                         compactType={null}
                         preventCollision={false}
                     >
-                        {layout.map((item) => (
+                    {layout.map((item) => (
                             <Box
                                 key={item.i}
                                 sx={{
                                     bgcolor: 'primary.dark',
-                                    color: 'primary.contrastText',
+                                    color: '#fff',
                                     display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
+                                    gap: 0.5,
                                     borderRadius: 1,
                                     fontWeight: 'bold',
                                     cursor: 'move',
@@ -282,7 +337,10 @@ function Distribucion_mesas() {
                                     }
                                 }}
                             >
-                                {obtenerNombreMesa(item.i)}
+                                <ContenidoMesaDistribucion
+                                    nombre={obtenerNombreMesa(item.i)}
+                                    icono={obtenerIconoMesa(item.i)}
+                                />
                             </Box>
                         ))}
                     </ResponsiveGridLayout>

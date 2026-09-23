@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Container, Alert } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { modificar as modificarCodigoMozo } from '../../redux/slices/codigoMozoSlice';
 import { ObtenerCajaActiva } from '../../API/APICaja';
 import { setCajaActiva } from '../../redux/slices/cajaActivaSlice';
-import { useMozoCode } from './hooks/useMozoCode';
+import { useOperadorMesas } from '../../hooks/useOperadorMesas';
 import { BottomBar } from '../../components/BottomBar';
 import { ConfirmLogoutDialog } from '../../components/ConfirmLogoutDialog';
 import { PlanoSelector } from '../../components/PlanoSelector';
@@ -19,9 +19,18 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { useCodigoMozoTeclado } from '../../hooks/useCodigoMozoTeclado';
 
 function Index2(props) {
-    const codigoMozoInputRef = useCodigoMozoTeclado();
+    const indexContainerRef = useRef(null);
+    const { codigoMozo, mozo, accesoGlobal } = useOperadorMesas(props.datos_mozos || []);
+    const codigoMozoInputRef = useCodigoMozoTeclado({ activo: !accesoGlobal });
     const dispatch = useDispatch();
     const hayCajaActiva = useSelector((state) => state.cajaActiva.value);
+
+    useEffect(() => {
+        const indexHost = indexContainerRef.current?.closest('main');
+        if (!indexHost) return undefined;
+        indexHost.classList.add('bm-index-host');
+        return () => indexHost.classList.remove('bm-index-host');
+    }, []);
 
     // Cargar estado de caja activa al montar
     useEffect(() => {
@@ -42,10 +51,7 @@ function Index2(props) {
     const mesas = props.mesas == null
         ? []
         : (Array.isArray(props.mesas) ? props.mesas.map(normalizarMesa) : []);
-    const { layout, obtenerMesaPorId, obtenerDatosMesa } = useMesasGrid(mesas, planoSeleccionado);
-
-    // Hooks para BottomBar
-    const { codigoMozo, mozo } = useMozoCode(props.datos_mozos || []);
+    const { layout, obtenerMesaPorId, obtenerDatosMesa } = useMesasGrid(mesas, planoSeleccionado, { mozo, accesoGlobal });
 
     // Hooks para logout
     const {
@@ -87,7 +93,12 @@ function Index2(props) {
     };
 
     return (
-        <Container className="position-relative" style={{ height: "calc(100vh - 32px)", overflow: "hidden" }}>
+        <Container
+            fluid
+            ref={indexContainerRef}
+            className="position-relative px-0"
+            style={{ height: "calc(100vh - 32px)", overflow: "hidden" }}
+        >
             {!hayCajaActiva && (
                 <div className="position-absolute top-0 start-0 end-0 m-3" style={{ zIndex: 10 }}>
                     <Alert variant="warning" className="mb-0 d-flex align-items-center shadow-sm">
@@ -111,6 +122,7 @@ function Index2(props) {
                 handleChange={handleChange}
                 mozo={mozo}
                 onSalirClick={handleAbrirConfirmacion}
+                ocultarCodigo={accesoGlobal}
             />
 
             <ConfirmLogoutDialog

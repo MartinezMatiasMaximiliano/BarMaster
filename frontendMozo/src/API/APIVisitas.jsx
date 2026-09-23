@@ -1,4 +1,5 @@
 import api from '../services/axiosInstance';
+import apiOperativo from '../services/axiosOperativo';
 import { generarUUID } from '../Helpers/generarUUID';
 import { sendHubMessage } from '../connections/HubConnMozo';
 import { construirError } from './APIError';
@@ -48,7 +49,7 @@ export async function BuscarVisitasActivas() {
 
 export async function AgregarProductosAVisita(idVisita, productos, idComando = generarUUID()) {
     try {
-        const response = await api.post(
+        const response = await apiOperativo.post(
             `AgregarProductoAVisita?IdVisita=${idVisita}&idComando=${idComando}`,
             productos
         );
@@ -71,7 +72,7 @@ export async function AgregarProductosAVisita(idVisita, productos, idComando = g
 /** DELETE /Visitas/EliminarProductos - Elimina productos de una visita */
 export async function EliminarProductosVisita(idVisita, idsProductos) {
     try {
-        const response = await api.delete(
+        const response = await apiOperativo.delete(
             'Visitas/EliminarProductos',
             {
                 data: {
@@ -95,7 +96,7 @@ export async function EliminarProductosVisita(idVisita, idsProductos) {
 /** PATCH /Visitas/CambiarEstadoProducto - Cambia el estado de un producto */
 export async function CambiarEstadoProducto(idProducto, estado) {
     try {
-        const response = await api.patch(
+        const response = await apiOperativo.patch(
             'Visitas/CambiarEstadoProducto',
             {
                 IdProducto: idProducto,

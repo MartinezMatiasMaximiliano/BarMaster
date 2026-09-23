@@ -6,6 +6,7 @@
         public string Token_type { get; set; } = string.Empty;
         public string Auth_type { get; set; } = string.Empty; 
         public int? PersonajeId { get; set; }
+        public string? CodigoDeServicio { get; set; }
         public int Expires_in { get; set; } = -1;
         public string expires { get; set; } = string.Empty;
     }

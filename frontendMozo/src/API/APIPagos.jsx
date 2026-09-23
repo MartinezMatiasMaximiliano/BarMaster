@@ -1,4 +1,4 @@
-import api from '../services/axiosInstance';
+import api from '../services/axiosOperativo';
 import { construirError } from './APIError';
 
 /**

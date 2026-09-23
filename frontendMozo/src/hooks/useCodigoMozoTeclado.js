@@ -4,11 +4,12 @@ import { modificar } from '../redux/slices/codigoMozoSlice';
 import { hayModalActivo } from '../services/atajosTeclado';
 
 // Solo se instala mientras la pantalla de mesas está montada.
-export function useCodigoMozoTeclado({ limpiarConEscape = false } = {}) {
+export function useCodigoMozoTeclado({ limpiarConEscape = false, activo = true } = {}) {
     const inputRef = useRef(null);
     const store = useStore();
 
     useEffect(() => {
+        if (!activo) return undefined;
         const documento = inputRef.current?.ownerDocument;
         if (!documento) return undefined;
         const manejarCodigo = (evento) => {
@@ -42,7 +43,7 @@ export function useCodigoMozoTeclado({ limpiarConEscape = false } = {}) {
         };
         documento.addEventListener('keydown', manejarCodigo);
         return () => documento.removeEventListener('keydown', manejarCodigo);
-    }, [limpiarConEscape, store]);
+    }, [activo, limpiarConEscape, store]);
 
     return inputRef;
 }

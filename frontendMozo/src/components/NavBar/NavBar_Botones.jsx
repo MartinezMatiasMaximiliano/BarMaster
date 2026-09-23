@@ -22,7 +22,6 @@ import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import DeliveryDiningOutlinedIcon from '@mui/icons-material/DeliveryDiningOutlined';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
-import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
 import PointOfSaleOutlinedIcon from '@mui/icons-material/PointOfSaleOutlined';
 import LockResetOutlinedIcon from '@mui/icons-material/LockResetOutlined';
 import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
@@ -66,7 +65,6 @@ const menuConfig = {
             { path: "/delivery", label: "Delivery", icon: DeliveryDiningOutlinedIcon },
             { path: "/takeaway", label: "Take Away", icon: ShoppingBagOutlinedIcon },
             { path: "/kds", label: "Vista de Cocina", icon: KitchenIcon },
-            { path: "/distribucion_mesas", label: "Distribución de las Mesas", icon: AppsOutlinedIcon },
         ],
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
@@ -103,33 +101,20 @@ const menuConfig = {
             { path: "/abm_categorias", label: "Categorías", icon: CategoryOutlinedIcon },
             { path: "/abm_tipo_envios", label: "Tipos de Envío", icon: DeliveryDiningOutlinedIcon },
             { path: "/abm_planos", label: "Planos", icon: MapOutlinedIcon },
-            { path: "/lista_mozos", label: "Listado de Mozos", icon: ChecklistOutlinedIcon },
         ],
         "Operaciones": [
             { path: "/delivery", label: "Delivery", icon: DeliveryDiningOutlinedIcon },
             { path: "/takeaway", label: "Take Away", icon: ShoppingBagOutlinedIcon },
             { path: "/kds", label: "Vista de Cocina", icon: KitchenIcon },
             { path: "/reservas", label: "Reservas", icon: EventNoteOutlinedIcon },
-            { path: "/distribucion_mesas", label: "Distribución de las Mesas", icon: AppsOutlinedIcon },
         ],
         "Caja": [
             { path: "/caja", label: "Arqueo", icon: ReceiptOutlinedIcon },
             { path: "/movimiento_caja", label: "Nuevo Movimiento", icon: AddCircleOutlinedIcon },
             { path: "/abm_cuentas_corrientes", label: "Cuentas Corrientes", icon: AccountBalanceWalletOutlinedIcon },
         ],
-        "Reportes": [
-            { path: "/reporte_resumido", label: "Reporte Resumido", icon: AssessmentOutlinedIcon },
-            { path: "/reporte_ventas", label: "Reporte Ventas", icon: AssessmentOutlinedIcon },
-            { path: "/reporte_productos", label: "Reporte Productos", icon: AssessmentOutlinedIcon },
-            { path: "/reporte_mozos", label: "Reporte Mozos", icon: AssessmentOutlinedIcon },
-            { path: "/reporte_mesas", label: "Reporte Mesas", icon: AssessmentOutlinedIcon },
-            { path: "/reporte_rentabilidad", label: "Reporte Rentabilidad", icon: AssessmentOutlinedIcon },
-            { path: "/reporte_caja", label: "Reporte Caja", icon: AssessmentOutlinedIcon },
-        ],
-        "Historial": [
-            { path: "/historial", label: "Historial", icon: HistoryIcon },
-        ],
         "Configuración": [
+            { path: "/impresiones", label: "Impresiones", icon: PrintOutlinedIcon },
             { path: "/cambiar_clave", label: "Cambiar Contraseña", icon: LockResetOutlinedIcon },
         ],
         "Ayuda": [

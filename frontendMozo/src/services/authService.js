@@ -97,6 +97,7 @@ export const authService = {
                 localStorage.setItem('USER_token', tokenData.access_token);
                 localStorage.setItem('USER_auth_type', tokenData.auth_type);
                 localStorage.setItem('USER_personaje', String(tokenData.personajeId ?? 0));
+                localStorage.setItem('USER_codigo_servicio', tokenData.codigoDeServicio || '');
                 
                 // Decodificar el token para extraer información de la persona
                 const decoded = authService.decodeToken(tokenData.access_token);

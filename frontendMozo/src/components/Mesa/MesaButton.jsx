@@ -33,7 +33,22 @@ export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = fa
         ? '/iconos/mesa_blanca.png'
         : '/iconos/mesa_ocupada_blanca.png';
 
-    // Si simpleStyle es true, renderizar como botón simple sin iconos ni estilos personalizados
+    const contenidoMesa = (adaptable = false) => (
+        <>
+            <img
+                src={iconoMesa}
+                alt={variant === 'secondary' ? 'Mesa libre' : 'Mesa ocupada'}
+                style={adaptable
+                    ? { width: '45%', height: '45%', minWidth: 20, minHeight: 20, maxWidth: 49.68, maxHeight: 49.68, objectFit: 'contain' }
+                    : { width: 49.68, height: 49.68, objectFit: 'contain' }}
+            />
+            <Typography variant="body2" component="span" sx={{ fontWeight: 500, lineHeight: 1.1 }}>
+                {prefix} {numeroMesa}
+            </Typography>
+        </>
+    );
+
+    // En el plano conserva el tamaño adaptable, pero usa los mismos iconos que Index.
     if (simpleStyle) {
         return (
             <Button 
@@ -48,13 +63,16 @@ export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = fa
                     minHeight: 0,
                     padding: '4px 8px',
                     fontSize: '0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 0.25,
                     textTransform: 'none',
                     ...estilo,
                     ...(variant === 'success' ? { bgcolor: 'primary.main' } : {}),
                     ...(variant === 'success' ? { '&:hover': { bgcolor: 'primary.dark' } } : {}),
                 }}
             >
-                {prefix} {numeroMesa}
+                {contenidoMesa(true)}
             </Button>
         );
     }
@@ -85,14 +103,7 @@ export const MesaButton = ({ numeroMesa, estilo, variant, onClick, disabled = fa
                 ...estilo,
             }}
         >
-            <img
-                src={iconoMesa}
-                alt={variant === 'secondary' ? 'Mesa libre' : 'Mesa ocupada'}
-                style={{ width: 49.68, height: 49.68, objectFit: 'contain' }}
-            />
-            <Typography variant="body2" component="span" sx={{ fontWeight: 500 }}>
-                {prefix} {numeroMesa}
-            </Typography>
+            {contenidoMesa()}
         </Button>
     );
 };

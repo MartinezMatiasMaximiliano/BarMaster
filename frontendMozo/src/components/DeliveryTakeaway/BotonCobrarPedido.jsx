@@ -55,7 +55,7 @@ export default function BotonCobrarPedido({
     const handleConfirmar = useCallback(async (idsProductos, idTipoPago, monto, descuento = 0) => {
         if (!idVisita) {
             showSnackbar('No se pudo identificar la visita del pedido', 'error');
-            return;
+            return false;
         }
 
         try {
@@ -66,10 +66,12 @@ export default function BotonCobrarPedido({
             showSnackbar('Pedido cobrado correctamente', 'success');
             setOpen(false);
             onSuccess?.();
+            return true;
         } catch (error) {
             console.error('Error al cobrar pedido:', error);
             const msg = error.response?.data;
             showSnackbar(typeof msg === 'string' ? msg : 'Error al cobrar el pedido. Intente de nuevo.', 'error');
+            return false;
         }
     }, [dispatch, idVisita, onSuccess, showSnackbar]);
 

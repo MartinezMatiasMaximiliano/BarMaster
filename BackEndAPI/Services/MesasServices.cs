@@ -17,13 +17,15 @@ namespace BackEndAPI.Services
         private readonly ICajasRepository _CajasRepository;
         private readonly IVisitasRepository _visitasRepository;
         private readonly IPlanosRepository _planosRepository;
-        public MesasServices(IMesasRepository mesasRepository, IPersonasRepository personasRepository, IVisitasRepository visitasRepository, ICajasRepository cajasRepository, IPlanosRepository planosRepository)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public MesasServices(IMesasRepository mesasRepository, IPersonasRepository personasRepository, IVisitasRepository visitasRepository, ICajasRepository cajasRepository, IPlanosRepository planosRepository, IHttpContextAccessor httpContextAccessor)
         {
             _mesasRepository = mesasRepository;
             _personasRepository = personasRepository;
             _visitasRepository = visitasRepository;
             _CajasRepository = cajasRepository;
             _planosRepository = planosRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Mesa?> CrearMesa(CrearMesaDTO request)
@@ -84,8 +86,7 @@ namespace BackEndAPI.Services
             {
                 if (buscarMesa.CodigoParaPedir != null) throw new ConflictException("La mesa ya esta abierta");
                 buscarMesa.CodigoParaPedir = Helpers.CrearCodigoMesa();
-                var mozoBuscado = await _personasRepository.GetPersonaPorCodigoDeServicio(request.CodigoServicioMozo);
-                if (mozoBuscado == null) throw new NotFoundException("No se encontró un mozo con ese codigo de servicio");
+                var mozoBuscado = await ResolverOperador(request.CodigoServicioMozo, buscarMesa);
 
                 var CajaAbierta = await _CajasRepository.BuscarCajaAbierta();
                 if (CajaAbierta == null) throw new NotFoundException("No hay una caja abierta para asignar la visita");
@@ -129,6 +130,57 @@ namespace BackEndAPI.Services
                     return await _visitasRepository.ModificarVisita(visita);
                 }
             }
+        }
+
+        private async Task<Persona> ResolverOperador(string? codigoServicio, Mesa mesa)
+        {
+            var user = _httpContextAccessor.HttpContext?.User;
+            var tipoAuth = user?.FindFirst("TipoAuth")?.Value;
+            Persona? persona;
+            Guid? idSucursalOperador;
+
+            if (string.Equals(tipoAuth, "admin", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(tipoAuth, "cajero", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!Guid.TryParse(user?.FindFirst("IdPersona")?.Value, out var idPersona))
+                    throw new UnauthorizedException("No se pudo identificar a la persona autenticada");
+                if (!Guid.TryParse(user?.FindFirst("IdSucursal")?.Value, out var idSucursalAutenticada))
+                    throw new UnauthorizedException("No se pudo identificar la sucursal autenticada");
+
+                persona = await _personasRepository.GetPersonaPorId(idPersona);
+                if (persona == null || !persona.Activo)
+                    throw new UnauthorizedException("La persona autenticada no está activa");
+
+                if (!Roles.PuedeIniciarSesion(persona.IdRol))
+                    throw new ForbiddenException("El rol de la persona no permite operar mesas");
+
+                if (!string.Equals(persona.CodigoDeServicio, codigoServicio, StringComparison.Ordinal))
+                    throw new ForbiddenException("El código de servicio no coincide con la persona autenticada");
+
+                if (persona.IdSucursal.HasValue && persona.IdSucursal.Value != idSucursalAutenticada)
+                    throw new ForbiddenException("La persona no pertenece a la sucursal autenticada");
+
+                idSucursalOperador = idSucursalAutenticada;
+            }
+            else
+            {
+                persona = string.IsNullOrWhiteSpace(codigoServicio)
+                    ? null
+                    : await _personasRepository.GetPersonaPorCodigoDeServicio(codigoServicio);
+                if (persona == null) throw new NotFoundException("No se encontró un mozo con ese codigo de servicio");
+                if (!persona.Activo) throw new ForbiddenException("La persona se encuentra inactiva");
+                if (persona.IdRol != Roles.Mozo)
+                    throw new ForbiddenException("El código no corresponde a un mozo");
+
+                idSucursalOperador = persona.IdSucursal;
+            }
+
+            var idSucursalMesa = mesa.Plano?.IdSucursal
+                ?? (await _planosRepository.ObtenerPlanoPorId(mesa.IdPlano!.Value)).IdSucursal;
+            if (idSucursalOperador.HasValue && idSucursalOperador.Value != idSucursalMesa)
+                throw new ForbiddenException("La persona no pertenece a la sucursal de la mesa");
+
+            return persona;
         }
 
         public async Task<IEnumerable<Mesa>> ObtenerTodasLasMesas()

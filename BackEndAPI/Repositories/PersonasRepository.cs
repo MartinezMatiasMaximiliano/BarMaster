@@ -70,5 +70,13 @@ namespace BackEndAPI.Repositories
                 .ToListAsync();
         }
 
+        public async Task<ICollection<Persona>> GetPersonasPorIdRol(int idRol)
+        {
+            return await db.Personas
+                .Include(p => p.Rol)
+                .Where(p => p.IdRol == idRol)
+                .ToListAsync();
+        }
+
     }
 }

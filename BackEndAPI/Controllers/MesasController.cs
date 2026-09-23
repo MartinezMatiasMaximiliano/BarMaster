@@ -77,6 +77,7 @@ namespace BackEndAPI.Controllers
         }
 
         [HttpPatch("/Mesa/AbrirCerrar")]
+        [Authorize(Policy = "Mesas.Operar")]
         public async Task<ActionResult> AbrirCerrarMesa([FromBody] AbrirMesaDTO request)
         {
             var Visita = await _mesasServices.AbrirCerrarMesa(request);

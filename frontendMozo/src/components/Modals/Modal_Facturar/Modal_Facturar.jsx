@@ -48,6 +48,7 @@ export default function Modal_Facturar({
     const [facturarTicket, setFacturarTicket] = useState(false);
     const [showOpcionesExtra, setShowOpcionesExtra] = useState(false);
     const [error, setError] = useState('');
+    const [confirmando, setConfirmando] = useState(false);
     const cajaActiva = useSelector((state) => state.cajaActiva.value);
     const montoCaja = cajaActiva?.montoActual ?? null;
 
@@ -89,6 +90,7 @@ export default function Modal_Facturar({
             setFacturarTicket(false);
             setShowOpcionesExtra(false);
             setError('');
+            setConfirmando(false);
         }
     }, [open, cargarTiposPago]);
 
@@ -103,7 +105,11 @@ export default function Modal_Facturar({
         onClose();
     }, [onClose]);
 
-    const handleConfirm = useCallback(() => {
+    const handleConfirm = useCallback(async () => {
+        if (!idTipoPago) {
+            setError('Seleccione un método de pago.');
+            return;
+        }
         if (esEfectivo && (montoRecibido === '' || isNaN(montoRecibidoNum))) {
             setError('Ingrese el monto recibido en efectivo.');
             return;
@@ -118,8 +124,15 @@ export default function Modal_Facturar({
         }
         setError('');
         const montoParaBackend = esEfectivo ? montoRecibidoNum : totalFinal;
-        onConfirm(productIds, Number(idTipoPago), montoParaBackend, descuentoNum);
-        handleClose();
+        setConfirmando(true);
+        try {
+            const confirmado = await onConfirm(productIds, Number(idTipoPago), montoParaBackend, descuentoNum);
+            if (confirmado !== false) handleClose();
+        } catch (confirmError) {
+            setError(confirmError?.message || 'No se pudo registrar el cobro. Intente nuevamente.');
+        } finally {
+            setConfirmando(false);
+        }
     }, [esEfectivo, montoRecibidoNum, totalFinal, montoRecibido, cajaInsuficiente, montoCaja, currencyFormatter, productIds, idTipoPago, onConfirm, handleClose, descuentoNum]);
 
     if (!open) return null;
@@ -175,13 +188,13 @@ export default function Modal_Facturar({
                     })}>
                         <Typography
                             variant="subtitle2"
-                            color={(theme) => theme.palette.mode === 'dark' ? 'inherit' : 'text.secondary'}
+                            sx={{ color: (theme) => theme.palette.mode === 'dark' ? 'inherit' : 'text.secondary' }}
                         >
                             Total a pagar
                         </Typography>
                         <Typography
                             variant="h5"
-                            color={(theme) => theme.palette.mode === 'dark' ? 'inherit' : 'primary.main'}
+                            sx={{ color: (theme) => theme.palette.mode === 'dark' ? 'inherit' : 'primary.main' }}
                         >
                             {currencyFormatter.format(totalNum)}
                         </Typography>
@@ -314,11 +327,11 @@ export default function Modal_Facturar({
             </DialogContent>
 
             <DialogActions sx={dialogActionsStyles}>
-                <Button variant="outlined" color="secondary" data-escape-action="true" onClick={handleClose} sx={cancelButtonStyles}>
+                <Button variant="outlined" color="secondary" data-escape-action="true" onClick={handleClose} disabled={confirmando} sx={cancelButtonStyles}>
                     Cancelar
                 </Button>
-                <Button variant="contained" color="success" data-enter-action="true" onClick={handleConfirm} startIcon={<ReceiptIcon />}>
-                    Confirmar cobro
+                <Button variant="contained" color="success" data-enter-action="true" onClick={handleConfirm} disabled={confirmando} startIcon={<ReceiptIcon />}>
+                    {confirmando ? 'Procesando...' : 'Confirmar cobro'}
                 </Button>
             </DialogActions>
         </Dialog>
